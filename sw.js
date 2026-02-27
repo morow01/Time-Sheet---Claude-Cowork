@@ -1,5 +1,5 @@
-const CACHE = 'timesheet-v4';
-const ASSETS = ['/', '/index.html'];
+const CACHE = 'timesheet-v5';
+const ASSETS = ['/Time-Sheet---Claude-Cowork/', '/Time-Sheet---Claude-Cowork/index.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -17,10 +17,10 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
   // Only handle same-origin requests
-  if (!url.origin.startsWith(self.location.origin)) return;
+  if (url.origin !== self.location.origin) return;
 
-  // NETWORK FIRST for the main page to ensure updates
-  if (url.pathname === '/' || url.pathname === '/index.html') {
+  // NETWORK FIRST for HTML pages — always get latest version
+  if (e.request.destination === 'document' || url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
     e.respondWith(
       fetch(e.request)
         .then(res => {
@@ -33,7 +33,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // CACHE FIRST for everything else (scripts, manifests, etc.)
+  // CACHE FIRST for everything else (scripts, manifests, icons, etc.)
   e.respondWith(
     caches.match(e.request).then(cached => {
       return cached || fetch(e.request).then(res => {
