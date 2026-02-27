@@ -400,7 +400,7 @@ function calcSummary(weekData) {
       if (!act.codes.length) return;
       const ordinary = parseFloat(act.ordinary) || 0;
       const overtime = parseFloat(act.overtime) || 0;
-      const n = act.codes.length;
+      const n = act.codes.length || 1;
       const timePerTask = parseFloat(act.timePerTask) || (n > 0 ? ordinary / n : 0);
       const otPerTask = parseFloat(act.otPerTask) || (n > 1 ? overtime / n : overtime);
       act.codes.forEach(code => {
@@ -573,17 +573,29 @@ function renderWeekView() {
   return `<main class="pb-6 pt-2">${daysHtml}${summaryHtml}</main>`;
 }
 
+function calcDayTotals(day) {
+  let ord = 0, ot = 0;
+  day.activities.forEach(act => {
+    ord += parseFloat(act.ordinary) || 0;
+    ot += parseFloat(act.overtime) || 0;
+  });
+  return { ord, ot };
+}
+
 function renderDaySection(day, di) {
   const isWeekend = di === 1 || di === 2;
   const activitiesHtml = day.activities.map(act => renderActivity(act, di)).join('');
+  const { ord, ot } = calcDayTotals(day);
+  const hasHours = ord > 0 || ot > 0;
   return `
   <div class="mx-3 mb-3 bg-white rounded-2xl shadow-sm overflow-hidden day-card ${isWeekend ? 'day-weekend' : ''}">
     <div class="flex items-center justify-between px-4 py-2.5 ${isWeekend ? 'bg-gray-50' : 'bg-blue-50'}">
-      <div>
+      <div class="flex items-center gap-2 flex-wrap">
         <span class="font-bold text-sm ${isWeekend ? 'text-gray-500' : 'text-blue-900'}">${day.dayName}</span>
-        <span class="text-xs text-gray-400 ml-2">${formatDate(day.date)}</span>
+        <span class="text-xs text-gray-400">${formatDate(day.date)}</span>
+        ${hasHours ? `<span class="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">${ord.toFixed(1)}h${ot > 0 ? ` <span class="text-amber-500">+${ot.toFixed(1)} OT</span>` : ''}</span>` : ''}
       </div>
-      <button onclick="addActivity(${di})" class="text-blue-600 text-sm font-semibold flex items-center gap-1 py-1 px-2 rounded-lg bg-blue-100 active:bg-blue-200">
+      <button onclick="addActivity(${di})" class="text-blue-600 text-sm font-semibold flex items-center gap-1 py-1 px-2 rounded-lg bg-blue-100 active:bg-blue-200 flex-shrink-0">
         <span class="text-base leading-none">+</span> Add
       </button>
     </div>
@@ -594,9 +606,16 @@ function renderDaySection(day, di) {
 }
 
 function renderActivity(act, di) {
-  const codesHtml = act.codes.length
-    ? act.codes.map(c => `<span class="code-chip">${c.d} <span class="text-blue-400 font-mono">${c.c}</span> <button onclick="removeCode('${act.id}',${di},'${c.c}')" class="text-blue-400 hover:text-red-500 ml-1 text-xs">✕</button></span>`).join('')
-    : `<span class="text-gray-400 text-sm italic">Tap to add code</span>`;
+  const numTasks = act.codes.length || 1;
+  const codesSection = act.codes.length
+    ? `<div class="flex flex-wrap gap-1 mb-2 px-1">
+        ${act.codes.map(c => `
+          <span class="code-chip">
+            ${c.d} <span class="font-mono">${c.c}</span>
+            <button onclick="removeCode('${act.id}',${di},'${c.c}')" class="text-blue-400 hover:text-red-500 ml-1 text-xs leading-none">✕</button>
+          </span>`).join('')}
+       </div>`
+    : '';
 
   return `
   <div class="p-3" data-act-id="${act.id}" data-day="${di}">
@@ -614,9 +633,10 @@ function renderActivity(act, di) {
         class="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-blue-400 outline-none"
         data-field="ticket" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
     </div>
+    ${codesSection}
     <button onclick="openCodeModal(${di},'${act.id}')"
-      class="w-full text-left border border-dashed border-blue-300 rounded-xl px-3 py-2 mb-2 bg-blue-50 min-h-[38px] flex flex-wrap items-center gap-1">
-      ${codesHtml}
+      class="w-full text-left border border-dashed border-blue-300 rounded-xl px-3 py-2 mb-2 bg-blue-50 text-sm text-blue-600 font-medium">
+      ${act.codes.length ? '✎ Edit codes' : '+ Tap to add code'}
     </button>
     <div class="grid grid-cols-2 gap-2 mb-1">
       <div class="bg-gray-50 rounded-xl p-2">
@@ -635,9 +655,7 @@ function renderActivity(act, di) {
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-gray-50 rounded-xl p-2">
         <label class="text-xs text-gray-400 block mb-1">Tasks</label>
-        <input type="number" step="1" min="0" placeholder="1" value="${act.tasks}"
-          class="w-full text-center font-semibold text-gray-700 bg-transparent outline-none border-b border-gray-200 focus:border-blue-400"
-          data-field="tasks" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
+        <div class="w-full text-center font-bold text-lg text-blue-900 border-b border-gray-200 py-0.5">${numTasks}</div>
       </div>
       <div class="bg-gray-50 rounded-xl p-2">
         <label class="text-xs text-gray-400 block mb-1">Hrs/Task</label>
