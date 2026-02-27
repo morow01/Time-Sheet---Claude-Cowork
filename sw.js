@@ -1,4 +1,4 @@
-const CACHE = 'timesheet-v3';
+const CACHE = 'timesheet-v4';
 const ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', e => {
@@ -14,13 +14,33 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Only cache same-origin requests (not the Google Apps Script API)
-  if (!e.request.url.startsWith(self.location.origin)) return;
+  const url = new URL(e.request.url);
+
+  // Only handle same-origin requests
+  if (!url.origin.startsWith(self.location.origin)) return;
+
+  // NETWORK FIRST for the main page to ensure updates
+  if (url.pathname === '/' || url.pathname === '/index.html') {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // CACHE FIRST for everything else (scripts, manifests, etc.)
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-      const clone = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, clone));
-      return res;
-    }))
+    caches.match(e.request).then(cached => {
+      return cached || fetch(e.request).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return res;
+      });
+    })
   );
 });
