@@ -271,16 +271,16 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    /* Stepper Buttons Refined */
+    /* Stepper Buttons Refined (v0.8.2 optimized) */
     .stepper-btn {
-      width: 44px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 18px;
       font-weight: 500;
-      border-radius: 10px;
+      border-radius: 8px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
       -webkit-user-select: none;
@@ -308,11 +308,13 @@
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
       -webkit-appearance: none;
+      appearance: none;
       margin: 0;
     }
 
     input[type=number] {
       -moz-appearance: textfield;
+      appearance: textfield;
     }
   </style>
 </head>
@@ -376,7 +378,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '0.8.1';
+    const VERSION = '0.8.2';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -957,7 +959,7 @@
         : '';
 
       return `
-  <div class="activity-item p-3 pl-10" data-act-id="${act.id}" data-day="${di}">
+  <div class="activity-item p-3 pl-8" data-act-id="${act.id}" data-day="${di}">
     <div class="activity-number">${actIndex + 1}</div>
     <div class="flex gap-2 mb-2">
       <input type="text" placeholder="Description of work" value="${esc(act.description)}"
@@ -979,22 +981,22 @@
       ${act.codes.length ? '✎ Edit codes' : '+ Tap to add code'}
     </button>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-1">
-      <div class="rounded-2xl p-3" style="background:var(--bg-hours);border:1px solid var(--border)">
-        <label class="text-xs font-semibold block mb-2 uppercase tracking-wider" style="color:var(--text-muted);opacity:0.7">Ordinary Hrs</label>
-        <div class="flex items-center bg-black/5 dark:bg-white/5 rounded-xl p-1 gap-1">
+      <div class="rounded-2xl p-2" style="background:var(--bg-hours);border:1px solid var(--border)">
+        <label class="text-[10px] font-semibold block mb-2 uppercase tracking-tight" style="color:var(--text-muted);opacity:0.7">Ordinary Hrs</label>
+        <div class="flex items-center bg-black/5 dark:bg-white/5 rounded-xl p-0.5 gap-1">
           <button onclick="adjHrs(this, -0.5)" class="stepper-btn stepper-btn-minus flex-none" data-target="ordinary" data-act="${act.id}" data-day="${di}">−</button>
           <input type="number" step="0.5" min="0" placeholder="0" value="${act.ordinary}"
-            class="flex-1 text-center font-bold text-xl bg-transparent outline-none" style="color:var(--text-hours)"
+            class="flex-1 text-center font-bold text-lg bg-transparent outline-none" style="color:var(--text-hours)"
             data-field="ordinary" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
           <button onclick="adjHrs(this, 0.5)" class="stepper-btn stepper-btn-plus flex-none" data-target="ordinary" data-act="${act.id}" data-day="${di}">+</button>
         </div>
       </div>
-      <div class="rounded-2xl p-3" style="background:var(--bg-ot);border:1px solid var(--border)">
-        <label class="text-xs font-semibold block mb-2 uppercase tracking-wider" style="color:var(--text-ot);opacity:0.7">Overtime Hrs</label>
-        <div class="flex items-center bg-black/5 dark:bg-white/5 rounded-xl p-1 gap-1">
+      <div class="rounded-2xl p-2" style="background:var(--bg-ot);border:1px solid var(--border)">
+        <label class="text-[10px] font-semibold block mb-2 uppercase tracking-tight" style="color:var(--text-ot);opacity:0.7">Overtime Hrs</label>
+        <div class="flex items-center bg-black/5 dark:bg-white/5 rounded-xl p-0.5 gap-1">
           <button onclick="adjHrs(this, -0.5)" class="stepper-btn stepper-btn-minus flex-none" data-target="overtime" data-act="${act.id}" data-day="${di}">−</button>
           <input type="number" step="0.5" min="0" placeholder="0" value="${act.overtime}"
-            class="flex-1 text-center font-bold text-xl bg-transparent outline-none" style="color:var(--text-ot)"
+            class="flex-1 text-center font-bold text-lg bg-transparent outline-none" style="color:var(--text-ot)"
             data-field="overtime" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
           <button onclick="adjHrs(this, 0.5)" class="stepper-btn stepper-btn-plus flex-none" data-target="overtime" data-act="${act.id}" data-day="${di}">+</button>
         </div>
