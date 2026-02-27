@@ -74,7 +74,7 @@
 // ============================================================
 // CONFIG
 // ============================================================
-const VERSION = '0.2';
+const VERSION = '0.3';
 const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
 const DAY_NAMES = ['Friday','Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday'];
 const DB_NAME = 'timesheet-db';
@@ -665,11 +665,11 @@ function renderActivity(act, di) {
       </div>
       <div class="bg-gray-50 rounded-xl p-2">
         <label class="text-xs text-gray-400 block mb-1">Hrs/Task</label>
-        <div class="w-full text-center font-semibold text-gray-700 border-b border-gray-200 py-0.5">${hrsPerTask}</div>
+        <div data-calc="hrsPerTask" data-act="${act.id}" class="w-full text-center font-semibold text-gray-700 border-b border-gray-200 py-0.5">${hrsPerTask}</div>
       </div>
       <div class="bg-amber-50 rounded-xl p-2">
         <label class="text-xs text-amber-300 block mb-1">OT/Task</label>
-        <div class="w-full text-center font-semibold text-amber-600 border-b border-amber-200 py-0.5">${otPerTask}</div>
+        <div data-calc="otPerTask" data-act="${act.id}" class="w-full text-center font-semibold text-amber-600 border-b border-amber-200 py-0.5">${otPerTask}</div>
       </div>
     </div>
   </div>`;
@@ -705,9 +705,15 @@ function updateField(el) {
   if (!act) return;
   act[field] = el.value;
 
-  // Auto-set tasks from code count if tasks is empty
-  if (field === 'ordinary' || field === 'tasks' || field === 'timePerTask') {
-    // Update summary display without full re-render
+  // Live-update calculated displays when hours change
+  if (field === 'ordinary' || field === 'overtime') {
+    const numTasks = act.codes.length || 1;
+    const ord = parseFloat(act.ordinary) || 0;
+    const ot  = parseFloat(act.overtime) || 0;
+    const hrsEl = document.querySelector(`[data-calc="hrsPerTask"][data-act="${actId}"]`);
+    const otEl  = document.querySelector(`[data-calc="otPerTask"][data-act="${actId}"]`);
+    if (hrsEl) hrsEl.textContent = ord > 0 ? (ord / numTasks).toFixed(2) : '—';
+    if (otEl)  otEl.textContent  = ot  > 0 ? (ot  / numTasks).toFixed(2) : '—';
     updateSummaryDisplay();
   }
   scheduleAutoSave();
