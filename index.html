@@ -383,7 +383,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '0.9';
+    const VERSION = '0.9.2';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -418,30 +418,40 @@
     function initDB() {
       console.info('DB: Initializing v' + DB_VERSION);
       return new Promise((res, rej) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
-        req.onupgradeneeded = e => {
-          console.info('DB: Upgrading...');
-          const d = e.target.result;
-          if (!d.objectStoreNames.contains('weeks')) d.createObjectStore('weeks', { keyPath: 'weekStart' });
-          if (!d.objectStoreNames.contains('config')) d.createObjectStore('config', { keyPath: 'id' });
-        };
-        req.onblocked = () => {
-          alert('Database upgrade blocked! Please close all other tabs of this app and refresh.');
-        };
-        req.onsuccess = e => {
-          console.info('DB: Ready');
-          db = e.target.result;
-          db.onversionchange = () => {
-            db.close();
-            alert('A new version is available. Please refresh this page.');
-            location.reload();
+        try {
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+          req.onupgradeneeded = e => {
+            console.info('DB: Upgrading...');
+            const d = e.target.result;
+            if (!d.objectStoreNames.contains('weeks')) d.createObjectStore('weeks', { keyPath: 'weekStart' });
+            if (!d.objectStoreNames.contains('config')) d.createObjectStore('config', { keyPath: 'id' });
           };
-          res();
-        };
-        req.onerror = e => {
-          console.error('DB Error:', e);
-          rej(e);
-        };
+
+          req.onblocked = () => {
+            console.warn('DB: Blocked by another tab');
+            alert('Database update is blocked by another open tab of this app. Please close all other TimeSheet tabs and refresh.');
+          };
+
+          req.onsuccess = e => {
+            console.info('DB: Ready');
+            db = e.target.result;
+            db.onversionchange = () => {
+              console.warn('DB: Version change detected elsewhere');
+              db.close();
+              location.reload();
+            };
+            res();
+          };
+
+          req.onerror = e => {
+            console.error('DB: Open Error', e.target.error);
+            rej(e.target.error);
+          };
+        } catch (err) {
+          console.error('DB: Fatal Open Error', err);
+          rej(err);
+        }
       });
     }
 
