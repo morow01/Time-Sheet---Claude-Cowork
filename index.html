@@ -2025,14 +2025,24 @@
       return lines.join('\n');
     }
 
-    function sendWeeklyEmail() {
+    async function sendWeeklyEmail() {
       if (!state.weekData) { showToast('No week data to send.'); return; }
-      const to      = 'morow01@gmail.com';
-      const subject = encodeURIComponent('Weekly Timesheet — ' + formatWeekRange(state.weekStart));
-      const body    = encodeURIComponent(buildEmailBody(state.weekData));
-      const mailto  = `mailto:${to}?subject=${subject}&body=${body}`;
-      window.location.href = mailto;
-      showToast('Opening email client…');
+      showToast('Sending email…', 8000);
+      try {
+        const res = await apiPost({
+          action:  'emailWeekly',
+          to:      'morow01@gmail.com',
+          subject: 'Weekly Timesheet — ' + formatWeekRange(state.weekStart),
+          body:    buildEmailBody(state.weekData),
+        });
+        if (res && res.ok) {
+          showToast('✓ Email sent!', 4000);
+        } else {
+          showToast('⚠ Email failed — see GAS logs', 5000);
+        }
+      } catch (e) {
+        showToast('⚠ Email error: ' + e.message, 5000);
+      }
     }
 
     function showToast(msg, duration = 2800) {
