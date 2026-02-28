@@ -1479,7 +1479,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.1.2';
+    const VERSION = '1.1.3';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2029,12 +2029,12 @@
       // Summary table rows — no "h" suffix, plain numbers for copy-paste
       const summaryRows = summary.map(r => `
         <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;">
-            <span style="background:${C.chip};color:${C.chipTxt};padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600;">${esc(r.code)}</span>
+          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};vertical-align:middle;">
+            <span style="display:inline-block;background:${C.chip};color:${C.chipTxt};padding:3px 9px;border-radius:8px;font-size:11px;font-weight:600;line-height:1.4;">${esc(r.code)}</span>
           </td>
-          <td style="padding:8px 12px;border-bottom:1px solid ${C.border};font-size:13px;color:${C.txt};">${esc(r.description)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid ${C.border};font-size:13px;text-align:right;color:${C.ord};font-weight:700;">${r.ordinary.toFixed(2)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid ${C.border};font-size:13px;text-align:right;color:${C.ot};font-weight:700;">${r.overtime.toFixed(2)}</td>
+          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};font-size:13px;color:${C.txt};vertical-align:middle;">${esc(r.description)}</td>
+          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};font-size:13px;text-align:right;color:${C.ord};font-weight:700;vertical-align:middle;">${r.ordinary.toFixed(2)}</td>
+          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};font-size:13px;text-align:right;color:${C.ot};font-weight:700;vertical-align:middle;">${r.overtime.toFixed(2)}</td>
         </tr>`).join('');
 
       // Daily sections
