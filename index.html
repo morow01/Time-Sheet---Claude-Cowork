@@ -498,69 +498,69 @@
     [data-theme="gray"] .stepper-row.ot .stepper-divider { background: rgba(0,0,0,0.1) !important; }
 
     [data-theme="spectrum"] {
-      /* ZX Spectrum — black + 8 classic bright colours */
-      --bg-page: #000000;
-      --bg-card: #000000;
-      --bg-card-alt: #00001a;
-      --bg-input: #00001a;
+      /* ZX Spectrum — bright/paper style (BASIC editor look) */
+      --bg-page: #D7D7D7;
+      --bg-card: #D7D7D7;
+      --bg-card-alt: #c8c8c8;
+      --bg-input: #ffffff;
       --bg-header: #0000D7;
       --bg-header-tab: #0000a0;
-      --bg-day-header: #000000;
-      --bg-day-header-we: #000000;
-      --bg-hours: #00001a;
-      --bg-ot: #000000;
-      --bg-code-btn: rgba(0,215,215,0.1);
-      --bg-modal: #000000;
-      --bg-modal-search: #00001a;
-      --bg-code-group: #00001a;
-      --bg-code-item: #000000;
-      --bg-code-item-sel: rgba(0,215,215,0.15);
-      --text-primary: #ffffff;
-      --text-secondary: #00D7D7;
-      --text-muted: #0000D7;
+      --bg-day-header: #D7D7D7;
+      --bg-day-header-we: #c8c8c8;
+      --bg-hours: #ffffff;
+      --bg-ot: #ffffff;
+      --bg-code-btn: rgba(0,0,215,0.08);
+      --bg-modal: #D7D7D7;
+      --bg-modal-search: #ffffff;
+      --bg-code-group: #c8c8c8;
+      --bg-code-item: #ffffff;
+      --bg-code-item-sel: rgba(0,0,215,0.12);
+      --text-primary: #000000;
+      --text-secondary: #0000D7;
+      --text-muted: #555555;
       --text-header: #FFFF00;
       --text-header-sub: #00D7D7;
-      --text-day: #00D7D7;
-      --text-day-we: #0000D7;
-      --text-hours: #00D700;
+      --text-day: #0000D7;
+      --text-day-we: #555555;
+      --text-hours: #000000;
       --text-ot: #D70000;
-      --text-input: #ffffff;
-      --accent: #00D7D7;
-      --accent-light: rgba(0,215,215,0.1);
-      --accent-chip-bg: rgba(0,215,215,0.15);
-      --accent-chip-text: #00D7D7;
-      --border: #0000D7;
-      --border-input: #00D7D7;
-      --border-day: #00D7D7;
-      --border-day-we: #0000D7;
-      --border-dashed: #0000D7;
-      --shadow-card: 0 0 0 1px #0000D7;
-      --shadow-card-hover: 0 0 0 1px #00D7D7;
-      --act-number-bg: #00D7D7;
-      --act-number-text: #000000;
-      --summary-even: #00001a;
+      --text-input: #000000;
+      --accent: #0000D7;
+      --accent-light: rgba(0,0,215,0.08);
+      --accent-chip-bg: #0000D7;
+      --accent-chip-text: #ffffff;
+      --border: #555555;
+      --border-input: #555555;
+      --border-day: #0000D7;
+      --border-day-we: #555555;
+      --border-dashed: #555555;
+      --shadow-card: 0 0 0 1px #555555;
+      --shadow-card-hover: 0 0 0 2px #0000D7;
+      --act-number-bg: #0000D7;
+      --act-number-text: #ffffff;
+      --summary-even: #c8c8c8;
       --tab-active: #FFFF00;
-      --tab-inactive: #0000D7;
-      --btn-add-bg: rgba(0,215,215,0.1);
-      --btn-add-text: #00D7D7;
-      --overlay: rgba(0,0,0,0.88);
+      --tab-inactive: #00D7D7;
+      --btn-add-bg: rgba(0,0,215,0.08);
+      --btn-add-text: #0000D7;
+      --overlay: rgba(0,0,0,0.6);
       --font-body: 'VT323', monospace;
       --btn-danger-color: #D70000;
-      --btn-danger-bg: rgba(215,0,0,0.1);
-      --btn-danger-border: rgba(215,0,0,0.35);
+      --btn-danger-bg: rgba(215,0,0,0.08);
+      --btn-danger-border: rgba(215,0,0,0.3);
     }
-    /* VT323 reads well at larger sizes */
-    [data-theme="spectrum"] body { font-size: 15px; }
+    /* VT323 — slightly larger than before */
+    [data-theme="spectrum"] body { font-size: 17px; }
     [data-theme="spectrum"] textarea,
-    [data-theme="spectrum"] input[type="text"] { font-size: 15px !important; }
-    [data-theme="spectrum"] input[type="number"] { font-size: 17px !important; }
+    [data-theme="spectrum"] input[type="text"] { font-size: 17px !important; }
+    [data-theme="spectrum"] input[type="number"] { font-size: 19px !important; }
     [data-theme="spectrum"] .field-label,
-    [data-theme="spectrum"] .stepper-label { font-size: 12px; letter-spacing: 0.06em; }
+    [data-theme="spectrum"] .stepper-label { font-size: 13px; letter-spacing: 0.06em; }
     [data-theme="spectrum"] .text-xs,
-    [data-theme="spectrum"] .text-sm { font-size: 13px !important; }
-    /* OT stepper — red instead of amber */
-    [data-theme="spectrum"] .stepper-row.ot { border-color: rgba(215,0,0,0.45) !important; }
-    [data-theme="spectrum"] .stepper-row.ot .stepper-divider { background: rgba(215,0,0,0.2) !important; }
+    [data-theme="spectrum"] .text-sm { font-size: 14px !important; }
+    /* OT stepper — red border */
+    [data-theme="spectrum"] .stepper-row.ot { border-color: rgba(215,0,0,0.4) !important; }
+    [data-theme="spectrum"] .stepper-row.ot .stepper-divider { background: rgba(215,0,0,0.18) !important; }
 
     [data-theme="apple"] {
       /* Apple macOS Sequoia — SF Pro, Apple system palette */
@@ -1108,7 +1108,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.0.6';
+    const VERSION = '1.0.7';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
