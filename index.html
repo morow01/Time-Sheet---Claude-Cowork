@@ -693,10 +693,35 @@
       --btn-add-bg: #c0d8ff;
       --btn-add-text: #0000e0;
       --overlay: rgba(0, 0, 0, 0.6);
-      --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-body: 'VT323', monospace;
       --btn-danger-color: #ffffff;
       --btn-danger-bg: #ff0000;
       --btn-danger-border: #000000;
+    }
+
+    /* Font sizes for Retro theme to match VT323 proportions */
+    [data-theme="retro"] body {
+      font-size: 18px;
+    }
+
+    [data-theme="retro"] textarea,
+    [data-theme="retro"] input[type="text"] {
+      font-size: 18px !important;
+    }
+
+    [data-theme="retro"] input[type="number"] {
+      font-size: 20px !important;
+    }
+
+    [data-theme="retro"] .field-label,
+    [data-theme="retro"] .stepper-label {
+      font-size: 14px;
+      letter-spacing: 0.05em;
+    }
+
+    [data-theme="retro"] .text-xs,
+    [data-theme="retro"] .text-sm {
+      font-size: 15px !important;
     }
 
     /* Hard borders and shadows for Retro theme - NO ROUNDED CORNERS */
@@ -791,9 +816,15 @@
     }
 
     /* Wed: Cyan */
+    [data-theme="retro"] .day-card[data-day-idx="5"] .day-header {
+      background: #00d5ff !important;
+    }
 
-    /* Ensure text inside all light-colored headers is explicitly black */
-    [data-theme="retro"] .day-card[data-day-idx]:not([data-day-idx="6"]) .day-header * {
+    /* Ensure text inside all light-colored headers is explicitly black, including expanded states */
+    [data-theme="retro"] .day-card[data-day-idx]:not([data-day-idx="6"]) .day-header *,
+    [data-theme="retro"] .day-card[data-day-idx]:not([data-day-idx="6"]) .day-header .text-xs,
+    [data-theme="retro"] .day-card[data-day-idx]:not([data-day-idx="6"]) .day-header .text-muted,
+    [data-theme="retro"] .day-card[data-day-idx]:not([data-day-idx="6"]) .day-header span {
       color: #000000 !important;
     }
 
@@ -807,8 +838,18 @@
     }
 
     /* Thu: Blue */
-    [data-theme="retro"] .day-card[data-day-idx="6"] .day-header * {
+    [data-theme="retro"] .day-card[data-day-idx="6"] .day-header *,
+    [data-theme="retro"] .day-card[data-day-idx="6"] .day-header .text-xs,
+    [data-theme="retro"] .day-card[data-day-idx="6"] .day-header .text-muted,
+    [data-theme="retro"] .day-card[data-day-idx="6"] .day-header span {
       color: #ffffff !important;
+    }
+
+    /* Active tab black background */
+    [data-theme="retro"] .tab-btn.active {
+      background: #000000 !important;
+      color: #ffffff !important;
+      border-bottom-color: #000000 !important;
     }
 
     [data-theme="apple"] {
