@@ -220,6 +220,68 @@
       flex-shrink: 0;
     }
 
+    /* ===== CONFIRM MODAL ===== */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .confirm-box {
+      background: var(--bg-modal);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+    .confirm-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .confirm-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .confirm-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .confirm-actions {
+      display: flex;
+      gap: 10px;
+    }
+    .confirm-cancel {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .confirm-delete {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      background: #ef4444;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     /* ===== BASE STYLES ===== */
     * {
       -webkit-tap-highlight-color: transparent;
@@ -493,7 +555,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '0.8.8';
+    const VERSION = '0.8.9';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -830,7 +892,7 @@
     }
 
     function createActivity() {
-      return { id: uid(), ticket: '', description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '' };
+      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '' };
     }
 
     function calcSummary(weekData) {
@@ -1103,15 +1165,16 @@
       <input type="text" placeholder="Description of work" value="${esc(act.description)}"
         class="flex-1 rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input)"
         data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
-      <button onclick="removeActivity('${act.id}', ${di})" class="px-2 text-lg leading-none flex-shrink-0" style="color:var(--text-muted)">🗑</button>
+      <button onclick="openConfirm('${act.id}', ${di})" class="px-2 flex-shrink-0 flex items-center justify-center rounded-lg transition-colors" style="color:var(--text-muted)" title="Delete activity">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </button>
     </div>
-    <div class="flex gap-2 mb-2">
+    <div class="mb-2">
       <input type="text" placeholder="Location" value="${esc(act.location)}"
-        class="flex-1 rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input)"
+        class="w-full rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input)"
         data-field="location" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
-      <input type="text" placeholder="Ticket #" value="${esc(act.ticket)}"
-        class="w-28 rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input)"
-        data-field="ticket" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
     </div>
     ${codesSection}
     <button onclick="openCodeModal(${di},'${act.id}')"
@@ -1140,13 +1203,16 @@
         </div>
       </div>
     </div>
-    <div class="flex items-center gap-3 px-1 pt-1 pb-0.5 text-xs" style="color:var(--text-muted)">
+    <div class="flex items-center gap-3 px-1 pt-1 pb-2 text-xs" style="color:var(--text-muted)">
       <span>Tasks: <strong style="color:var(--text-secondary)">${numTasks}</strong></span>
       <span style="opacity:0.3">|</span>
       <span>Hrs/Task: <strong data-calc="hrsPerTask" data-act="${act.id}" style="color:var(--text-secondary)">${hrsPerTask}</strong></span>
       <span style="opacity:0.3">|</span>
       <span>OT/Task: <strong data-calc="otPerTask" data-act="${act.id}" style="color:var(--text-ot)">${otPerTask}</strong></span>
     </div>
+    <textarea placeholder="Notes…" rows="2"
+      class="w-full rounded-lg px-3 py-2 text-sm outline-none resize-none" style="background:var(--bg-input);border:1px solid var(--border-input);color:var(--text-primary)"
+      data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">${esc(act.notes || '')}</textarea>
   </div>`;
     }
 
@@ -1211,6 +1277,24 @@
       state.weekData.days[di].activities.push(createActivity());
       state.expandedDays.add(di);
       render();
+    }
+
+    let _pendingDelete = null;
+
+    function openConfirm(actId, di) {
+      _pendingDelete = { actId, di };
+      document.getElementById('confirm-modal').style.display = 'flex';
+    }
+
+    function closeConfirm() {
+      _pendingDelete = null;
+      document.getElementById('confirm-modal').style.display = 'none';
+    }
+
+    function confirmDeleteActivity() {
+      if (!_pendingDelete) return;
+      removeActivity(_pendingDelete.actId, _pendingDelete.di);
+      closeConfirm();
     }
 
     function removeActivity(actId, di) {
@@ -1486,6 +1570,19 @@
 
     init();
   </script>
+
+  <!-- Confirm Delete Modal -->
+  <div id="confirm-modal" style="display:none" class="confirm-overlay" onclick="closeConfirm()">
+    <div class="confirm-box" onclick="event.stopPropagation()">
+      <div class="confirm-icon">🗑️</div>
+      <div class="confirm-title">Delete activity?</div>
+      <div class="confirm-desc">This activity will be removed. This cannot be undone.</div>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" onclick="closeConfirm()">Cancel</button>
+        <button class="confirm-delete" id="confirm-delete-btn" onclick="confirmDeleteActivity()">Delete</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
