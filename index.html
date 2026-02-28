@@ -1522,12 +1522,12 @@
       background: transparent;
       border: 1px solid transparent;
       border-radius: 6px;
-      padding: 3px 7px;
-      font-size: 13px;
+      padding: 3px 6px;
+      font-size: 11px;
       color: var(--text-input);
       font-family: var(--font-body);
       outline: none;
-      min-width: 120px;
+      min-width: 0;
       transition: border-color 0.15s, background 0.15s;
     }
     .tbl-act-input:focus, .tbl-act-input:hover {
@@ -1616,7 +1616,7 @@
 
 <body class="min-h-screen">
 
-  <div id="app" style="max-width:1280px;margin:0 auto"></div>
+  <div id="app" style="width:1280px;max-width:100%;margin:0 auto"></div>
 
   <!-- ===== CODE SEARCH MODAL ===== -->
   <div id="code-modal" class="hidden fixed inset-0 z-50 flex flex-col" style="background:var(--bg-modal)">
@@ -1673,7 +1673,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.2.1';
+    const VERSION = '1.2.2';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -1932,8 +1932,12 @@
       showSummary: false,
       expandedDays: new Set(),  // track which day indices are expanded
       layoutMode: localStorage.getItem('layoutMode') || 'card',  // 'card' | 'table'
-      // Column widths for table view [Day,Date,Desc,Loc,Codes,Ord,OT,Tasks,Hrs/T,OT/T,Del]
-      tableColWidths: JSON.parse(localStorage.getItem('tableColWidths') || 'null') || [88,68,280,180,220,76,76,58,80,80,36],
+      // Column widths for table view [Day,Date,Desc,Loc,Codes,Ord,OT,Tasks,Hrs/T,OT/T,Notes,Del]
+      tableColWidths: (() => {
+        const saved = JSON.parse(localStorage.getItem('tableColWidths') || 'null');
+        // Reset if saved has wrong column count (added Notes column)
+        return (saved && saved.length === 12) ? saved : [80,62,220,160,200,68,68,52,72,72,160,34];
+      })(),
     };
 
     let codeModalCtx = { dayIndex: null, activityId: null, selected: [] };
@@ -2574,6 +2578,7 @@
           <th style="text-align:center">Tasks<div class="col-resize-handle" data-col="7"></div></th>
           <th style="text-align:center">Hrs/Task<div class="col-resize-handle" data-col="8"></div></th>
           <th style="text-align:center">OT/Task<div class="col-resize-handle" data-col="9"></div></th>
+          <th>Notes<div class="col-resize-handle" data-col="10"></div></th>
           <th></th>
         </tr>
       </thead>
@@ -2595,10 +2600,10 @@
   <tr class="${weClass}">
     <td class="tbl-day-cell" rowspan="2">${day.dayName}</td>
     <td class="tbl-date-cell" rowspan="2">${dateStr}</td>
-    <td colspan="9" style="color:var(--text-muted);font-size:12px;font-style:italic;">No activities</td>
+    <td colspan="10" style="color:var(--text-muted);font-size:12px;font-style:italic;">No activities</td>
   </tr>
   <tr class="tbl-add-row ${weClass}">
-    <td colspan="9"><button class="tbl-add-activity-btn" onclick="addActivity(${di})">+ Add Activity</button></td>
+    <td colspan="10"><button class="tbl-add-activity-btn" onclick="addActivity(${di})">+ Add Activity</button></td>
   </tr>`;
       }
 
@@ -2618,7 +2623,7 @@
       // Add activity row
       html += `
   <tr class="tbl-add-row ${weClass}">
-    <td colspan="9"><button class="tbl-add-activity-btn" onclick="addActivity(${di})">+ Add Activity</button></td>
+    <td colspan="10"><button class="tbl-add-activity-btn" onclick="addActivity(${di})">+ Add Activity</button></td>
   </tr>`;
 
       return html;
@@ -2666,6 +2671,8 @@
       <td class="tbl-calc">${numTasks}</td>
       <td class="tbl-calc">${hrsPerTask}</td>
       <td class="tbl-calc">${otPerTask}</td>
+      <td><input type="text" class="tbl-act-input" placeholder="Notes…" value="${esc(act.notes || '')}"
+        data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this)"></td>
       <td>
         <button class="tbl-del-btn" onclick="showConfirm('Delete activity?','${esc(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))" title="Delete">✕</button>
       </td>`;
