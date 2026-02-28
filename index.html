@@ -462,6 +462,16 @@
       margin-bottom: 6px;
       display: block;
     }
+    .field-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: block;
+      padding-left: 2px;
+    }
     .stepper-row {
       display: flex;
       align-items: stretch;
@@ -584,7 +594,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '0.9.4';
+    const VERSION = '0.9.5';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -1193,15 +1203,18 @@
   <div class="activity-item p-3 pl-8" data-act-id="${act.id}" data-day="${di}">
     <div class="activity-number">${actIndex + 1}</div>
     <div class="mb-2">
+      <span class="field-label">Description</span>
       <textarea placeholder="Description of work" rows="2"
         class="w-full rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input);color:var(--text-primary);resize:none;overflow:hidden;min-height:44px"
         data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
     </div>
     <div class="mb-2">
-      <input type="text" placeholder="Location" value="${esc(act.location)}"
+      <span class="field-label">Location</span>
+      <input type="text" placeholder="Town / Site" value="${esc(act.location)}"
         class="w-full rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input)"
         data-field="location" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
     </div>
+    <span class="field-label">Work Codes</span>
     ${codesSection}
     <button onclick="openCodeModal(${di},'${act.id}')"
       class="w-full text-left border border-dashed rounded-xl px-3 py-2 mb-2 text-sm font-medium" style="background:var(--bg-code-btn);color:var(--accent);border-color:var(--accent)">
@@ -1240,6 +1253,7 @@
       <span style="opacity:0.3">|</span>
       <span>OT/Task: <strong data-calc="otPerTask" data-act="${act.id}" style="color:var(--text-ot)">${otPerTask}</strong></span>
     </div>
+    <span class="field-label">Notes</span>
     <textarea placeholder="Notes…" rows="2"
       class="w-full rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input);color:var(--text-primary);resize:none;overflow:hidden;min-height:60px"
       data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>
