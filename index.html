@@ -12,9 +12,8 @@
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Press+Start+2P&family=Silkscreen&family=VT323&display=swap"
-    rel="stylesheet">
+  href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Press+Start+2P&family=Silkscreen&family=VT323&family=Pixelify+Sans:wght@400..700&display=swap"
+  rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* ===== THEME VARIABLES ===== */
@@ -693,7 +692,7 @@
       --btn-add-bg: #c0d8ff;
       --btn-add-text: #0000e0;
       --overlay: rgba(0, 0, 0, 0.6);
-      --font-body: 'VT323', monospace;
+      --font-body: 'Pixelify Sans', sans-serif;
       --btn-danger-color: #ffffff;
       --btn-danger-bg: #ff0000;
       --btn-danger-border: #000000;
@@ -731,10 +730,16 @@
 
     [data-theme="retro"] .day-card {
       border-radius: 0 !important;
+      overflow: hidden !important;
+      /* Forces children (like headers) to not bleed out */
+      padding: 0 !important;
+      background: #000000 !important;
+      /* Fallback behind activities to prevent bleed */
     }
 
     [data-theme="retro"] .day-header {
       border-radius: 0 !important;
+      margin: 0 !important;
     }
 
     [data-theme="retro"] .day-weekend .day-header {
@@ -759,7 +764,10 @@
       border-left: 2px solid #000000;
       border-right: 2px solid #000000;
       border-bottom: 2px solid #000000;
+      border-top: none !important;
       border-radius: 0 !important;
+      background: #f0f0f0 !important;
+      /* Ensure the card body itself has the proper background */
     }
 
     [data-theme="retro"] .stepper-btn {
@@ -850,6 +858,21 @@
       background: #000000 !important;
       color: #ffffff !important;
       border-bottom-color: #000000 !important;
+    }
+
+    /* Override top level header background which previously was bleeding --bg-page on some elements */
+    [data-theme="retro"] header {
+      background: #000000 !important;
+      color: #ffffff !important;
+    }
+
+    [data-theme="retro"] header * {
+      color: #ffffff !important;
+    }
+
+    [data-theme="retro"] header .text-muted {
+      color: #888888 !important;
+      /* Keep v1.0.7 slightly dimmer */
     }
 
     [data-theme="apple"] {
