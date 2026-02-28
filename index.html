@@ -555,7 +555,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '0.9.1';
+    const VERSION = '0.9.2';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -991,8 +991,8 @@
       const app = document.getElementById('app');
       app.innerHTML = renderHeader() + (state.view === 'week' ? renderWeekView() : renderHistoryView());
       attachEvents();
-      // Auto-grow any notes textareas that have existing content
-      app.querySelectorAll('textarea[data-field="notes"]').forEach(autoGrow);
+      // Auto-grow textareas that have existing content
+      app.querySelectorAll('textarea[data-field="notes"], textarea[data-field="description"]').forEach(autoGrow);
     }
 
     function renderHeader() {
@@ -1164,9 +1164,9 @@
   <div class="activity-item p-3 pl-8" data-act-id="${act.id}" data-day="${di}">
     <div class="activity-number">${actIndex + 1}</div>
     <div class="mb-2">
-      <input type="text" placeholder="Description of work" value="${esc(act.description)}"
-        class="w-full rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input)"
-        data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">
+      <textarea placeholder="Description of work" rows="2"
+        class="w-full rounded-lg px-3 py-2 text-sm outline-none" style="background:var(--bg-input);border:1px solid var(--border-input);color:var(--text-primary);resize:none;overflow:hidden;min-height:44px"
+        data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
     </div>
     <div class="mb-2">
       <input type="text" placeholder="Location" value="${esc(act.location)}"
