@@ -1838,7 +1838,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.5.14';
+    const VERSION = '1.5.15';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3032,12 +3032,6 @@
     </div>
     <div class="day-activities ${isExpanded ? 'expanded' : 'collapsed'}" ${isExpanded ? '' : 'style="max-height:0"'} id="day-${di}-activities">
       ${activitiesHtml}
-      ${isExpanded ? `
-      <div class="flex justify-center px-4 py-3">
-        <button onclick="addActivity(${di})" class="flex items-center gap-2 text-sm font-semibold px-6 py-2 rounded-xl" style="background:var(--btn-add-bg);color:var(--btn-add-text)">
-          <span class="text-lg leading-none">+</span> Add Activity
-        </button>
-      </div>` : ''}
     </div>
   </div>`;
     }
@@ -3149,15 +3143,22 @@
       data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>` : ''}
 `;
     })()}
-    <div class="flex justify-end pt-2">
+    <div class="flex gap-2 pt-2">
       <button onclick="showConfirm('Delete activity?','${esc(act.description || 'Unnamed')}${act.location ? ' — ' + esc(act.location) : ''}',()=>removeActivity('${act.id}',${di}))"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+        class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${actIndex === totalActivities - 1 ? 'flex-1' : 'ml-auto'}"
         style="color:var(--btn-danger-color,#ef4444);background:var(--btn-danger-bg,rgba(239,68,68,0.08));border:1px solid var(--btn-danger-border,rgba(239,68,68,0.22))">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
         </svg>
         Delete activity
       </button>
+      ${actIndex === totalActivities - 1 ? `
+      <button onclick="addActivity(${di})"
+        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+        style="background:var(--btn-add-bg);color:var(--btn-add-text);border:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Activity
+      </button>` : ''}
     </div>
   </div>`;
     }
