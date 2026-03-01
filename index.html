@@ -1835,7 +1835,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.4.7';
+    const VERSION = '1.4.8';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3030,12 +3030,14 @@
         <div class="town-dropdown" id="td-${act.id}"></div>
       </div>
     </div>
-    <span class="field-label">Work Codes</span>
-    ${codesSection}
-    <button onclick="openCodeModal(${di},'${act.id}')"
-      class="w-full text-left border border-dashed rounded-xl px-3 py-2 mb-2 text-sm font-medium" style="background:var(--bg-code-btn);color:var(--accent);border-color:var(--accent)">
-      ${act.codes.length ? '✎ Edit codes' : '+ Tap to add code'}
-    </button>
+    <div style="background:var(--bg-code-btn);border:1px solid var(--accent-light);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
+      <span class="field-label" style="display:block;margin-bottom:6px;">Work Codes</span>
+      ${codesSection}
+      <button onclick="openCodeModal(${di},'${act.id}')"
+        class="w-full text-left border border-dashed rounded-xl px-3 py-2 text-sm font-medium" style="background:transparent;color:var(--accent);border-color:var(--accent)">
+        ${act.codes.length ? '✎ Edit codes' : '+ Tap to add code'}
+      </button>
+    </div>
     <div class="flex gap-3 mb-1">
       <div class="stepper-wrap">
         <span class="stepper-label" style="color:var(--text-muted)">Ordinary Hrs</span>
