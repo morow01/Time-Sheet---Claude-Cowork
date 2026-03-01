@@ -1222,28 +1222,32 @@
       background: var(--bg-card);
     }
 
-    .activity-item:not(:last-child) {
-      border-bottom: 2px dashed var(--border-dashed);
-    }
-
     .activity-item:nth-child(even) {
       background: var(--bg-card-alt);
     }
 
-    .activity-number {
-      position: absolute;
-      left: 8px;
-      top: 8px;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--act-number-bg);
-      color: var(--act-number-text);
-      font-size: 11px;
-      font-weight: 700;
+    /* Divider between activities with centered number circle */
+    .act-divider {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
+      height: 22px;
+    }
+    .act-divider::before {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; top: 50%;
+      border-top: 2px dashed var(--border-dashed);
+    }
+    .act-divider-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+      font-size: 11px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
     }
 
     @keyframes spin {
@@ -1838,7 +1842,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.5.16';
+    const VERSION = '1.5.17';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3053,8 +3057,8 @@
         : '';
 
       return `
-  <div class="activity-item p-3 pl-8" data-act-id="${act.id}" data-day="${di}">
-    <div class="activity-number">${actIndex + 1}</div>
+  ${actIndex > 0 ? `<div class="act-divider"><div class="act-divider-num">${actIndex + 1}</div></div>` : ''}
+  <div class="activity-item p-3" data-act-id="${act.id}" data-day="${di}">
     <div style="padding-top:14px;">
       <span class="field-label">Description</span>
       <textarea placeholder="Description of work" rows="1"
