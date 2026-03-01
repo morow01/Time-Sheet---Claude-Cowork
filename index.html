@@ -1831,7 +1831,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.4.4';
+    const VERSION = '1.4.5';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2280,7 +2280,7 @@
     function countActivities(weekData) {
       if (!weekData || !weekData.days) return 0;
       return weekData.days.reduce((sum, d) => {
-        return sum + (d.activities || []).filter(a => a.description || (a.codes && a.codes.length) || a.notes).length;
+        return sum + (d.activities || []).filter(a => a.description || (a.codes && a.codes.length)).length;
       }, 0);
     }
 
@@ -3075,9 +3075,9 @@
     <button onclick="toggleNotes('${act.id}')" style="
         display:flex;align-items:center;gap:8px;width:100%;text-align:left;cursor:pointer;
         padding:9px 12px;border-radius:10px ${isOpen ? '10px 0 0' : ''};margin-bottom:0;
-        background:${hasNote ? '#fef08a' : 'transparent'};
-        border:1px ${hasNote ? 'solid #eab308' : 'dashed var(--border)'};
-        color:${hasNote ? '#713f12' : 'var(--text-muted)'};
+        background:${hasNote ? 'var(--bg-ot)' : 'transparent'};
+        border:1px ${hasNote ? 'solid var(--text-ot)' : 'dashed var(--border)'};
+        color:${hasNote ? 'var(--text-ot)' : 'var(--text-muted)'};
         transition:background .15s,border-color .15s;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       <span style="font-size:12px;font-weight:600;flex-shrink:0;">Notes</span>
@@ -3087,8 +3087,9 @@
       ${chevron}
     </button>
     ${isOpen ? `<textarea placeholder="Notes…" rows="2"
-      class="w-full rounded-lg px-3 py-2 outline-none" style="font-size:13px;background:#fefce8;border:1px solid #eab308;border-top:none;border-radius:0 0 10px 10px;color:#713f12;resize:none;overflow:hidden;min-height:60px"
-      data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>` : ''}`;
+      class="w-full rounded-lg px-3 py-2 outline-none" style="font-size:13px;background:var(--bg-ot);border:1px solid var(--text-ot);border-top:none;border-radius:0 0 10px 10px;color:var(--text-ot);resize:none;overflow:hidden;min-height:60px"
+      data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>` : ''}
+`;
     })()}
     <div class="flex justify-end pt-2">
       <button onclick="showConfirm('Delete activity?','${esc(act.description || 'Unnamed')}${act.location ? ' — ' + esc(act.location) : ''}',()=>removeActivity('${act.id}',${di}))"
