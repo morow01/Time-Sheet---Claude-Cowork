@@ -1831,7 +1831,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.3.8';
+    const VERSION = '1.3.9';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2275,27 +2275,41 @@
     // ============================================================
     // LOAD / SAVE
     // ============================================================
+    // Count meaningful activities across a week (used for sync conflict resolution)
+    function countActivities(weekData) {
+      if (!weekData || !weekData.days) return 0;
+      return weekData.days.reduce((sum, d) => {
+        return sum + (d.activities || []).filter(a => a.description || (a.codes && a.codes.length) || a.notes).length;
+      }, 0);
+    }
+
     async function loadWeek(weekStart) {
       state.weekStart = weekStart;
       state.syncStatus = 'idle';
 
-      // Load from local DB
+      // Load from local DB first (for instant display)
       const local = await dbGet('weeks', weekStart);
       state.weekData = local ? local.data : createEmptyWeek(weekStart);
       autoExpandToday();
 
       render();
 
-      // Try to sync from API (non-blocking)
+      // Try to sync from API — remote is source of truth
       if (navigator.onLine) {
         try {
           const remote = await apiGet('getWeek', { date: weekStart });
           if (remote && remote.days) {
             const localTime = local ? (local.updatedAt || 0) : 0;
             const remoteTime = remote._updatedAt || 0;
-            if (!local || remoteTime > localTime) {
+            const localCount = countActivities(local ? local.data : null);
+            const remoteCount = countActivities(remote);
+
+            // Use remote if: no local data, remote is newer, OR remote has more activities
+            // (prevents stale local timestamp from hiding data entered on another device)
+            const useRemote = !local || remoteTime > localTime || remoteCount > localCount;
+            if (useRemote) {
               state.weekData = remote;
-              await dbPut('weeks', { weekStart, data: remote, updatedAt: remoteTime });
+              await dbPut('weeks', { weekStart, data: remote, updatedAt: remoteTime || Date.now() });
               render();
             }
           }
@@ -2315,7 +2329,7 @@
       saveTimer = setTimeout(async () => {
         await dbPut('weeks', { weekStart: state.weekStart, data: state.weekData, updatedAt: Date.now() });
         if (navigator.onLine) {
-          syncTimer = setTimeout(syncNow, 3000);
+          syncTimer = setTimeout(syncNow, 1000);
         }
       }, 500);
     }
