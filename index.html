@@ -1831,7 +1831,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.4.0';
+    const VERSION = '1.4.1';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2095,6 +2095,7 @@
       historyWeeks: [],
       showSummary: false,
       expandedDays: new Set(),  // track which day indices are expanded
+      notesExpanded: new Set(), // track which activity IDs have notes section open
       layoutMode: localStorage.getItem('layoutMode') || 'card',  // 'card' | 'table'
       // Column widths for table view [Day,Date,Desc,Loc,Codes,Ord,OT,Tasks,Hrs/T,OT/T,Notes,Del]
       tableColWidths: (() => {
@@ -2940,6 +2941,15 @@
       render();
     }
 
+    function toggleNotes(actId) {
+      if (state.notesExpanded.has(actId)) {
+        state.notesExpanded.delete(actId);
+      } else {
+        state.notesExpanded.add(actId);
+      }
+      render();
+    }
+
     function renderDaySection(day, di) {
       const isWeekend = di === 1 || di === 2;
       const isExpanded = state.expandedDays.has(di);
@@ -3047,10 +3057,21 @@
       <span style="opacity:0.3">|</span>
       <span>OT/Task: <strong data-calc="otPerTask" data-act="${act.id}" style="color:var(--text-ot)">${otPerTask}</strong></span>
     </div>
-    <span class="field-label">Notes</span>
-    <textarea placeholder="Notes…" rows="2"
+    ${(() => {
+      const hasNote = !!act.notes;
+      // Auto-expand if there's content (first render); user can still collapse manually
+      if (hasNote && !state.notesExpanded.has(act.id)) state.notesExpanded.add(act.id);
+      const isOpen = state.notesExpanded.has(act.id);
+      return `
+    <button onclick="toggleNotes('${act.id}')" class="notes-toggle-btn ${hasNote ? 'has-note' : ''}" style="display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:4px 2px 4px 0;margin-bottom:${isOpen ? '4px' : '0'}">
+      <span style="font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--text-muted)">NOTES</span>
+      ${hasNote ? `<span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0;" title="Has note"></span>` : ''}
+      <span style="font-size:10px;color:var(--text-muted);margin-left:auto;">${isOpen ? '▾' : '▸'}</span>
+    </button>
+    ${isOpen ? `<textarea placeholder="Notes…" rows="2"
       class="w-full rounded-lg px-3 py-2 outline-none" style="font-size:13px;background:var(--bg-input);border:1px solid var(--border-input);color:var(--text-input);resize:none;overflow:hidden;min-height:60px"
-      data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>
+      data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>` : ''}`;
+    })()}
     <div class="flex justify-end pt-2">
       <button onclick="showConfirm('Delete activity?','${esc(act.description || 'Unnamed')}${act.location ? ' — ' + esc(act.location) : ''}',()=>removeActivity('${act.id}',${di}))"
         class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
