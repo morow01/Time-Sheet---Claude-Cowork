@@ -1646,6 +1646,99 @@
       transition: opacity 0.15s;
     }
     .tbl-del-btn:hover { opacity: 1; background: var(--btn-danger-bg, rgba(239,68,68,0.08)); }
+
+    /* Note icon button in table */
+    .tbl-note-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 15px;
+      line-height: 1;
+      opacity: 0.25;
+      transition: opacity 0.15s, background 0.15s;
+      position: relative;
+      display: block;
+      margin: auto;
+    }
+    .tbl-note-btn.has-note { opacity: 0.85; color: var(--accent); }
+    .tbl-note-btn:hover { opacity: 1; background: var(--bg-input); }
+
+    /* Note hover tooltip */
+    .tbl-note-tooltip {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      max-width: 320px;
+      min-width: 160px;
+      background: var(--bg-modal);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+      white-space: pre-wrap;
+      word-break: break-word;
+      pointer-events: none;
+    }
+
+    /* Notes edit modal */
+    #notes-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0,0,0,0.55);
+      align-items: center;
+      justify-content: center;
+    }
+    #notes-modal.open { display: flex; }
+    #notes-modal-inner {
+      background: var(--bg-modal);
+      border-radius: 16px;
+      width: 560px;
+      max-width: calc(100vw - 32px);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    }
+    #notes-modal-header {
+      background: var(--bg-header);
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #notes-modal-title { font-size: 14px; font-weight: 600; flex: 1; }
+    #notes-modal-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+    #notes-modal-ta {
+      flex: 1;
+      width: 100%;
+      min-height: 180px;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      font-family: var(--font-body);
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      color: var(--text-input);
+      resize: vertical;
+      outline: none;
+      box-sizing: border-box;
+    }
+    #notes-modal-footer {
+      padding: 10px 16px 14px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
     .tbl-summary-section {
       margin: 4px 12px 24px;
       border-radius: 10px;
@@ -1675,6 +1768,29 @@
         <p class="text-xs mt-1.5 px-1" style="color:var(--text-secondary)">Tap to select. Multiple allowed for routines.</p>
       </div>
       <div id="code-list" class="flex-1 overflow-y-auto pb-6"></div>
+    </div>
+  </div>
+
+  <!-- ===== NOTE HOVER TOOLTIP ===== -->
+  <div id="note-tooltip" class="tbl-note-tooltip"></div>
+
+  <!-- ===== NOTE EDIT MODAL ===== -->
+  <div id="notes-modal">
+    <div id="notes-modal-inner">
+      <div id="notes-modal-header">
+        <span>📝</span>
+        <span id="notes-modal-title">Note</span>
+        <button onclick="closeNotesModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:0 2px;">✕</button>
+      </div>
+      <div id="notes-modal-body">
+        <textarea id="notes-modal-ta" placeholder="Type your note here…" oninput="notesModalInput()"></textarea>
+      </div>
+      <div id="notes-modal-footer">
+        <button onclick="closeNotesModal()"
+          style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-size:13px;cursor:pointer;">Cancel</button>
+        <button onclick="saveNotesModal()"
+          style="padding:8px 18px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">Save</button>
+      </div>
     </div>
   </div>
 
@@ -1715,7 +1831,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.3.5';
+    const VERSION = '1.3.6';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2720,8 +2836,14 @@
       <td class="tbl-calc">${numTasks}</td>
       <td class="tbl-calc">${hrsPerTask}</td>
       <td class="tbl-calc">${otPerTask}</td>
-      <td><textarea class="tbl-act-input tbl-notes-ta" placeholder="Notes…"
-        data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea></td>
+      <td style="text-align:center;padding:0;">
+        <button class="tbl-note-btn ${act.notes ? 'has-note' : ''}"
+          data-act="${act.id}" data-day="${di}"
+          onclick="openNotesModal(${di},'${act.id}')"
+          onmouseenter="showNoteTooltip(event,'${esc(act.notes || '')}')"
+          onmouseleave="hideNoteTooltip()"
+          title="${act.notes ? 'Click to edit note' : 'Click to add note'}">📝</button>
+      </td>
       <td>
         <button class="tbl-del-btn" onclick="showConfirm('Delete activity?','${esc(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))" title="Delete">✕</button>
       </td>`;
@@ -3072,6 +3194,79 @@
     function closeCodeModal() {
       document.getElementById('code-modal').classList.add('hidden');
     }
+
+    // ============================================================
+    // NOTES MODAL (table view)
+    // ============================================================
+    let notesModalCtx = null;
+
+    function openNotesModal(di, actId) {
+      const act = state.weekData.days[di].activities.find(a => a.id === actId);
+      if (!act) return;
+      notesModalCtx = { dayIndex: di, activityId: actId };
+      const day = state.weekData.days[di];
+      document.getElementById('notes-modal-title').textContent =
+        (act.description || 'Unnamed') + ' — ' + day.dayName + ' ' + day.date;
+      document.getElementById('notes-modal-ta').value = act.notes || '';
+      document.getElementById('notes-modal').classList.add('open');
+      setTimeout(() => document.getElementById('notes-modal-ta').focus(), 80);
+    }
+
+    function closeNotesModal() {
+      document.getElementById('notes-modal').classList.remove('open');
+      notesModalCtx = null;
+    }
+
+    function saveNotesModal() {
+      if (!notesModalCtx) return;
+      const { dayIndex: di, activityId: actId } = notesModalCtx;
+      const act = state.weekData.days[di].activities.find(a => a.id === actId);
+      if (act) {
+        act.notes = document.getElementById('notes-modal-ta').value;
+        scheduleAutoSave();
+        render();
+      }
+      closeNotesModal();
+    }
+
+    function notesModalInput() {
+      // live-save as user types (debounced via scheduleAutoSave on save)
+    }
+
+    // Note tooltip
+    function showNoteTooltip(e, text) {
+      if (!text) return;
+      const tip = document.getElementById('note-tooltip');
+      tip.textContent = text;
+      tip.style.display = 'block';
+      positionNoteTooltip(e, tip);
+    }
+
+    function hideNoteTooltip() {
+      document.getElementById('note-tooltip').style.display = 'none';
+    }
+
+    function positionNoteTooltip(e, tip) {
+      const margin = 12;
+      const rect = e.currentTarget.getBoundingClientRect();
+      let top = rect.bottom + margin;
+      let left = rect.left;
+      // Keep within viewport
+      if (left + 320 > window.innerWidth) left = window.innerWidth - 324;
+      if (top + 200 > window.innerHeight) top = rect.top - 200 - margin;
+      tip.style.top = top + 'px';
+      tip.style.left = left + 'px';
+    }
+
+    // Close notes modal on backdrop click
+    document.getElementById('notes-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeNotesModal();
+    });
+
+    // Close notes modal on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && notesModalCtx) closeNotesModal();
+    });
 
     function confirmCodeSelection() {
       const { dayIndex: di, activityId: actId, selected } = codeModalCtx;
