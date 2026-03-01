@@ -1831,7 +1831,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.3.9';
+    const VERSION = '1.4.0';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2325,9 +2325,11 @@
       clearTimeout(saveTimer);
       clearTimeout(syncTimer);
       state.syncStatus = 'pending';
+      // Stamp the edit time on the data itself so syncNow can compare correctly
+      state.weekData._updatedAt = Date.now();
       updateHeaderStatus();
       saveTimer = setTimeout(async () => {
-        await dbPut('weeks', { weekStart: state.weekStart, data: state.weekData, updatedAt: Date.now() });
+        await dbPut('weeks', { weekStart: state.weekStart, data: state.weekData, updatedAt: state.weekData._updatedAt });
         if (navigator.onLine) {
           syncTimer = setTimeout(syncNow, 1000);
         }
@@ -2339,8 +2341,32 @@
       state.syncStatus = 'syncing';
       updateHeaderStatus();
       try {
-        const payload = { ...state.weekData, _updatedAt: Date.now() };
+        // Step 1: Always pull remote first — never blindly overwrite server data
+        const remote = await apiGet('getWeek', { date: state.weekStart });
+
+        if (remote && remote.days) {
+          const localCount  = countActivities(state.weekData);
+          const remoteCount = countActivities(remote);
+          const remoteTime  = remote._updatedAt || 0;
+          const localTime   = state.weekData._updatedAt || 0;
+
+          // Remote wins if it has more activities, or same count but is newer
+          if (remoteCount > localCount || (remoteTime > localTime && remoteCount >= localCount)) {
+            state.weekData = remote;
+            await dbPut('weeks', { weekStart: state.weekStart, data: remote, updatedAt: remoteTime });
+            render();
+            state.syncStatus = 'synced';
+            updateHeaderStatus();
+            return; // pulled newer data — no push needed
+          }
+        }
+
+        // Step 2: Local is richer/newer — push to server
+        const ts = Date.now();
+        state.weekData._updatedAt = ts;
+        const payload = { ...state.weekData, _updatedAt: ts };
         await apiPost({ action: 'saveWeek', weekStart: state.weekStart, weekData: payload });
+        await dbPut('weeks', { weekStart: state.weekStart, data: state.weekData, updatedAt: ts });
         state.syncStatus = 'synced';
       } catch (e) {
         state.syncStatus = 'error';
