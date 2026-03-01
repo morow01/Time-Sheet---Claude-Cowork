@@ -1836,7 +1836,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '1.5.11';
+    const VERSION = '1.5.12';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2688,6 +2688,7 @@
       <button onclick="sendWeeklyEmail()" class="flex-1 py-2 text-sm font-medium" style="color:var(--tab-inactive)" title="Email weekly summary">✉ Email</button>
       <button onclick="setView('history')" class="flex-1 py-2 text-sm font-medium" style="color:${state.view === 'history' ? 'var(--text-header)' : 'var(--tab-inactive)'};${state.view === 'history' ? 'border-bottom:2px solid var(--tab-active)' : ''}">History</button>
       <button onclick="toggleLayoutMode()" class="tbl-toggle-btn flex-1 py-2 text-sm font-medium items-center justify-center gap-1" style="color:${state.layoutMode === 'table' ? 'var(--text-header)' : 'var(--tab-inactive)'};${state.layoutMode === 'table' ? 'border-bottom:2px solid var(--tab-active)' : ''}" title="Spreadsheet view">⊞ Table</button>
+      <button onclick="toggleAllDays()" class="flex-1 py-2 text-sm font-medium" style="color:var(--tab-inactive)" title="${state.expandedDays.size > 0 ? 'Collapse all days' : 'Expand all days'}">${state.expandedDays.size > 0 ? '⊟ All' : '⊞ All'}</button>
     </div>
   </header>`;
     }
@@ -2966,6 +2967,16 @@
         ot += parseFloat(act.overtime) || 0;
       });
       return { ord, ot };
+    }
+
+    function toggleAllDays() {
+      if (state.expandedDays.size > 0) {
+        state.expandedDays.clear();
+      } else {
+        state.weekData.days.forEach((_, i) => state.expandedDays.add(i));
+      }
+      saveUiState();
+      render();
     }
 
     function toggleDay(di) {
