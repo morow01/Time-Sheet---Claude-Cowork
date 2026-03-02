@@ -1229,14 +1229,18 @@
     /* Divider styling removed as card headers now serve this role */
 
     @keyframes expandAct {
-      from {
+      0% {
+        max-height: 0;
         opacity: 0;
-        transform: translateY(-4px);
+        transform: scaleY(0.95);
+        transform-origin: top;
       }
 
-      to {
+      100% {
+        max-height: 800px;
         opacity: 1;
-        transform: translateY(0);
+        transform: scaleY(1);
+        transform-origin: top;
       }
     }
 
@@ -2304,7 +2308,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.5.0';
+    const VERSION = '2.6.0';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3667,16 +3671,18 @@
       </div>
     </div>
     <div class="day-activities ${isExpanded ? 'expanded' : 'collapsed'}" ${isExpanded ? '' : 'style="max-height:0"'} id="day-${di}-activities">
-      ${activitiesHtml}
-      ${isExpanded ? `
-      <div style="padding: 0 0 12px 0;">
-        <button onclick="addActivity(${di})"
-          class="w-full flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-xs font-semibold transition-colors"
-          style="color:var(--accent);border:1px dashed var(--accent);background:transparent;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Task
-        </button>
-      </div>` : ''}
+      <div style="padding: 12px;">
+        ${activitiesHtml}
+        ${isExpanded ? `
+        <div style="padding-top: 4px;">
+          <button onclick="addActivity(${di})"
+            class="w-full flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-xs font-semibold transition-colors"
+            style="color:var(--accent);border:1px dashed var(--accent);background:transparent;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Task
+          </button>
+        </div>` : ''}
+      </div>
     </div>
   </div>`;
     }
@@ -3737,7 +3743,7 @@
 
     <!-- Body (Only if expanded) -->
     ${isExpanded ? `
-    <div style="border-top: 1px dashed var(--border-dashed); padding: 14px; animation: expandAct 0.2s ease-out;">
+    <div style="border-top: 1px dashed var(--border-dashed); padding: 14px; animation: expandAct 0.3s ease-in-out forwards; overflow: hidden;">
       
       <div style="margin-bottom: 14px;">
         <span class="field-label">Description</span>
