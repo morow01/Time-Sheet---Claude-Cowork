@@ -1966,7 +1966,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.0.6';
+    const VERSION = '2.0.7';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2560,9 +2560,12 @@
             // Use remote if: no local data, remote is newer, OR remote has more activities
             const useRemote = !local || remoteTime > localTime || remoteCount > localCount;
             if (useRemote) {
-              state.weekData = remote;
+              // Merge remote into current in-memory state — never blindly overwrite,
+              // as user may have typed while the API call was in-flight.
+              const merged = mergeWeekData(local ? local.data : null, state.weekData, remote);
+              state.weekData = merged;
               state.weekBase = deepCopy(remote); // baseline = what server gave us
-              await dbPut('weeks', { weekStart, data: remote, updatedAt: remoteTime || Date.now() });
+              await dbPut('weeks', { weekStart, data: merged, updatedAt: remoteTime || Date.now() });
               const active = document.activeElement;
               const userEditing = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
               if (!userEditing) render();
@@ -2584,19 +2587,20 @@
       clearTimeout(saveTimer);
       clearTimeout(syncTimer);
       state.syncStatus = 'pending';
-      // Stamp the edit time NOW and capture the week identity immediately —
-      // if the user navigates away before the timer fires, we still save to the
-      // correct week key with the correct data snapshot
-      const ts = Date.now();
-      state.weekData._updatedAt = ts;
+      // Stamp the edit time NOW — capture only week identity, NOT a deepCopy.
+      // deepCopy on every keystroke was blocking the JS thread and creating
+      // timing windows where syncNow could overwrite in-flight edits.
+      // Navigation safety is handled by the flush in loadWeek instead.
+      state.weekData._updatedAt = Date.now();
       const capturedWeekStart = state.weekStart;
-      const capturedData = deepCopy(state.weekData); // snapshot at edit time
       updateHeaderStatus();
       saveTimer = setTimeout(async () => {
-        await dbPut('weeks', { weekStart: capturedWeekStart, data: capturedData, updatedAt: ts });
-        // Only trigger sync if we're still on the same week
-        if (navigator.onLine && state.weekStart === capturedWeekStart) {
-          syncTimer = setTimeout(syncNow, 1000);
+        // Guard: if user navigated away before timer fired, skip (loadWeek already flushed)
+        if (state.weekStart === capturedWeekStart) {
+          await dbPut('weeks', { weekStart: capturedWeekStart, data: state.weekData, updatedAt: state.weekData._updatedAt });
+          if (navigator.onLine) {
+            syncTimer = setTimeout(syncNow, 1000);
+          }
         }
       }, 500);
     }
