@@ -1966,7 +1966,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.0.1';
+    const VERSION = '2.0.2';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2856,6 +2856,8 @@
     // ============================================================
     function render() {
       const app = document.getElementById('app');
+      // Capture scroll position before DOM wipe so we can restore it
+      const savedScroll = parseInt(sessionStorage.getItem('scrollPos_' + state.view) || '0');
       // In table mode break out of the narrow max-w-2xl container
       app.classList.toggle('tbl-mode', state.view === 'week' && state.layoutMode === 'table');
       const viewBody = state.view === 'week' ? renderWeekView() : state.view === 'notes' ? renderNotesView() : renderHistoryView();
@@ -2863,6 +2865,8 @@
       attachEvents();
       // Auto-grow textareas that have existing content
       app.querySelectorAll('textarea[data-field="notes"], textarea[data-field="description"]').forEach(autoGrow);
+      // Restore scroll position after DOM is painted
+      if (savedScroll > 0) requestAnimationFrame(() => window.scrollTo(0, savedScroll));
     }
 
     function renderHeader() {
@@ -2933,7 +2937,7 @@
         Notes${state.view === 'notes' ? `<span class="notes-sync-dot" style="background:${{ idle:'var(--text-muted)', pending:'#f97316', syncing:'#3b82f6', synced:'#22c55e', error:'#ef4444' }[state.notesSyncStatus]||'var(--text-muted)'}"></span>` : ''}
       </button>
       <button onclick="toggleLayoutMode()" class="tbl-toggle-btn flex-1 py-2 text-sm font-medium items-center justify-center gap-1" style="color:${state.layoutMode === 'table' ? 'var(--text-header)' : 'var(--tab-inactive)'};${state.layoutMode === 'table' ? 'border-bottom:2px solid var(--tab-active)' : ''}" title="Spreadsheet view">⊞ Table</button>
-      <button onclick="toggleAllDays()" class="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1" style="color:var(--tab-inactive)" title="${state.expandedDays.size > 0 ? 'Collapse all days' : 'Expand all days'}"><span style="display:inline-block;font-size:1.1em;line-height:1;transition:transform 0.3s ease;transform:rotate(${state.expandedDays.size > 0 ? '0deg' : '-90deg'})">▼</span> All</button>
+      <button onclick="toggleAllDays()" class="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1" style="color:var(--tab-inactive)" title="${state.view==='notes' ? (state.expandedNotes.size>0?'Collapse all notes':'Expand all notes') : (state.expandedDays.size>0?'Collapse all days':'Expand all days')}"><span style="display:inline-block;font-size:1.1em;line-height:1;transition:transform 0.3s ease;transform:rotate(${(state.view==='notes'?state.expandedNotes.size>0:state.expandedDays.size>0) ? '0deg' : '-90deg'})">▼</span> All</button>
     </div>
   </header>`;
     }
@@ -3217,6 +3221,17 @@
     }
 
     function toggleAllDays() {
+      if (state.view === 'notes') {
+        // In Notes view: expand or collapse all open notes
+        const openNotes = state.notes.filter(n => n.status !== 'done');
+        if (state.expandedNotes.size > 0) {
+          state.expandedNotes.clear();
+        } else {
+          openNotes.forEach(n => state.expandedNotes.add(n.id));
+        }
+        render();
+        return;
+      }
       if (state.expandedDays.size > 0) {
         state.expandedDays.clear();
       } else {
@@ -3527,7 +3542,11 @@
     }
 
     function setView(v) {
+      // Reset scroll for the new view before switching (so we start at top)
+      sessionStorage.removeItem('scrollPos_' + v);
+      window.scrollTo(0, 0);
       state.view = v;
+      localStorage.setItem('lastView', v);
       if (v === 'history') loadHistory();
       else if (v === 'notes') loadNotes();
       else render();
@@ -3767,7 +3786,7 @@
       const openSection = visibleOpen.length
         ? `<div class="notes-section-label">Open</div>` +
           visibleOpen.map(n => `<div class="note-card ${state.expandedNotes.has(n.id)?'expanded':''}" data-note-id="${n.id}">${renderNote(n)}</div>`).join('')
-        : (f !== 'done' ? `<div class="notes-empty">No ${f==='all'?'open':f} notes.<br>Tap <b>Add Note</b> below to create one.</div>` : '');
+        : (f !== 'done' ? `<div class="notes-empty">No ${f==='all'?'open':f} notes yet.</div>` : '');
 
       const doneSection = f === 'done' && visibleDone.length
         ? `<div class="notes-section-label">Done</div>` +
@@ -3775,7 +3794,7 @@
         : '';
 
       const addBtn = f !== 'done'
-        ? `<div style="padding:0 12px 12px;">
+        ? `<div style="padding:12px 12px 4px;">
              <button onclick="addNote()" style="width:100%;padding:11px;border-radius:14px;border:2px dashed var(--border);background:var(--bg-card);color:var(--accent);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                Add Note
@@ -3783,7 +3802,7 @@
            </div>`
         : '';
 
-      return `<div class="notes-view">${openSection}${doneSection}${addBtn}</div>`;
+      return `<div class="notes-view">${addBtn}${openSection}${doneSection}</div>`;
     }
 
     // ---- Notes event handlers ----
@@ -4210,6 +4229,15 @@
     // ============================================================
     // INIT
     // ============================================================
+    // Save scroll position per view (debounced, for cross-refresh memory)
+    let _scrollTimer = null;
+    window.addEventListener('scroll', () => {
+      clearTimeout(_scrollTimer);
+      _scrollTimer = setTimeout(() => {
+        sessionStorage.setItem('scrollPos_' + state.view, window.scrollY);
+      }, 120);
+    }, { passive: true });
+
     async function init() {
       initTheme();
       if ('serviceWorker' in navigator) {
@@ -4220,6 +4248,11 @@
 
       const friday = getCurrentFriday();
       await loadWeek(dateToStr(friday));
+
+      // Restore last active view (week is already loaded above)
+      const lastView = localStorage.getItem('lastView');
+      if (lastView === 'notes') setView('notes');
+      else if (lastView === 'history') setView('history');
     }
 
     init();
