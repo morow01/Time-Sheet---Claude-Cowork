@@ -2053,6 +2053,50 @@
       color: #fff;
     }
 
+    .select-all-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 16px 16px;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .select-all-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 2px solid #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      transition: all 0.2s;
+    }
+
+    .select-all-row.active .select-all-check {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .select-all-check svg {
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s;
+    }
+
+    .select-all-row.active .select-all-check svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
     /* Selection Mode Styles */
     .note-card.selectable {
       cursor: pointer;
@@ -2099,23 +2143,36 @@
     .bulk-action-bar {
       position: fixed;
       bottom: 24px;
-      left: 20px;
-      right: 20px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 12px 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(150%);
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 12px 16px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
       z-index: 1000;
-      transform: translateY(120%);
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: fit-content;
+      min-width: 280px;
+    }
+
+    [data-theme="dark"] .bulk-action-bar {
+      background: var(--bg-card);
+      border-color: var(--border);
     }
 
     .bulk-action-bar.show {
-      transform: translateY(0);
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .bulk-count-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
     }
 
     .bulk-action-btns {
@@ -2126,24 +2183,38 @@
     .bulk-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 13px;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      border: none;
       transition: all 0.2s;
+      flex: 1;
+      white-space: nowrap;
     }
 
     .bulk-btn.delete {
-      background: #fee2e2;
+      background: #fff5f5;
       color: #ef4444;
+      border: 1.5px solid #fee2e2;
+    }
+
+    [data-theme="dark"] .bulk-btn.delete {
+      background: rgba(239, 68, 68, 0.05);
+      border-color: rgba(239, 68, 68, 0.2);
     }
 
     .bulk-btn.done {
-      background: #dcfce7;
-      color: #22c55e;
+      background: #f0fdf4;
+      color: #16a34a;
+      border: 1.5px solid #dcfce7;
+    }
+
+    [data-theme="dark"] .bulk-btn.done {
+      background: rgba(34, 197, 94, 0.05);
+      border-color: rgba(34, 197, 94, 0.2);
     }
 
     .bulk-btn:active {
@@ -2636,7 +2707,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.9.0';
+    const VERSION = '2.9.1';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -4528,16 +4599,21 @@
     }
 
     // ---- Notes render ----
-    // ---- Notes render ----
-    function renderNotesView() {
-      const TRASH_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
-
+    // ---- Notes filter helper ----
+    function getFilteredNotes() {
       const f = state.notesFilter;
-      const filtered = state.notes.filter(n => {
+      return state.notes.filter(n => {
         if (f === 'done') return n.status === 'done';
         if (f === 'all') return n.status !== 'done';
         return n.status !== 'done' && n.priority === f;
       }).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    }
+
+    // ---- Notes render ----
+    function renderNotesView() {
+      const TRASH_ICON = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+
+      const filtered = getFilteredNotes();
 
       const openNotes = state.notes.filter(n => n.status !== 'done');
       const doneNotes = state.notes.filter(n => n.status === 'done');
@@ -4630,6 +4706,17 @@
       const visibleOpen = f === 'done' ? [] : filtered;
       const visibleDone = (f === 'done' || f === 'all') ? doneNotes : [];
 
+      const allIds = [...visibleOpen, ...visibleDone].map(n => n.id);
+      const isAllSelected = allIds.length > 0 && allIds.every(id => state.selectedNotes.has(id));
+
+      const selectAllRow = state.selectionMode ? `
+        <div class="select-all-row ${isAllSelected ? 'active' : ''}" onclick="toggleSelectAll()">
+          <div class="select-all-check">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          Select All
+        </div>` : '';
+
       const headerRow = `
         <div class="notes-header-row" style="margin-top: 14px; margin-bottom: 4px;">
           <div style="flex:1"></div>
@@ -4659,20 +4746,20 @@
 
       const bulkBar = `
         <div class="bulk-action-bar ${state.selectedNotes.size > 0 ? 'show' : ''}">
-          <div style="font-size: 14px; font-weight: 700;">${state.selectedNotes.size} selected</div>
-          <div class="bulk-action-btns">
+          <div class="bulk-count-text">${state.selectedNotes.size} ${state.selectedNotes.size === 1 ? 'note' : 'notes'} selected</div>
+          <div class="bulk-action-btns" style="width: 100%;">
             <button class="bulk-btn done" onclick="markDoneSelected()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Mark Done
             </button>
             <button class="bulk-btn delete" onclick="deleteSelected()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-              Delete Selected
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete
             </button>
           </div>
         </div>`;
 
-      return `<div class="notes-view">${headerRow}<div class="notes-chips">${finalChips}</div>${state.selectionMode ? '' : addCard}${openSection}${doneSection}${bulkBar}</div>`;
+      return `<div class="notes-view">${headerRow}<div class="notes-chips">${finalChips}</div>${state.selectionMode ? selectAllRow : addCard}${openSection}${doneSection}${bulkBar}</div>`;
     }
 
     // ---- Notes event handlers ----
@@ -4689,6 +4776,27 @@
         state.selectedNotes.delete(id);
       } else {
         state.selectedNotes.add(id);
+      }
+      render();
+    }
+
+    function toggleSelectAll() {
+      // Get all notes currently visible in the filtered view
+      const n = getFilteredNotes();
+      const openNotes = n.filter(note => note.status !== 'done');
+      const doneNotes = n.filter(note => note.status === 'done');
+
+      const f = state.notesFilter;
+      const visibleOpen = f === 'done' ? [] : openNotes;
+      const visibleDone = (f === 'done' || f === 'all') ? doneNotes : [];
+      const allVisibleIds = [...visibleOpen, ...visibleDone].map(note => note.id);
+
+      const allSelected = allVisibleIds.every(id => state.selectedNotes.has(id));
+
+      if (allSelected) {
+        allVisibleIds.forEach(id => state.selectedNotes.delete(id));
+      } else {
+        allVisibleIds.forEach(id => state.selectedNotes.add(id));
       }
       render();
     }
