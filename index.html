@@ -2707,7 +2707,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.9.1';
+    const VERSION = '2.9.2';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2986,6 +2986,9 @@
       selectionMode: false,
       selectedNotes: new Set(),
       layoutMode: localStorage.getItem('layoutMode') || 'card',  // 'card' | 'table'
+      deviceName: localStorage.getItem('deviceName') || 'My Device',
+      historySnapshots: [],
+      historyTab: 'weeks', // 'weeks' | 'snapshots'
       // Column widths for table view [Day,Date,Desc,Loc,Codes,Ord,OT,Tasks,Hrs/T,OT/T,Notes,Del]
       // Notes and Del are fixed — only first 10 cols are user-resizable
       tableColWidths: (() => {
@@ -3387,7 +3390,7 @@
               state.weekData = merged;
               state.weekBase = deepCopy(merged);
 
-              await apiPost({ action: 'saveWeek', weekStart: state.weekStart, weekData: pushData });
+              await apiPost({ action: 'saveWeek', weekStart: state.weekStart, weekData: pushData, deviceName: state.deviceName });
               await dbPut('weeks', { weekStart: state.weekStart, data: state.weekData, updatedAt: ts });
             } else {
               // Our local state already matches what the server has (or remote is ahead)
@@ -3426,7 +3429,7 @@
         // No remote data, or local is authoritative with no baseline — push local
         const ts = Date.now();
         state.weekData._updatedAt = ts;
-        await apiPost({ action: 'saveWeek', weekStart: state.weekStart, weekData: { ...state.weekData, _updatedAt: ts } });
+        await apiPost({ action: 'saveWeek', weekStart: state.weekStart, weekData: { ...state.weekData, _updatedAt: ts }, deviceName: state.deviceName });
         await dbPut('weeks', { weekStart: state.weekStart, data: state.weekData, updatedAt: ts });
         state.syncStatus = 'synced';
       } catch (e) {
@@ -3713,7 +3716,15 @@
             <path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
           </svg>
         </button>
-        <div class="theme-dropdown" id="theme-dropdown">${themeOptionsHtml}</div>
+        <div class="theme-dropdown" id="theme-dropdown">
+          <div style="padding: 10px 14px 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">Device Identity</div>
+            <input type="text" placeholder="Device Name" value="${state.deviceName}" 
+                   style="width: 100%; background: var(--bg-card-alt); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); outline: none;"
+                   oninput="state.deviceName = this.value; localStorage.setItem('deviceName', this.value);">
+          </div>
+          ${themeOptionsHtml}
+        </div>
       </div>
     </div>
     <div class="flex" style="border-top:1px solid var(--border)">
@@ -4123,10 +4134,9 @@
         ${!isExpanded && actCount > 0 ? `<span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--bg-card-alt);color:var(--text-muted)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : ''}
       </div>
     </div>
-    <div class="day-activities ${isExpanded ? 'expanded' : 'collapsed'}" ${isExpanded ? '' : 'style="max-height:0"'} id="day-${di}-activities">
+      <div class="day-activities ${isExpanded ? 'expanded' : 'collapsed'}" ${isExpanded ? '' : 'style="max-height:0"'} id="day-${di}-activities">
       <div style="padding: 12px;">
         ${activitiesHtml}
-        ${isExpanded ? `
         <div style="padding-top: 4px;">
           <button onclick="addActivity(${di})"
             class="w-full flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-xs font-semibold transition-colors"
@@ -4134,7 +4144,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Task
           </button>
-        </div>` : ''}
+        </div>
       </div>
     </div>
   </div>`;
@@ -4306,19 +4316,60 @@
     }
 
     function renderHistoryView() {
-      if (!state.historyWeeks.length) {
-        return `<main class="p-6 text-center" style="color:var(--text-muted)"><p class="text-4xl mb-3">📋</p><p>No past weeks yet</p></main>`;
+      const tabs = `
+        <div class="flex px-3 mt-3 gap-2">
+          <button onclick="setHistoryTab('weeks')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${state.historyTab === 'weeks' ? 'shadow-sm' : 'opacity-60'}" 
+                  style="background:${state.historyTab === 'weeks' ? 'var(--bg-card)' : 'transparent'}; color:${state.historyTab === 'weeks' ? 'var(--accent)' : 'var(--text-muted)'}; border:1px solid ${state.historyTab === 'weeks' ? 'var(--border)' : 'transparent'}">
+            Weeks
+          </button>
+          <button onclick="setHistoryTab('snapshots')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${state.historyTab === 'snapshots' ? 'shadow-sm' : 'opacity-60'}" 
+                  style="background:${state.historyTab === 'snapshots' ? 'var(--bg-card)' : 'transparent'}; color:${state.historyTab === 'snapshots' ? 'var(--accent)' : 'var(--text-muted)'}; border:1px solid ${state.historyTab === 'snapshots' ? 'var(--border)' : 'transparent'}">
+            Sync Snapshots
+          </button>
+        </div>`;
+
+      if (state.historyTab === 'weeks') {
+        if (!state.historyWeeks.length) {
+          return `<div class="notes-view">${tabs}<main class="p-12 text-center" style="color:var(--text-muted)"><p class="text-4xl mb-3">📋</p><p>No past weeks yet</p></main></div>`;
+        }
+        const rows = state.historyWeeks.map(w => `
+          <button onclick="loadWeek('${w.weekStart}');setView('week')"
+            class="flex items-center justify-between px-4 py-3 border-b last:border-0 w-full text-left" style="border-color:var(--border)">
+            <div>
+              <div class="font-semibold text-sm" style="color:var(--text-primary)">${formatWeekRange(w.weekStart)}</div>
+              <div class="text-xs mt-0.5" style="color:var(--text-muted)">Last updated: ${w.lastUpdated ? new Date(w.lastUpdated).toLocaleDateString('en-IE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'unknown'}</div>
+            </div>
+            <span class="text-lg" style="color:var(--accent)">›</span>
+          </button>`).join('');
+        return `<div class="notes-view">${tabs}<main class="pb-6"><div class="mx-3 mt-3 rounded-2xl shadow-sm overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">${rows}</div></main></div>`;
+      } else {
+        // Snapshots Tab
+        if (!state.historySnapshots.length) {
+          return `<div class="notes-view">${tabs}<main class="p-12 text-center" style="color:var(--text-muted)"><p class="text-4xl mb-3">🕒</p><p>No sync backups yet.<br><span class="text-xs opacity-70">Backups are created every time you sync.</span></p></main></div>`;
+        }
+        const rows = state.historySnapshots.map((s, idx) => {
+          const dt = new Date(s.timestamp);
+          const dateStr = dt.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
+          const timeStr = dt.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
+          const typeIcon = s.type === 'week' ? '📅' : '📝';
+          const typeLabel = s.type === 'week' ? `Week ${s.weekStart}` : 'Field Notes';
+
+          return `
+          <div class="flex items-center gap-3 px-4 py-3 border-b last:border-0" style="border-color:var(--border)">
+            <div class="text-lg opacity-80">${typeIcon}</div>
+            <div class="flex-1 min-width-0">
+              <div class="flex items-center justify-between gap-2">
+                <div class="font-bold text-sm" style="color:var(--text-primary)">${typeLabel}</div>
+                <div class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase" style="background:var(--bg-card-alt);color:var(--text-muted);letter-spacing:0.02em;">${s.deviceName}</div>
+              </div>
+              <div class="text-xs mt-0.5" style="color:var(--text-muted)">${dateStr} at ${timeStr}</div>
+            </div>
+            <button onclick="restoreSnapshot(${idx})" class="px-3 py-1.5 rounded-lg text-[11px] font-bold" 
+                    style="background:var(--accent);color:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.1)">Restore</button>
+          </div>`;
+        }).join('');
+        return `<div class="notes-view">${tabs}<main class="pb-6"><div class="mx-3 mt-3 rounded-2xl shadow-sm overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">${rows}</div></main></div>`;
       }
-      const rows = state.historyWeeks.map(w => `
-    <button onclick="loadWeek('${w.weekStart}');setView('week')"
-      class="flex items-center justify-between px-4 py-3 border-b w-full text-left" style="border-color:var(--border)">
-      <div>
-        <div class="font-semibold text-sm" style="color:var(--text-primary)">${formatWeekRange(w.weekStart)}</div>
-        <div class="text-xs mt-0.5" style="color:var(--text-muted)">Last updated: ${w.lastUpdated ? new Date(w.lastUpdated).toLocaleDateString('en-IE') : 'unknown'}</div>
-      </div>
-      <span class="text-lg" style="color:var(--accent)">›</span>
-    </button>`).join('');
-      return `<main class="pb-6"><div class="mx-3 mt-3 rounded-2xl shadow-sm overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">${rows}</div></main>`;
     }
 
     // ============================================================
@@ -4516,7 +4567,7 @@
               const merged = (!stored && !window._forcePullNotes) ? deepCopy(remote.notes) : mergeNotes(baseline, state.notes, remote.notes);
               if (JSON.stringify(merged) !== JSON.stringify(remote.notes) && !window._forcePullNotes) {
                 const ts = Date.now();
-                await apiPost({ action: 'saveNotes', notes: merged, _updatedAt: ts });
+                await apiPost({ action: 'saveNotes', notes: merged, _updatedAt: ts, deviceName: state.deviceName });
                 state.notesLocalTime = ts;
                 await dbPut('notes', { id: 'notes_all', data: merged, updatedAt: ts });
               } else {
@@ -4553,7 +4604,7 @@
             const needsPush = JSON.stringify(merged) !== JSON.stringify(remote.notes);
             const ts = Date.now();
             if (needsPush) {
-              await apiPost({ action: 'saveNotes', notes: merged, _updatedAt: ts });
+              await apiPost({ action: 'saveNotes', notes: merged, _updatedAt: ts, deviceName: state.deviceName });
             }
             state.notes = merged;
             state.notesBase = deepCopy(merged);
@@ -4571,7 +4622,7 @@
             } else {
               // Local is same age or newer — push to server
               const ts = Date.now();
-              await apiPost({ action: 'saveNotes', notes: state.notes, _updatedAt: ts });
+              await apiPost({ action: 'saveNotes', notes: state.notes, _updatedAt: ts, deviceName: state.deviceName });
               state.notesBase = deepCopy(state.notes);
               state.notesLocalTime = ts;
               await dbPut('notes', { id: 'notes_all', data: state.notes, updatedAt: ts });
@@ -4581,7 +4632,7 @@
         } else {
           // No remote data yet — push local
           const ts = Date.now();
-          await apiPost({ action: 'saveNotes', notes: state.notes, _updatedAt: ts });
+          await apiPost({ action: 'saveNotes', notes: state.notes, _updatedAt: ts, deviceName: state.deviceName });
           state.notesBase = deepCopy(state.notes);
           state.notesLocalTime = ts;
           await dbPut('notes', { id: 'notes_all', data: state.notes, updatedAt: ts });
@@ -5022,7 +5073,54 @@
           }
         } catch (e) { }
       }
+
+      // Load Snapshots
+      if (navigator.onLine) {
+        try {
+          const snaps = await apiGet('getSnapshots');
+          if (Array.isArray(snaps)) {
+            state.historySnapshots = snaps;
+          }
+        } catch (e) { }
+      }
+
       render();
+    }
+
+    function setHistoryTab(tab) {
+      state.historyTab = tab;
+      render();
+    }
+
+    async function restoreSnapshot(idx) {
+      const snap = state.historySnapshots[idx];
+      if (!snap) return;
+
+      const typeLabel = snap.type === 'week' ? `Week ${snap.weekStart}` : 'All Field Notes';
+      if (!confirm(`Restore backup from "${snap.deviceName}" (${new Date(snap.timestamp).toLocaleString()})?\n\nThis will overwrite your current ${typeLabel}.`)) return;
+
+      try {
+        const data = JSON.parse(snap.data);
+        if (snap.type === 'week') {
+          state.weekData = data;
+          state.weekStart = snap.weekStart;
+          state.weekBase = deepCopy(data);
+          await dbPut('weeks', { weekStart: snap.weekStart, data: data, updatedAt: Date.now() });
+          showToast('Week data restored');
+          setView('week');
+        } else {
+          state.notes = data.notes || [];
+          state.notesBase = deepCopy(state.notes);
+          state.notesLocalTime = Date.now();
+          await dbPut('notes', { id: 'notes_all', data: state.notes, updatedAt: Date.now() });
+          showToast('Notes restored');
+          setView('notes');
+        }
+        // Force a sync to server after restore
+        if (snap.type === 'week') syncNow(); else syncNotes();
+      } catch (e) {
+        showToast('Restore failed: ' + e.message);
+      }
     }
 
     // ============================================================

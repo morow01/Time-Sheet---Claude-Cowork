@@ -6,6 +6,7 @@
 const SPREADSHEET_NAME = 'TimeSheet App Data';
 const TIMESHEETS_SHEET = 'TimeSheets';
 const NOTES_SHEET      = 'Notes';
+const SNAPSHOTS_SHEET  = 'Snapshots';
 
 // ============================================================
 // HTTP Handlers
@@ -21,6 +22,7 @@ function doGet(e) {
       case 'getWeek':  return ok(getWeek(e.parameter.date));
       case 'getWeeks': return ok(getWeeks());
       case 'getNotes': return ok(getNotes());
+      case 'getSnapshots': return ok(getSnapshots());
       default:         return ok({ error: 'Unknown action: ' + action });
     }
   } catch (err) {
@@ -32,8 +34,8 @@ function doPost(e) {
   const body = JSON.parse(e.postData.contents);
 
   switch (body.action) {
-    case 'saveWeek':    return ok(saveWeek(body.weekStart, body.weekData));
-    case 'saveNotes':   return ok(saveNotes(body.notes, body._updatedAt));
+    case 'saveWeek':    return ok(saveWeek(body.weekStart, body.weekData, body.deviceName));
+    case 'saveNotes':   return ok(saveNotes(body.notes, body._updatedAt, body.deviceName));
     case 'emailWeekly':
       MailApp.sendEmail(body.to, body.subject, body.body, { htmlBody: body.htmlBody });
       return ok({ ok: true });
@@ -99,6 +101,19 @@ function toDateStr(val) {
   return String(val);
 }
 
+function getSnapshotsSheet() {
+  const ss = getOrCreateSpreadsheet();
+  let sheet = ss.getSheetByName(SNAPSHOTS_SHEET);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(SNAPSHOTS_SHEET);
+    sheet.appendRow(['timestamp', 'device_name', 'type', 'week_start', 'data']);
+    sheet.getRange(1, 1, 1, 5).setFontWeight('bold');
+  }
+
+  return sheet;
+}
+
 // ============================================================
 // Timesheet data operations
 // ============================================================
@@ -115,7 +130,12 @@ function getWeek(dateStr) {
   return null;
 }
 
-function saveWeek(weekStart, weekData) {
+  sheet.appendRow([weekStart, json, now]);
+  saveSnapshot(arguments[2] || 'Unknown Device', 'week', weekStart, json);
+  return { success: true, action: 'created', weekStart };
+}
+
+function saveWeek(weekStart, weekData, deviceName) {
   const sheet = getSheet();
   const data = sheet.getDataRange().getValues();
   const now = new Date().toISOString();
@@ -125,12 +145,52 @@ function saveWeek(weekStart, weekData) {
     if (toDateStr(data[i][0]) === weekStart) {
       sheet.getRange(i + 1, 2).setValue(json);
       sheet.getRange(i + 1, 3).setValue(now);
+      saveSnapshot(deviceName || 'Unknown Device', 'week', weekStart, json);
       return { success: true, action: 'updated', weekStart };
     }
   }
 
   sheet.appendRow([weekStart, json, now]);
+  saveSnapshot(deviceName || 'Unknown Device', 'week', weekStart, json);
   return { success: true, action: 'created', weekStart };
+}
+
+function saveSnapshot(deviceName, type, weekStart, dataJson) {
+  try {
+    const sheet = getSnapshotsSheet();
+    const now = new Date().toISOString();
+    sheet.appendRow([now, deviceName, type, weekStart || '', dataJson]);
+    
+    // Maintain a reasonable history — keep last 500 snapshots
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 501) {
+      sheet.deleteRow(2);
+    }
+  } catch (e) {
+    Logger.log('Snapshot failed: ' + e.toString());
+  }
+}
+
+function getSnapshots() {
+  const sheet = getSnapshotsSheet();
+  const data = sheet.getDataRange().getValues();
+  const snapshots = [];
+
+  // Return last 100 snapshots, reversed
+  const start = Math.max(1, data.length - 100);
+  for (let i = data.length - 1; i >= start; i--) {
+    if (data[i][0] && data[i][0] !== 'timestamp') {
+      snapshots.push({
+        timestamp: data[i][0],
+        deviceName: data[i][1],
+        type: data[i][2],
+        weekStart: data[i][3],
+        data: data[i][4] // Already JSON string
+      });
+    }
+  }
+
+  return snapshots;
 }
 
 function getWeeks() {
@@ -162,7 +222,7 @@ function getNotes() {
   }
 }
 
-function saveNotes(notes, updatedAt) {
+function saveNotes(notes, updatedAt, deviceName) {
   const sheet   = getNotesSheet();
   const payload = JSON.stringify({ notes: notes || [], _updatedAt: updatedAt || Date.now() });
 
@@ -172,5 +232,6 @@ function saveNotes(notes, updatedAt) {
     sheet.getRange(2, 1).setValue(payload);
   }
 
+  saveSnapshot(deviceName || 'Unknown Device', 'notes', '', payload);
   return { success: true, count: (notes || []).length };
 }
