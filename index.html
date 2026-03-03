@@ -1195,7 +1195,7 @@
     }
 
     .day-header .expand-arrow {
-      transition: transform 0.3s ease;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-block;
     }
 
@@ -1942,8 +1942,9 @@
     }
 
     .note-card.expanded {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent);
+      border-color: #a1a1aa;
+      /* gray-400 */
+      box-shadow: 0 0 0 1px #a1a1aa;
     }
 
     .note-card.done-card {
@@ -1984,12 +1985,13 @@
       color: var(--text-muted);
       line-height: 1;
       flex-shrink: 0;
-      transition: transform 0.25s;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .note-expand-arrow.open {
       transform: rotate(90deg);
-      color: var(--accent);
+      color: #71717a;
+      /* gray-500 */
     }
 
     .note-dot {
@@ -2316,7 +2318,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.7.2';
+    const VERSION = '2.7.3';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
