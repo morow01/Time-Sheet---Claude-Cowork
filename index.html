@@ -2318,7 +2318,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.7.3';
+    const VERSION = '2.7.4';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3630,13 +3630,41 @@
     }
 
     function toggleDay(di) {
-      if (state.expandedDays.has(di)) {
+      const isExpanded = state.expandedDays.has(di);
+      if (isExpanded) {
         state.expandedDays.delete(di);
       } else {
         state.expandedDays.add(di);
       }
       saveUiState();
-      render();
+
+      // Update DOM directly for smooth transition
+      const card = document.querySelector(`.day-card[data-day-idx="${di}"]`);
+      if (card) {
+        const header = card.querySelector('.day-header');
+        const arrow = card.querySelector('.expand-arrow');
+        const activities = card.querySelector('.day-activities');
+
+        if (isExpanded) {
+          header.classList.add('rounded-2xl');
+          card.classList.remove('rounded-b-2xl');
+          card.classList.add('rounded-2xl');
+          arrow.classList.add('collapsed');
+          activities.classList.remove('expanded');
+          activities.classList.add('collapsed');
+          activities.style.maxHeight = '0px';
+        } else {
+          header.classList.remove('rounded-2xl');
+          card.classList.add('rounded-b-2xl');
+          card.classList.remove('rounded-2xl');
+          arrow.classList.remove('collapsed');
+          activities.classList.add('expanded');
+          activities.classList.remove('collapsed');
+          activities.style.maxHeight = activities.scrollHeight + 'px';
+          // After transition finishes, set to none for dynamic content
+          setTimeout(() => { if (state.expandedDays.has(di)) activities.style.maxHeight = 'none'; }, 350);
+        }
+      }
     }
 
     function toggleActivityDetails(actId) {
@@ -4215,25 +4243,8 @@
             </div>
           </div>`;
 
-        if (!isExpanded) return header;
-
-        const priChips = ['high', 'medium', 'low'].map(p =>
-          `<div class="note-pri-chip ${note.priority === p ? 'sel-' + p : ''}" onclick="setNotePriority('${note.id}','${p}')">${p === 'high' ? '🔴 High' : p === 'medium' ? '🟠 Med' : '🟢 Low'}</div>`
-        ).join('');
-
-        const actions = isNew
-          ? `<div class="note-actions">
-               <button class="note-action-btn cancel" onclick="cancelNewNote('${note.id}')">Cancel</button>
-               <button class="note-action-btn save" onclick="saveNewNote('${note.id}')">Save Note</button>
-             </div>`
-          : `<div class="note-actions">
-               <button class="note-action-btn danger" onclick="showConfirm('Delete note?','${esc(note.description || 'Untitled')}',()=>deleteNote('${note.id}'))">${TRASH_ICON} Delete</button>
-               <button class="note-action-btn success" onclick="markNoteDone('${note.id}')">${note.status === 'done' ? '↩ Reopen' : '✓ Done'}</button>
-               <button class="note-action-btn remind" onclick="showToast('Reminders coming soon 🔔')" title="Coming in next release">🔔 Remind</button>
-             </div>`;
-
         const detail = `
-          <div class="note-detail">
+          <div class="note-detail" style="${isExpanded ? '' : 'max-height:0;opacity:0;overflow:hidden;padding-top:0;padding-bottom:0;border-top:none;'}">
             <div class="note-detail-row">
               <span class="field-label">Description</span>
               <textarea data-note-id="${note.id}" data-note-field="description" rows="2"
@@ -4312,9 +4323,39 @@
     }
 
     function toggleNote(id) {
-      if (state.expandedNotes.has(id)) state.expandedNotes.delete(id);
-      else state.expandedNotes.add(id);
-      render();
+      const isExpanded = state.expandedNotes.has(id);
+      if (isExpanded) {
+        state.expandedNotes.delete(id);
+      } else {
+        state.expandedNotes.add(id);
+      }
+
+      // Update DOM directly for smooth transition
+      const card = document.querySelector(`.note-card[data-note-id="${id}"]`);
+      if (card) {
+        const row = card.querySelector('.note-row');
+        const arrow = card.querySelector('.note-expand-arrow');
+        const detail = card.querySelector('.note-detail');
+
+        if (isExpanded) {
+          card.classList.remove('expanded');
+          row.style.background = 'transparent';
+          arrow.classList.remove('open');
+          if (detail) {
+            detail.style.maxHeight = '0px';
+            detail.style.opacity = '0';
+            setTimeout(() => { if (detail.parentElement) detail.remove(); }, 250);
+          }
+        } else {
+          card.classList.add('expanded');
+          row.style.background = 'var(--bg-day-header)';
+          arrow.classList.add('open');
+          // For notes, we need to render the detail if it's not there
+          render(); // Simplified for notes since they are more complex, but we'll try to keep it smooth
+        }
+      } else {
+        render();
+      }
     }
 
     function updateNoteField(input) {
