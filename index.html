@@ -2349,11 +2349,12 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.7.6';
+    const VERSION = '2.7.7';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
     const DB_VERSION = 2;
+    const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     // ============================================================
     // WORK CODES  — loaded from codes.json; embedded list is fallback
@@ -2951,8 +2952,10 @@
             const useRemote = !local || remoteTime > localTime || remoteCount > localCount || window._forcePull;
             if (useRemote) {
               // Merge remote into current in-memory state
-              // During Force Pull, we pass null as baseline to ensure Structer is refreshed
-              const merged = mergeWeekData(window._forcePull ? null : (local ? local.data : null), state.weekData, remote);
+              // During Force Pull, we pass null as baseline to ensure Structure is refreshed
+              // For regular initial load, we use the local DB data as the baseline if available
+              const baseline = window._forcePull ? null : (local ? local.data : null);
+              const merged = mergeWeekData(baseline, state.weekData, remote);
               state.weekData = merged;
               state.weekBase = deepCopy(remote);
               await dbPut('weeks', { weekStart, data: merged, updatedAt: remoteTime || Date.now() });
@@ -3126,7 +3129,6 @@
       const summary = calcSummary(weekData);
       const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
       const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
-      const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       const C = getEmailTheme();
 
       // Summary table rows — no "h" suffix, plain numbers for copy-paste
@@ -4147,7 +4149,8 @@
             const remoteTime = remote._updatedAt || 0;
             // Use remote if forced or if explicitly newer
             if (remote.notes.length > 0 || state.notes.length === 0 || window._forcePullNotes) {
-              const merged = mergeNotes(null, state.notes, remote.notes);
+              const baseline = window._forcePullNotes ? null : state.notesBase;
+              const merged = mergeNotes(baseline, state.notes, remote.notes);
               if (JSON.stringify(merged) !== JSON.stringify(remote.notes) && !window._forcePullNotes) {
                 const ts = Date.now();
                 await apiPost({ action: 'saveNotes', notes: merged, _updatedAt: ts });
@@ -4262,6 +4265,18 @@
         const dotCls = { high: 'note-dot-high', medium: 'note-dot-medium', low: 'note-dot-low' }[note.priority] || 'note-dot-none';
         const metaParts = [note.location, note.date ? formatDate(note.date) : ''].filter(Boolean);
         const titleText = note.description || (isNew ? 'New note…' : 'Untitled');
+
+        const priChips = ['high', 'medium', 'low'].map(p =>
+          `<div class="note-pri-chip ${note.priority === p ? 'sel-' + p : ''}" onclick="setNotePriority('${note.id}', '${p}')">${p[0].toUpperCase() + p.slice(1)}</div>`
+        ).join('');
+
+        const actions = `
+          <div class="note-actions">
+            <button class="note-action-btn ${note.status === 'done' ? 'active' : ''}" onclick="markNoteDone('${note.id}')">
+              ${note.status === 'done' ? '✓ Done' : 'Mark Done'}
+            </button>
+            <button class="note-action-btn trash" onclick="deleteNote('${note.id}')">${TRASH_ICON}</button>
+          </div>`;
 
         const header = `
           <div class="note-row ${isNew && isExpanded ? 'note-row-new' : ''}" onclick="toggleNote('${note.id}')" style="${isExpanded ? 'background:var(--bg-day-header)' : ''}">
