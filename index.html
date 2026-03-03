@@ -2316,7 +2316,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.7.4';
+    const VERSION = '2.7.5';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2918,7 +2918,9 @@
             if (useRemote) {
               // Merge remote into current in-memory state — never blindly overwrite,
               // as user may have typed while the API call was in-flight.
-              const merged = mergeWeekData(local ? local.data : null, state.weekData, remote);
+              // BUG FIX: Pass null as baseline during initial load to ensure 
+              // local-only activities (unsynced from previous session) are preserved.
+              const merged = mergeWeekData(null, state.weekData, remote);
               state.weekData = merged;
               state.weekBase = deepCopy(remote); // baseline = what server gave us
               await dbPut('weeks', { weekStart, data: merged, updatedAt: remoteTime || Date.now() });
@@ -4108,7 +4110,8 @@
             const remoteTime = remote._updatedAt || 0;
             if (remote.notes.length > 0 || state.notes.length === 0) {
               // Merge remote into local — local edits made during the API call are preserved
-              const merged = mergeNotes(state.notesBase, state.notes, remote.notes);
+              // BUG FIX: Pass null as baseline during initial load
+              const merged = mergeNotes(null, state.notes, remote.notes);
               if (JSON.stringify(merged) !== JSON.stringify(remote.notes)) {
                 // Local has changes the server doesn't have yet — push merged
                 const ts = Date.now();
@@ -4209,10 +4212,10 @@
       const f = state.notesFilter;
       const filtered = state.notes.filter(n => {
         if (f === 'done') return n.status === 'done';
-        if (f === 'all') return n.status === 'open';
-        return n.status === 'open' && n.priority === f;
+        if (f === 'all') return n.status !== 'done'; // resilient to missing status
+        return n.status !== 'done' && n.priority === f;
       }).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-      const openNotes = state.notes.filter(n => n.status === 'open');
+      const openNotes = state.notes.filter(n => n.status !== 'done');
       const doneNotes = state.notes.filter(n => n.status === 'done');
       const counts = { high: openNotes.filter(n => n.priority === 'high').length, medium: openNotes.filter(n => n.priority === 'medium').length, low: openNotes.filter(n => n.priority === 'low').length };
 
