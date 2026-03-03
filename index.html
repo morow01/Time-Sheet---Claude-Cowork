@@ -2316,7 +2316,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.7.1';
+    const VERSION = '2.7.2';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -4183,7 +4183,7 @@
         if (f === 'done') return n.status === 'done';
         if (f === 'all') return n.status === 'open';
         return n.status === 'open' && n.priority === f;
-      });
+      }).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
       const openNotes = state.notes.filter(n => n.status === 'open');
       const doneNotes = state.notes.filter(n => n.status === 'done');
       const counts = { high: openNotes.filter(n => n.priority === 'high').length, medium: openNotes.filter(n => n.priority === 'medium').length, low: openNotes.filter(n => n.priority === 'low').length };
