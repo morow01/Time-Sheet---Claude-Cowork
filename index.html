@@ -2521,7 +2521,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.8.7';
+    const VERSION = '2.8.8';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -4509,11 +4509,7 @@
       const visibleDone = (f === 'done' || f === 'all') ? doneNotes : [];
 
       const headerRow = `
-        <div class="notes-header-row">
-          <div class="notes-title-group">
-            <h1>Notes</h1>
-            <span>${openNotes.length} open</span>
-          </div>
+        <div class="notes-header-row" style="margin-top: 10px;">
         </div>`;
 
       const openSection = visibleOpen.length
