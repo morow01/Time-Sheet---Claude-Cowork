@@ -3043,7 +3043,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.0.26';
+    const VERSION = '3.0.27';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -5816,29 +5816,18 @@
         title: item.name || 'Location'
       });
 
-      // --- Navigation Feature ---
-      const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${latVal},${lngVal}`;
+      // --- Map Click Feature ---
+      // Opens Google Maps to pinpoint the location instead of starting directions
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${latVal},${lngVal}`;
 
       // Map click
-      map.addListener('click', () => window.open(navUrl, '_blank'));
+      map.addListener('click', () => window.open(mapUrl, '_blank'));
 
       // Marker click
       if (marker.element) {
-        marker.element.addEventListener('click', () => window.open(navUrl, '_blank'));
+        marker.element.addEventListener('click', () => window.open(mapUrl, '_blank'));
         marker.element.style.cursor = 'pointer';
       }
-
-      // Floating Navigate button
-      const navBtn = document.createElement('a');
-      navBtn.href = navUrl;
-      navBtn.target = '_blank';
-      navBtn.className = 'absolute bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2 z-10 transition-transform active:scale-95';
-      navBtn.style.textDecoration = 'none';
-      navBtn.innerHTML = '<span>🧭</span> Navigate';
-      navBtn.onclick = (e) => e.stopPropagation();
-
-      el.style.position = 'relative';
-      el.appendChild(navBtn);
     }
 
     window.onMapsLoaded = () => {
