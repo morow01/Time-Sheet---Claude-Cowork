@@ -3070,7 +3070,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.0.12';
+    const VERSION = '3.0.13';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -5959,11 +5959,8 @@
       return filtered.map(cb => `
         <div class="result-card" onclick="setSelectedCabinet('${esc(cb.ipid)}')">
           <div class="result-header">
-            <div class="result-title">Cabinet ${esc(cb.mdf)} ${esc(cb.ccp)}</div>
-            <div class="result-code">IPID: ${esc(cb.ipid)}</div>
-          </div>
-          <div class="result-meta">
-            <div>MDF: ${esc(cb.mdf)} · CCP: ${esc(cb.ccp)}</div>
+            <div class="result-title">${esc(cb.mdf)} - ${esc(cb.ccp)}</div>
+            <div class="result-code">${esc(cb.ipid)}</div>
           </div>
         </div>
       `).join('');
