@@ -2616,6 +2616,160 @@
       color: var(--text-muted);
       font-size: 13px;
     }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 10000;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+    }
+
+    .nav-icon {
+      font-size: 20px;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* App adjustments for bottom nav */
+    #app {
+      padding-bottom: 80px;
+    }
+
+    /* Exchange Finder Styles */
+    .finder-container {
+      padding: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .search-group {
+      margin-bottom: 20px;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-input-wrap input {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      flex: 1;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .result-title {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text-primary);
+    }
+
+    .result-code {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .result-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .maps-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 8px 12px;
+      background: var(--accent-light);
+      border-radius: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .maps-link:active {
+      opacity: 0.7;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 
@@ -2741,11 +2895,27 @@
     </div>
   </div>
 
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="nav-item" id="nav-week" onclick="setView('week')">
+      <span class="nav-icon">📅</span>
+      <span class="nav-label">Time Sheet</span>
+    </div>
+    <div class="nav-item" id="nav-exchanges" onclick="setView('exchanges')">
+      <span class="nav-icon">🔍</span>
+      <span class="nav-label">Exchanges</span>
+    </div>
+    <div class="nav-item" id="nav-history" onclick="setView('history')">
+      <span class="nav-icon">📜</span>
+      <span class="nav-label">History</span>
+    </div>
+  </div>
+
   <script>
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.9.9';
+    const VERSION = '3.0.0';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -2767,11 +2937,13 @@
 
     async function loadTowns() {
       try {
-        const res = await fetch('towns.json?v=' + VERSION);
+        const res = await fetch('exchanges.json?v=' + VERSION);
         if (!res.ok) throw new Error('fetch failed');
         TOWNS = await res.json();
+        state.exchanges = TOWNS;
       } catch (_) {
         TOWNS = [];
+        state.exchanges = [];
       }
     }
 
@@ -3005,7 +3177,7 @@
     // STATE
     // ============================================================
     let state = {
-      view: 'week',         // 'week' | 'history'
+      view: 'week',         // 'week' | 'history' | 'exchanges' (NEW)
       weekStart: null,      // 'YYYY-MM-DD'
       weekData: null,       // { weekStart, days: [...] }
       weekBase: null,       // deep copy of week as loaded from server (field-level merge baseline)
@@ -3039,6 +3211,10 @@
         }
         return defaults;
       })(),
+      exchanges: [],        // NEW
+      cabinets: [],         // NEW
+      exchangeSearch: '',   // NEW
+      cabinetSearch: '',    // NEW
     };
 
     let codeModalCtx = { dayIndex: null, activityId: null, selected: [] };
@@ -3698,11 +3874,29 @@
     // ============================================================
     function render() {
       const app = document.getElementById('app');
+      if (!app) return;
+
+      // Update bottom nav active state
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const activeNav = document.getElementById('nav-' + (state.view === 'notes' ? 'history' : state.view));
+      if (activeNav) activeNav.classList.add('active');
+
       // Capture scroll position before DOM wipe so we can restore it
       const savedScroll = parseInt(sessionStorage.getItem('scrollPos_' + state.view) || '0');
-      // In table mode break out of the narrow max-w-2xl container
-      app.classList.toggle('tbl-mode', state.view === 'week' && state.layoutMode === 'table');
-      const viewBody = state.view === 'week' ? renderWeekView() : state.view === 'notes' ? renderNotesView() : renderHistoryView();
+
+      let viewBody = '';
+      if (state.view === 'exchanges') {
+        viewBody = renderExchangesView();
+      } else if (state.view === 'history') {
+        viewBody = renderHistoryView();
+      } else if (state.view === 'notes') {
+        viewBody = renderNotesView();
+      } else { // Default to 'week' view
+        // In table mode break out of the narrow max-w-2xl container
+        app.classList.toggle('tbl-mode', state.view === 'week' && state.layoutMode === 'table');
+        viewBody = renderWeekView();
+      }
+
       app.innerHTML = renderHeader() + viewBody;
       attachEvents();
       // Auto-grow textareas that have existing content
@@ -5191,6 +5385,126 @@
     function setHistoryTab(tab) {
       state.historyTab = tab;
       render();
+    }
+
+    async function setView(v) {
+      if (v === 'notes') v = 'history'; // We treat notes as a sub-view of history in nav for now or handle separately
+      // Actually per plan: Time Sheet, Exchanges, History. 
+      // Existing app had 'week', 'history', 'notes'. 
+      // I'll map them: Time Sheet -> 'week', Exchanges -> 'exchanges', History -> 'history'
+
+      state.view = v;
+      localStorage.setItem('lastView', v);
+      render();
+      window.scrollTo(0, 0);
+
+      if (v === 'exchanges' && (!state.exchanges.length || !state.cabinets.length)) {
+        await Promise.all([loadTowns(), loadCabinets()]);
+        render();
+      }
+    }
+
+    // ---- Exchange Finder View ----
+    function renderExchangesView() {
+      const exQuery = (state.exchangeSearch || '').toLowerCase();
+      const cbQuery = (state.cabinetSearch || '').toLowerCase();
+
+      const filteredEx = state.exchanges.filter(t =>
+        t.name.toLowerCase().includes(exQuery) || t.code.toLowerCase().includes(exQuery)
+      ).slice(0, 30);
+
+      const filteredCb = state.cabinets.filter(c =>
+        c.mdf.toLowerCase().includes(cbQuery) || c.ccp.toLowerCase().includes(cbQuery) || String(c.ipid).includes(cbQuery)
+      ).slice(0, 30);
+
+      return `
+        <div class="finder-container">
+          <div class="mb-8 mt-2">
+            <h2 class="text-2xl font-bold mb-1" style="color:var(--text-primary)">Exchange Finder</h2>
+            <p class="text-sm text-muted">Search for exchanges or cabinets</p>
+          </div>
+
+          <!-- Exchanges Section -->
+          <div class="search-group">
+            <div class="field-label">Exchanges / Towns</div>
+            <div class="search-input-wrap">
+              <span>🔍</span>
+              <input type="text" placeholder="Name or Code (e.g. CHL, Cashel)" 
+                value="${esc(state.exchangeSearch)}"
+                oninput="state.exchangeSearch = this.value; render()">
+            </div>
+            
+            <div class="mt-4">
+              ${filteredEx.map(ex => `
+                <div class="result-card">
+                  <div class="result-header">
+                    <div class="result-title">${esc(ex.name)}</div>
+                    <div class="result-code">${esc(ex.code)}</div>
+                  </div>
+                  <div class="result-meta">
+                    ${ex.address ? `<div>📍 ${esc(ex.address)}</div>` : ''}
+                    <div>🌐 Coords: ${esc(ex.link)}</div>
+                  </div>
+                  <div class="flex gap-2">
+                    <a href="https://www.google.com/maps/search/?api=1&query=${esc(ex.link)}" target="_blank" class="maps-link">
+                      🗺️ Open Map
+                    </a>
+                    ${ex.gallery ? `<a href="${esc(ex.gallery)}" target="_blank" class="maps-link" style="background:#f0f9ff;color:#0369a1">🖼️ Gallery</a>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+              ${exQuery && !filteredEx.length ? '<div class="text-center p-8 text-muted">No exchanges found</div>' : ''}
+            </div>
+          </div>
+
+          <hr class="my-8" style="border:0;border-top:1px solid var(--border)">
+
+          <!-- Cabinets Section -->
+          <div class="search-group">
+            <div class="field-label">Cabinets</div>
+            <div class="search-input-wrap">
+              <span>🗄️</span>
+              <input type="text" placeholder="MDF, CCP or IPID" 
+                value="${esc(state.cabinetSearch)}"
+                oninput="state.cabinetSearch = this.value; render()">
+            </div>
+
+            <div class="mt-4">
+              ${filteredCb.map(cb => `
+                <div class="result-card">
+                  <div class="result-header">
+                    <div class="result-title">Cabinet ${esc(cb.mdf)} ${esc(cb.ccp)}</div>
+                    <div class="result-code">IPID: ${esc(cb.ipid)}</div>
+                  </div>
+                  <div class="result-meta">
+                    <div>MDF: ${esc(cb.mdf)} · CCP: ${esc(cb.ccp)}</div>
+                    <div>🌐 Coords: ${esc(cb.link)}</div>
+                  </div>
+                  <a href="https://www.google.com/maps/search/?api=1&query=${esc(cb.link)}" target="_blank" class="maps-link">
+                    🗺️ Open Map
+                  </a>
+                </div>
+              `).join('')}
+              ${cbQuery && !filteredCb.length ? '<div class="text-center p-8 text-muted">No cabinets found</div>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadExchanges() {
+      try {
+        const res = await fetch('exchanges.json?v=' + VERSION);
+        state.exchanges = await res.json();
+      } catch (e) { console.error('Failed to load exchanges', e); }
+    }
+
+    async function loadCabinets() {
+      if (state.cabinets.length) return;
+      try {
+        const res = await fetch('cabinets.json?v=' + VERSION);
+        state.cabinets = await res.json();
+      } catch (e) { console.error('Failed to load cabinets', e); }
     }
 
     async function restoreSnapshot(idx) {
