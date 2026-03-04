@@ -3039,7 +3039,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.0.5';
+    const VERSION = '3.0.6';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3527,15 +3527,34 @@
       if (!weekData) return [];
       weekData.days.forEach(day => {
         day.activities.forEach(act => {
-          if (!act.codes.length) return;
           const ordinary = parseFloat(act.ordinary) || 0;
           const overtime = parseFloat(act.overtime) || 0;
-          const n = act.codes.length || 1;
+
+          if (!act.codes || act.codes.length === 0) {
+            // Handle activities with hours but no codes
+            if (ordinary > 0 || overtime > 0) {
+              const key = "__uncategorized__";
+              if (!map[key]) map[key] = {
+                code: "MISSING",
+                description: "(No Work Code selected)",
+                ordinary: 0,
+                overtime: 0,
+                isUncategorized: true,
+                sorting: 999
+              };
+              map[key].ordinary += ordinary;
+              map[key].overtime += overtime;
+            }
+            return;
+          }
+
+          const n = act.codes.length;
           const timePerTask = parseFloat(act.timePerTask) || (n > 0 ? ordinary / n : 0);
-          const otPerTask = parseFloat(act.otPerTask) || (n > 1 ? overtime / n : overtime);
+          const otPerTask = parseFloat(act.otPerTask) || (n > 0 ? overtime / n : 0);
+
           act.codes.forEach(code => {
             const key = code.c;
-            if (!map[key]) map[key] = { code: code.c, description: code.d, ordinary: 0, overtime: 0 };
+            if (!map[key]) map[key] = { code: code.c, description: code.d, ordinary: 0, overtime: 0, sorting: 0 };
             if (n === 1) {
               map[key].ordinary += ordinary;
               map[key].overtime += overtime;
@@ -3546,7 +3565,7 @@
           });
         });
       });
-      return Object.values(map).sort((a, b) => b.ordinary - a.ordinary);
+      return Object.values(map).sort((a, b) => (a.sorting - b.sorting) || (b.ordinary - a.ordinary));
     }
 
     // ============================================================
@@ -4159,13 +4178,20 @@
           </tr>
         </thead>
         <tbody>
-          ${summary.map((row, i) => `
-          <tr class="summary-row" style="${i % 2 === 0 ? '' : 'background:var(--summary-even)'}">
-            <td class="px-3 py-2 font-mono text-xs whitespace-nowrap" style="color:var(--accent)">${row.code}</td>
-            <td class="px-3 py-2 text-xs" style="color:var(--text-secondary)">${row.description}</td>
-            <td class="px-3 py-2 text-right font-semibold" style="color:var(--text-primary)">${row.ordinary.toFixed(2)}</td>
-            <td class="px-3 py-2 text-right font-semibold" style="color:var(--text-ot)">${row.overtime > 0 ? row.overtime.toFixed(2) : '—'}</td>
-          </tr>`).join('')}
+          ${summary.map((row, i) => {
+        const isUncat = row.isUncategorized;
+        const bgStyle = isUncat ? 'background:rgba(239,68,68,0.1)' : (i % 2 === 0 ? '' : 'background:var(--summary-even)');
+        const textColor = isUncat ? 'color:#ef4444' : 'color:var(--text-secondary)';
+        const accentColor = isUncat ? 'color:#ef4444;font-weight:bold' : 'color:var(--accent)';
+
+        return `
+          <tr class="summary-row" style="${bgStyle}">
+            <td class="px-3 py-2 font-mono text-xs whitespace-nowrap" style="${accentColor}">${row.code}</td>
+            <td class="px-3 py-2 text-xs" style="${textColor}">${row.description}</td>
+            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-primary)'}">${row.ordinary.toFixed(2)}</td>
+            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-ot)'}">${row.overtime > 0 ? row.overtime.toFixed(2) : '—'}</td>
+          </tr>`;
+      }).join('')}
           <tr class="font-bold text-sm" style="background:var(--bg-day-header)">
             <td colspan="2" class="px-3 py-2" style="color:var(--text-day)">TOTAL</td>
             <td class="px-3 py-2 text-right" style="color:var(--text-day)">${totalOrd.toFixed(2)}</td>
@@ -4211,13 +4237,20 @@
           </tr>
         </thead>
         <tbody>
-          ${summary.map((row, i) => `
-          <tr class="summary-row" style="${i % 2 === 0 ? '' : 'background:var(--summary-even)'}">
-            <td class="px-3 py-2 font-mono text-xs whitespace-nowrap" style="color:var(--accent)">${row.code}</td>
-            <td class="px-3 py-2 text-xs" style="color:var(--text-secondary)">${row.description}</td>
-            <td class="px-3 py-2 text-right font-semibold" style="color:var(--text-primary)">${row.ordinary.toFixed(2)}</td>
-            <td class="px-3 py-2 text-right font-semibold" style="color:var(--text-ot)">${row.overtime > 0 ? row.overtime.toFixed(2) : '—'}</td>
-          </tr>`).join('')}
+          ${summary.map((row, i) => {
+        const isUncat = row.isUncategorized;
+        const bgStyle = isUncat ? 'background:rgba(239,68,68,0.1)' : (i % 2 === 0 ? '' : 'background:var(--summary-even)');
+        const textColor = isUncat ? 'color:#ef4444' : 'color:var(--text-secondary)';
+        const accentColor = isUncat ? 'color:#ef4444;font-weight:bold' : 'color:var(--accent)';
+
+        return `
+          <tr class="summary-row" style="${bgStyle}">
+            <td class="px-3 py-2 font-mono text-xs whitespace-nowrap" style="${accentColor}">${row.code}</td>
+            <td class="px-3 py-2 text-xs" style="${textColor}">${row.description}</td>
+            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-primary)'}">${row.ordinary.toFixed(2)}</td>
+            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-ot)'}">${row.overtime > 0 ? row.overtime.toFixed(2) : '—'}</td>
+          </tr>`;
+      }).join('')}
           <tr class="font-bold text-sm" style="background:var(--bg-day-header)">
             <td colspan="2" class="px-3 py-2" style="color:var(--text-day)">TOTAL</td>
             <td class="px-3 py-2 text-right" style="color:var(--text-day)">${totalOrd.toFixed(2)}</td>
@@ -4526,6 +4559,9 @@
         <span class="text-xs" style="color:var(--text-muted)">${formatDate(day.date)}</span>
         ${hasHours ? `<span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:var(--accent-light);color:var(--accent)">${ord.toFixed(1)}h${ot > 0 ? ` <span style="color:var(--text-ot)">+${ot.toFixed(1)} OT</span>` : ''}</span>` : ''}
         ${!isExpanded && actCount > 0 ? `<span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--bg-card-alt);color:var(--text-muted)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : ''}
+        ${day.activities.some(a => (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && a.codes.length === 0)
+          ? `<span class="w-2 h-2 rounded-full bg-red-500 animate-pulse ml-1" title="Missing code"></span>`
+          : ''}
       </div>
     </div>
       <div class="day-activities ${isExpanded ? 'expanded' : 'collapsed'}" ${isExpanded ? '' : 'style="max-height:0"'} id="day-${di}-activities">
@@ -4561,10 +4597,11 @@
         : '';
 
       const isExpanded = state.activitiesExpanded.has(act.id);
+      const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
 
       return `
   <div class="activity-item ${isExpanded ? 'expanded' : ''}" data-act-id="${act.id}" data-day="${di}" 
-       style="border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: var(--bg-card); transition: border-color 0.2s; box-shadow: var(--shadow-card);">
+       style="border: 1px solid ${isMissingCode ? '#ef4444' : 'var(--border)'}; border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: var(--bg-card); transition: border-color 0.2s; box-shadow: ${isMissingCode ? '0 0 8px rgba(239,68,68,0.3)' : 'var(--shadow-card)'};">
     
     <!-- Header (Always Visible) -->
     <div onclick="toggleActivityDetails('${act.id}')" class="activity-header-clickable"
@@ -4625,11 +4662,11 @@
       </div>
       
       <div style="margin-bottom: 14px;">
-        <span class="field-label">Work Codes</span>
-        <div style="background:var(--bg-code-btn);border:1px solid var(--accent-light);border-radius:12px;padding:10px 12px;">
+        <span class="field-label" style="${isMissingCode ? 'color:#ef4444;font-weight:bold' : ''}">Work Codes ${isMissingCode ? '<span class="ml-2 text-[10px] uppercase tracking-wider">● Code Required!</span>' : ''}</span>
+        <div style="background:var(--bg-code-btn);border:1px solid ${isMissingCode ? '#ef4444' : 'var(--accent-light)'};border-radius:12px;padding:10px 12px;">
           ${codesSection}
           <button onclick="openCodeModal(${di},'${act.id}')"
-            class="w-full text-left border border-dashed rounded-xl px-3 py-2 text-sm font-medium" style="background:transparent;color:var(--accent);border-color:var(--accent)">
+            class="w-full text-left border border-dashed rounded-xl px-3 py-2 text-sm font-medium" style="background:transparent;color:${isMissingCode ? '#ef4444' : 'var(--accent)'};border-color:${isMissingCode ? '#ef4444' : 'var(--accent)'}">
             ${act.codes.length ? '✎ Edit codes' : '+ Tap to add code'}
           </button>
         </div>
@@ -5545,7 +5582,7 @@
               <h2 class="text-2xl font-bold mb-1" style="color:var(--text-primary)">Exchange Finder</h2>
               <p class="text-sm text-muted">Locate exchanges and cabinets</p>
             </div>
-            <div class="text-xs px-2 py-1 rounded bg-accent-light" style="color:var(--accent); font-weight:700;">3.0.5</div>
+            <div class="text-xs px-2 py-1 rounded bg-accent-light" style="color:var(--accent); font-weight:700;">3.0.6</div>
           </div>
 
           <!-- Tab Switcher -->
