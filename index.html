@@ -1237,15 +1237,44 @@
       max-height: 1600px;
     }
 
-    /* Notes expansion animation */
     .notes-body-wrap {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .notes-body-wrap.open {
-      max-height: 300px;
+      max-height: 400px;
+      /* Increased buffer */
+    }
+
+    .notes-header-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      padding: 9px 12px;
+      border-radius: 10px;
+      margin-bottom: 0;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      transition: background 0.15s, border-color 0.15s, border-radius 0.25s;
+    }
+
+    .notes-header-btn.open {
+      border-radius: 10px 10px 0 0 !important;
+    }
+
+    .notes-chevron {
+      flex-shrink: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .notes-header-btn.open .notes-chevron {
+      transform: rotate(90deg) !important;
     }
 
     .activity-item.expanded {
@@ -2404,9 +2433,7 @@
     [data-theme="dark"] .note-detail textarea,
     [data-theme="dark"] .note-detail input[type="text"],
     [data-theme="dark"] .note-detail input[type="date"] {
-      background: rgba(255, 255, 255, 0.05);
       border-color: rgba(255, 255, 255, 0.1);
-    }
     }
 
     .note-detail textarea:focus,
@@ -2718,7 +2745,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.9.7';
+    const VERSION = '2.9.8';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -4133,16 +4160,32 @@
     }
 
     function toggleNotes(actId) {
-      // Find the activity to determine its current default open state
       let hasNote = false;
       for (const day of state.weekData.days) {
         const act = day.activities.find(a => a.id === actId);
         if (act) { hasNote = !!act.notes; break; }
       }
       const currentOpen = state.notesOpen.has(actId) ? state.notesOpen.get(actId) : hasNote;
-      state.notesOpen.set(actId, !currentOpen);
+      const nextOpen = !currentOpen;
+      state.notesOpen.set(actId, nextOpen);
       saveUiState();
-      render();
+
+      // Update DOM directly for transition
+      const btn = document.querySelector(`button[data-notes-btn="${actId}"]`);
+      const wrap = document.querySelector(`div[data-notes-wrap="${actId}"]`);
+      const spacer = document.querySelector(`div[data-notes-spacer="${actId}"]`);
+
+      if (btn) {
+        if (nextOpen) btn.classList.add('open');
+        else btn.classList.remove('open');
+      }
+      if (wrap) {
+        if (nextOpen) wrap.classList.add('open');
+        else wrap.classList.remove('open');
+      }
+      if (spacer) {
+        spacer.style.display = nextOpen ? 'none' : 'block';
+      }
     }
 
     function renderDaySection(day, di) {
@@ -4309,28 +4352,21 @@
           const hasNote = !!act.notes;
           const isOpen = state.notesOpen.has(act.id) ? state.notesOpen.get(act.id) : hasNote;
           const preview = hasNote ? act.notes.replace(/\n/g, ' ').slice(0, 60) + (act.notes.length > 60 ? '…' : '') : '';
-          const chevron = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;transition:transform .2s;transform:rotate(${isOpen ? '90deg' : '0deg'})"><polyline points="9 18 15 12 9 6"/></svg>`;
           return `
-      <button onclick="toggleNotes('${act.id}')" style="
-          display:flex;align-items:center;gap:8px;width:100%;text-align:left;cursor:pointer;
-          padding:9px 12px;border-radius:${isOpen ? '10px 10px 0 0' : '10px'};margin-bottom:0;
-          background:transparent;
-          border:1px dashed var(--border);
-          color:var(--text-muted);
-          transition:background .15s,border-color .15s,border-radius .15s;">
+      <button onclick="toggleNotes('${act.id}')" data-notes-btn="${act.id}" class="notes-header-btn ${isOpen ? 'open' : ''}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;${hasNote ? 'color:var(--accent)' : ''}"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span style="font-size:12px;font-weight:600;flex-shrink:0;">Notes</span>
         ${hasNote
               ? `<span style="flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0.7;color:var(--text-secondary);">${esc(preview)}</span>`
               : `<span style="flex:1;font-size:11px;opacity:0.4;font-style:italic;">Add a note…</span>`}
-        ${chevron}
+        <svg class="notes-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(${isOpen ? '90deg' : '0deg'})"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <div class="notes-body-wrap ${isOpen ? 'open' : ''}">
+      <div class="notes-body-wrap ${isOpen ? 'open' : ''}" data-notes-wrap="${act.id}">
         <textarea placeholder="Notes…" rows="2"
           class="card-notes-ta w-full rounded-lg px-3 py-2 outline-none" style="background:var(--bg-input);border:1px dashed var(--border);border-top:none;border-radius:0 0 10px 10px;color:var(--text-input);resize:none;overflow:hidden;min-height:50px;margin-bottom:14px;width:100%;display:block;"
           data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>
       </div>
-      ${!isOpen ? '<div style="margin-bottom:14px;"></div>' : ''}
+      <div data-notes-spacer="${act.id}" style="margin-bottom:14px; display:${isOpen ? 'none' : 'block'};"></div>
       `;
         })()}
 
