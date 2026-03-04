@@ -3044,7 +3044,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.0.23';
+    const VERSION = '3.0.24';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -5872,8 +5872,8 @@
       const sg = input.closest('.search-group');
       sg.classList.add('focused-search');
       setTimeout(() => {
-        // Scroll the input wrapper itself to the very top edge of the screen, hiding everything above it
-        input.closest('.search-input-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll the entire search group (including its heading) to the top edge of the screen
+        sg.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
     }
 
