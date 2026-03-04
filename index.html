@@ -2707,7 +2707,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '2.9.2';
+    const VERSION = '2.9.4';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -4352,7 +4352,8 @@
           const dateStr = dt.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
           const timeStr = dt.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
           const typeIcon = s.type === 'week' ? '📅' : '📝';
-          const typeLabel = s.type === 'week' ? `Week ${s.weekStart}` : 'Field Notes';
+          const ws = s.weekStart ? s.weekStart.substring(0, 10) : '';
+          const typeLabel = s.type === 'week' ? `Week ${ws}` : 'Field Notes';
 
           return `
           <div class="flex items-center gap-3 px-4 py-3 border-b last:border-0" style="border-color:var(--border)">
@@ -5096,28 +5097,41 @@
       const snap = state.historySnapshots[idx];
       if (!snap) return;
 
-      const typeLabel = snap.type === 'week' ? `Week ${snap.weekStart}` : 'All Field Notes';
+      const ws = snap.weekStart ? snap.weekStart.substring(0, 10) : '';
+      const typeLabel = snap.type === 'week' ? `Week ${ws}` : 'All Field Notes';
       if (!confirm(`Restore backup from "${snap.deviceName}" (${new Date(snap.timestamp).toLocaleString()})?\n\nThis will overwrite your current ${typeLabel}.`)) return;
 
       try {
         const data = JSON.parse(snap.data);
+        const ts = Date.now();
         if (snap.type === 'week') {
+          data._updatedAt = ts;
           state.weekData = data;
-          state.weekStart = snap.weekStart;
+          state.weekStart = ws;
           state.weekBase = deepCopy(data);
-          await dbPut('weeks', { weekStart: snap.weekStart, data: data, updatedAt: Date.now() });
+          await dbPut('weeks', { weekStart: ws, data: data, updatedAt: ts });
           showToast('Week data restored');
           setView('week');
+
+          if (navigator.onLine) {
+            isSyncing = true; state.syncStatus = 'syncing'; updateHeaderStatus();
+            await apiPost({ action: 'saveWeek', weekStart: ws, weekData: data, deviceName: state.deviceName });
+            isSyncing = false; state.syncStatus = 'synced'; updateHeaderStatus();
+          }
         } else {
           state.notes = data.notes || [];
           state.notesBase = deepCopy(state.notes);
-          state.notesLocalTime = Date.now();
-          await dbPut('notes', { id: 'notes_all', data: state.notes, updatedAt: Date.now() });
+          state.notesLocalTime = ts;
+          await dbPut('notes', { id: 'notes_all', data: state.notes, updatedAt: ts });
           showToast('Notes restored');
           setView('notes');
+
+          if (navigator.onLine) {
+            state.notesSyncStatus = 'syncing'; updateHeaderStatus();
+            await apiPost({ action: 'saveNotes', notes: state.notes, _updatedAt: ts, deviceName: state.deviceName });
+            state.notesSyncStatus = 'synced'; updateHeaderStatus();
+          }
         }
-        // Force a sync to server after restore
-        if (snap.type === 'week') syncNow(); else syncNotes();
       } catch (e) {
         showToast('Restore failed: ' + e.message);
       }
