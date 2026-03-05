@@ -3068,7 +3068,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.0.32';
+    const VERSION = '3.0.33';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -6386,7 +6386,7 @@
       const lastView = localStorage.getItem('lastView');
       if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges') state.view = lastView;
 
-      await Promise.all([initDB(), loadCodes(), loadTowns()]);
+      await Promise.all([initDB(), loadCodes(), loadTowns(), loadCabinets()]);
 
       // Pre-populate notes from local DB NOW — before loadWeek triggers any render —
       // so the notes view never shows blank while waiting for the week API call
@@ -6404,11 +6404,6 @@
       // Full sync for the restored view (updates from server, merges, saves back to DB)
       if (state.view === 'notes') loadNotes();
       else if (state.view === 'history') loadHistory();
-      else if (state.view === 'exchanges') {
-        if (!state.exchanges.length || !state.cabinets.length) {
-          Promise.all([loadTowns(), loadCabinets()]).then(render);
-        }
-      }
     }
 
     function openRecoveryModal() {
