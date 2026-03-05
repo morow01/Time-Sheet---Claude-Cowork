@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Press+Start+2P&family=Silkscreen&family=VT323&family=Pixelify+Sans:wght@400..700&family=Bitcount+Single&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Press+Start+2P&family=Silkscreen&family=VT323&family=Pixelify+Sans:wght@400..700&family=Bitcount+Single&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -751,6 +751,58 @@
     }
 
     /* Entire Day Card is the main bordered box again */
+    [data-theme="retro"] .activity-card {
+      box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+    }
+
+    /* ===== CLAUDE THEME (v3.1) ===== */
+    [data-theme="claude"] {
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --bg-page: #E8EEF5;
+      --bg-header: #0F1C2E;
+      --bg-header-tab: #162438;
+      --text-header: #FFFFFF;
+      --text-header-sub: rgba(255, 255, 255, 0.6);
+      --bg-card: #FFFFFF;
+      --bg-card-alt: #F4F7FA;
+      --bg-day-header: #FFFFFF;
+      --accent: #2D6BE4;
+      --accent-light: #EBF1FD;
+      --text-primary: #0F1C2E;
+      --text-secondary: #4A6580;
+      --text-muted: #8BA5BE;
+      --border: #D4E0EC;
+      --bg-ot: #FEF3DC;
+      --text-ot: #F5A623;
+      --btn-danger-bg: #FDECEA;
+      --btn-danger-color: #E8453C;
+      --radius: 12px;
+    }
+
+    [data-theme="claude"] body {
+      font-family: var(--font-body);
+    }
+
+    [data-theme="claude"] .font-mono,
+    [data-theme="claude"] .t-code,
+    [data-theme="claude"] .task-hours {
+      font-family: var(--font-mono) !important;
+    }
+
+    [data-theme="claude"] header {
+      padding-top: 14px;
+    }
+
+    /* Space for "Status Bar" feel */
+    [data-theme="claude"] .rounded-2xl {
+      border-radius: var(--radius) !important;
+    }
+
+    [data-theme="claude"] .shadow-sm {
+      box-shadow: 0 2px 8px rgba(15, 28, 46, 0.08) !important;
+    }
+
     [data-theme="retro"] .day-card {
       border: 2px solid #000000 !important;
       box-shadow: 4px 4px 0 #000000 !important;
@@ -3068,7 +3120,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.0.37';
+    const VERSION = '3.1.0';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -4127,15 +4179,26 @@
         { id: 'spectrum', label: 'ZX Spectrum', swatch: '#0000D7' },
         { id: 'apple', label: 'macOS', swatch: '#007AFF' },
         { id: 'retro', label: 'Retro', swatch: '#a5d2ff' },
+        { id: 'claude', label: 'Claude (v3.1)', swatch: '#0F1C2E' },
       ];
-      const themeOptionsHtml = themes.map(t => `
-        <button class="theme-option ${currentTheme === t.id ? 'active' : ''}" onclick="setTheme('${t.id}')">
-          <span class="theme-swatch" style="background:${t.swatch}"></span>${t.label}
-        </button>`).join('') + `
-        <div style="height:1px;background:var(--border);margin:4px 0;"></div>
-        <button class="theme-option" onclick="openRecoveryModal()">
-          <span class="theme-swatch" style="background:#ef4444;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;">⚠</span>Sync Recovery
-        </button>`;
+      const menuOptionsHtml = [
+        // Secondary Views
+        { id: 'email', label: '✉ Email/Export', onClick: 'sendWeeklyEmail()', type: 'action' },
+        { id: 'history', label: '🕐 Sync History', onClick: "setView('history')", type: 'view' },
+        { id: 'table', label: `${state.layoutMode === 'table' ? '⊟ Mobile View' : '⊞ Spreadsheet'}`, onClick: 'toggleLayoutMode()', type: 'action' },
+        { id: 'jump', label: '🗓 Jump to Week', onClick: 'openDateModal()', type: 'action' },
+        { spacer: true },
+        // Themes
+        ...themes.map(t => ({ id: t.id, label: t.label, swatch: t.swatch, onClick: `setTheme('${t.id}')`, type: 'theme' })),
+        { spacer: true },
+        { id: 'recovery', label: '⚠ Sync Recovery', onClick: 'openRecoveryModal()', type: 'action', color: '#ef4444' }
+      ].map(opt => {
+        if (opt.spacer) return '<div style="height:1px;background:var(--border);margin:4px 0;"></div>';
+        const isActive = (opt.type === 'view' && state.view === opt.id) || (opt.type === 'theme' && currentTheme === opt.id);
+        const swatch = opt.swatch ? `<span class="theme-swatch" style="background:${opt.swatch}"></span>` : '';
+        const warnStyle = opt.color ? `color:${opt.color};` : '';
+        return `<button class="theme-option ${isActive ? 'active' : ''}" onclick="${opt.onClick};toggleThemeMenu(event)" style="${warnStyle}">${swatch}${opt.label}</button>`;
+      }).join('');
       return `
   <header class="shadow-lg" style="background:var(--bg-header);color:var(--text-header)">
     <div class="flex items-center px-4 py-3 gap-2">
@@ -4149,19 +4212,12 @@
         </div>
       </div>
       <button onclick="nextWeek()" style="color:var(--text-header-sub)" class="text-xl px-1 py-1 min-w-[36px]">›</button>
-      <button onclick="openDateModal()" class="hdr-icon-btn" title="Jump to week">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-        </svg>
-      </button>
       <div class="theme-menu-wrap">
-        <button class="theme-menu-btn" onclick="toggleThemeMenu(event)" title="Choose theme">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/>
-          </svg>
-          <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor">
-            <path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
         <div class="theme-dropdown" id="theme-dropdown">
@@ -4171,23 +4227,21 @@
                    style="width: 100%; background: var(--bg-card-alt); border: 1px solid ${state.deviceName === 'Unknown Device' ? '#ef4444' : 'var(--border)'}; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--text-primary); outline: none;"
                    oninput="state.deviceName = this.value || 'Unknown Device'; localStorage.setItem('deviceName', state.deviceName);"
                    onclick="event.stopPropagation()">
-            ${state.deviceName === 'Unknown Device' ? '<div style="font-size: 10px; color: #ef4444; margin-top: 6px; line-height: 1.2;">Please set a name to identify this device\'s backups.</div>' : ''}
           </div>
-          ${themeOptionsHtml}
+          ${menuOptionsHtml}
         </div>
       </div>
     </div>
     <div class="flex" style="border-top:1px solid var(--border)">
-      <button onclick="setView('week')" class="flex-1 py-2 text-sm font-medium" style="color:${state.view === 'week' ? 'var(--text-header)' : 'var(--tab-inactive)'};${state.view === 'week' ? 'border-bottom:2px solid var(--tab-active)' : ''}">Week</button>
-      <button onclick="syncNow()" class="flex-1 py-2 text-sm font-medium" style="color:var(--tab-inactive)" title="Sync now">☁ Sync</button>
-      <button onclick="sendWeeklyEmail()" class="flex-1 py-2 text-sm font-medium" style="color:var(--tab-inactive)" title="Email weekly summary">✉ Email</button>
-      <button onclick="setView('history')" class="flex-1 py-2 text-sm font-medium" style="color:${state.view === 'history' ? 'var(--text-header)' : 'var(--tab-inactive)'};${state.view === 'history' ? 'border-bottom:2px solid var(--tab-active)' : ''}">History</button>
-      <button onclick="setView('notes')" class="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1" style="color:${state.view === 'notes' ? 'var(--text-header)' : 'var(--tab-inactive)'};${state.view === 'notes' ? 'border-bottom:2px solid var(--tab-active)' : ''}" title="Field Notes">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Notes${state.view === 'notes' ? `<span class="notes-sync-dot" style="background:${{ idle: 'var(--text-muted)', pending: '#f97316', syncing: '#3b82f6', synced: '#22c55e', error: '#ef4444' }[state.notesSyncStatus] || 'var(--text-muted)'}"></span>` : ''}
+      <button onclick="setView('week')" class="flex-1 py-3 text-sm font-bold flex flex-col items-center gap-1" style="color:${state.view === 'week' ? 'var(--text-header)' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #fff' : ''}">
+        <span>📋</span>Timesheet
       </button>
-      <button onclick="toggleLayoutMode()" class="tbl-toggle-btn flex-1 py-2 text-sm font-medium items-center justify-center gap-1" style="color:${state.layoutMode === 'table' ? 'var(--text-header)' : 'var(--tab-inactive)'};${state.layoutMode === 'table' ? 'border-bottom:2px solid var(--tab-active)' : ''}" title="Spreadsheet view">⊞ Table</button>
-      <button onclick="toggleAllDays()" class="flex-1 py-2 text-sm font-medium flex items-center justify-center gap-1" style="color:var(--tab-inactive)" title="${state.view === 'notes' ? (state.expandedNotes.size > 0 ? 'Collapse all notes' : 'Expand all notes') : (state.expandedDays.size > 0 ? 'Collapse all days' : 'Expand all days')}"><span class="global-all-chevron" style="display:inline-block;font-size:1.1em;line-height:1;transition:transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);transform:rotate(${(state.view === 'notes' ? state.expandedNotes.size > 0 : state.expandedDays.size > 0) ? '0deg' : '-90deg'})">▼</span> All</button>
+      <button onclick="setView('notes')" class="flex-1 py-3 text-sm font-bold flex flex-col items-center gap-1 relative" style="color:${state.view === 'notes' ? 'var(--text-header)' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #fff' : ''}">
+        <span>📝</span>Notes${state.notesSyncStatus !== 'synced' ? `<span class="notes-sync-dot" style="background:${{ idle: 'var(--text-muted)', pending: '#f97316', syncing: '#3b82f6', error: '#ef4444' }[state.notesSyncStatus] || 'var(--text-muted)'}"></span>` : ''}
+      </button>
+      <button onclick="setView('exchanges')" class="flex-1 py-3 text-sm font-bold flex flex-col items-center gap-1" style="color:${state.view === 'exchanges' ? 'var(--text-header)' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #fff' : ''}">
+        <span>🔍</span>Finder
+      </button>
     </div>
   </header>`;
     }
