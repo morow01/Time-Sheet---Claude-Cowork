@@ -755,6 +755,122 @@
       box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
     }
 
+    /* ===== SHARED LAYOUT (Phase 2) ===== */
+    .day-card {
+      margin-bottom: 32px;
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 16px 14px;
+      background: var(--bg-page);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1.5px solid var(--border);
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    .pill {
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 3px 10px;
+      letter-spacing: 0.02em;
+    }
+
+    .pill-slate {
+      background: var(--border);
+      color: var(--text-secondary);
+    }
+
+    .pill-blue {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .pill-amber {
+      background: var(--bg-ot);
+      color: var(--text-ot);
+    }
+
+    .activity-card {
+      background: var(--bg-card);
+      border-radius: var(--radius, 12px);
+      box-shadow: 0 4px 12px rgba(15, 28, 46, 0.06);
+      border: 1.5px solid var(--border);
+      margin: 0 14px 10px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .activity-card.expanded {
+      box-shadow: 0 8px 24px rgba(15, 28, 46, 0.12);
+    }
+
+    .task-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--act-number-bg, var(--text-primary));
+      color: var(--act-number-text, #fff);
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .task-num.ot {
+      background: var(--text-ot);
+    }
+
+    .activity-detail {
+      background: var(--bg-card-alt, #fdfdfe);
+      border-top: 1.5px solid var(--border);
+      padding: 16px;
+    }
+
+    .hrs-box {
+      background: var(--bg-page);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .hrs-box.ot-box {
+      border-color: var(--text-ot);
+      background: var(--bg-ot);
+    }
+
+    .hrs-stepper button {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border);
+      color: var(--text-primary);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s;
+    }
+
+    .hrs-stepper button:active {
+      background: var(--accent-light);
+      transform: scale(0.9);
+    }
+
+    .ot-box .hrs-stepper button {
+      border-color: var(--text-ot);
+      color: var(--text-ot);
+    }
+
     /* ===== CLAUDE THEME (v3.1) ===== */
     [data-theme="claude"] {
       --font-body: 'DM Sans', sans-serif;
@@ -792,118 +908,16 @@
       font-family: var(--font-mono) !important;
     }
 
-    /* Professional Day Headers */
     [data-theme="claude"] .day-card {
       border: none !important;
       background: transparent !important;
       box-shadow: none !important;
-      margin-bottom: 32px !important;
     }
 
     [data-theme="claude"] .day-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 16px 14px;
       background: var(--bg-page);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      border-bottom: 1.5px solid var(--border);
-      margin-bottom: 12px !important;
     }
 
-    /* Sub-pills for Day Totals */
-    [data-theme="claude"] .pill {
-      font-size: 10px;
-      font-weight: 700;
-      border-radius: 20px;
-      padding: 3px 10px;
-      letter-spacing: 0.02em;
-    }
-
-    [data-theme="claude"] .pill-slate {
-      background: var(--border);
-      color: var(--text-secondary);
-    }
-
-    [data-theme="claude"] .pill-blue {
-      background: var(--accent-light);
-      color: var(--accent);
-    }
-
-    [data-theme="claude"] .pill-amber {
-      background: var(--bg-ot);
-      color: var(--text-ot);
-    }
-
-    /* Modern Task Cards */
-    [data-theme="claude"] .activity-card {
-      background: var(--bg-card);
-      border-radius: var(--radius);
-      box-shadow: 0 4px 12px rgba(15, 28, 46, 0.06);
-      border: 1.5px solid var(--border);
-      margin: 0 14px 10px !important;
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    [data-theme="claude"] .activity-card:active {
-      transform: scale(0.99);
-      box-shadow: 0 2px 6px rgba(15, 28, 46, 0.08);
-    }
-
-    [data-theme="claude"] .task-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: var(--text-primary);
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    [data-theme="claude"] .task-num.ot {
-      background: var(--text-ot);
-    }
-
-    /* Expanded Detail Styling */
-    [data-theme="claude"] .activity-detail {
-      background: #fdfdfe;
-      border-top: 1.5px solid var(--border);
-      padding: 16px;
-    }
-
-    [data-theme="claude"] .hrs-box {
-      background: var(--bg-page);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-    }
-
-    [data-theme="claude"] .hrs-box.ot-box {
-      border-color: var(--text-ot);
-      background: var(--bg-ot);
-    }
-
-    [data-theme="claude"] .hrs-stepper button {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: #fff;
-      border: 1.5px solid var(--border);
-      color: var(--text-primary);
-      font-weight: 700;
-    }
-
-    [data-theme="claude"] .ot-box .hrs-stepper button {
-      border-color: var(--text-ot);
-      color: var(--text-ot);
-    }
 
     [data-theme="retro"] .day-card {
       border: 2px solid #000000 !important;
@@ -4766,10 +4780,10 @@
         <span class="day-date">${formatDate(day.date)}</span>
       </div>
       
-      <div class="day-pills">
+      <div class="day-pills" data-day-pills="${di}">
         ${actCount > 0 ? `<span class="pill pill-slate">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : ''}
-        ${ord > 0 ? `<span class="pill pill-blue">${Math.round(ord)}h</span>` : ''}
-        ${ot > 0 ? `<span class="pill pill-amber">+${Math.round(ot)} OT</span>` : ''}
+        ${ord > 0 ? `<span class="pill pill-blue" data-pill="ord">${Math.round(ord)}h</span>` : ''}
+        ${ot > 0 ? `<span class="pill pill-amber" data-pill="ot">+${Math.round(ot)} OT</span>` : ''}
         ${day.activities.some(a => (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && a.codes.length === 0)
           ? `<span class="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse ml-1" title="Code required"></span>`
           : ''}
@@ -4805,8 +4819,8 @@
             </div>
           </div>
           <div class="flex items-center gap-2">
-            ${ordinary > 0 ? `<div class="task-hours" style="font-size: 13px; font-weight: 700; color: var(--text-primary)">${ordinary}h</div>` : ''}
-            ${overtime > 0 ? `<div class="task-hours ot" style="font-size: 13px; font-weight: 700; color: var(--text-ot)">+${overtime} OT</div>` : ''}
+            ${ordinary > 0 ? `<div class="task-hours" data-row-hrs="${act.id}" style="font-size: 13px; font-weight: 700; color: var(--text-primary)">${ordinary}h</div>` : `<div class="task-hours" data-row-hrs="${act.id}"></div>`}
+            ${overtime > 0 ? `<div class="task-hours ot" data-row-ot="${act.id}" style="font-size: 13px; font-weight: 700; color: var(--text-ot)">+${overtime} OT</div>` : `<div class="task-hours ot" data-row-ot="${act.id}"></div>`}
             <span class="chevron" style="font-size: 14px; color: var(--text-muted); transform: ${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'}; transition: transform 0.2s">›</span>
           </div>
         </div>
@@ -4854,7 +4868,7 @@
                 <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px;">Ordinary</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
-                  <span class="val" style="font-size: 18px; font-weight: 700;">${act.ordinary || 0}</span>
+                  <span class="val" data-step-val="${act.id}-ordinary" style="font-size: 18px; font-weight: 700;">${act.ordinary || 0}</span>
                   <button onclick="stepHrs('${act.id}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
@@ -4862,7 +4876,7 @@
                 <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-ot); margin-bottom: 8px;">Overtime</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="stepHrs('${act.id}',${di},'overtime',-1)">−</button>
-                  <span class="val" style="font-size: 18px; font-weight: 700;">${act.overtime || 0}</span>
+                  <span class="val" data-step-val="${act.id}-overtime" style="font-size: 18px; font-weight: 700;">${act.overtime || 0}</span>
                   <button onclick="stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
@@ -4972,24 +4986,17 @@
 
     function stepHrs(actId, di, field, delta) {
       const day = state.weekData.days[di];
+      if (!day) return;
       const act = day.activities.find(a => a.id === actId);
       if (!act) return;
+
       let val = (parseFloat(act[field]) || 0) + delta;
       if (val < 0) val = 0;
       act[field] = val;
+
       updateHeaderStatus();
       syncNowDebounced();
-      // Live-update calculated displays when hours change
-      if (field === 'ordinary' || field === 'overtime') {
-        const numTasks = act.codes.length || 1;
-        const ord = parseFloat(act.ordinary) || 0;
-        const ot = parseFloat(act.overtime) || 0;
-        const hrsEl = document.querySelector(`[data-calc="hrsPerTask"][data-act="${actId}"]`);
-        const otEl = document.querySelector(`[data-calc="otPerTask"][data-act="${actId}"]`);
-        if (hrsEl) hrsEl.textContent = ord > 0 ? (ord / numTasks).toFixed(2) : '—';
-        if (otEl) otEl.textContent = ot > 0 ? (ot / numTasks).toFixed(2) : '—';
-        updateSummaryDisplay();
-      }
+      render(); // Guaranteed UI sync
     }
 
     function updateField(el) {
