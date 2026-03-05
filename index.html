@@ -757,33 +757,37 @@
 
     /* ===== SHARED LAYOUT (Phase 2) ===== */
     .day-card {
-      margin-bottom: 32px;
+      margin-bottom: 0px;
+      /* Stacked for compact view */
+      border-top: 1px solid var(--border);
     }
 
     .day-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 16px 14px;
-      background: var(--bg-page);
+      padding: 14px 16px;
+      background: var(--bg-day-header, var(--bg-card));
       position: sticky;
       top: 0;
       z-index: 10;
-      border-bottom: 1.5px solid var(--border);
-      margin-bottom: 12px;
       cursor: pointer;
+      transition: background 0.2s;
     }
 
     .pill {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
-      border-radius: 20px;
-      padding: 3px 10px;
-      letter-spacing: 0.02em;
+      border-radius: 9px;
+      padding: 4px 10px;
+      letter-spacing: 0.01em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .pill-slate {
-      background: var(--border);
+      background: #D1DAE5;
       color: var(--text-secondary);
     }
 
@@ -795,6 +799,34 @@
     .pill-amber {
       background: var(--bg-ot);
       color: var(--text-ot);
+    }
+
+    .dot-flash {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f97316;
+      box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: .4;
+        transform: scale(0.8);
+      }
     }
 
     .activity-card {
@@ -4772,10 +4804,16 @@
       const isExpanded = state.expandedDays.has(di);
       const activitiesHtml = day.activities.map((act, ai) => renderActivity(act, di, ai)).join('');
       const { ord, ot } = calcDayTotals(day);
-      const actCount = day.activities.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0).length;
+
+      // Count tasks that actually have content or hours
+      const activeActivities = day.activities.filter(a => a.description || a.codes.length || (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0));
+      const actCount = activeActivities.length;
+
+      // Check for missing codes in any activity with hours
+      const hasMissingCode = day.activities.some(a => (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && a.codes.length === 0);
 
       return `
-  <div class="day-card ${isWeekend ? 'day-weekend' : ''}" data-day-idx="${di}">
+  <div class="day-card ${isWeekend ? 'day-weekend' : ''} ${isExpanded ? 'expanded' : ''}" data-day-idx="${di}">
     <div class="day-header" onclick="toggleDay(${di})">
       <div class="day-left">
         <span class="chevron" style="transform: ${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'}; transition: transform 0.2s">›</span>
@@ -4787,9 +4825,7 @@
         ${actCount > 0 ? `<span class="pill pill-slate">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : ''}
         ${ord > 0 ? `<span class="pill pill-blue" data-pill="ord">${Math.round(ord)}h</span>` : ''}
         ${ot > 0 ? `<span class="pill pill-amber" data-pill="ot">+${Math.round(ot)} OT</span>` : ''}
-        ${day.activities.some(a => (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && a.codes.length === 0)
-          ? `<span class="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse ml-1" title="Code required"></span>`
-          : ''}
+        ${hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : ''}
       </div>
     </div>
     <div class="day-activities ${isExpanded ? 'active' : 'hidden'}" id="day-${di}-activities" style="${isExpanded ? '' : 'display:none'}">
