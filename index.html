@@ -848,9 +848,10 @@
     }
 
     .hrs-stepper button {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 40px;
+      /* Increased for better touch accessibility */
+      height: 40px;
+      border-radius: 10px;
       background: var(--bg-card);
       border: 1.5px solid var(--border);
       color: var(--text-primary);
@@ -859,6 +860,8 @@
       align-items: center;
       justify-content: center;
       transition: all 0.1s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .hrs-stepper button:active {
@@ -3201,7 +3204,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.2.0';
+    const VERSION = '3.2.1';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -4867,17 +4870,17 @@
               <div class="hrs-box flex-1">
                 <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px;">Ordinary</div>
                 <div class="hrs-stepper flex items-center justify-between">
-                  <button onclick="stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
+                  <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
                   <span class="val" data-step-val="${act.id}-ordinary" style="font-size: 18px; font-weight: 700;">${act.ordinary || 0}</span>
-                  <button onclick="stepHrs('${act.id}',${di},'ordinary',1)">+</button>
+                  <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
               <div class="hrs-box ot-box flex-1">
                 <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-ot); margin-bottom: 8px;">Overtime</div>
                 <div class="hrs-stepper flex items-center justify-between">
-                  <button onclick="stepHrs('${act.id}',${di},'overtime',-1)">−</button>
+                  <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
                   <span class="val" data-step-val="${act.id}-overtime" style="font-size: 18px; font-weight: 700;">${act.overtime || 0}</span>
-                  <button onclick="stepHrs('${act.id}',${di},'overtime',1)">+</button>
+                  <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
             </div>
