@@ -3068,7 +3068,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.0.36';
+    const VERSION = '3.0.37';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3373,6 +3373,7 @@
       selectedExchange: null,   // NEW
       selectedCabinet: null,    // NEW
       exchangeDetailTab: 'location', // 'location'|'details'|'address'|'security'|'power'|'emergency'|'additional'
+      snapshotPage: 0,
     };
 
     let codeModalCtx = { dayIndex: null, activityId: null, selected: [] };
@@ -4842,33 +4843,26 @@
         return `<div class="notes-view">${tabs}<main class="pb-6"><div class="mx-3 mt-3 rounded-2xl shadow-sm overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">${rows}</div></main></div>`;
       } else {
         // Snapshots Tab
-        if (!state.historySnapshots.length) {
+        const pageSize = 10;
+        const totalItems = state.historySnapshots.length;
+
+        if (totalItems === 0) {
           return `<div class="notes-view">${tabs}<main class="p-12 text-center" style="color:var(--text-muted)"><p class="text-4xl mb-3">🕒</p><p>No sync backups yet.<br><span class="text-xs opacity-70">Backups are created every time you sync.</span></p></main></div>`;
         }
-        const rows = state.historySnapshots.map((s, idx) => {
+
+        const totalPages = Math.ceil(totalItems / pageSize);
+        const currentPage = Math.max(0, Math.min(state.snapshotPage, totalPages - 1));
+        const startIdx = currentPage * pageSize;
+        const pageItems = state.historySnapshots.slice(startIdx, startIdx + pageSize);
+
+        const rows = pageItems.map((s, pIdx) => {
+          const idx = startIdx + pIdx;
           const dt = new Date(s.timestamp);
           const dateStr = dt.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
           const timeStr = dt.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
           const typeIcon = s.type === 'week' ? '📅' : '📝';
           const ws = s.weekStart ? s.weekStart.substring(0, 10) : '';
           const typeLabel = s.type === 'week' ? `Week ${ws}` : 'Field Notes';
-
-          let extraInfo = '';
-          try {
-            const data = JSON.parse(s.data);
-            if (s.type === 'week') {
-              const actCount = countActivities(data);
-              const hrs = data.days ? data.days.reduce((acc, d) => acc + d.activities.reduce((a2, act) => a2 + (parseFloat(act.ordinary) || 0) + (parseFloat(act.overtime) || 0), 0), 0) : 0;
-              const activeDays = data.days ? data.days.filter(d =>
-                (d.activities || []).some(act => (parseFloat(act.ordinary) || 0) > 0 || (parseFloat(act.overtime) || 0) > 0 || (act.description || '').trim() || (act.notes || '').trim())
-              ).map(d => (d.dayName || '').substring(0, 3)).join(', ') : '';
-              const daysStr = activeDays ? ` (${activeDays})` : '';
-              extraInfo = `<span class="opacity-70 mx-1">•</span> ${actCount} task${actCount !== 1 ? 's' : ''}, ${hrs.toFixed(1)} hrs${daysStr}`;
-            } else {
-              const noteCount = (data.notes || []).length;
-              extraInfo = `<span class="opacity-70 mx-1">•</span> ${noteCount} note${noteCount !== 1 ? 's' : ''}`;
-            }
-          } catch (e) { }
 
           return `
           <div class="flex items-center gap-3 px-4 py-3 border-b last:border-0" style="border-color:var(--border)">
@@ -4878,13 +4872,37 @@
                 <div class="font-bold text-sm" style="color:var(--text-primary)">${typeLabel}</div>
                 <div class="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase" style="background:${s.deviceName === 'Unknown Device' ? 'rgba(239,68,68,0.1)' : 'var(--bg-card-alt)'};color:${s.deviceName === 'Unknown Device' ? '#ef4444' : 'var(--text-muted)'};letter-spacing:0.02em;">${s.deviceName}</div>
               </div>
-              <div class="text-xs mt-0.5" style="color:var(--text-muted)">${dateStr} at ${timeStr} ${extraInfo}</div>
+              <div class="text-xs mt-0.5" style="color:var(--text-muted)">${dateStr} at ${timeStr}</div>
             </div>
             <button onclick="restoreSnapshot(${idx})" class="px-3 py-1.5 rounded-lg text-[11px] font-bold" 
                     style="background:var(--accent);color:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.1)">Restore</button>
           </div>`;
         }).join('');
-        return `<div class="notes-view">${tabs}<main class="pb-6"><div class="mx-3 mt-3 rounded-2xl shadow-sm overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">${rows}</div></main></div>`;
+
+        let pagination = '';
+        if (totalPages > 1) {
+          pagination = `
+            <div class="flex items-center justify-center gap-4 mt-6">
+              <button onclick="setSnapshotPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''} 
+                class="px-4 py-2 rounded-xl text-xs font-bold transition-all ${currentPage === 0 ? 'opacity-30' : 'active:scale-95'}"
+                style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary)">
+                ← Previous
+              </button>
+              <div class="text-xs font-bold" style="color:var(--text-muted)">
+                Page ${currentPage + 1} of ${totalPages}
+              </div>
+              <button onclick="setSnapshotPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''} 
+                class="px-4 py-2 rounded-xl text-xs font-bold transition-all ${currentPage >= totalPages - 1 ? 'opacity-30' : 'active:scale-95'}"
+                style="background:var(--bg-card); border:1px solid var(--border); color:var(--text-primary)">
+                Next →
+              </button>
+            </div>`;
+        }
+
+        return `<div class="notes-view">${tabs}<main class="pb-8">
+          <div class="mx-3 mt-3 rounded-2xl shadow-sm overflow-hidden" style="background:var(--bg-card);border:1px solid var(--border)">${rows}</div>
+          ${pagination}
+        </main></div>`;
       }
     }
 
@@ -5597,6 +5615,8 @@
 
     async function loadHistory() {
       state.historyWeeks = [];
+      state.snapshotPage = 0;
+      state.historySnapshots = [];
       render();
       // Load from local DB
       const all = await dbGetAll('weeks');
@@ -5623,6 +5643,11 @@
         } catch (e) { }
       }
 
+      render();
+    }
+
+    function setSnapshotPage(page) {
+      state.snapshotPage = page;
       render();
     }
 
