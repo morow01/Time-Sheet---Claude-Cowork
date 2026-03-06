@@ -76,23 +76,31 @@
     }
 
     /* ===== SHARED LAYOUT (Phase 2) ===== */
-    .day-card {
-      margin: 0 12px 6px;
+    .week-list {
       background: #FFFFFF;
-      border-radius: 14px;
-      border: 1.5px solid var(--border);
+      border-top: 1px solid #E0E8F0;
+      border-bottom: 1px solid #E0E8F0;
+    }
+
+    .day-card {
+      margin: 0;
+      background: #FFFFFF;
+      border-radius: 0;
+      border: none;
+      border-bottom: 1px solid #EAEFF5;
       overflow: clip;
-      transition: box-shadow 0.2s;
+    }
+
+    .day-card:last-child {
+      border-bottom: none;
     }
 
     .day-card.day-weekend {
-      background: #FFFFFF;
-      border-color: #E8F0F7;
+      background: #FAFBFC;
     }
 
     .day-card.expanded {
-      box-shadow: 0 4px 20px rgba(15,28,46,0.10);
-      border-color: #B8CDE0;
+      background: #FFFFFF;
     }
 
     .day-header {
@@ -254,7 +262,7 @@
     }
 
     .activity-detail {
-      background: #ffffff;
+      background: #E8EEF5;
       border-top: 1.5px solid var(--border);
       padding: 16px;
       overflow: hidden;
@@ -639,15 +647,6 @@
       margin: 2px;
     }
 
-    .day-card {
-      background: var(--bg-card);
-      box-shadow: var(--shadow-card);
-      transition: box-shadow 0.2s ease, background 0.3s ease;
-    }
-
-    .day-card:hover {
-      box-shadow: var(--shadow-card-hover);
-    }
 
     .day-header {
       cursor: pointer;
@@ -2446,7 +2445,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.5.9';
+    const VERSION = '3.6.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3464,7 +3463,7 @@
     </div>` : ''}
   </div>`;
 
-      return `<main class="pb-6 pt-3">${daysHtml}${summaryHtml}</main>`;
+      return `<main class="pb-6"><div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
     }
 
     // ============================================================
