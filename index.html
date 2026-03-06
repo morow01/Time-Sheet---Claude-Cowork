@@ -3336,7 +3336,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.3.9';
+    const VERSION = '3.3.10';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -3777,6 +3777,16 @@
       return { weekStart, days };
     }
 
+    function enforceCorrectDates(weekStart, weekData) {
+      if (!weekStart || !weekData || !weekData.days) return;
+      weekData.days.forEach((day, i) => {
+        const d = new Date(weekStart + 'T00:00:00');
+        d.setDate(d.getDate() + i);
+        day.date = dateToStr(d);
+        day.dayName = DAY_NAMES[i];
+      });
+    }
+
     // Persist day-expanded and notes-open state to localStorage (per week)
     function saveUiState() {
       if (!state.weekStart) return;
@@ -3984,6 +3994,7 @@
       // Load from local DB first (for instant display)
       const local = await dbGet('weeks', weekStart);
       state.weekData = local ? deepCopy(local.data) : createEmptyWeek(weekStart);
+      enforceCorrectDates(weekStart, state.weekData);
       autoExpandToday();
 
       render();
@@ -4009,6 +4020,7 @@
               // to avoid merging server data with a default empty activity structure.
               const baseline = window._forcePull ? null : (local ? local.data : null);
               const merged = (!local && !window._forcePull) ? deepCopy(remote) : mergeWeekData(baseline, state.weekData, remote);
+              enforceCorrectDates(weekStart, merged);
               state.weekData = merged;
               state.weekBase = deepCopy(remote);
               await dbPut('weeks', { weekStart, data: merged, updatedAt: remoteTime || Date.now() });
@@ -6412,6 +6424,7 @@
 
         const ts = Date.now();
         if (snap.type === 'week') {
+          enforceCorrectDates(ws, data);
           data._updatedAt = ts;
           state.weekData = data;
           state.weekStart = ws;
