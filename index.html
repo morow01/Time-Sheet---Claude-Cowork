@@ -2446,7 +2446,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.5.7';
+    const VERSION = '3.5.8';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3050,6 +3050,12 @@
 
         const remote = snap.data();
         if (!remote.days) return;
+
+        // Skip stale snapshots — if the remote data is older than our local
+        // state (e.g. a confirmed write echoing back after we've already made
+        // newer local edits), ignore it to prevent overwriting unsaved changes
+        if (remote._updatedAt && state.weekData._updatedAt &&
+            remote._updatedAt < state.weekData._updatedAt) return;
 
         enforceCorrectDates(weekStart, remote);
         state.weekData = deepCopy(remote);
