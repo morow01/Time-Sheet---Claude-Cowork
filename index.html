@@ -42,8 +42,6 @@
       --text-muted: #8BA5BE;
       --border: #D4E0EC;
       --border-input: #D4E0EC;
-      --border-day: #2D6BE4;
-      --border-day-we: #C5D5E4;
       --border-dashed: #D4E0EC;
       --bg-ot: #FEF3DC;
       --text-ot: #F5A623;
@@ -637,7 +635,6 @@
     }
 
     .day-card {
-      border-left: 6px solid var(--border-day);
       background: var(--bg-card);
       box-shadow: var(--shadow-card);
       transition: box-shadow 0.2s ease, background 0.3s ease;
@@ -645,10 +642,6 @@
 
     .day-card:hover {
       box-shadow: var(--shadow-card-hover);
-    }
-
-    .day-weekend {
-      border-left-color: var(--border-day-we);
     }
 
     .day-header {
@@ -2448,7 +2441,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.5.4';
+    const VERSION = '3.5.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
