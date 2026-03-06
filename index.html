@@ -944,41 +944,46 @@
     }
 
     .hrs-box {
-      background: var(--bg-page);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
+      flex: 1;
     }
 
-    .hrs-box.ot-box {
+
+    .hrs-stepper {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+
+    .ot-box .hrs-stepper {
       border-color: var(--text-ot);
       background: var(--bg-ot);
     }
 
     .hrs-stepper button {
-      width: 40px;
-      /* Increased for better touch accessibility */
-      height: 40px;
-      border-radius: 10px;
-      background: var(--bg-card);
-      border: 1.5px solid var(--border);
-      color: var(--text-primary);
-      font-weight: 700;
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 20px;
+      font-weight: 400;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.1s;
+      transition: background 0.1s;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
     }
 
     .hrs-stepper button:active {
-      background: var(--accent-light);
-      transform: scale(0.9);
+      background: rgba(0, 0, 0, 0.06);
     }
 
     .ot-box .hrs-stepper button {
-      border-color: var(--text-ot);
       color: var(--text-ot);
     }
 
@@ -3312,7 +3317,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.3.0';
+    const VERSION = '3.3.1';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
