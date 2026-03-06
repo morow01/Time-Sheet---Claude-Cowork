@@ -3336,7 +3336,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.3.4';
+    const VERSION = '3.3.6';
     const API_URL = 'https://script.google.com/macros/s/AKfycbwHbuuctWpT1QWqQc8C1fINQyBJhssIIeh3duuQgAHiCpGBRUVnPEmUnDlEDu5mQbZk/exec';
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -5009,15 +5009,20 @@
 
             <div class="flex flex-col gap-1.5">
               <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted)">Work Codes</span>
-              <div class="flex flex-wrap gap-2">
+              <div style="background: #F8F8F6; border-radius: 10px; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
                 ${act.codes.map(c => `
-                  <div style="display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); font-size: 12px; font-weight: 600; border-radius: 8px; padding: 6px 12px; border: 1px solid rgba(45, 107, 228, 0.1);">
-                    ${c.d} <span style="font-family: var(--font-mono); opacity: 0.7; font-size: 10px;">${c.c}</span>
-                    <button onclick="removeCode('${act.id}',${di},'${c.c}')" style="color: var(--accent); opacity: 0.6; font-size: 12px;">✕</button>
+                  <div style="display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1.5px solid #EBEBEA; border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #1A1A1A;">
+                    ${c.d}
+                    <span style="font-family: var(--font-mono, 'DM Mono', monospace); font-size: 10px; color: #8A8A88; font-weight: 400;">${c.c}</span>
+                    <button onclick="removeCode('${act.id}',${di},'${c.c}')"
+                      style="background: none; border: none; cursor: pointer; color: #BBBBB8; font-size: 13px; line-height: 1; padding: 0; display: flex; align-items: center;"
+                      onmouseover="this.style.color='#F04E3E'" onmouseout="this.style.color='#BBBBB8'">×</button>
                   </div>`).join('')}
-                <button onclick="openCodeModal(${di},'${act.id}')" 
-                  style="display: inline-flex; align-items: center; gap: 4px; border: 1.5px dashed var(--accent); color: var(--accent); font-size: 12px; font-weight: 700; border-radius: 8px; padding: 5px 12px; background: #fff;">
-                  + Code
+                <button onclick="openCodeModal(${di},'${act.id}')"
+                  style="background: none; border: 1.5px dashed #D0D0CE; border-radius: 7px; padding: 4px 10px; font-family: inherit; font-size: 12px; color: #8A8A88; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s;"
+                  onmouseover="this.style.borderColor='#1A1A1A';this.style.color='#1A1A1A'" onmouseout="this.style.borderColor='#D0D0CE';this.style.color='#8A8A88'">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  Code
                 </button>
               </div>
               ${isMissingCode ? `<div style="font-size: 11px; color: var(--btn-danger-color); font-weight: 600; margin-top: 4px;">⚠️ Missing work code</div>` : ''}
