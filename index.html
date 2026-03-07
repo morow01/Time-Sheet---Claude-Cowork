@@ -778,24 +778,7 @@
       background: var(--summary-even);
     }
 
-    /* ── JSX-style Weekly Summary ── */
-    .sum-section {
-      background: #FFFFFF;
-      border-top: 2px solid #D4E0EC;
-    }
-
-    .sum-hdr {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px 13px;
-      background: #FFFFFF;
-      border: none;
-      border-bottom: 1px solid #EAEFF5;
-      cursor: pointer;
-      text-align: left;
-    }
+    /* (old sum-hdr styles removed — replaced by sum-hero) */
 
     .sum-title {
       font-size: 11px;
@@ -882,9 +865,42 @@
       to   { opacity: 0; transform: translateY(4px); }
     }
 
+    /* ── Summary section header (lined label) ── */
+    .sum-section-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 14px 8px;
+    }
+    .sum-section-line {
+      flex: 1;
+      height: 1px;
+      background: #D4E0EC;
+    }
+    .sum-section-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #8BA5BE;
+    }
+
     /* ── Summary section wrapper ── */
+    /* Mobile: full-width, no side margins */
     .sum-section {
-      margin: 10px 10px 4px;
+      margin: 0 0 12px;
+    }
+    /* Desktop: add side margins + rounded card feel */
+    @media (min-width: 580px) {
+      .sum-section { margin: 0 10px 12px; }
+    }
+
+    /* Increase code + description font on mobile */
+    .sum-td-code-mob {
+      font-size: 11px;
+    }
+    .sum-td-desc {
+      font-size: 12px;
     }
 
     /* ── Gradient hero button ── */
@@ -1070,6 +1086,11 @@
       background: var(--bg-card-alt);
       border-top: 1.5px solid var(--border);
       align-items: center;
+    }
+    /* Hide desktop spacer on mobile so label|ord|ot fills 3 cols cleanly */
+    .sum-total-spacer { display: none; }
+    @media (min-width: 580px) {
+      .sum-total-spacer { display: block; }
     }
     .sum-total-label {
       font-size: 10px;
@@ -3694,16 +3715,16 @@
       </div>
     </div>
     <div class="flex" style="border-top:1px solid var(--border)">
-      <button onclick="setView('week')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5" style="color:${state.view === 'week' ? 'var(--text-header)' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #fff' : ''}">
+      <button onclick="setView('week')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5" style="color:${state.view === 'week' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         <svg class="opacity-80" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         Timesheet
       </button>
-      <button onclick="setView('notes')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5 relative" style="color:${state.view === 'notes' ? 'var(--text-header)' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #fff' : ''}">
+      <button onclick="setView('notes')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5 relative" style="color:${state.view === 'notes' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         <svg class="opacity-80" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         Notes
-        ${state.notesSyncStatus !== 'synced' ? `<span class="notes-sync-dot" style="background:${{ idle: 'var(--text-muted)', pending: '#f97316', syncing: '#3b82f6', error: '#ef4444' }[state.notesSyncStatus] || 'var(--text-muted)'}"></span>` : ''}
+        ${{ pending: '#f97316', syncing: '#3b82f6', error: '#ef4444' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: '#f97316', syncing: '#3b82f6', error: '#ef4444' }[state.notesSyncStatus]}"></span>` : ''}
       </button>
-      <button onclick="setView('exchanges')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5" style="color:${state.view === 'exchanges' ? 'var(--text-header)' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #fff' : ''}">
+      <button onclick="setView('exchanges')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         <svg class="opacity-80" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         Finder
       </button>
@@ -3731,6 +3752,11 @@
       const chevronSvg = `<svg class="sum-chevron-svg${state.showSummary ? '' : ' flipped'}" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
       const summaryHtml = `
+  <div class="sum-section-hdr">
+    <div class="sum-section-line"></div>
+    <div class="sum-section-label">Weekly Summary</div>
+    <div class="sum-section-line"></div>
+  </div>
   <div class="sum-section">
     <button onclick="toggleSummary()" class="sum-hero${state.showSummary ? '' : ' collapsed'}">
       <div>
@@ -3772,7 +3798,7 @@
       }).join('')}
       <div class="sum-grid-total" style="animation:sumFadeRow 0.3s ease both;animation-delay:${summary.length * 30}ms">
         <div class="sum-total-label">Total</div>
-        <div></div>
+        <div class="sum-total-spacer"></div>
         <div class="sum-total-val">${Math.round(totalOrd)}</div>
         <div class="sum-total-val ot">${Math.round(totalOT)}</div>
       </div>
