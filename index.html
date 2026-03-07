@@ -2889,7 +2889,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.6.9';
+    const VERSION = '3.6.10';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3861,7 +3861,7 @@
 
       const daysHtml = state.weekData.days.map((day, di) => renderDaySection(day, di)).join('');
 
-      const chevronSvg = `<svg class="sum-chevron-svg${state.showSummary ? '' : ' flipped'}" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const chevronSvg = `<svg class="sum-chevron-svg${(state.showSummary && !state.animatingSummary) ? '' : ' flipped'}" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
       const summaryHtml = `
   <div class="sum-section-hdr">
@@ -3869,8 +3869,8 @@
     <div class="sum-section-label">Weekly Summary</div>
     <div class="sum-section-line"></div>
   </div>
-  <div class="sum-section${state.showSummary ? ' expanded' : ''}">
-    <button onclick="toggleSummary()" class="sum-hero${state.showSummary ? '' : ' collapsed'}">
+  <div class="sum-section${(state.showSummary && !state.animatingSummary) ? ' expanded' : ''}">
+    <button onclick="toggleSummary()" class="sum-hero${(state.showSummary && !state.animatingSummary) ? '' : ' collapsed'}">
       <div>
         <div class="sum-hero-label">Week Total</div>
         <div class="sum-hero-nums">
@@ -4622,6 +4622,13 @@
 
     function toggleSummary() {
       if (state.showSummary) {
+        const sumSection = document.querySelector('.sum-section');
+        const sumHero = document.querySelector('.sum-hero');
+        const chevron = document.querySelector('.sum-chevron-svg');
+        if (sumSection) sumSection.classList.remove('expanded');
+        if (sumHero) sumHero.classList.add('collapsed');
+        if (chevron) chevron.classList.add('flipped');
+
         // Animate rows out (reverse stagger: bottom row first), then collapse
         const animRows = [
           ...document.querySelectorAll('.sum-grid-row'),
@@ -4638,11 +4645,24 @@
         });
 
         // Wait for last animation to finish before re-rendering
-        const waitMs = (total - 1) * 30 + 200;
+        const waitMs = (total - 1) * 30 + 300;
         setTimeout(() => { state.showSummary = false; render(); }, waitMs);
       } else {
         state.showSummary = true;
+        state.animatingSummary = true;
         render();
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const sumSection = document.querySelector('.sum-section');
+            const sumHero = document.querySelector('.sum-hero');
+            const chevron = document.querySelector('.sum-chevron-svg');
+            if (sumSection) sumSection.classList.add('expanded');
+            if (sumHero) sumHero.classList.remove('collapsed');
+            if (chevron) chevron.classList.remove('flipped');
+            setTimeout(() => { state.animatingSummary = false; }, 300);
+          });
+        });
       }
     }
 
