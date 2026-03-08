@@ -2989,7 +2989,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.6.21';
+    const VERSION = '3.6.22';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3891,7 +3891,7 @@
     <div class="flex items-center px-4 py-3 gap-2">
       <button onclick="prevWeek()" style="color:var(--text-header-sub)" class="text-xl px-1 py-1 min-w-[36px]">‹</button>
       <div class="flex-1 text-center">
-        <div class="font-bold text-base leading-tight">${state.weekStart ? formatWeekRange(state.weekStart) : '—'}</div>
+        <div class="font-bold text-base leading-tight" onclick="openDateModal()" style="cursor:pointer; padding:2px 8px; border-radius:6px; display:inline-block; transition:background 0.2s;" onmousedown="this.style.background='var(--bg-card-alt)'" onmouseup="this.style.background='transparent'" onmouseleave="this.style.background='transparent'">${state.weekStart ? formatWeekRange(state.weekStart) : '—'}</div>
         <div class="text-xs mt-0.5 flex items-center justify-center gap-2" style="color:var(--text-header-sub)">
           ${syncIcons[state.syncStatus] || ''}
           <span title="${syncTitles[state.syncStatus]}">${syncTitles[state.syncStatus]}</span>
