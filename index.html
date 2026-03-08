@@ -2924,7 +2924,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.6.12';
+    const VERSION = '3.6.13';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4375,8 +4375,9 @@
       const isMissingCode  = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
       const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
       const isInvalid      = isMissingCode || isMissingHours;
-      // Only show red border when collapsed — avoids false-positive flash while user is still filling in
-      const showRedBorder  = isInvalid && !isExpanded;
+      // Hours with no code → always red (you can't enter hours without a code)
+      // Code with no hours → only red when collapsed (grace period while picking code then adding hours)
+      const showRedBorder  = isMissingCode || (isMissingHours && !isExpanded);
       const numTasks = act.codes.length || 1;
       const hrsPerTask = ordinary > 0 ? Math.round(ordinary / numTasks) : '—';
       const otPerTask = overtime > 0 ? Math.round(overtime / numTasks) : '—';
