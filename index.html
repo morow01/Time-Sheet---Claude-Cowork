@@ -187,6 +187,52 @@
       font-weight: 500;
     }
 
+    /* Task row hour pills */
+    .pill-hrs {
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      background: #EBF1FD;
+      color: #2D6BE4;
+      white-space: nowrap;
+    }
+
+    .pill-ot {
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      background: #FEF3DC;
+      color: #C07800;
+      white-space: nowrap;
+    }
+
+    /* Activity card internals */
+    .act-meta         { display: flex; flex-direction: column; gap: 3px; }
+    .act-desc-txt     { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .act-row2         { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .act-loc-txt      { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+    .act-pill-row     { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+    .act-detail-inner { display: flex; flex-direction: column; gap: 14px; }
+
+    .act-field-label  { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+    .act-field-label-ot { color: var(--text-ot); }
+
+    .act-codes-wrap   { background: #F8F8F6; border-radius: 10px; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .act-code-chip    { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1.5px solid #EBEBEA; border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #1A1A1A; }
+    .act-code-mono    { font-family: var(--font-mono, 'DM Mono', monospace); font-size: 10px; color: #8A8A88; font-weight: 400; }
+    .act-code-del     { background: none; border: none; cursor: pointer; color: #BBBBB8; font-size: 13px; line-height: 1; padding: 0; display: flex; align-items: center; }
+    .act-code-del:hover { color: #F04E3E; }
+    .act-add-code     { background: none; border: 1.5px dashed #D0D0CE; border-radius: 7px; padding: 4px 10px; font-family: inherit; font-size: 12px; color: #8A8A88; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s; }
+    .act-add-code:hover { border-color: #1A1A1A; color: #1A1A1A; }
+    .act-missing-warn { font-size: 11px; color: var(--btn-danger-color); font-weight: 600; margin-top: 4px; }
+
+    .act-textarea     { width: 100%; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); outline: none; resize: none; overflow: hidden; }
+    .act-input        { width: 100%; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); outline: none; }
+    .act-notes-area   { width: 100%; background: transparent; border: none; padding: 0; font-size: 13px; color: var(--text-primary); outline: none; resize: none; overflow: hidden; }
+    .act-delete-btn   { width: 100%; background: var(--btn-danger-bg); color: var(--btn-danger-color); border: none; border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+
     .dot-flash {
       width: 8px;
       height: 8px;
@@ -248,18 +294,7 @@
       color: #E59A0D;
     }
 
-    .day-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-      letter-spacing: -0.01em;
-    }
-
-    .day-date {
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--text-muted);
-    }
+    /* .day-name and .day-date defined above (no duplicate) */
 
     .activity-detail {
       background: #FAFCFE;
@@ -2908,6 +2943,14 @@
     const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     // ============================================================
+    // ANIMATION / UI CONSTANTS
+    // ============================================================
+    const ANIM_STAGGER_MS  = 30;   // per-row stagger delay in summary animations
+    const ANIM_COLLAPSE_MS = 200;  // sumFadeRowOut duration
+    const ANIM_EXPAND_MS   = 300;  // expand / open transition duration
+    const TOAST_DURATION_MS = 2800; // default toast display time
+
+    // ============================================================
     // WORK CODES  — loaded from codes.json; embedded list is fallback
     // Edit codes.xlsx, run update-codes.py, then push to deploy changes
     // ============================================================
@@ -3711,7 +3754,7 @@
       window.open(`mailto:morow01@gmail.com?subject=${subject}&body=${body}`);
     }
 
-    function showToast(msg, duration = 2800) {
+    function showToast(msg, duration = TOAST_DURATION_MS) {
       let el = document.getElementById('toast-msg');
       if (!el) {
         el = document.createElement('div');
@@ -3898,7 +3941,7 @@
       ${summary.map((row, i) => {
         const m = row.isUncategorized;
         return `
-      <div class="sum-grid-row${m ? ' sum-missing' : ''}" style="animation-delay:${i * 30}ms">
+      <div class="sum-grid-row${m ? ' sum-missing' : ''}" style="animation-delay:${i * ANIM_STAGGER_MS}ms">
         <div class="sum-td-code-desk${m ? ' missing' : ''}">${row.code}</div>
         <div class="sum-td-main">
           <div class="sum-td-code-mob${m ? ' missing' : ''}">${row.code}</div>
@@ -3908,7 +3951,7 @@
         <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? Math.round(row.overtime) : '—'}</div>
       </div>`;
       }).join('')}
-      <div class="sum-grid-total" style="animation:sumFadeRow 0.3s ease both;animation-delay:${summary.length * 30}ms">
+      <div class="sum-grid-total" style="animation:sumFadeRow ${ANIM_EXPAND_MS / 1000}s ease both;animation-delay:${summary.length * ANIM_STAGGER_MS}ms">
         <div class="sum-total-label">Total</div>
         <div class="sum-total-spacer"></div>
         <div class="sum-total-val">${Math.round(totalOrd)}</div>
@@ -4202,7 +4245,7 @@
           activities.classList.add('hidden');
           activities.style.maxHeight = '0px';
           if (chevron) chevron.style.transform = 'rotate(0deg)';
-          setTimeout(() => { if (!state.expandedDays.has(di)) activities.style.display = 'none'; }, 300);
+          setTimeout(() => { if (!state.expandedDays.has(di)) activities.style.display = 'none'; }, ANIM_EXPAND_MS);
         } else {
           activities.style.display = 'block';
           activities.style.maxHeight = '0px';
@@ -4213,7 +4256,7 @@
           if (chevron) chevron.style.transform = 'rotate(90deg)';
           // Trigger autoGrow for all textareas within the expanded day
           activities.querySelectorAll('textarea').forEach(autoGrow);
-          setTimeout(() => { if (state.expandedDays.has(di)) activities.style.maxHeight = 'none'; }, 300);
+          setTimeout(() => { if (state.expandedDays.has(di)) activities.style.maxHeight = 'none'; }, ANIM_EXPAND_MS);
         }
       }
     }
@@ -4251,7 +4294,7 @@
         if (detail) {
           detail.classList.remove('open');
           detail.classList.add('hidden');
-          setTimeout(() => { detail.style.display = 'none'; }, 300);
+          setTimeout(() => { detail.style.display = 'none'; }, ANIM_EXPAND_MS);
         }
         if (chevron) chevron.style.transform = 'rotate(0deg)';
       }
@@ -4333,36 +4376,36 @@
       <div class="activity-card ${isExpanded ? 'expanded' : ''}" data-act-id="${act.id}" style="${isMissingCode ? 'border-color:var(--btn-danger-color); box-shadow: 0 0 8px rgba(232, 69, 60, 0.2)' : ''}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="toggleActivityDetails('${act.id}')">
           <div class="task-num ${overtime > 0 ? 'ot' : ''}">${actIndex + 1}</div>
-          <div class="flex-1 min-w-0" style="display:flex;flex-direction:column;gap:3px;">
+          <div class="flex-1 min-w-0 act-meta">
             <!-- Line 1: description, full width -->
-            <div style="font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(act.description) || '<span style="opacity:0.4;font-weight:400;font-style:italic">No description</span>'}</div>
+            <div class="act-desc-txt">${esc(act.description) || '<span style="opacity:0.4;font-weight:400;font-style:italic">No description</span>'}</div>
             <!-- Line 2: location left, hour pills right -->
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-              <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;">
+            <div class="act-row2">
+              <div class="act-loc-txt">
                 ${act.location ? `<span style="margin-right:2px">📍</span>${esc(act.location)}` : '<span style="opacity:0.4">No location</span>'}
               </div>
-              <div style="display:flex;gap:4px;flex-shrink:0;align-items:center;">
-                ${ordinary > 0 ? `<span data-row-hrs="${act.id}" style="padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500;background:#EBF1FD;color:#2D6BE4;white-space:nowrap;">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" style="display:none"></span>`}
-                ${overtime > 0 ? `<span data-row-ot="${act.id}" style="padding:2px 7px;border-radius:20px;font-size:11px;font-weight:500;background:#FEF3DC;color:#C07800;white-space:nowrap;">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" style="display:none"></span>`}
+              <div class="act-pill-row">
+                ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" style="display:none"></span>`}
+                ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" style="display:none"></span>`}
               </div>
             </div>
           </div>
           <span class="chevron" style="font-size:14px;color:var(--text-muted);transform:${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'};transition:transform 0.2s;flex-shrink:0;">›</span>
         </div>
         <div class="activity-detail ${isExpanded ? 'open' : ''}" style="${isExpanded ? '' : 'display:none'}">
-          <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="act-detail-inner">
             <div class="flex flex-col gap-1.5">
-              <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted)">Description</span>
+              <span class="act-field-label">Description</span>
               <textarea placeholder="Description of work" rows="1"
-                style="width: 100%; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); outline: none; resize: none; overflow: hidden;"
+                class="act-textarea"
                 data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
             </div>
-            
+
             <div class="flex flex-col gap-1.5">
-              <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted)">Location</span>
+              <span class="act-field-label">Location</span>
               <div class="location-wrap">
                 <input type="text" placeholder="Town name or code…" value="${esc(act.location)}"
-                  style="width: 100%; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: var(--text-primary); outline: none;"
+                  class="act-input"
                   data-field="location" data-act="${act.id}" data-day="${di}"
                   autocomplete="off" spellcheck="false"
                   oninput="updateField(this);townSearch(this)"
@@ -4373,29 +4416,27 @@
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted)">Work Codes</span>
-              <div style="background: #F8F8F6; border-radius: 10px; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+              <span class="act-field-label">Work Codes</span>
+              <div class="act-codes-wrap">
                 ${act.codes.map(c => `
-                  <div style="display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1.5px solid #EBEBEA; border-radius: 7px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #1A1A1A;">
+                  <div class="act-code-chip">
                     ${c.d}
-                    <span style="font-family: var(--font-mono, 'DM Mono', monospace); font-size: 10px; color: #8A8A88; font-weight: 400;">${c.c}</span>
+                    <span class="act-code-mono">${c.c}</span>
                     <button onclick="removeCode('${act.id}',${di},'${c.c}')"
-                      style="background: none; border: none; cursor: pointer; color: #BBBBB8; font-size: 13px; line-height: 1; padding: 0; display: flex; align-items: center;"
-                      onmouseover="this.style.color='#F04E3E'" onmouseout="this.style.color='#BBBBB8'">×</button>
+                      class="act-code-del">×</button>
                   </div>`).join('')}
                 <button onclick="openCodeModal(${di},'${act.id}')"
-                  style="background: none; border: 1.5px dashed #D0D0CE; border-radius: 7px; padding: 4px 10px; font-family: inherit; font-size: 12px; color: #8A8A88; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s;"
-                  onmouseover="this.style.borderColor='#1A1A1A';this.style.color='#1A1A1A'" onmouseout="this.style.borderColor='#D0D0CE';this.style.color='#8A8A88'">
+                  class="act-add-code">
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                   Code
                 </button>
               </div>
-              ${isMissingCode ? `<div style="font-size: 11px; color: var(--btn-danger-color); font-weight: 600; margin-top: 4px;">⚠️ Missing work code</div>` : ''}
+              ${isMissingCode ? `<div class="act-missing-warn">⚠️ Missing work code</div>` : ''}
             </div>
 
             <div class="flex gap-3">
               <div class="hrs-box flex-1">
-                <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 8px;">Ordinary HRS</div>
+                <div class="act-field-label" style="margin-bottom: 8px;">Ordinary HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
                   <span class="val" data-step-val="${act.id}-ordinary">${act.ordinary || 0}</span>
@@ -4403,7 +4444,7 @@
                 </div>
               </div>
               <div class="hrs-box ot-box flex-1">
-                <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-ot); margin-bottom: 8px;">Overtime HRS</div>
+                <div class="act-field-label act-field-label-ot" style="margin-bottom: 8px;">Overtime HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
                   <span class="val" data-step-val="${act.id}-overtime">${act.overtime || 0}</span>
@@ -4420,14 +4461,13 @@
               <span>OT/Task: <strong data-calc="otPerTask" data-act="${act.id}" style="color:var(--text-ot)">${otPerTask}</strong></span>
             </div>
 
-            <div class="notes-panel" style="border: 1.5px solid #EBEBEA; border-radius: 10px; overflow: hidden; background: #fff;">
-              <div class="notes-panel-header" onclick="event.stopPropagation(); toggleNotes('${act.id}')"
-                style="display: flex; align-items: center; gap: 8px; padding: 12px 14px; cursor: pointer;">
+            <div class="notes-panel">
+              <div class="notes-panel-header" onclick="event.stopPropagation(); toggleNotes('${act.id}')">
                 <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
                   <path d="M2 10.5L3.5 9H11V1H2v9.5z" stroke="#BBBBB8" stroke-width="1.4" stroke-linejoin="round"/>
                   <path d="M4 4.5h5M4 6.5h3" stroke="#BBBBB8" stroke-width="1.3" stroke-linecap="round"/>
                 </svg>
-                <div style="flex: 1; font-size: 13px; color: ${act.notes && act.notes.trim() ? '#1A1A1A' : '#BBBBB8'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <div class="notes-panel-preview ${act.notes && act.notes.trim() ? 'has-note' : ''}">
                   ${act.notes && act.notes.trim() ? esc(act.notes).replace(/\n/g, ' ') : 'Add a note…'}
                 </div>
                 <svg class="notes-chevron" data-notes-btn="${act.id}" width="12" height="12" viewBox="0 0 12 12" fill="none"
@@ -4437,13 +4477,13 @@
               </div>
               <div class="notes-panel-body ${notesOpen ? 'open' : ''}" data-notes-wrap="${act.id}">
                 <textarea placeholder="Notes…" rows="2"
-                  style="width: 100%; background: transparent; border: none; padding: 0; font-size: 13px; color: var(--text-primary); outline: none; resize: none; overflow: hidden;"
+                  class="act-notes-area"
                   data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>
               </div>
             </div>
 
             <button onclick="showConfirm('Delete task?','${esc(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))"
-              style="width: 100%; background: var(--btn-danger-bg); color: var(--btn-danger-color); border: none; border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
+              class="act-delete-btn">
               🗑 Delete task
             </button>
           </div>
@@ -4639,13 +4679,13 @@
         if (total === 0) { state.showSummary = false; render(); return; }
 
         animRows.forEach((row, i) => {
-          const delay = (total - 1 - i) * 30; // reverse order
-          row.style.animation = `sumFadeRowOut 0.2s ease both`;
+          const delay = (total - 1 - i) * ANIM_STAGGER_MS; // reverse order
+          row.style.animation = `sumFadeRowOut ${ANIM_COLLAPSE_MS / 1000}s ease both`;
           row.style.animationDelay = delay + 'ms';
         });
 
         // Wait for last animation to finish before re-rendering
-        const waitMs = (total - 1) * 30 + 300;
+        const waitMs = (total - 1) * ANIM_STAGGER_MS + ANIM_EXPAND_MS;
         setTimeout(() => { state.showSummary = false; render(); }, waitMs);
       } else {
         state.showSummary = true;
@@ -4660,7 +4700,7 @@
             if (sumSection) sumSection.classList.add('expanded');
             if (sumHero) sumHero.classList.remove('collapsed');
             if (chevron) chevron.classList.remove('flipped');
-            setTimeout(() => { state.animatingSummary = false; }, 300);
+            setTimeout(() => { state.animatingSummary = false; }, ANIM_EXPAND_MS);
           });
         });
       }
