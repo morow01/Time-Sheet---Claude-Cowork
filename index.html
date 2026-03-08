@@ -2989,7 +2989,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.6.23';
+    const VERSION = '3.6.24';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3696,58 +3696,74 @@
       const range = formatWeekRange(weekData.weekStart);
       const summary = calcSummary(weekData);
       const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
-      const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
-      const C = getEmailTheme();
+      const totalOT  = summary.reduce((s, r) => s + r.overtime, 0);
 
-      // Summary table rows — no "h" suffix, plain numbers for copy-paste
-      const summaryRows = summary.map(r => `
+      // Fixed light palette — matches app default light theme exactly
+      const C = {
+        outerBg:  '#F1F5F9',
+        cardBg:   '#ffffff',
+        border:   '#EAEFF5',
+        rowBorder:'#F0F4F8',
+        headBg:   '#F4F7FA',
+        label:    '#8BA5BE',
+        code:     '#2D6BE4',
+        txt:      '#1e293b',
+        txtSec:   '#475569',
+        txtMuted: '#8BA5BE',
+        ord:      '#1e293b',
+        ot:       '#C07800',
+        dash:     '#C8D8E8',
+        totalBg:  '#F4F7FA',
+        footBg:   '#EBF1F8',
+        footTxt:  '#94a3b8',
+      };
+
+      // ── Summary by Code table ──
+      const summaryRows = summary.map(r => {
+        const otVal = Math.round(r.overtime);
+        return `
         <tr>
-          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};vertical-align:middle;">
-            <span style="display:inline-block;background:${C.chip};color:${C.chipTxt};padding:3px 9px;border-radius:8px;font-size:11px;font-weight:600;line-height:1.4;">${esc(r.code)}</span>
-          </td>
-          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};font-size:13px;color:${C.txt};vertical-align:middle;">${esc(r.description)}</td>
-          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};font-size:13px;text-align:right;color:${C.ord};font-weight:700;vertical-align:middle;">${Math.round(r.ordinary)}</td>
-          <td style="padding:6px 12px;border-bottom:1px solid ${C.border};font-size:13px;text-align:right;color:${C.ot};font-weight:700;vertical-align:middle;">${Math.round(r.overtime)}</td>
-        </tr>`).join('');
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:12px;font-weight:600;color:${C.code};vertical-align:middle;white-space:nowrap;">${esc(r.code)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-size:13px;color:${C.txtSec};vertical-align:middle;">${esc(r.description)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;vertical-align:middle;white-space:nowrap;">${Math.round(r.ordinary)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${otVal > 0 ? C.ot : C.dash};text-align:right;vertical-align:middle;white-space:nowrap;">${otVal > 0 ? otVal : '—'}</td>
+        </tr>`; }).join('');
 
-      // Daily sections
+      // ── Daily breakdown sections ──
       let daysHtml = '';
       weekData.days.forEach(day => {
         const acts = day.activities.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0);
         if (!acts.length) return;
         let actsHtml = '';
-        acts.forEach((act, i) => {
+        acts.forEach(act => {
           const ord = Math.round(parseFloat(act.ordinary) || 0);
-          const ot = Math.round(parseFloat(act.overtime) || 0);
+          const ot  = Math.round(parseFloat(act.overtime)  || 0);
           const codesHtml = act.codes.map(c =>
-            `<span style="display:inline-block;background:${C.chip};color:${C.chipTxt};font-size:11px;padding:2px 7px;border-radius:10px;margin:1px 2px;">${esc(c.c)}</span>`
+            `<span style="font-family:monospace;font-size:11px;font-weight:600;color:${C.code};margin-right:6px;">${esc(c.c)}</span>`
           ).join('');
           actsHtml += `
             <tr>
-              <td style="padding:10px 14px;border-bottom:1px solid ${C.border};vertical-align:top;">
-                <div style="font-weight:600;font-size:14px;color:${C.txt};">${esc(act.description || '(no description)')}${act.location ? `<span style="color:${C.labelTxt};font-weight:400;"> &mdash; ${esc(act.location)}</span>` : ''}</div>
-                ${act.codes.length ? `<div style="margin-top:5px;">${codesHtml}</div>` : ''}
-                ${act.notes ? `<div style="margin-top:5px;font-size:12px;color:${C.labelTxt};font-style:italic;">${esc(act.notes)}</div>` : ''}
+              <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
+                <div style="font-size:14px;font-weight:600;color:${C.txt};">${esc(act.description || '(no description)')}${act.location ? `<span style="color:${C.txtMuted};font-weight:400;font-size:13px;"> &mdash; ${esc(act.location)}</span>` : ''}</div>
+                ${act.codes.length ? `<div style="margin-top:4px;">${codesHtml}</div>` : ''}
+                ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:${C.txtMuted};font-style:italic;">${esc(act.notes)}</div>` : ''}
               </td>
-              <td style="padding:10px 14px;border-bottom:1px solid #f0f0f0;text-align:right;white-space:nowrap;vertical-align:top;">
-                <span style="font-size:13px;color:${C.ord};font-weight:600;">${ord}h</span>
-              </td>
-              <td style="padding:10px 14px;border-bottom:1px solid ${C.border};text-align:right;white-space:nowrap;vertical-align:top;">
-                <span style="font-size:13px;color:${C.ot};font-weight:600;">${ot}h</span>
-              </td>
+              <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:top;">${ord}</td>
+              <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${ot > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:top;">${ot > 0 ? ot : '—'}</td>
             </tr>`;
         });
         daysHtml += `
-          <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid ${C.border};">
-            <div style="background:${C.hdr};color:${C.hdrSub};padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:0.5px;">
-              ${esc(day.dayName.toUpperCase())} &nbsp;<span style="opacity:0.8;font-weight:400;">${esc(formatDate(day.date))}</span>
+          <div style="margin-bottom:12px;border-radius:10px;overflow:hidden;border:1px solid ${C.border};background:${C.cardBg};">
+            <div style="padding:10px 14px;border-bottom:1px solid ${C.border};">
+              <span style="font-size:13px;font-weight:800;color:${C.txt};">${esc(day.dayName)}</span>
+              <span style="font-size:12px;color:${C.txtMuted};margin-left:8px;">${esc(formatDate(day.date))}</span>
             </div>
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:${C.cardBg};">
+            <table width="100%" cellpadding="0" cellspacing="0">
               <thead>
-                <tr style="background:${C.rowAlt};">
-                  <th style="padding:7px 14px;text-align:left;font-size:11px;color:${C.labelTxt};text-transform:uppercase;letter-spacing:0.5px;">Task</th>
-                  <th style="padding:7px 14px;text-align:right;font-size:11px;color:${C.labelTxt};text-transform:uppercase;letter-spacing:0.5px;">Ord</th>
-                  <th style="padding:7px 14px;text-align:right;font-size:11px;color:${C.labelTxt};text-transform:uppercase;letter-spacing:0.5px;">OT</th>
+                <tr style="background:${C.headBg};">
+                  <th style="padding:7px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Task</th>
+                  <th style="padding:7px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Ord</th>
+                  <th style="padding:7px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">OT</th>
                 </tr>
               </thead>
               <tbody>${actsHtml}</tbody>
@@ -3755,50 +3771,54 @@
           </div>`;
       });
 
-      return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:${C.outerBg};font-family:Arial,Helvetica,sans-serif;">
+      return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:${C.outerBg};font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background:${C.outerBg};padding:24px 0;">
           <tr><td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-              <!-- Header -->
-              <tr><td style="background:${C.hdr};border-radius:10px 10px 0 0;padding:24px 28px;">
-                <div style="color:${C.hdrSub};font-size:20px;font-weight:700;">Weekly Timesheet</div>
-                <div style="color:${C.hdrSub};opacity:0.75;font-size:14px;margin-top:4px;">${esc(range)}</div>
+              <!-- Header card -->
+              <tr><td style="background:${C.cardBg};border-radius:12px 12px 0 0;padding:20px 24px 16px;border:1px solid ${C.border};border-bottom:none;">
+                <div style="font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};margin-bottom:6px;">Weekly Timesheet</div>
+                <div style="font-size:22px;font-weight:800;color:${C.txt};">${esc(range)}</div>
               </td></tr>
 
               <!-- Body -->
-              <tr><td style="background:${C.bodyBg};padding:20px 28px;">
+              <tr><td style="background:${C.outerBg};padding:16px 0;">
 
-                <!-- Summary by Code — FIRST for easy copy-paste -->
-                <div style="font-size:13px;font-weight:700;color:${C.labelTxt};text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Summary by Code</div>
-                <table width="100%" cellpadding="0" cellspacing="0" style="background:${C.cardBg};border-radius:8px;border:1px solid ${C.border};overflow:hidden;margin-bottom:20px;">
-                  <thead>
-                    <tr style="background:${C.rowAlt};">
-                      <th style="padding:8px 12px;text-align:left;font-size:11px;color:${C.labelTxt};text-transform:uppercase;">Code</th>
-                      <th style="padding:8px 12px;text-align:left;font-size:11px;color:${C.labelTxt};text-transform:uppercase;">Description</th>
-                      <th style="padding:8px 12px;text-align:right;font-size:11px;color:${C.labelTxt};text-transform:uppercase;">Ordinary</th>
-                      <th style="padding:8px 12px;text-align:right;font-size:11px;color:${C.labelTxt};text-transform:uppercase;">Overtime</th>
-                    </tr>
-                  </thead>
-                  <tbody>${summaryRows}</tbody>
-                  <tfoot>
-                    <tr style="background:${C.rowAlt};">
-                      <td colspan="2" style="padding:10px 12px;font-size:13px;font-weight:700;color:${C.txt};">TOTAL</td>
-                      <td style="padding:10px 12px;text-align:right;font-size:14px;font-weight:700;color:${C.ord};">${Math.round(totalOrd)}</td>
-                      <td style="padding:10px 12px;text-align:right;font-size:14px;font-weight:700;color:${C.ot};">${Math.round(totalOT)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
+                <!-- Section label -->
+                <div style="padding:0 4px 8px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};">Summary by Code</div>
 
-                <!-- Daily Breakdown -->
-                <div style="font-size:13px;font-weight:700;color:${C.labelTxt};text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Daily Breakdown</div>
+                <!-- Summary table -->
+                <div style="border-radius:12px;overflow:hidden;border:1px solid ${C.border};background:${C.cardBg};margin-bottom:20px;">
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <thead>
+                      <tr style="background:${C.headBg};">
+                        <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Code</th>
+                        <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Description</th>
+                        <th style="padding:8px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Ord</th>
+                        <th style="padding:8px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">OT</th>
+                      </tr>
+                    </thead>
+                    <tbody>${summaryRows}</tbody>
+                    <tfoot>
+                      <tr style="background:${C.totalBg};">
+                        <td colspan="2" style="padding:10px 14px;font-size:10px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Total</td>
+                        <td style="padding:10px 14px;font-family:monospace;font-size:15px;font-weight:700;color:${C.ord};text-align:right;">${Math.round(totalOrd)}</td>
+                        <td style="padding:10px 14px;font-family:monospace;font-size:15px;font-weight:700;color:${totalOT > 0 ? C.ot : C.dash};text-align:right;">${totalOT > 0 ? Math.round(totalOT) : '—'}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+
+                <!-- Section label -->
+                <div style="padding:0 4px 8px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};">Daily Breakdown</div>
                 ${daysHtml}
 
               </td></tr>
 
               <!-- Footer -->
-              <tr><td style="background:${C.foot};border-radius:0 0 10px 10px;padding:12px 28px;text-align:center;">
-                <span style="font-size:11px;color:${C.footTxt};">Sent from Timesheet PWA v${esc(VERSION)}</span>
+              <tr><td style="background:${C.footBg};border-radius:0 0 12px 12px;padding:12px 24px;text-align:center;border:1px solid ${C.border};border-top:none;">
+                <span style="font-size:11px;color:${C.footTxt};">Timesheet PWA v${esc(VERSION)}</span>
               </td></tr>
 
             </table>
