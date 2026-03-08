@@ -2919,6 +2919,24 @@
     </div>
   </div>
 
+  <!-- ===== LOCATION SEARCH MODAL ===== -->
+  <div id="location-modal" class="hidden fixed inset-0 z-50 flex flex-col" style="background:var(--bg-modal)">
+    <div class="flex flex-col flex-1 overflow-hidden">
+      <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
+        <button onclick="closeLocationModal()" class="text-white p-1 text-xl leading-none">✕</button>
+        <h2 class="text-base font-semibold flex-1">Select Location</h2>
+        <button onclick="confirmLocationModal()" class="bg-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">Done</button>
+      </div>
+      <div class="p-3 sticky top-0 z-10" style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
+        <input id="location-search" type="text" placeholder="Town name or code…"
+          class="w-full rounded-xl px-4 py-2.5 text-base"
+          style="border:1px solid var(--border-input);background:var(--bg-input)" oninput="filterLocations(this.value)">
+        <p class="text-xs mt-1.5 px-1" style="color:var(--text-secondary)">Tap to select, or type a custom location and tap Done.</p>
+      </div>
+      <div id="location-list" class="flex-1 overflow-y-auto pb-6"></div>
+    </div>
+  </div>
+
   <!-- ===== NOTE HOVER TOOLTIP ===== -->
   <div id="note-tooltip" class="tbl-note-tooltip"></div>
 
@@ -2989,7 +3007,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.6.29';
+    const VERSION = '3.6.30';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3090,6 +3108,79 @@
         const dd = document.getElementById('td-' + input.dataset.act);
         if (dd) dd.style.display = 'none';
       }, 150);
+    }
+
+    // ── Location full-screen modal ──────────────────────────────
+    let locationModalCtx = { actId: null, dayIndex: null, _results: [] };
+
+    function openLocationModal(di, actId) {
+      locationModalCtx = { dayIndex: di, actId, _results: [] };
+      const act = state.weekData.days[di].activities.find(a => a.id === actId);
+      const current = act ? (act.location || '') : '';
+      document.getElementById('location-modal').classList.remove('hidden');
+      const searchEl = document.getElementById('location-search');
+      searchEl.value = current;
+      filterLocations(current);
+      setTimeout(() => searchEl.focus(), 100);
+    }
+
+    function filterLocations(q) {
+      const ql = q.trim().toLowerCase();
+      if (!ql) { renderLocationList([]); return; }
+      const allMatches = TOWNS.filter(t =>
+        t.name.toLowerCase().startsWith(ql) || t.code.toLowerCase().startsWith(ql)
+      );
+      allMatches.sort((a, b) =>
+        (a.name.toLowerCase().startsWith(ql) ? 0 : 1) - (b.name.toLowerCase().startsWith(ql) ? 0 : 1)
+      );
+      renderLocationList(allMatches.slice(0, 20));
+    }
+
+    function renderLocationList(results) {
+      const el = document.getElementById('location-list');
+      if (!el) return;
+      locationModalCtx._results = results;
+      if (!results.length) {
+        el.innerHTML = '<p class="text-center text-sm px-4 py-8" style="color:var(--text-muted)">No matches — type a custom location and tap Done.</p>';
+        return;
+      }
+      el.innerHTML = results.map((t, i) =>
+        `<button onclick="selectLocationFromModal(${i})" class="w-full flex items-center justify-between px-4 py-3 border-b text-left" style="border-color:var(--border);background:var(--bg-code-item)">
+          <span class="text-sm" style="color:var(--text-primary)">${esc(t.name)}</span>
+          <span class="text-xs font-mono" style="color:var(--accent)">${esc(t.code)}</span>
+        </button>`
+      ).join('');
+    }
+
+    function selectLocationFromModal(idx) {
+      const t = locationModalCtx._results[idx];
+      if (!t) return;
+      _applyLocationValue(t.name + ' (' + t.code + ')');
+      closeLocationModal();
+    }
+
+    function confirmLocationModal() {
+      _applyLocationValue(document.getElementById('location-search').value.trim());
+      closeLocationModal();
+    }
+
+    function _applyLocationValue(val) {
+      const { dayIndex: di, actId } = locationModalCtx;
+      if (di === null || !actId) return;
+      const act = state.weekData.days[di].activities.find(a => a.id === actId);
+      if (!act) return;
+      act.location = val;
+      scheduleAutoSave();
+      const locEl = document.querySelector(`[data-row-loc="${actId}"]`);
+      if (locEl) locEl.innerHTML = val
+        ? `<span style="margin-right:2px">📍</span>${esc(val)}`
+        : '<span style="opacity:0.4">No location</span>';
+      render();
+    }
+
+    function closeLocationModal() {
+      document.getElementById('location-modal').classList.add('hidden');
+      locationModalCtx = { actId: null, dayIndex: null, _results: [] };
     }
 
     async function loadCodes() {
@@ -3750,7 +3841,7 @@
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
                 <div style="font-size:14px;font-weight:600;color:${C.txt};">${esc(act.description || '(no description)')}${act.location ? `<span style="color:#475569;font-weight:400;font-size:13px;"> &mdash; ${esc(act.location)}</span>` : ''}</div>
                 ${act.codes.length ? `<div style="margin-top:4px;">${codesHtml}</div>` : ''}
-                ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#7A9BB5;font-style:italic;">${esc(act.notes)}</div>` : ''}
+                ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#0F1C2E;font-style:italic;">${esc(act.notes)}</div>` : ''}
               </td>
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:top;">${ord}</td>
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${ot > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:top;">${ot > 0 ? ot : '—'}</td>
@@ -4207,14 +4298,11 @@
       <td><input type="text" class="tbl-act-input" placeholder="Description…" value="${esc(act.description)}"
         data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this)"></td>
       <td>
-        <div class="location-wrap" style="position:relative">
+        <div class="location-wrap">
           <input type="text" class="tbl-act-input" placeholder="Location…" value="${esc(act.location)}"
             data-field="location" data-act="${act.id}" data-day="${di}"
-            autocomplete="off" spellcheck="false"
-            oninput="updateField(this);townSearch(this)"
-            onfocus="townSearch(this)"
-            onblur="closeTownDd(this)">
-          <div class="town-dropdown" id="td-${act.id}"></div>
+            readonly style="cursor:pointer"
+            onclick="openLocationModal(${di}, '${act.id}')">
         </div>
       </td>
       <td class="tbl-codes-cell">${codesHtml}</td>
@@ -4520,11 +4608,8 @@
                 <input type="text" placeholder="Town name or code…" value="${esc(act.location)}"
                   class="act-input"
                   data-field="location" data-act="${act.id}" data-day="${di}"
-                  autocomplete="off" spellcheck="false"
-                  oninput="updateField(this);townSearch(this)"
-                  onfocus="townSearch(this)"
-                  onblur="closeTownDd(this)">
-                <div class="town-dropdown" id="td-${act.id}"></div>
+                  readonly style="cursor:pointer"
+                  onclick="openLocationModal(${di}, '${act.id}')">
               </div>
             </div>
 
