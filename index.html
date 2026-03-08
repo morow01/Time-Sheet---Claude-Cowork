@@ -2924,7 +2924,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.6.11';
+    const VERSION = '3.6.12';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4104,7 +4104,9 @@
       const hrsPerTask = ordinary > 0 ? Math.round(ordinary / numTasks) : '—';
       const otPerTask = overtime > 0 ? Math.round(overtime / numTasks) : '—';
 
-      const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
+      const isMissingCode  = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
+      const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
+      const isInvalid      = isMissingCode || isMissingHours;
       const codesHtml = `<div class="tbl-codes-inner">
         ${act.codes.map(c => `
           <span class="code-chip" style="font-size:11px;padding:2px 6px;">
@@ -4114,7 +4116,7 @@
           </span>`).join('')}
         <div class="flex items-center gap-2">
           <button class="tbl-add-code-btn" onclick="openCodeModal(${di},'${act.id}')" style="${isMissingCode ? 'border-color:#f97316;color:#f97316' : ''}">${act.codes.length ? '✎' : '+ Code'}</button>
-          ${isMissingCode ? `<span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse" title="Code required" style="box-shadow: 0 0 6px rgba(249,115,22,0.4)"></span>` : ''}
+          ${isInvalid ? `<span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse" title="${isMissingCode ? 'Code required' : 'Hours required'}" style="box-shadow: 0 0 6px rgba(249,115,22,0.4)"></span>` : ''}
         </div>
       </div>`;
 
@@ -4335,7 +4337,11 @@
       const actCount = activeActivities.length;
 
       // Check for missing codes in any activity with hours
-      const hasMissingCode = day.activities.some(a => (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && a.codes.length === 0);
+      const hasMissingCode = day.activities.some(a => {
+        const ord = parseFloat(a.ordinary) || 0;
+        const ot  = parseFloat(a.overtime) || 0;
+        return ((ord > 0 || ot > 0) && a.codes.length === 0) || (a.codes.length > 0 && ord === 0 && ot === 0);
+      });
 
       return `
 <div class="day-card ${isWeekend ? 'day-weekend' : ''} ${isExpanded ? 'expanded' : ''}" data-day-idx="${di}">
@@ -4366,14 +4372,18 @@
       const isExpanded = state.activitiesExpanded.has(act.id);
       const ordinary = parseFloat(act.ordinary) || 0;
       const overtime = parseFloat(act.overtime) || 0;
-      const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
+      const isMissingCode  = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
+      const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
+      const isInvalid      = isMissingCode || isMissingHours;
+      // Only show red border when collapsed — avoids false-positive flash while user is still filling in
+      const showRedBorder  = isInvalid && !isExpanded;
       const numTasks = act.codes.length || 1;
       const hrsPerTask = ordinary > 0 ? Math.round(ordinary / numTasks) : '—';
       const otPerTask = overtime > 0 ? Math.round(overtime / numTasks) : '—';
       const notesOpen = state.notesOpen.has(act.id) ? state.notesOpen.get(act.id) : !!act.notes;
 
       return `
-      <div class="activity-card ${isExpanded ? 'expanded' : ''}" data-act-id="${act.id}" style="${isMissingCode ? 'border-color:var(--btn-danger-color); box-shadow: 0 0 8px rgba(232, 69, 60, 0.2)' : ''}">
+      <div class="activity-card ${isExpanded ? 'expanded' : ''}" data-act-id="${act.id}" style="${showRedBorder ? 'border-color:var(--btn-danger-color); box-shadow: 0 0 8px rgba(232, 69, 60, 0.2)' : ''}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="toggleActivityDetails('${act.id}')">
           <div class="task-num ${overtime > 0 ? 'ot' : ''}">${actIndex + 1}</div>
           <div class="flex-1 min-w-0 act-meta">
@@ -4432,6 +4442,7 @@
                 </button>
               </div>
               ${isMissingCode ? `<div class="act-missing-warn">⚠️ Missing work code</div>` : ''}
+              ${isMissingHours ? `<div class="act-missing-warn">⚠️ Missing hours</div>` : ''}
             </div>
 
             <div class="flex gap-3">
