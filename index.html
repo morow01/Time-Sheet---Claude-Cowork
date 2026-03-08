@@ -2216,27 +2216,25 @@
 
     .bulk-action-bar {
       position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(150%);
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 24px;
-      padding: 12px 16px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      transform: translateY(110%);
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      padding: 14px 16px env(safe-area-inset-bottom, 16px);
       display: flex;
       flex-direction: column;
-      align-items: center;
       gap: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.10);
       z-index: 1000;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      width: fit-content;
-      min-width: 320px;
-      max-width: min(92vw, 480px);
+      width: 100%;
     }
 
     .bulk-action-bar.show {
-      transform: translateX(-50%) translateY(0);
+      transform: translateY(0);
     }
 
     .bulk-count-text {
@@ -2254,10 +2252,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: 100px;
-      font-size: 14px;
+      gap: 6px;
+      padding: 10px 8px;
+      border-radius: 12px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
@@ -3081,7 +3079,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.43';
+    const VERSION = '3.6.44';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5197,7 +5195,7 @@
         visibleDone.map(n => `<div class="note-card done-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`).join('')
         : '';
 
-      const addCard = `<div class="add-note-dashed" onclick="addNote()">
+      const addCard = `<div class="add-note-dashed" onclick="${state.selectionMode ? '' : 'addNote()'}" style="${state.selectionMode ? 'opacity:0;pointer-events:none' : ''}">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Note
       </div>`;
@@ -5235,7 +5233,7 @@
           </div>
         </div>`;
 
-      return `<div class="notes-view">${headerRow}<div class="notes-chips">${finalChips}</div>${state.selectionMode ? '' : addCard}${openSection}${doneSection}${bulkBar}</div>`;
+      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:160px' : ''}">${headerRow}<div class="notes-chips">${finalChips}</div>${addCard}${openSection}${doneSection}${bulkBar}</div>`;
     }
 
     // ---- Notes event handlers ----
