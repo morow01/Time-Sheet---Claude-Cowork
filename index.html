@@ -3007,7 +3007,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const VERSION = '3.6.31';
+    const VERSION = '3.6.32';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3145,7 +3145,7 @@
         return;
       }
       el.innerHTML = results.map((t, i) =>
-        `<button onclick="selectLocationFromModal(${i})" class="w-full flex items-center justify-between px-4 py-3 border-b text-left" style="border-color:var(--border);background:var(--bg-code-item)">
+        `<button onclick="selectLocationFromModal(${i})" class="town-option w-full flex items-center justify-between px-4 py-3 border-b text-left" style="border-color:var(--border);background:var(--bg-code-item)">
           <span class="text-sm" style="color:var(--text-primary)">${esc(t.name)}</span>
           <span class="t-code">${esc(t.code)}</span>
         </button>`
