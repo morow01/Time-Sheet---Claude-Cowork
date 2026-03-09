@@ -692,6 +692,18 @@
 
     .hdr-week-chevron.open { transform: rotate(180deg); }
 
+    /* ===== HEADER NAV BUTTONS (chip style like day cards) ===== */
+    .hdr-nav-btn {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .hdr-nav-btn:active { background: rgba(255,255,255,0.18); }
+
     /* ===== THEME DROPDOWN ===== */
     .theme-menu-wrap {
       position: relative;
@@ -3283,7 +3295,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.47';
+    const VERSION = '3.6.48';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4380,12 +4392,12 @@
       const _hdrOrd = Math.round(_hdrSummary.reduce((s, r) => s + r.ordinary, 0));
       const _hdrOT  = Math.round(_hdrSummary.reduce((s, r) => s + r.overtime, 0));
       const _hdrTasks = state.weekData ? state.weekData.days.reduce((s, d) => s + d.activities.length, 0) : 0;
-      const _hdrChevron = `<svg class="hdr-week-chevron${state.headerExpanded ? ' open' : ''}" width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const _hdrChevron = `<svg class="hdr-week-chevron${state.headerExpanded ? ' open' : ''}" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.85)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
       return `
   <header class="shadow-lg" style="background:var(--bg-header);color:var(--text-header)">
     <div class="flex items-center px-4 py-3 gap-2">
-      <button onclick="prevWeek()" style="color:var(--text-header-sub)" class="text-xl px-1 py-1 min-w-[36px]">‹</button>
+      <button onclick="prevWeek()" class="hdr-nav-btn"><svg width="8" height="10" viewBox="0 0 8 10"><polygon points="8,0 0,5 8,10" fill="rgba(255,255,255,0.65)"/></svg></button>
       <div class="flex-1 text-center">
         <div onclick="toggleHeader()" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:6px;transition:background 0.2s;" onmousedown="this.style.background='rgba(255,255,255,0.08)'" onmouseup="this.style.background='transparent'" onmouseleave="this.style.background='transparent'">
           <span class="font-bold text-base leading-tight">${state.weekStart ? formatWeekRange(state.weekStart) : '—'}</span>
@@ -4397,7 +4409,7 @@
           <span style="color:var(--text-muted)" class="text-xs">v${VERSION}</span>
         </div>
       </div>
-      <button onclick="nextWeek()" style="color:var(--text-header-sub)" class="text-xl px-1 py-1 min-w-[36px]">›</button>
+      <button onclick="nextWeek()" class="hdr-nav-btn"><svg width="8" height="10" viewBox="0 0 8 10"><polygon points="0,0 8,5 0,10" fill="rgba(255,255,255,0.65)"/></svg></button>
       <div class="theme-menu-wrap">
         <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -4433,17 +4445,14 @@
       </div>
     </div>
     <div class="flex" style="border-top:1px solid var(--border)">
-      <button onclick="setView('week')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5" style="color:${state.view === 'week' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        <svg class="opacity-80" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <button onclick="setView('week')" class="flex-1 py-2.5 text-[10px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'week' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         Timesheet
       </button>
-      <button onclick="setView('notes')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5 relative" style="color:${state.view === 'notes' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        <svg class="opacity-80" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <button onclick="setView('notes')" class="flex-1 py-2.5 text-[10px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         Notes
         ${{ pending: '#f97316', syncing: '#3b82f6', error: '#ef4444' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: '#f97316', syncing: '#3b82f6', error: '#ef4444' }[state.notesSyncStatus]}"></span>` : ''}
       </button>
-      <button onclick="setView('exchanges')" class="flex-1 py-2 text-[10px] font-bold flex flex-col items-center gap-1.5" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        <svg class="opacity-80" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[10px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         Finder
       </button>
     </div>
