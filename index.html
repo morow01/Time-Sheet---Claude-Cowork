@@ -744,61 +744,219 @@
       background: rgba(255, 255, 255, 0.12);
     }
 
+    /* ── Menu backdrop (mobile only) ── */
+    .menu-backdrop {
+      display: none;
+    }
+    @media (max-width: 767px) {
+      .menu-backdrop {
+        display: block;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0);
+        z-index: 149;
+        pointer-events: none;
+        transition: background 0.25s;
+      }
+      .menu-backdrop.show {
+        background: rgba(0,0,0,0.25);
+        pointer-events: auto;
+      }
+    }
+
+    /* ── Menu panel ── */
     .theme-dropdown {
       position: absolute;
       right: 0;
       top: calc(100% + 6px);
       background: var(--bg-modal);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      border-radius: 14px;
+      box-shadow: 0 10px 36px rgba(0,0,0,0.14);
       overflow: hidden;
-      z-index: 100;
-      min-width: 220px;
+      z-index: 150;
+      width: 276px;
       display: none;
-      animation: menuFade 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: menuFade 0.18s cubic-bezier(0.4,0,0.2,1);
     }
-
     @keyframes menuFade {
-      from {
-        opacity: 0;
-        transform: translateY(-8px);
-      }
+      from { opacity:0; transform:translateY(-6px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .theme-dropdown.open { display: block; }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
+    /* Mobile: full-screen slide-in from right */
+    @media (max-width: 767px) {
+      .theme-dropdown {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 0.26s cubic-bezier(0.4,0,0.2,1);
+        animation: none;
+      }
+      .theme-dropdown.open {
+        display: flex;
+        transform: translateX(0);
       }
     }
 
-    .theme-dropdown.open {
-      display: block;
-    }
-
-    .theme-option {
+    /* ── Menu internal layout ── */
+    .menu-topbar {
       display: flex;
       align-items: center;
-      gap: 10px;
-      width: 100%;
-      padding: 10px 14px;
-      border: none;
-      background: none;
-      cursor: pointer;
+      justify-content: space-between;
+      padding: 16px 18px 0;
+    }
+    .menu-topbar-email {
       font-size: 13px;
-      font-weight: 500;
-      color: var(--text-primary);
-      text-align: left;
+      color: var(--text-muted);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .menu-close-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 4px; border-radius: 8px;
+      color: var(--text-muted);
+      display: none;
+    }
+    @media (max-width: 767px) {
+      .menu-close-btn { display: flex; align-items: center; justify-content: center; }
+    }
+
+    .menu-account-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 22px 18px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    /* Desktop: row layout */
+    @media (min-width: 768px) {
+      .menu-account-section {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        text-align: left;
+      }
+    }
+
+    .menu-avatar-wrap {
+      flex-shrink: 0;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    @media (min-width: 768px) {
+      .menu-avatar-wrap { width: 38px; height: 38px; }
+    }
+    .menu-avatar-img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .menu-avatar-initials {
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, var(--accent), #7c73e6);
+      color: #fff; font-weight: 700; font-size: 22px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    @media (min-width: 768px) {
+      .menu-avatar-initials { font-size: 14px; }
+    }
+
+    .menu-account-info {
+      text-align: center;
+      margin-top: 10px;
+    }
+    @media (min-width: 768px) {
+      .menu-account-info { flex:1; min-width:0; margin-top:0; text-align:left; }
+    }
+    .menu-greeting {
+      font-size: 20px; font-weight: 700; color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    @media (min-width: 768px) {
+      .menu-greeting { font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+    }
+    .menu-account-email {
+      font-size: 12px; color: var(--text-muted);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      display: none;
+    }
+    @media (min-width: 768px) {
+      .menu-account-email { display: block; }
+    }
+
+    .menu-signout-btn {
+      margin-top: 16px;
+      display: flex; align-items: center; gap: 7px;
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(239,68,68,0.25);
+      background: rgba(239,68,68,0.05);
+      color: #ef4444; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
       transition: background 0.15s;
     }
-
-    .theme-option:hover {
-      background: var(--bg-card-alt);
+    @media (min-width: 768px) {
+      .menu-signout-btn { margin-top: 0; padding: 5px 10px; font-size: 11px; border-radius: 7px; gap: 5px; }
     }
+    .menu-signout-btn:hover { background: rgba(239,68,68,0.1); }
 
-    .theme-option.active {
-      color: var(--accent);
-      font-weight: 700;
+    .menu-section-label {
+      padding: 10px 18px 4px;
+      font-size: 10px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted);
     }
+    .menu-section-label.danger { color: rgba(239,68,68,0.55); }
+
+    .menu-row {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; padding: 13px 18px;
+      border: none; background: none; cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary); text-align: left;
+      font-family: inherit; transition: background 0.13s;
+    }
+    @media (min-width: 768px) {
+      .menu-row { padding: 9px 14px; gap: 10px; }
+    }
+    .menu-row:last-child { border-bottom: none; }
+    .menu-row:hover { background: var(--bg-card-alt); }
+    .menu-row.danger { color: #ef4444; }
+    .menu-row-icon { opacity: 0.6; flex-shrink: 0; display: flex; }
+    .menu-row.danger .menu-row-icon { opacity: 0.85; }
+    .menu-row-body { flex: 1; }
+    .menu-row-label { font-size: 14px; font-weight: 500; }
+    @media (min-width: 768px) { .menu-row-label { font-size: 13px; } }
+    .menu-row-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .menu-row.danger .menu-row-sub { color: rgba(239,68,68,0.55); }
+
+    .menu-divider { height: 1px; background: var(--border); margin: 6px 0; }
+    .menu-spacer { flex: 1; }
+    .menu-version {
+      text-align: center; padding: 14px 0 24px;
+      font-size: 11px; color: var(--text-muted);
+      display: none;
+    }
+    @media (max-width: 767px) { .menu-version { display: block; } }
+
+    .theme-option {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; padding: 10px 14px;
+      border: none; background: none; cursor: pointer;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-primary); text-align: left;
+      transition: background 0.15s;
+    }
+    .theme-option:hover { background: var(--bg-card-alt); }
+    .theme-option.active { color: var(--accent); font-weight: 700; }
 
     .theme-swatch {
       width: 16px;
@@ -3300,7 +3458,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.71';
+    const VERSION = '3.6.72';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4401,25 +4559,6 @@
       };
       const syncTitles = { idle: '', pending: 'Unsaved changes', syncing: 'Syncing…', synced: 'Synced', error: 'Sync failed – tap to retry' };
 
-      const items = [
-        { id: 'jump', label: 'Jump to Week', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>', onClick: 'openDateModal()' },
-        { id: 'email', label: 'Email/Export Week', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>', onClick: 'sendWeeklyEmail()' },
-        ...(state.view === 'week' && window.innerWidth >= 768 ? [{ id: 'table', label: state.layoutMode === 'table' ? 'Mobile View' : 'Spreadsheet View', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>', onClick: 'toggleLayoutMode()' }] : []),
-        { spacer: true },
-        { id: 'clear-week',    label: 'Clear This Week',    danger: true, icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>', onClick: 'clearCurrentWeek()' },
-        { id: 'clear-all',     label: 'Clear All My Data',  danger: true, icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>', onClick: 'clearAllData()' },
-        { id: 'delete-account', label: 'Delete Account',    danger: true, icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="17" y1="11" x2="23" y2="17"/><line x1="23" y1="11" x2="17" y2="17"/></svg>', onClick: 'deleteAccount()' },
-      ];
-
-      const menuContent = items.map(opt => {
-        if (opt.spacer) return '<div style="height:1px;background:var(--border);margin:4px 0;"></div>';
-        const dangerStyle = opt.danger ? 'color:#ef4444;' : '';
-        return `<button class="theme-option" style="${dangerStyle}" onclick="${opt.onClick};toggleThemeMenu(event)">
-          <span class="opacity-70">${opt.icon}</span>
-          <span class="flex-1">${opt.label}</span>
-        </button>`;
-      }).join('');
-
       // Compute summary totals for header metric tiles
       const _hdrSummary = state.weekData ? calcSummary(state.weekData) : [];
       const _hdrOrd = Math.round(_hdrSummary.reduce((s, r) => s + r.ordinary, 0));
@@ -4452,15 +4591,71 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <div class="theme-dropdown ${state.isMenuOpen ? 'open' : ''}" id="theme-dropdown">
-          ${state.menuView === 'main' ? `
-          <div style="padding: 8px 14px 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px;">
-            ${state.currentUser ? `<div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              Signed in as ${esc(state.currentUser.displayName || state.currentUser.email || 'Unknown')}
-            </div>
-            <button onclick="signOutUser()" style="width:100%;background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.22);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;">Sign Out</button>` : ''}
-          </div>` : ''}
-          ${menuContent}
+        <div class="menu-backdrop ${state.isMenuOpen ? 'show' : ''}" onclick="closeThemeMenu()"></div>
+        <div class="theme-dropdown ${state.isMenuOpen ? 'open' : ''}" id="theme-dropdown" onclick="event.stopPropagation()">
+          ${(() => {
+            const u = state.currentUser;
+            const firstName = u ? (u.displayName || u.email || 'there').split(' ')[0] : 'there';
+            const email = u ? (u.email || '') : '';
+            const photoURL = u ? (u.photoURL || '') : '';
+            const initial = (u ? (u.displayName || u.email || '?') : '?')[0].toUpperCase();
+            const avatarHtml = photoURL
+              ? `<img src="${esc(photoURL)}" class="menu-avatar-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="menu-avatar-initials" style="display:none">${initial}</div>`
+              : `<div class="menu-avatar-initials">${initial}</div>`;
+            return `
+              <!-- top bar: email + close (mobile only shows close) -->
+              <div class="menu-topbar">
+                <span class="menu-topbar-email">${esc(email)}</span>
+                <button class="menu-close-btn" onclick="closeThemeMenu()">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <!-- account -->
+              <div class="menu-account-section">
+                <div class="menu-avatar-wrap">${avatarHtml}</div>
+                <div class="menu-account-info">
+                  <div class="menu-greeting">Hi, ${esc(firstName)}!</div>
+                  <div class="menu-account-email">${esc(email)}</div>
+                </div>
+                <button class="menu-signout-btn" onclick="signOutUser()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Sign Out
+                </button>
+              </div>
+              <!-- actions -->
+              <div class="menu-divider"></div>
+              <button class="menu-row" onclick="openDateModal();closeThemeMenu()">
+                <span class="menu-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+                <span class="menu-row-body"><span class="menu-row-label">Jump to Week</span><span class="menu-row-sub" style="display:block">Navigate to any date</span></span>
+              </button>
+              <button class="menu-row" onclick="sendWeeklyEmail();closeThemeMenu()">
+                <span class="menu-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+                <span class="menu-row-body"><span class="menu-row-label">Email / Export Week</span><span class="menu-row-sub" style="display:block">Send formatted summary</span></span>
+              </button>
+              ${state.view === 'week' && window.innerWidth >= 768 ? `
+              <button class="menu-row" onclick="toggleLayoutMode();closeThemeMenu()">
+                <span class="menu-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></span>
+                <span class="menu-row-body"><span class="menu-row-label">${state.layoutMode === 'table' ? 'Mobile View' : 'Spreadsheet View'}</span></span>
+              </button>` : ''}
+              <!-- danger zone -->
+              <div class="menu-divider"></div>
+              <div class="menu-section-label danger">Danger Zone</div>
+              <button class="menu-row danger" onclick="clearCurrentWeek();closeThemeMenu()">
+                <span class="menu-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></span>
+                <span class="menu-row-body"><span class="menu-row-label">Clear This Week</span></span>
+              </button>
+              <button class="menu-row danger" onclick="clearAllData();closeThemeMenu()">
+                <span class="menu-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></span>
+                <span class="menu-row-body"><span class="menu-row-label">Clear All My Data</span></span>
+              </button>
+              <button class="menu-row danger" onclick="deleteAccount();closeThemeMenu()">
+                <span class="menu-row-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="17" y1="11" x2="23" y2="17"/><line x1="23" y1="11" x2="17" y2="17"/></svg></span>
+                <span class="menu-row-body"><span class="menu-row-label">Delete Account</span><span class="menu-row-sub" style="display:block">Permanently removes all data</span></span>
+              </button>
+              <div class="menu-spacer"></div>
+              <div class="menu-version">TimeSheet v${VERSION}</div>
+            `;
+          })()}
         </div>
       </div>
     </div>
