@@ -1,0 +1,6 @@
+I want to build a small one page site explaining all the features with screenshots from the app explaining all the features.
+
+I created folder for that:
+/home/morow/Claude - Cowork/timesheet-pwa/web/ag/
+
+Can you make a nice modern looking web page?
