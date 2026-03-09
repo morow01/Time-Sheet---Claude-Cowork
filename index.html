@@ -3301,7 +3301,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.64';
+    const VERSION = '3.6.65';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3554,6 +3554,16 @@
     }
 
     function closeFinderModal() {
+      // Clear search so the inline field doesn't show stale text after dismissing
+      if (finderModalMode === 'exchanges') {
+        state.exchangeSearch = '';
+        const el = document.getElementById('ex-search-input');
+        if (el) el.value = '';
+      } else {
+        state.cabinetSearch = '';
+        const el = document.getElementById('cb-search-input');
+        if (el) el.value = '';
+      }
       document.getElementById('finder-search-modal').classList.add('hidden');
     }
 
