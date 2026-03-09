@@ -3295,7 +3295,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.58';
+    const VERSION = '3.6.59';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6612,22 +6612,34 @@
         async () => {
           showToast('Deleting account…');
           try {
-            await _deleteAllFirestoreData();
+            // Pass null so _deleteAllFirestoreData deletes ALL weeks (no empty-set)
+            await _deleteAllFirestoreData(null);
             await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
-            const user = auth_fb.currentUser;
             if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
             if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
             state.weekData = null; state.notes = [];
             if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
             if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
-            await user.delete();
-          } catch (e) {
-            // Firebase requires recent sign-in for account deletion
-            if (e.code === 'auth/requires-recent-login') {
-              showToast('Please sign out and sign in again, then try deleting.');
-            } else {
-              showToast('Error: ' + e.message);
+
+            // Firebase requires a recent sign-in for account deletion.
+            // If the session is stale, re-authenticate silently then retry.
+            const user = auth_fb.currentUser;
+            try {
+              await user.delete();
+            } catch (e) {
+              if (e.code === 'auth/requires-recent-login') {
+                showToast('Re-authenticating…');
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
+                await auth_fb.signInWithPopup(provider);
+                await auth_fb.currentUser.delete();
+              } else {
+                throw e;
+              }
             }
+            // onAuthStateChanged fires after delete → automatically shows login screen
+          } catch (e) {
+            showToast('Could not delete account: ' + (e.message || e.code));
           }
         }
       );
