@@ -2293,6 +2293,18 @@
       background: rgba(88, 86, 214, 0.05);
     }
 
+    .notes-selection-banner {
+      margin: 12px 16px 20px;
+      padding: 13px 16px;
+      background: var(--bg-card);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(88, 86, 214, 0.08);
+    }
+
     .tbl-summary-section {
       margin: 4px 12px 24px;
       border-radius: 10px;
@@ -2436,32 +2448,31 @@
       left: 0;
       right: 0;
       transform: translateY(110%);
-      background: var(--bg-card);
+      background: rgba(232, 237, 244, 0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border-top: 1px solid var(--border);
-      border-radius: 20px 20px 0 0;
-      padding: 14px 16px env(safe-area-inset-bottom, 16px);
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.10);
       z-index: 1000;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       width: 100%;
+      box-sizing: border-box;
     }
 
     .bulk-action-bar.show {
       transform: translateY(0);
     }
 
-    .bulk-count-text {
-      font-size: 13px;
-      font-weight: 600;
-      color: #64748b;
-    }
-
     .bulk-action-btns {
       display: flex;
-      gap: 12px;
+      gap: 10px;
+      max-width: 520px;
+      margin: 0 auto;
+      width: 100%;
     }
 
     .bulk-btn {
@@ -2469,32 +2480,26 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 10px 8px;
+      padding: 11px 8px;
       border-radius: 12px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
       flex: 1;
       white-space: nowrap;
+      border: none;
+      font-family: inherit;
     }
 
     .bulk-btn.delete {
-      background: #fff5f5;
+      background: #fef2f2;
       color: #ef4444;
-      border: 1.5px solid #fee2e2;
     }
 
     .bulk-btn.done {
-      background: #f0fdf4;
-      color: #16a34a;
-      border: 1.5px solid #dcfce7;
-    }
-
-    .bulk-btn.select-all {
-      background: var(--bg-card-alt);
-      color: var(--text-secondary);
-      border: 1.5px solid var(--border);
+      background: #22c55e;
+      color: #fff;
     }
 
     .bulk-btn:disabled {
@@ -2503,7 +2508,7 @@
     }
 
     .bulk-btn:active {
-      transform: scale(0.95);
+      transform: scale(0.97);
     }
 
     .notes-chip.active {
@@ -3295,7 +3300,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.59';
+    const VERSION = '3.6.62';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5470,45 +5475,45 @@
         visibleDone.map(n => `<div class="note-card done-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`).join('')
         : '';
 
-      const addCard = `<div class="add-note-dashed" onclick="${state.selectionMode ? '' : 'addNote()'}" style="${state.selectionMode ? 'opacity:0;pointer-events:none' : ''}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Note
-      </div>`;
-
-      const finalChips = chips;
-
-      // Smart bulk action label (Option 1 — context-aware)
+      // Smart bulk action label — context-aware
       const selIds = Array.from(state.selectedNotes);
       const selNotes = state.notes.filter(n => selIds.includes(n.id));
       const selAllDone = selNotes.length > 0 && selNotes.every(n => n.status === 'done');
       const selAllOpen = selNotes.length > 0 && selNotes.every(n => n.status === 'open');
       const bulkStatusLabel = selAllDone ? 'Reopen' : selAllOpen ? 'Mark Done' : 'Toggle Status';
       const bulkStatusIcon = selAllDone
-        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>`
-        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+        ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+      // Add Note card (normal mode) OR selection banner (selection mode)
+      const addCard = state.selectionMode
+        ? `<div class="notes-selection-banner">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:14px;font-weight:700;color:var(--text-primary);">${state.selectedNotes.size} selected</span>
+              <button onclick="toggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">${isAllSelected ? 'Deselect all' : 'Select all'}</button>
+            </div>
+            <button onclick="toggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">Cancel</button>
+          </div>`
+        : `<div class="add-note-dashed" onclick="addNote()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Note
+          </div>`;
 
       const noSel = state.selectedNotes.size === 0;
       const bulkBar = `
         <div class="bulk-action-bar ${state.selectionMode ? 'show' : ''}">
-          <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-            <span class="bulk-count-text">${state.selectedNotes.size} ${state.selectedNotes.size === 1 ? 'note' : 'notes'} selected</span>
-            <button onclick="toggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:700;cursor:pointer;padding:2px 0 2px 12px;">Cancel</button>
-          </div>
           <div class="bulk-action-btns" style="width:100%;">
-            <button class="bulk-btn select-all" onclick="toggleSelectAll()">
-              ${isAllSelected ? 'Deselect All' : 'Select All'}
-            </button>
             <button class="bulk-btn done" onclick="toggleStatusSelected()" ${noSel ? 'disabled' : ''}>
               ${bulkStatusIcon}${bulkStatusLabel}
             </button>
             <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               Delete
             </button>
           </div>
         </div>`;
 
-      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:160px' : ''}">${headerRow}<div class="notes-chips">${finalChips}</div>${addCard}${openSection}${doneSection}${bulkBar}</div>`;
+      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:120px' : ''}">${headerRow}<div class="notes-chips">${chips}</div>${addCard}${openSection}${doneSection}${bulkBar}</div>`;
     }
 
     // ---- Notes event handlers ----
@@ -5558,14 +5563,15 @@
     }
 
     function toggleSelectAll() {
-      // Get all notes currently visible in the filtered view
-      const n = getFilteredNotes();
-      const openNotes = n.filter(note => note.status !== 'done');
-      const doneNotes = n.filter(note => note.status === 'done');
-
+      // Build visible sets matching exactly what renderNotesView shows
       const f = state.notesFilter;
-      const visibleOpen = f === 'done' ? [] : openNotes;
-      const visibleDone = (f === 'done' || f === 'all') ? doneNotes : [];
+      const allOpen = state.notes.filter(n => n.status !== 'done');
+      const allDone = state.notes.filter(n => n.status === 'done');
+      // Open: filtered by priority if needed, excluded on 'done' tab
+      const visibleOpen = f === 'done' ? [] :
+        f === 'all' ? allOpen : allOpen.filter(n => n.priority === f);
+      // Done: shown on 'all' and 'done' tabs only
+      const visibleDone = (f === 'done' || f === 'all') ? allDone : [];
       const allVisibleIds = [...visibleOpen, ...visibleDone].map(note => note.id);
 
       const allSelected = allVisibleIds.every(id => state.selectedNotes.has(id));
