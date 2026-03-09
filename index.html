@@ -3295,7 +3295,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.52';
+    const VERSION = '3.6.53';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6518,6 +6518,13 @@
     }
 
     async function signOutUser() {
+      // Cancel any pending auto-saves BEFORE signing out.
+      // Without this, the flush inside loadWeek() would use the previous
+      // user's weekData but the new user's Firestore path — corrupting data.
+      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+      if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
+      state.weekData = null;
+      state.notes = [];
       if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
       if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
       await auth_fb.signOut();
