@@ -3295,7 +3295,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.53';
+    const VERSION = '3.6.54';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3820,6 +3820,15 @@
       });
     }
 
+    function dbClear(store) {
+      return new Promise((res, rej) => {
+        const tx = db.transaction(store, 'readwrite');
+        const req = tx.objectStore(store).clear();
+        req.onsuccess = res;
+        req.onerror = rej;
+      });
+    }
+
     // ============================================================
     // FIREBASE SYNC HELPERS
     // ============================================================
@@ -4036,7 +4045,7 @@
       // another account's cached data from overwriting this user's Firestore data
       const local = await dbGet('weeks', weekStart);
       const uid = state.currentUser?.uid || null;
-      const localIsOwn = local && (!local.userId || local.userId === uid);
+      const localIsOwn = local && local.userId === uid;
       state.weekData = localIsOwn ? deepCopy(local.data) : createEmptyWeek(weekStart);
       enforceCorrectDates(weekStart, state.weekData);
       autoExpandToday();
@@ -6525,6 +6534,8 @@
       if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
       state.weekData = null;
       state.notes = [];
+      // Wipe local IDB so the next user never sees this user's cached data
+      await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
       if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
       if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
       await auth_fb.signOut();
