@@ -640,7 +640,9 @@
     .day-activities.active {
       padding-top: 14px;
       padding-bottom: 4px;
-      background-color: #F4F7FA;
+
+      background-color: var(--bg-page);
+
     }
 
     /* ===== THEME DROPDOWN ===== */
@@ -1089,11 +1091,10 @@
     /* ── Summary card wrapper ── */
     .sum-section {
       margin: 0 10px 12px;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: var(--bg-card);
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: var(--shadow-card);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
 
     /* Increase code + description font on mobile */
@@ -1319,6 +1320,139 @@
     .sum-total-val.ot {
       color: #C07800;
     }
+
+    /* ── NEW Summary card — dark header ── */
+    .sum-new-head {
+      width: 100%;
+      background: var(--bg-header);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      border: none;
+      text-align: left;
+    }
+
+    .sum-new-head:active { opacity: 0.9; }
+
+    .sum-head-left { display: flex; align-items: center; gap: 12px; }
+
+    .sum-sum-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4f7aff 0%, #7b5ea7 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+
+    .sum-new-title { font-size: 13px; font-weight: 700; color: #fff; }
+    .sum-new-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+
+    .sum-head-right { display: flex; align-items: center; gap: 10px; }
+
+    .sum-new-badge {
+      background: #4f7aff; color: #fff;
+      font-size: 13px; font-weight: 700;
+      font-family: var(--font-mono);
+      padding: 4px 11px; border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* ── Summary rows (new) ── */
+    .sum-new-col-head {
+      display: grid;
+      grid-template-columns: 1fr 44px 44px;
+      gap: 6px;
+      padding: 10px 16px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sum-new-col-th {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .sum-new-col-th.r { text-align: right; }
+
+    .sum-new-row {
+      display: grid;
+      grid-template-columns: 1fr 44px 44px;
+      gap: 6px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+      background: var(--bg-card);
+    }
+
+    .sum-new-row:last-of-type { border-bottom: none; }
+
+    .sum-new-row.sum-missing .sum-row-code { color: #ef4444; }
+    .sum-new-row.sum-missing .sum-row-desc { color: #ef4444; }
+    .sum-new-row.sum-missing .sum-td-num  { color: #ef4444; }
+    .sum-new-row.sum-missing .sum-row-bar-fill { background: #ef4444; }
+
+    .sum-row-code {
+      font-size: 10px; font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--accent);
+      margin-bottom: 2px;
+      letter-spacing: 0.03em;
+    }
+
+    .sum-row-desc {
+      font-size: 12px; font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+
+    .sum-row-bar-wrap {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .sum-row-bar-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, #4f7aff, #7b5ea7);
+      transition: width 0.4s ease;
+    }
+
+    /* ── Summary new footer ── */
+    .sum-new-footer {
+      background: var(--bg-card-alt);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+    }
+
+    .sum-footer-label {
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .sum-footer-totals { display: flex; gap: 14px; align-items: center; }
+    .sum-footer-item { text-align: right; }
+
+    .sum-footer-lbl {
+      font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    .sum-footer-val {
+      font-size: 20px; font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--text-primary); line-height: 1.1;
+    }
+
+    .sum-footer-val.ot { color: var(--text-ot); }
+    .sum-footer-div { width: 1px; height: 30px; background: var(--border); }
 
     input[type=number]::-webkit-inner-spin-button {
       opacity: 1;
@@ -3079,7 +3213,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.44';
+    const VERSION = '3.6.45';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4238,7 +4372,9 @@
 
       const daysHtml = state.weekData.days.map((day, di) => renderDaySection(day, di)).join('');
 
-      const chevronSvg = `<svg class="sum-chevron-svg${(state.showSummary && !state.animatingSummary) ? '' : ' flipped'}" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.8)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const issueCount = summary.filter(r => r.isUncategorized).length;
+      const subLabel = `${summary.length} work code${summary.length !== 1 ? 's' : ''}${issueCount ? ' · ' + issueCount + ' issue' : ''}`;
+      const chevronSvg = `<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)'}"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
       const summaryHtml = `
   <div class="sum-section-hdr">
@@ -4247,41 +4383,52 @@
     <div class="sum-section-line"></div>
   </div>
   <div class="sum-section">
-    <button onclick="toggleSummary()" class="sum-hero">
-      <div class="day-left">
-        <div class="day-expand-btn"><svg class="sum-chevron-svg" width="8" height="8" viewBox="0 0 10 10" style="transition:transform 0.2s;transform:${state.showSummary ? 'rotate(90deg)' : 'rotate(0deg)'}"><polygon points="0,0 10,5 0,10" fill="#b4b8cc"/></svg></div>
-        <span class="day-name">Weekly Summary</span>
+    <button onclick="toggleSummary()" class="sum-new-head">
+      <div class="sum-head-left">
+        <div class="sum-sum-icon">📊</div>
+        <div>
+          <div class="sum-new-title">Weekly Summary</div>
+          <div class="sum-new-sub">${subLabel}</div>
+        </div>
       </div>
-      <div class="day-pills">
-        ${totalOrd > 0 ? `<span class="pill pill-blue" data-sum-ord>${Math.round(totalOrd)}h</span>` : `<span style="display:none" data-sum-ord></span>`}
-        ${totalOT > 0 ? `<span class="pill pill-amber" data-sum-ot>+${Math.round(totalOT)} OT</span>` : `<span style="display:none" data-sum-ot></span>`}
+      <div class="sum-head-right">
+        <div class="sum-new-badge">${Math.round(totalOrd)}h${totalOT > 0 ? ` · <span style="color:#f59e0b">+${Math.round(totalOT)} OT</span>` : ''}</div>
+        ${chevronSvg}
       </div>
     </button>
     <div class="sum-table-wrap${state.showSummary ? ' open' : ''}">
-      <div class="sum-grid-head">
-        <div class="sum-th sum-th-code-desk">Code</div>
-        <div class="sum-th">Description</div>
-        <div class="sum-th r">Ord</div>
-        <div class="sum-th r">OT</div>
+      <div class="sum-new-col-head">
+        <div class="sum-new-col-th">Code / Description</div>
+        <div class="sum-new-col-th r">ORD</div>
+        <div class="sum-new-col-th r">OT</div>
       </div>
       ${summary.map((row) => {
         const m = row.isUncategorized;
+        const pct = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
         return `
-      <div class="sum-grid-row${m ? ' sum-missing' : ''}">
-        <div class="sum-td-code-desk${m ? ' missing' : ''}">${row.code}</div>
-        <div class="sum-td-main">
-          <div class="sum-td-code-mob${m ? ' missing' : ''}">${row.code}</div>
-          <div class="sum-td-desc${m ? ' missing' : ''}">${row.description}</div>
+      <div class="sum-new-row${m ? ' sum-missing' : ''}">
+        <div>
+          <div class="sum-row-code">${row.code}</div>
+          <div class="sum-row-desc">${row.description}</div>
+          <div class="sum-row-bar-wrap"><div class="sum-row-bar-fill" style="width:${pct}%"></div></div>
         </div>
         <div class="sum-td-num${m ? ' missing' : ''}">${Math.round(row.ordinary)}</div>
         <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? Math.round(row.overtime) : '—'}</div>
       </div>`;
       }).join('')}
-      <div class="sum-grid-total">
-        <div class="sum-total-label">Total</div>
-        <div class="sum-total-spacer"></div>
-        <div class="sum-total-val">${Math.round(totalOrd)}</div>
-        <div class="sum-total-val ot">${Math.round(totalOT)}</div>
+      <div class="sum-new-footer">
+        <div class="sum-footer-label">Total</div>
+        <div class="sum-footer-totals">
+          <div class="sum-footer-item">
+            <div class="sum-footer-lbl">ORD</div>
+            <div class="sum-footer-val">${Math.round(totalOrd)}</div>
+          </div>
+          <div class="sum-footer-div"></div>
+          <div class="sum-footer-item">
+            <div class="sum-footer-lbl">OT</div>
+            <div class="sum-footer-val ot">${totalOT > 0 ? Math.round(totalOT) : 0}</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>`;
@@ -4957,11 +5104,10 @@
 
     function toggleSummary() {
       state.showSummary = !state.showSummary;
-      // CSS max-height transition handles animation — just toggle the class and chevron
       const tableWrap = document.querySelector('.sum-table-wrap');
       const chevron = document.querySelector('.sum-chevron-svg');
       if (tableWrap) tableWrap.classList.toggle('open', state.showSummary);
-      if (chevron) chevron.style.transform = state.showSummary ? 'rotate(90deg)' : 'rotate(0deg)';
+      if (chevron) chevron.style.transform = state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)';
     }
 
     function toggleLayoutMode() {
