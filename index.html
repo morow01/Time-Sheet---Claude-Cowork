@@ -3295,7 +3295,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.57';
+    const VERSION = '3.6.58';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6543,35 +6543,38 @@
           showToast('Clearing week…');
           try {
             const ws = state.weekStart;
-            // 1. Unsubscribe BEFORE deleting — prevents the onSnapshot !snap.exists
-            //    handler from seeing the old weekData and pushing it back up
-            if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
-            // 2. Reset state to empty so nothing stale can leak
-            state.weekData = createEmptyWeek(ws);
-            // 3. Delete from Firestore and overwrite IDB with empty week
-            await userDoc(`weeks/${ws}`).delete().catch(() => {});
-            await dbPut('weeks', { weekStart: ws, userId: state.currentUser.uid, data: state.weekData, updatedAt: Date.now() });
-            // 4. Re-subscribe via loadWeek — snapshot sees !snap.exists and
-            //    pushes the empty week up, completing the clear
-            await loadWeek(ws);
+            const emptyWeek = { ...createEmptyWeek(ws), _updatedAt: Date.now() };
+            // Write empty week to Firestore — all connected clients receive the
+            // snapshot and update to empty (avoids the !snap.exists push-back bug)
+            await userDoc(`weeks/${ws}`).set(emptyWeek);
+            await dbPut('weeks', { weekStart: ws, userId: state.currentUser.uid, data: emptyWeek, updatedAt: emptyWeek._updatedAt });
+            state.weekData = emptyWeek;
+            render();
             showToast('Week cleared.');
           } catch (e) { showToast('Error: ' + e.message); }
         }
       );
     }
 
-    async function _deleteAllFirestoreData() {
+    async function _deleteAllFirestoreData(currentWeekStart) {
       const uid = state.currentUser.uid;
-      // Delete all week documents
       const weeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
       if (weeksSnap) {
         const batch = db_fs.batch();
-        weeksSnap.docs.forEach(d => batch.delete(d.ref));
+        weeksSnap.docs.forEach(d => {
+          if (d.id === currentWeekStart) {
+            // SET current week to empty so all active listeners update cleanly
+            const emptyWeek = { ...createEmptyWeek(currentWeekStart), _updatedAt: Date.now() };
+            batch.set(d.ref, emptyWeek);
+          } else {
+            // Delete all other weeks (no listener watching them)
+            batch.delete(d.ref);
+          }
+        });
         await batch.commit().catch(() => {});
       }
-      // Delete notes
+      // Delete notes and user profile
       await userDoc('data/notes').delete().catch(() => {});
-      // Delete user profile doc
       await db_fs.doc(`users/${uid}`).delete().catch(() => {});
     }
 
@@ -6584,18 +6587,16 @@
           showToast('Deleting all data…');
           try {
             const ws = state.weekStart || dateToStr(getCurrentFriday());
-            // 1. Kill both listeners FIRST so snapshots can't restore deleted data
-            if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
+            // 1. Kill notes listener (week listener must stay alive to receive
+            //    the empty-week snapshot that clears other devices)
             if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
-            // 2. Reset state immediately so nothing stale can leak
-            state.weekData = createEmptyWeek(ws);
             state.notes = [];
-            render();
-            // 3. Now safe to delete — no listeners watching
-            await _deleteAllFirestoreData();
+            // 2. Write empty current week + delete all others in one batch.
+            //    The active onSnapshot will receive the empty week and update
+            //    all connected clients automatically — no cache clear needed.
+            await _deleteAllFirestoreData(ws);
             await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
-            // 4. Re-subscribe via loadWeek
-            await loadWeek(ws);
+            // 3. Notes: reload (listener was unsubscribed above)
             if (state.view === 'notes') loadNotes();
             showToast('All data deleted.');
           } catch (e) { showToast('Error: ' + e.message); }
