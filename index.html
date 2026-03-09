@@ -3300,7 +3300,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.68';
+    const VERSION = '3.6.69';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4404,7 +4404,7 @@
       const items = [
         { id: 'jump', label: 'Jump to Week', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>', onClick: 'openDateModal()' },
         { id: 'email', label: 'Email/Export Week', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>', onClick: 'sendWeeklyEmail()' },
-        ...(state.view === 'week' ? [{ id: 'table', label: state.layoutMode === 'table' ? 'Mobile View' : 'Spreadsheet View', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>', onClick: 'toggleLayoutMode()' }] : []),
+        ...(state.view === 'week' && window.innerWidth >= 768 ? [{ id: 'table', label: state.layoutMode === 'table' ? 'Mobile View' : 'Spreadsheet View', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>', onClick: 'toggleLayoutMode()' }] : []),
         { spacer: true },
         { id: 'clear-week',    label: 'Clear This Week',    danger: true, icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>', onClick: 'clearCurrentWeek()' },
         { id: 'clear-all',     label: 'Clear All My Data',  danger: true, icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>', onClick: 'clearAllData()' },
@@ -5819,6 +5819,9 @@
     }
 
     function setExchangeTab(tab) {
+      // Clear the selection of the tab we're leaving
+      if (tab === 'cabinets') state.selectedExchange = null;
+      if (tab === 'exchanges') state.selectedCabinet = null;
       state.exchangeTab = tab;
       localStorage.setItem('exchangeTab', tab);
       render();
@@ -5826,40 +5829,51 @@
 
     // ---- Exchange Finder View ----
     function renderExchangesView() {
-      if (state.selectedExchange) return renderExchangeDetails(state.selectedExchange);
-      if (state.selectedCabinet) return renderCabinetDetails(state.selectedCabinet);
-
       const isEx = state.exchangeTab === 'exchanges';
-      const q = isEx ? (state.exchangeSearch || '') : (state.cabinetSearch || '');
-      const qLower = q.toLowerCase();
+      const selectedItem = isEx ? state.selectedExchange : state.selectedCabinet;
+      const searchVal = selectedItem
+        ? (isEx ? selectedItem.name : `${selectedItem.mdf} ${selectedItem.ccp}`)
+        : '';
+
+      const tabSwitcher = `
+        <div class="flex p-1 rounded-xl mb-3" style="background:var(--bg-code-group)">
+          <button onclick="setExchangeTab('exchanges')"
+            class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200"
+            style="${isEx ? 'background:var(--bg-card);color:var(--accent)' : ''}">
+            <span class="inline-flex items-center gap-1.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              Exchanges
+            </span>
+          </button>
+          <button onclick="setExchangeTab('cabinets')"
+            class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200"
+            style="${!isEx ? 'background:var(--bg-card);color:var(--accent)' : ''}">
+            <span class="inline-flex items-center gap-1.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg>
+              Cabinets
+            </span>
+          </button>
+        </div>`;
+
+      const searchBar = `
+        <div class="search-input-wrap" onclick="openFinderModal('${isEx ? 'exchanges' : 'cabinets'}')" style="cursor:pointer;margin-bottom:16px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="${isEx ? 'Name or Code (e.g. CHL, Cashel)' : 'MDF, CCP or IPID'}"
+            value="${esc(searchVal)}" readonly style="cursor:pointer;pointer-events:none">
+        </div>`;
+
+      const content = isEx && state.selectedExchange
+        ? renderExchangeDetails(state.selectedExchange)
+        : !isEx && state.selectedCabinet
+          ? renderCabinetDetails(state.selectedCabinet)
+          : `<p class="text-center text-sm py-8" style="color:var(--text-muted)">Search for ${isEx ? 'an exchange' : 'a cabinet'} above</p>`;
 
       return `
         <div class="finder-container">
-          <!-- Tab Switcher -->
-          <div class="flex p-1 bg-gray-100 rounded-xl mb-6 dark:bg-slate-800/50" style="background:var(--bg-code-group)">
-            <button onclick="setExchangeTab('exchanges')"
-              class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200 ${isEx ? 'bg-white shadow-sm text-accent translate-y-0' : 'text-muted hover:text-primary'}"
-              style="${isEx ? 'background:var(--bg-card);color:var(--accent)' : ''}">
-              <span class="inline-flex items-center gap-1.5">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                Exchanges
-              </span>
-            </button>
-            <button onclick="setExchangeTab('cabinets')"
-              class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200 ${!isEx ? 'bg-white shadow-sm text-accent translate-y-0' : 'text-muted hover:text-primary'}"
-              style="${!isEx ? 'background:var(--bg-card);color:var(--accent)' : ''}">
-              <span class="inline-flex items-center gap-1.5">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg>
-                Cabinets
-              </span>
-            </button>
-          </div>
-
-          <div id="finder-content">
-            ${isEx ? renderExchangesSubView(qLower) : renderCabinetsSubView(qLower)}
-          </div>
-        </div>
-      `;
+          ${tabSwitcher}
+          ${searchBar}
+          <div id="finder-content">${content}</div>
+        </div>`;
     }
 
     function setSelectedExchange(code) {
@@ -5898,56 +5912,48 @@
 
     function renderExchangeDetails(ex) {
       return `
-        <div class="finder-container">
-          <div class="detail-header">
-            <button onclick="backToFinder()" class="back-btn">←</button>
+        <div>
+          <div class="detail-header" style="margin-bottom:10px">
             <div>
               <h2 class="text-xl font-bold" style="color:var(--text-primary)">${esc(ex.name)}</h2>
               <p class="text-xs text-muted">Exchange Code: ${esc(ex.code)}</p>
             </div>
           </div>
-
           <div class="detail-tabs">
             ${['location', 'details', 'address', 'security', 'power', 'emergency', 'additional'].map(tab => `
-              <div class="detail-tab ${state.exchangeDetailTab === tab ? 'active' : ''}" 
+              <div class="detail-tab ${state.exchangeDetailTab === tab ? 'active' : ''}"
                    onclick="setExchangeDetailTab('${tab}')" data-tab="${tab}">
                 ${tab.charAt(0).toUpperCase() + tab.slice(1).replace('details', 'Site Details')}
               </div>
             `).join('')}
           </div>
-
           <div id="detail-content">
             ${renderDetailTabContent(ex)}
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderCabinetDetails(cb) {
       return `
-        <div class="finder-container">
-          <div class="detail-header">
-            <button onclick="backToFinder()" class="back-btn">←</button>
+        <div>
+          <div class="detail-header" style="margin-bottom:10px">
             <div>
               <h2 class="text-xl font-bold" style="color:var(--text-primary)">Cabinet ${esc(cb.mdf)} ${esc(cb.ccp)}</h2>
               <p class="text-xs text-muted">IPID: ${esc(cb.ipid)}</p>
             </div>
           </div>
-
           <div class="detail-tabs">
             ${['location', 'details', 'address', 'security', 'power', 'emergency', 'additional'].map(tab => `
-              <div class="detail-tab ${state.exchangeDetailTab === tab ? 'active' : ''}" 
+              <div class="detail-tab ${state.exchangeDetailTab === tab ? 'active' : ''}"
                    onclick="setExchangeDetailTab('${tab}')" data-tab="${tab}">
                 ${tab.charAt(0).toUpperCase() + tab.slice(1).replace('details', 'Site Details')}
               </div>
             `).join('')}
           </div>
-
           <div id="detail-content">
             ${renderDetailTabContent(cb)}
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderDetailTabContent(item) {
