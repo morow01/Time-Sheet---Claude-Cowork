@@ -645,6 +645,53 @@
 
     }
 
+    /* ===== COLLAPSIBLE HEADER METRIC TILES ===== */
+    .hdr-metrics {
+      display: flex;
+      gap: 8px;
+      padding: 0 16px 14px;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height 0.28s ease, opacity 0.22s ease, padding 0.28s ease;
+      padding-bottom: 0;
+    }
+
+    .hdr-metrics.open {
+      max-height: 100px;
+      opacity: 1;
+      padding-bottom: 14px;
+    }
+
+    .hdr-metric-tile {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .hdr-metric-val {
+      font-size: 20px; font-weight: 800;
+      font-family: var(--font-mono);
+      color: #fff; line-height: 1;
+    }
+
+    .hdr-metric-val.ot { color: #f59e0b; }
+
+    .hdr-metric-lbl {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.3); margin-top: 4px;
+    }
+
+    .hdr-week-chevron {
+      display: inline-flex; align-items: center;
+      vertical-align: middle; margin-left: 4px;
+      transition: transform 0.22s;
+    }
+
+    .hdr-week-chevron.open { transform: rotate(180deg); }
+
     /* ===== THEME DROPDOWN ===== */
     .theme-menu-wrap {
       position: relative;
@@ -1321,41 +1368,49 @@
       color: #C07800;
     }
 
-    /* ── NEW Summary card — dark header ── */
+    /* ── NEW Summary card — light header ── */
     .sum-new-head {
       width: 100%;
-      background: var(--bg-header);
+      background: var(--bg-card);
       padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       cursor: pointer;
       border: none;
+      border-bottom: 1px solid var(--border);
       text-align: left;
     }
 
-    .sum-new-head:active { opacity: 0.9; }
+    .sum-new-head:active { opacity: 0.85; }
 
     .sum-head-left { display: flex; align-items: center; gap: 12px; }
 
     .sum-sum-icon {
       width: 36px; height: 36px;
       border-radius: 10px;
-      background: linear-gradient(135deg, #4f7aff 0%, #7b5ea7 100%);
+      background: var(--accent-light);
       display: flex; align-items: center; justify-content: center;
       font-size: 16px; flex-shrink: 0;
     }
 
-    .sum-new-title { font-size: 13px; font-weight: 700; color: #fff; }
-    .sum-new-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+    .sum-new-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
 
-    .sum-head-right { display: flex; align-items: center; gap: 10px; }
+    .sum-head-right { display: flex; align-items: center; gap: 8px; }
 
     .sum-new-badge {
-      background: #4f7aff; color: #fff;
-      font-size: 13px; font-weight: 700;
+      background: var(--accent-chip-bg); color: var(--accent-chip-text);
+      font-size: 12px; font-weight: 700;
       font-family: var(--font-mono);
-      padding: 4px 11px; border-radius: 20px;
+      padding: 4px 10px; border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .sum-new-badge-ot {
+      background: rgba(245,158,11,0.12); color: #b45309;
+      font-size: 12px; font-weight: 700;
+      font-family: var(--font-mono);
+      padding: 4px 10px; border-radius: 20px;
       white-space: nowrap;
     }
 
@@ -1392,6 +1447,7 @@
     .sum-new-row.sum-missing .sum-row-desc { color: #ef4444; }
     .sum-new-row.sum-missing .sum-td-num  { color: #ef4444; }
     .sum-new-row.sum-missing .sum-row-bar-fill { background: #ef4444; }
+    .sum-new-row.sum-missing .sum-row-bar-ot-fill { background: #ef4444; opacity: 0.6; }
 
     .sum-row-code {
       font-size: 10px; font-weight: 600;
@@ -1418,6 +1474,20 @@
     .sum-row-bar-fill {
       height: 100%; border-radius: 2px;
       background: linear-gradient(90deg, #4f7aff, #7b5ea7);
+      transition: width 0.4s ease;
+    }
+
+    .sum-row-bar-ot-wrap {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+
+    .sum-row-bar-ot-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, #f59e0b, #f97316);
       transition: width 0.4s ease;
     }
 
@@ -3213,7 +3283,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.45';
+    const VERSION = '3.6.46';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -3658,6 +3728,7 @@
       notesSyncStatus: 'idle',  // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
       syncStatus: 'idle',   // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
       showSummary: false,
+      headerExpanded: false,
       expandedDays: new Set(),  // track which day indices are expanded
       notesOpen: new Map(), // explicit open/closed per actId; default = open if note has content
       selectionMode: false,
@@ -4304,12 +4375,22 @@
         </button>`;
       }).join('');
 
+      // Compute summary totals for header metric tiles
+      const _hdrSummary = state.weekData ? calcSummary(state.weekData) : [];
+      const _hdrOrd = Math.round(_hdrSummary.reduce((s, r) => s + r.ordinary, 0));
+      const _hdrOT  = Math.round(_hdrSummary.reduce((s, r) => s + r.overtime, 0));
+      const _hdrTasks = state.weekData ? state.weekData.days.reduce((s, d) => s + d.activities.length, 0) : 0;
+      const _hdrChevron = `<svg class="hdr-week-chevron${state.headerExpanded ? ' open' : ''}" width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.55)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
       return `
   <header class="shadow-lg" style="background:var(--bg-header);color:var(--text-header)">
     <div class="flex items-center px-4 py-3 gap-2">
       <button onclick="prevWeek()" style="color:var(--text-header-sub)" class="text-xl px-1 py-1 min-w-[36px]">‹</button>
       <div class="flex-1 text-center">
-        <div class="font-bold text-base leading-tight" onclick="openDateModal()" style="cursor:pointer; padding:2px 8px; border-radius:6px; display:inline-block; transition:background 0.2s;" onmousedown="this.style.background='var(--bg-card-alt)'" onmouseup="this.style.background='transparent'" onmouseleave="this.style.background='transparent'">${state.weekStart ? formatWeekRange(state.weekStart) : '—'}</div>
+        <div onclick="toggleHeader()" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:6px;transition:background 0.2s;" onmousedown="this.style.background='rgba(255,255,255,0.08)'" onmouseup="this.style.background='transparent'" onmouseleave="this.style.background='transparent'">
+          <span class="font-bold text-base leading-tight">${state.weekStart ? formatWeekRange(state.weekStart) : '—'}</span>
+          ${_hdrChevron}
+        </div>
         <div class="text-xs mt-0.5 flex items-center justify-center gap-2" style="color:var(--text-header-sub)">
           ${syncIcons[state.syncStatus] || ''}
           <span title="${syncTitles[state.syncStatus]}">${syncTitles[state.syncStatus]}</span>
@@ -4335,6 +4416,20 @@
           </div>` : ''}
           ${menuContent}
         </div>
+      </div>
+    </div>
+    <div class="hdr-metrics${state.headerExpanded ? ' open' : ''}">
+      <div class="hdr-metric-tile">
+        <div class="hdr-metric-val">${_hdrOrd}</div>
+        <div class="hdr-metric-lbl">Ord hrs</div>
+      </div>
+      <div class="hdr-metric-tile">
+        <div class="hdr-metric-val ot">${_hdrOT}</div>
+        <div class="hdr-metric-lbl">Overtime</div>
+      </div>
+      <div class="hdr-metric-tile">
+        <div class="hdr-metric-val">${_hdrTasks}</div>
+        <div class="hdr-metric-lbl">Tasks</div>
       </div>
     </div>
     <div class="flex" style="border-top:1px solid var(--border)">
@@ -4372,9 +4467,7 @@
 
       const daysHtml = state.weekData.days.map((day, di) => renderDaySection(day, di)).join('');
 
-      const issueCount = summary.filter(r => r.isUncategorized).length;
-      const subLabel = `${summary.length} work code${summary.length !== 1 ? 's' : ''}${issueCount ? ' · ' + issueCount + ' issue' : ''}`;
-      const chevronSvg = `<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)'}"><path d="M4 6l4 4 4-4" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const chevronSvg = `<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)'}"><path d="M4 6l4 4 4-4" stroke="var(--text-muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
       const summaryHtml = `
   <div class="sum-section-hdr">
@@ -4386,13 +4479,11 @@
     <button onclick="toggleSummary()" class="sum-new-head">
       <div class="sum-head-left">
         <div class="sum-sum-icon">📊</div>
-        <div>
-          <div class="sum-new-title">Weekly Summary</div>
-          <div class="sum-new-sub">${subLabel}</div>
-        </div>
+        <div class="sum-new-title">Weekly Summary</div>
       </div>
       <div class="sum-head-right">
-        <div class="sum-new-badge">${Math.round(totalOrd)}h${totalOT > 0 ? ` · <span style="color:#f59e0b">+${Math.round(totalOT)} OT</span>` : ''}</div>
+        <div class="sum-new-badge">${Math.round(totalOrd)}h</div>
+        ${totalOT > 0 ? `<div class="sum-new-badge-ot">+${Math.round(totalOT)} OT</div>` : ''}
         ${chevronSvg}
       </div>
     </button>
@@ -4404,13 +4495,15 @@
       </div>
       ${summary.map((row) => {
         const m = row.isUncategorized;
-        const pct = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
+        const pct   = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
+        const pctOT = totalOrd > 0 ? Math.round((row.overtime / totalOrd) * 100) : 0;
         return `
       <div class="sum-new-row${m ? ' sum-missing' : ''}">
         <div>
           <div class="sum-row-code">${row.code}</div>
           <div class="sum-row-desc">${row.description}</div>
           <div class="sum-row-bar-wrap"><div class="sum-row-bar-fill" style="width:${pct}%"></div></div>
+          ${row.overtime > 0 ? `<div class="sum-row-bar-ot-wrap"><div class="sum-row-bar-ot-fill" style="width:${pctOT}%"></div></div>` : ''}
         </div>
         <div class="sum-td-num${m ? ' missing' : ''}">${Math.round(row.ordinary)}</div>
         <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? Math.round(row.overtime) : '—'}</div>
@@ -5100,6 +5193,15 @@
       const otEl = document.querySelector('[data-sum-ot]');
       if (ordEl) { ordEl.textContent = Math.round(totalOrd) + 'h'; ordEl.style.display = totalOrd > 0 ? '' : 'none'; }
       if (otEl) { otEl.textContent = '+' + Math.round(totalOT) + ' OT'; otEl.style.display = totalOT > 0 ? '' : 'none'; }
+    }
+
+    function toggleHeader() {
+      state.headerExpanded = !state.headerExpanded;
+      // Update DOM directly without full re-render for smoothness
+      const tiles = document.querySelector('.hdr-metrics');
+      const chev  = document.querySelector('.hdr-week-chevron');
+      if (tiles) tiles.classList.toggle('open', state.headerExpanded);
+      if (chev)  chev.classList.toggle('open', state.headerExpanded);
     }
 
     function toggleSummary() {
