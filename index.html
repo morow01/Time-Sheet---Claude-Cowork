@@ -1810,6 +1810,7 @@
     .table-view-wrap {
       overflow-x: auto;
       padding: 0 0 24px;
+      margin: 15px;
     }
 
     .timesheet-table {
@@ -3301,7 +3302,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.65';
+    const VERSION = '3.6.66';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4724,7 +4725,7 @@
             <button class="chip-x" onclick="removeCode('${act.id}',${di},'${c.c}')" style="margin-left:4px;font-size:11px;line-height:1;color:var(--text-muted)">✕</button>
           </span>`).join('')}
         <div class="flex items-center gap-2">
-          <button class="tbl-add-code-btn" onclick="openCodeModal(${di},'${act.id}')" style="${isMissingCode ? 'border-color:#f97316;color:#f97316' : ''}">${act.codes.length ? '✎' : '+ Code'}</button>
+          <button class="tbl-add-code-btn" onclick="openCodeModal(${di},'${act.id}')" style="${isMissingCode ? 'border-color:#f97316;color:#f97316' : ''}">+ Code</button>
           ${isInvalid ? `<span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse" title="${isMissingCode ? 'Code required' : 'Hours required'}" style="box-shadow: 0 0 6px rgba(249,115,22,0.4)"></span>` : ''}
         </div>
       </div>`;
@@ -5249,10 +5250,15 @@
 
     function toggleSummary() {
       state.showSummary = !state.showSummary;
-      const tableWrap = document.querySelector('.sum-table-wrap');
-      const chevron = document.querySelector('.sum-chevron-svg');
-      if (tableWrap) tableWrap.classList.toggle('open', state.showSummary);
-      if (chevron) chevron.style.transform = state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)';
+      if (state.layoutMode === 'table') {
+        // Table view renders summary via template literal — needs full re-render
+        render();
+      } else {
+        const tableWrap = document.querySelector('.sum-table-wrap');
+        const chevron = document.querySelector('.sum-chevron-svg');
+        if (tableWrap) tableWrap.classList.toggle('open', state.showSummary);
+        if (chevron) chevron.style.transform = state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
     }
 
     function toggleLayoutMode() {
