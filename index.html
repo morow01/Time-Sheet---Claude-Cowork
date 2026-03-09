@@ -3295,7 +3295,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.55';
+    const VERSION = '3.6.56';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6542,10 +6542,18 @@
         async () => {
           showToast('Clearing week…');
           try {
-            await userDoc(`weeks/${state.weekStart}`).delete().catch(() => {});
-            await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: createEmptyWeek(state.weekStart), updatedAt: Date.now() });
-            state.weekData = createEmptyWeek(state.weekStart);
-            render();
+            const ws = state.weekStart;
+            // 1. Unsubscribe BEFORE deleting — prevents the onSnapshot !snap.exists
+            //    handler from seeing the old weekData and pushing it back up
+            if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
+            // 2. Reset state to empty so nothing stale can leak
+            state.weekData = createEmptyWeek(ws);
+            // 3. Delete from Firestore and overwrite IDB with empty week
+            await userDoc(`weeks/${ws}`).delete().catch(() => {});
+            await dbPut('weeks', { weekStart: ws, userId: state.currentUser.uid, data: state.weekData, updatedAt: Date.now() });
+            // 4. Re-subscribe via loadWeek — snapshot sees !snap.exists and
+            //    pushes the empty week up, completing the clear
+            await loadWeek(ws);
             showToast('Week cleared.');
           } catch (e) { showToast('Error: ' + e.message); }
         }
