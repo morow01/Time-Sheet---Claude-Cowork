@@ -43,8 +43,10 @@
 
     /* ── STICKY NAVBAR ── */
     .site-nav {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 200;
       background: var(--navy);
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -53,6 +55,11 @@
       align-items: center;
       height: 62px;
       gap: 16px;
+    }
+
+    /* Push page content below the fixed nav */
+    .hero {
+      margin-top: 62px;
     }
 
     .nav-brand {
@@ -152,7 +159,7 @@
       transform: translateY(-1px);
     }
 
-    /* On mobile, hide centre nav links to save space */
+    /* On mobile, hide centre nav links and push CTA to the right */
     @media (max-width: 600px) {
       .site-nav {
         padding: 0 16px;
@@ -164,6 +171,23 @@
 
       .nav-brand-ver {
         display: none;
+      }
+
+      .nav-cta {
+        margin-left: auto;
+      }
+
+      /* Single phone on small screens so nothing clips */
+      .phone.secondary {
+        display: none;
+      }
+
+      .phones {
+        justify-content: center;
+      }
+
+      .phone {
+        width: min(195px, 80vw);
       }
     }
 
