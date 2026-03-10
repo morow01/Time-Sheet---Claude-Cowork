@@ -481,76 +481,106 @@
     .ts-sum-row span:last-child { font-weight: 600; font-family: 'DM Mono', monospace; }
 
     /* ── WEEKLY SUMMARY MOCKUP ── */
-    .sum-section-header {
-      background: var(--navy);
-      padding: 7px 10px 5px;
-      color: rgba(255,255,255,0.55);
-      font-size: 7px; font-weight: 800;
-      letter-spacing: 0.08em; text-transform: uppercase;
-    }
-    .sum-card {
-      background: var(--card);
-      border-radius: 8px;
-      margin: 6px 6px 0;
+    .ws-screen { background: var(--page); }
+
+    /* Card wrapper */
+    .ws-card {
+      background: #fff;
+      border-radius: 10px;
+      margin: 6px;
       overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      position: relative;
     }
-    .sum-card-title {
-      padding: 6px 8px 4px;
-      font-size: 7.5px; font-weight: 800;
-      color: var(--text);
+
+    /* Card header — icon + title + badges + chevron */
+    .ws-header {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 8px 6px;
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
     }
-    .sum-badge {
-      font-size: 6px; font-weight: 700;
-      background: rgba(45,107,228,0.12); color: var(--accent);
-      border-radius: 4px; padding: 1px 5px;
-      font-family: 'DM Mono', monospace;
+    .ws-icon {
+      width: 18px; height: 18px; border-radius: 4px;
+      background: rgba(45,107,228,0.1);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .sum-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 4px 8px;
+    .ws-title { font-size: 8px; font-weight: 800; flex: 1; color: var(--text); }
+    .ws-badge {
+      border-radius: 10px; padding: 1.5px 6px;
+      font-size: 6.5px; font-weight: 800;
+      white-space: nowrap;
+    }
+    .ws-badge.ord { background: rgba(45,107,228,0.12); color: var(--accent); }
+    .ws-badge.ot  { background: rgba(245,166,35,0.15); color: var(--ot); }
+    .ws-chevron { font-size: 8px; color: var(--faint); margin-left: 2px; }
+
+    /* Column header row */
+    .ws-col-row {
+      display: grid; grid-template-columns: 1fr 22px 22px;
+      padding: 4px 8px 3px;
+      background: rgba(232,238,245,0.6);
       border-bottom: 1px solid var(--border);
-      font-size: 7px;
     }
-    .sum-row:last-child { border: none; }
-    .sum-row-label { color: var(--muted); }
-    .sum-row-val { font-weight: 700; font-family: 'DM Mono', monospace; }
-    .sum-row-val.ot { color: var(--ot); }
-    .sum-row-val.green { color: var(--green); }
-    .sum-divider {
-      height: 1px; background: var(--border); margin: 4px 8px;
+    .ws-col-lbl {
+      font-size: 6px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--faint);
     }
-    .sum-total-row {
-      display: flex; justify-content: space-between;
-      background: var(--navy);
-      padding: 5px 8px;
-      font-size: 7.5px; font-weight: 800;
-      color: #fff;
-    }
-    .sum-code-chip {
-      background: rgba(45,107,228,0.12); color: var(--accent);
-      border-radius: 3px; padding: 0px 4px; font-size: 6px;
-      font-family: 'DM Mono', monospace; font-weight: 700;
-      margin-right: 2px;
-    }
-    .sum-day-row {
-      display: grid; grid-template-columns: 28px 1fr 22px 22px;
+    .ws-col-lbl.right { text-align: right; }
+
+    /* Each code row */
+    .ws-row {
+      display: grid; grid-template-columns: 1fr 22px 22px;
       align-items: center;
-      padding: 3px 8px;
+      padding: 5px 8px 4px;
       border-bottom: 1px solid var(--border);
-      font-size: 7px;
+      gap: 3px;
     }
-    .sum-day-row:last-child { border: none; }
-    .sum-day-name { font-weight: 700; color: var(--text); }
-    .sum-day-hrs { font-family: 'DM Mono', monospace; font-weight: 700; text-align: right; }
-    .sum-day-ot  { font-family: 'DM Mono', monospace; font-weight: 700; color: var(--ot); text-align: right; }
-    .sum-email-btn {
-      display: flex; align-items: center; justify-content: center; gap: 4px;
-      background: var(--accent); color: #fff;
-      margin: 6px; border-radius: 6px;
-      padding: 6px 8px; font-size: 7.5px; font-weight: 700;
+    .ws-row:last-child { border: none; }
+    .ws-code {
+      font-size: 6.5px; font-weight: 800;
+      color: var(--accent);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.02em;
     }
+    .ws-desc { font-size: 6.5px; color: var(--text); margin: 1px 0 3px; line-height: 1.3; }
+    .ws-bar-track {
+      height: 3px; background: var(--border); border-radius: 2px;
+    }
+    .ws-bar-fill {
+      height: 100%; border-radius: 2px;
+      background: var(--accent);
+    }
+    .ws-bar-fill.ot-bar { background: var(--ot); }
+    .ws-bar-fill.mixed  { background: linear-gradient(90deg, var(--accent) 70%, var(--ot) 70%); }
+    .ws-num { font-size: 7.5px; font-weight: 700; text-align: right; font-family: 'DM Mono', monospace; color: var(--text); }
+    .ws-num.ot { color: var(--ot); }
+    .ws-dash { font-size: 8px; text-align: right; color: var(--faint); }
+
+    /* Scroll fade on card — suggests more rows */
+    .ws-fade {
+      position: absolute; bottom: 38px; left: 0; right: 0; height: 22px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 100%);
+      pointer-events: none;
+    }
+
+    /* Footer totals */
+    .ws-footer {
+      display: grid; grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      padding: 6px 8px;
+      border-top: 1px solid var(--border);
+      background: rgba(232,238,245,0.5);
+    }
+    .ws-footer-lbl {
+      font-size: 6px; font-weight: 800; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--faint);
+      align-self: center;
+    }
+    .ws-footer-group { text-align: right; }
+    .ws-footer-sub { font-size: 5.5px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+    .ws-footer-val { font-size: 10px; font-weight: 800; font-family: 'DM Mono', monospace; }
+    .ws-footer-val.ord { color: var(--text); }
+    .ws-footer-val.ot  { color: var(--ot); }
 
     /* ── NOTES MOCKUP ── */
     .notes-body { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
@@ -716,7 +746,7 @@
     <a href="#finder"    class="nav-link"        data-section="finder">Finder</a>
   </div>
 
-  <a href="https://eir-fieldlog.web.app" target="_blank" rel="noopener" class="nav-cta">
+  <a href="https://morow01.github.io/Time-Sheet---Claude-Cowork/" target="_blank" rel="noopener" class="nav-cta">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     Launch App
   </a>
@@ -728,7 +758,7 @@
   <h1>Everything you need<br><span>on the job site</span></h1>
   <p>FieldLog keeps your timesheets, field notes, and site finder in one fast, cloud-synced app.</p>
   <div class="hero-cta">
-    <a href="https://eir-fieldlog.web.app" target="_blank" rel="noopener" class="btn-launch">
+    <a href="https://morow01.github.io/Time-Sheet---Claude-Cowork/" target="_blank" rel="noopener" class="btn-launch">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Launch App
     </a>
@@ -949,7 +979,7 @@
           <div class="browser-dot amber"></div>
           <div class="browser-dot green"></div>
         </div>
-        <div class="browser-url">eir-fieldlog.web.app</div>
+        <div class="browser-url">morow01.github.io/Time-Sheet---Claude-Cowork</div>
       </div>
 
       <!-- App chrome -->
@@ -1123,9 +1153,9 @@
 
     <!-- Phone -->
     <div class="phones">
-      <div class="phone" style="width:210px">
+      <div class="phone" style="width:215px">
         <div class="phone-notch"></div>
-        <div class="phone-screen" style="min-height:420px">
+        <div class="phone-screen ws-screen" style="min-height:430px">
 
           <!-- App header -->
           <div class="app-header">
@@ -1144,81 +1174,121 @@
             <div class="app-tab">Finder</div>
           </div>
 
-          <!-- Section label -->
-          <div class="sum-section-header">Weekly Summary</div>
+          <!-- Weekly Summary card (matches real app) -->
+          <div class="ws-card">
 
-          <!-- Day-by-day card -->
-          <div class="sum-card">
-            <div class="sum-card-title">
-              Hours per Day
-              <span class="sum-badge">10–14 Mar</span>
+            <!-- Card header -->
+            <div class="ws-header">
+              <div class="ws-icon">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <span class="ws-title">Weekly Summary</span>
+              <span class="ws-badge ord">39h</span>
+              <span class="ws-badge ot">+10 OT</span>
+              <span class="ws-chevron">︿</span>
             </div>
-            <div class="sum-day-row">
-              <div class="sum-day-name">Mon</div>
-              <div style="font-size:6.5px;color:var(--muted)">Cable install · Panel inspect</div>
-              <div class="sum-day-hrs">8h</div>
-              <div class="sum-day-ot">—</div>
-            </div>
-            <div class="sum-day-row">
-              <div class="sum-day-name">Tue</div>
-              <div style="font-size:6.5px;color:var(--muted)">Fault diag · Terminations</div>
-              <div class="sum-day-hrs">8h</div>
-              <div class="sum-day-ot">+1h</div>
-            </div>
-            <div class="sum-day-row">
-              <div class="sum-day-name">Wed</div>
-              <div style="font-size:6.5px;color:var(--muted)">Site survey — new build</div>
-              <div class="sum-day-hrs">8h</div>
-              <div class="sum-day-ot">+2h</div>
-            </div>
-            <div class="sum-day-row">
-              <div class="sum-day-name">Thu</div>
-              <div style="font-size:6.5px;color:var(--muted)">Remedial works</div>
-              <div class="sum-day-hrs">8h</div>
-              <div class="sum-day-ot">—</div>
-            </div>
-            <div class="sum-day-row">
-              <div class="sum-day-name">Fri</div>
-              <div style="font-size:6.5px;color:var(--muted)">Commissioning test</div>
-              <div class="sum-day-hrs">9h</div>
-              <div class="sum-day-ot">+1h</div>
-            </div>
-            <div class="sum-total-row">
-              <span>Weekly Total</span>
-              <span>41h ord &nbsp;<span style="color:var(--ot)">+4h OT</span></span>
-            </div>
-          </div>
 
-          <!-- Totals by code card -->
-          <div class="sum-card" style="margin-top:5px">
-            <div class="sum-card-title">Hours by Work Code</div>
-            <div class="sum-row">
-              <span class="sum-row-label"><span class="sum-code-chip">EL-001</span> Cable &amp; Terminations</span>
-              <span class="sum-row-val">14h</span>
+            <!-- Column headers -->
+            <div class="ws-col-row">
+              <div class="ws-col-lbl">Code / Description</div>
+              <div class="ws-col-lbl right">ORD</div>
+              <div class="ws-col-lbl right">OT</div>
             </div>
-            <div class="sum-row">
-              <span class="sum-row-label"><span class="sum-code-chip">SV-003</span> Site Survey</span>
-              <span class="sum-row-val">10h</span>
-            </div>
-            <div class="sum-row">
-              <span class="sum-row-label"><span class="sum-code-chip">FD-012</span> Fault Diagnosis</span>
-              <span class="sum-row-val ot">5h</span>
-            </div>
-            <div class="sum-row">
-              <span class="sum-row-label"><span class="sum-code-chip">RM-009</span> Remedial Works</span>
-              <span class="sum-row-val">8h</span>
-            </div>
-            <div class="sum-row">
-              <span class="sum-row-label"><span class="sum-code-chip">CM-022</span> Commissioning</span>
-              <span class="sum-row-val">8h</span>
-            </div>
-          </div>
 
-          <!-- Email button -->
-          <div class="sum-email-btn">
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Email Weekly Summary
-          </div>
+            <!-- Row: ICD0004H14 -->
+            <div class="ws-row">
+              <div>
+                <div class="ws-code">ICD0004H14</div>
+                <div class="ws-desc">Cease/Cancel – NGN Customer Circuits</div>
+                <div class="ws-bar-track"><div class="ws-bar-fill" style="width:100%"></div></div>
+              </div>
+              <div class="ws-num">8</div>
+              <div class="ws-dash">—</div>
+            </div>
+
+            <!-- Row: UWO0001A99 (has OT) -->
+            <div class="ws-row">
+              <div>
+                <div class="ws-code">UWO0001A99</div>
+                <div class="ws-desc">Other Unworked Leave; Meetings</div>
+                <div class="ws-bar-track"><div class="ws-bar-fill mixed" style="width:100%"></div></div>
+              </div>
+              <div class="ws-num">8</div>
+              <div class="ws-num ot">1</div>
+            </div>
+
+            <!-- Row: MXY0005A10 -->
+            <div class="ws-row">
+              <div>
+                <div class="ws-code">MXY0005A10</div>
+                <div class="ws-desc">Routine Power RSU</div>
+                <div class="ws-bar-track"><div class="ws-bar-fill" style="width:63%"></div></div>
+              </div>
+              <div class="ws-num">5</div>
+              <div class="ws-dash">—</div>
+            </div>
+
+            <!-- Row: MCY0003A10 -->
+            <div class="ws-row">
+              <div>
+                <div class="ws-code">MCY0003A10</div>
+                <div class="ws-desc">Routine DSL</div>
+                <div class="ws-bar-track"><div class="ws-bar-fill" style="width:50%"></div></div>
+              </div>
+              <div class="ws-num">4</div>
+              <div class="ws-dash">—</div>
+            </div>
+
+            <!-- Row: MNG7002A10 -->
+            <div class="ws-row">
+              <div>
+                <div class="ws-code">MNG7002A10</div>
+                <div class="ws-desc">Maintenance NGN Core</div>
+                <div class="ws-bar-track"><div class="ws-bar-fill" style="width:38%"></div></div>
+              </div>
+              <div class="ws-num">3</div>
+              <div class="ws-dash">—</div>
+            </div>
+
+            <!-- Row: RLB0003A10 (OT only) -->
+            <div class="ws-row">
+              <div>
+                <div class="ws-code">RLB0003A10</div>
+                <div class="ws-desc">COW-Escort; ESAT</div>
+                <div class="ws-bar-track"><div class="ws-bar-fill ot-bar" style="width:12%"></div></div>
+              </div>
+              <div class="ws-num">0</div>
+              <div class="ws-num ot">1</div>
+            </div>
+
+            <!-- Row: CYP6011U24 (OT only) -->
+            <div class="ws-row">
+              <div>
+                <div class="ws-code">CYP6011U24</div>
+                <div class="ws-desc">Field – NGN Access Orders (P/M)</div>
+                <div class="ws-bar-track"><div class="ws-bar-fill ot-bar" style="width:100%"></div></div>
+              </div>
+              <div class="ws-num">0</div>
+              <div class="ws-num ot">8</div>
+            </div>
+
+            <!-- Scroll fade hint -->
+            <div class="ws-fade"></div>
+
+            <!-- Footer totals -->
+            <div class="ws-footer">
+              <div class="ws-footer-lbl">Total</div>
+              <div class="ws-footer-group">
+                <div class="ws-footer-sub">ORD</div>
+                <div class="ws-footer-val ord">39</div>
+              </div>
+              <div class="ws-footer-group">
+                <div class="ws-footer-sub">OT</div>
+                <div class="ws-footer-val ot">10</div>
+              </div>
+            </div>
+
+          </div><!-- /ws-card -->
 
         </div><!-- /phone-screen -->
       </div><!-- /phone -->
@@ -1587,7 +1657,7 @@
   <p style="margin-top:6px">Data cached locally · Syncs to cloud · Mobile first</p>
   <p style="margin-top:6px;font-size:11px;opacity:0.45">v3.6.75</p>
   <div style="margin-top:24px">
-    <a href="https://eir-fieldlog.web.app" target="_blank" rel="noopener" class="btn-launch" style="font-size:14px;padding:11px 24px;">
+    <a href="https://morow01.github.io/Time-Sheet---Claude-Cowork/" target="_blank" rel="noopener" class="btn-launch" style="font-size:14px;padding:11px 24px;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Launch App
     </a>
