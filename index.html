@@ -3545,6 +3545,113 @@
     .result-card:active {
       transform: scale(0.98);
     }
+
+    /* ===== SNAPSHOT MODAL ===== */
+    #snapshot-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: var(--overlay);
+      align-items: flex-end;
+      justify-content: center;
+    }
+    #snapshot-modal.open { display: flex; }
+    #snapshot-modal-inner {
+      background: var(--bg-modal);
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 600px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #snapshot-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    #snapshot-modal-header h2 {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    #snapshot-modal-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg-card-alt);
+      color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+    }
+    #snapshot-modal-body {
+      overflow-y: auto;
+      flex: 1;
+      padding: 12px 16px 24px;
+    }
+    .snap-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+    .snap-row-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: rgba(59,130,246,0.1);
+      color: #3b82f6;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .snap-row-body { flex: 1; min-width: 0; }
+    .snap-row-time { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .snap-row-summary { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .snap-restore-btn {
+      padding: 6px 14px;
+      border-radius: 10px;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .snap-restore-btn:active { opacity: 0.8; }
+    .snap-empty { text-align: center; color: var(--text-secondary); font-size: 14px; padding: 40px 20px; }
+    .snap-manual-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      padding: 12px;
+      border-radius: 14px;
+      border: 2px dashed var(--border);
+      background: none;
+      color: var(--text-secondary);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .snap-manual-btn:active { opacity: 0.7; }
+    .snap-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(59,130,246,0.15);
+      color: #3b82f6;
+      margin-left: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
   </style>
 </head>
 
@@ -3660,6 +3767,34 @@
     </div>
   </div>
 
+  <!-- ===== SNAPSHOT MODAL ===== -->
+  <div id="snapshot-modal">
+    <div id="snapshot-modal-inner">
+      <div id="snapshot-modal-header">
+        <span class="snap-row-icon" style="background:rgba(59,130,246,0.1);border-radius:10px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        </span>
+        <h2>Snapshots</h2>
+        <button id="snapshot-modal-close" onclick="closeSnapshotModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="snapshot-modal-body">
+        <!-- Device name row -->
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background:var(--bg-card-alt);border:1px solid var(--border);margin-bottom:12px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);flex-shrink:0"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span id="snap-device-label" style="flex:1;font-size:13px;color:var(--text-secondary)"></span>
+          <button onclick="renameDevice()" style="font-size:12px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:6px;">Rename</button>
+        </div>
+        <button class="snap-manual-btn" onclick="takeManualSnapshot()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Save snapshot now
+        </button>
+        <div id="snapshot-list"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== CONFIRM MODAL ===== -->
   <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
     style="background:var(--overlay)">
@@ -3679,7 +3814,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.6.75';
+    const VERSION = '3.7.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4235,6 +4370,9 @@
       const ref = userDoc(`weeks/${weekStart}`);
       if (!ref) return;
       await ref.set({ ...weekData, _updatedAt: Date.now() });
+      // After a successful Firestore write, opportunistically take an auto-snapshot
+      // (throttled to once per 10 min so it doesn't spam the subcollection).
+      maybeTakeAutoSnapshot(weekStart, weekData).catch(() => {});
     }
 
     async function fsSetNotes(notes) {
@@ -4495,12 +4633,19 @@
       state.weekData._updatedAt = Date.now();
       const capturedWeekStart = state.weekStart;
       updateHeaderStatus();
+      // Capture weekData alongside weekStart so a week switch mid-debounce
+      // never causes us to silently drop the edit or save the wrong data.
+      const capturedWeekData = state.weekData;
       saveTimer = setTimeout(async () => {
-        if (state.weekStart !== capturedWeekStart) return;
-        await dbPut('weeks', { weekStart: capturedWeekStart, userId: state.currentUser?.uid || null, data: state.weekData, updatedAt: state.weekData._updatedAt });
+        // If the week has changed, loadWeek() should have already flushed this
+        // save — but if not (e.g. unexpected state), save to the captured week
+        // rather than silently dropping the edit.
+        const dataToSave = (state.weekStart === capturedWeekStart) ? state.weekData : capturedWeekData;
+        const uid = state.currentUser?.uid || null;
+        await dbPut('weeks', { weekStart: capturedWeekStart, userId: uid, data: dataToSave, updatedAt: dataToSave._updatedAt });
         if (state.currentUser) {
           try {
-            await fsSetWeek(capturedWeekStart, state.weekData);
+            await fsSetWeek(capturedWeekStart, dataToSave);
             if (state.weekStart === capturedWeekStart) { state.syncStatus = 'synced'; updateHeaderStatus(); }
           } catch (e) {
             if (state.weekStart === capturedWeekStart) { state.syncStatus = 'error'; updateHeaderStatus(); }
@@ -4858,6 +5003,18 @@
                     <span class="menu-row-body"><span class="menu-row-label">${state.layoutMode === 'table' ? 'Mobile View' : 'Spreadsheet View'}</span></span>
                     ${chev}
                   </button>` : ''}
+                </div>
+              </div>
+
+              <!-- Snapshots section -->
+              <div class="menu-section-wrap">
+                <div class="menu-section-label">Recovery</div>
+                <div class="menu-card">
+                  <button class="menu-row" onclick="openSnapshotModal()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Snapshots / Recover</span><span class="menu-row-sub">Browse and restore saved versions</span></span>
+                    ${chev}
+                  </button>
                 </div>
               </div>
 
@@ -6890,8 +7047,50 @@
       }
     }
 
+    // Flush any pending saves when the tab is hidden or the page is unloaded.
+    // This covers: switching tabs, closing the tab, closing the browser,
+    // and navigating away — all cases where the debounce timer would otherwise
+    // be silently cancelled by the browser before it fires.
+    async function flushPendingSaves() {
+      const flushWeek = saveTimer && state.weekStart && state.weekData && state.currentUser;
+      const flushNotes = notesSaveTimer && state.notes && state.currentUser;
+      if (!flushWeek && !flushNotes) return;
+      if (flushWeek) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+        await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
+        await fsSetWeek(state.weekStart, state.weekData).catch(() => { });
+      }
+      if (flushNotes) {
+        clearTimeout(notesSaveTimer);
+        notesSaveTimer = null;
+        const ts = Date.now();
+        await dbPut('notes', { id: 'notes_all', userId: state.currentUser.uid, data: state.notes, updatedAt: ts });
+        await fsSetNotes(state.notes).catch(() => { });
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') flushPendingSaves();
+    });
+
+    window.addEventListener('pagehide', () => {
+      flushPendingSaves();
+    });
+
     // Online / offline handling — Firestore reconnects automatically
     window.addEventListener('online', () => {
+      // Retry any failed save when connectivity is restored
+      if (state.syncStatus === 'error' && state.weekStart && state.weekData && state.currentUser) {
+        fsSetWeek(state.weekStart, state.weekData)
+          .then(() => { state.syncStatus = 'synced'; updateHeaderStatus(); })
+          .catch(() => { });
+      }
+      if (state.notesSyncStatus === 'error' && state.notes && state.currentUser) {
+        fsSetNotes(state.notes)
+          .then(() => { state.notesSyncStatus = 'synced'; updateHeaderStatus(); })
+          .catch(() => { });
+      }
       updateHeaderStatus();
     });
 
@@ -6984,6 +7183,226 @@
         showToast('Sign-in failed: ' + (e.message || 'Unknown error'));
       }
     }
+
+    // ============================================================
+    // SNAPSHOTS
+    // ============================================================
+    const SNAPSHOT_MAX = 20;          // max snapshots kept per week
+    const SNAPSHOT_THROTTLE_MS = 10 * 60 * 1000; // auto-snapshot at most once per 10 min
+    const _lastSnapshotAt = {};       // weekStart → timestamp of last auto-snapshot
+
+    // ---- Device name ----
+    // Auto-detected once per session from browser UA, stored in localStorage so it
+    // persists across sessions. Users can rename via the snapshot modal if needed.
+    function _detectDeviceName() {
+      const ua = navigator.userAgent;
+      let browser = 'Browser';
+      if (/Edg\//.test(ua))            browser = 'Edge';
+      else if (/OPR\/|Opera/.test(ua)) browser = 'Opera';
+      else if (/Chrome\//.test(ua))    browser = 'Chrome';
+      else if (/Firefox\//.test(ua))   browser = 'Firefox';
+      else if (/Safari\//.test(ua))    browser = 'Safari';
+      let os = 'Device';
+      if (/Windows/.test(ua))          os = 'Windows';
+      else if (/Android/.test(ua))     os = 'Android';
+      else if (/iPhone|iPad/.test(ua)) os = 'iOS';
+      else if (/Mac OS/.test(ua))      os = 'Mac';
+      else if (/Linux/.test(ua))       os = 'Linux';
+      return `${browser} · ${os}`;
+    }
+
+    function getDeviceName() {
+      let name = localStorage.getItem('deviceName');
+      if (!name) {
+        name = _detectDeviceName();
+        localStorage.setItem('deviceName', name);
+      }
+      return name;
+    }
+
+    function _snapshotSummary(weekData) {
+      if (!weekData || !weekData.days) return { totalOrd: 0, totalOt: 0, entries: 0 };
+      let totalOrd = 0, totalOt = 0, entries = 0;
+      weekData.days.forEach(d => {
+        (d.activities || []).forEach(a => {
+          totalOrd += parseFloat(a.ordinary) || 0;
+          totalOt  += parseFloat(a.overtime)  || 0;
+          if (a.description || a.ordinary || a.overtime) entries++;
+        });
+      });
+      return { totalOrd, totalOt, entries };
+    }
+
+    async function maybeTakeAutoSnapshot(weekStart, weekData) {
+      if (!state.currentUser || !weekStart || !weekData) return;
+      const now = Date.now();
+      if (_lastSnapshotAt[weekStart] && now - _lastSnapshotAt[weekStart] < SNAPSHOT_THROTTLE_MS) return;
+      _lastSnapshotAt[weekStart] = now;
+      await _writeSnapshot(weekStart, weekData, 'auto');
+    }
+
+    async function takeManualSnapshot() {
+      if (!state.currentUser || !state.weekStart || !state.weekData) return;
+      showToast('Saving snapshot…');
+      // Flush any pending save first so the snapshot reflects latest edits
+      if (saveTimer && state.weekStart && state.weekData) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+        await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
+        await fsSetWeek(state.weekStart, state.weekData).catch(() => {});
+      }
+      await _writeSnapshot(state.weekStart, state.weekData, 'manual');
+      showToast('Snapshot saved.');
+      await renderSnapshotList(state.weekStart);
+    }
+
+    async function _writeSnapshot(weekStart, weekData, label) {
+      try {
+        const uid = state.currentUser.uid;
+        const ts = Date.now();
+        const summary = _snapshotSummary(weekData);
+        const colRef = db_fs.collection(`users/${uid}/weeks/${weekStart}/snapshots`);
+        await colRef.doc(String(ts)).set({
+          weekStart,
+          days: weekData.days,
+          _savedAt: ts,
+          _label: label,
+          _summary: summary,
+          _device: getDeviceName()
+        });
+        // Prune oldest if over limit
+        const all = await colRef.orderBy('_savedAt', 'asc').get();
+        if (all.size > SNAPSHOT_MAX) {
+          const batch = db_fs.batch();
+          const toDelete = all.docs.slice(0, all.size - SNAPSHOT_MAX);
+          toDelete.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+        }
+      } catch (e) { /* non-critical — silently ignore */ }
+    }
+
+    async function listSnapshots(weekStart) {
+      if (!state.currentUser || !weekStart) return [];
+      try {
+        const uid = state.currentUser.uid;
+        const snap = await db_fs
+          .collection(`users/${uid}/weeks/${weekStart}/snapshots`)
+          .orderBy('_savedAt', 'desc')
+          .get();
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) { return []; }
+    }
+
+    // Returns an object { relative, exact } for display
+    function _formatSnapTime(ts) {
+      const d = new Date(ts);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const exact = d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + timeStr;
+      let relative;
+      if (diffMins < 1)       relative = 'Just now';
+      else if (diffMins < 60) relative = `${diffMins}m ago`;
+      else if (diffHours < 24) relative = `${diffHours}h ago · ${timeStr}`;
+      else if (diffDays === 1) relative = `Yesterday · ${timeStr}`;
+      else                     relative = exact;
+      return { relative, exact };
+    }
+
+    async function renderSnapshotList(weekStart) {
+      const el = document.getElementById('snapshot-list');
+      if (!el) return;
+      el.innerHTML = '<div class="snap-empty">Loading…</div>';
+      const snaps = await listSnapshots(weekStart);
+      if (!snaps.length) {
+        el.innerHTML = '<div class="snap-empty">No snapshots yet for this week.<br>Snapshots are taken automatically as you save.</div>';
+        return;
+      }
+      el.innerHTML = snaps.map(s => {
+        const sum    = s._summary || {};
+        const ordH   = sum.totalOrd || 0;
+        const otH    = sum.totalOt  || 0;
+        const ent    = sum.entries  || 0;
+        const label  = s._label === 'manual' ? '<span class="snap-tag">manual</span>'
+                     : s._label === 'pre-restore' ? '<span class="snap-tag" style="background:rgba(251,146,60,0.15);color:#f97316;">pre-restore</span>'
+                     : '';
+        const { relative, exact } = _formatSnapTime(s._savedAt);
+        const device = s._device ? `<span style="opacity:0.7">· ${esc(s._device)}</span>` : '';
+        return `
+          <div class="snap-row">
+            <div class="snap-row-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <div class="snap-row-body">
+              <div class="snap-row-time" title="${exact}">${relative}${label}</div>
+              <div class="snap-row-summary">${ent} ${ent === 1 ? 'entry' : 'entries'} · ${ordH}h ordinary${otH ? ' · ' + otH + 'h OT' : ''} ${device}</div>
+            </div>
+            <button class="snap-restore-btn" onclick="confirmRestoreSnapshot('${s.id}', ${s._savedAt})">Restore</button>
+          </div>`;
+      }).join('');
+    }
+
+    function confirmRestoreSnapshot(snapId, savedAt) {
+      showConfirm(
+        'Restore this snapshot?',
+        `This will replace the current week's data with the snapshot from ${_formatSnapTime(savedAt).exact}. Current data will be snapshotted first.`,
+        async () => {
+          if (!state.currentUser || !state.weekStart) return;
+          showToast('Restoring…');
+          try {
+            // Snapshot current state before overwriting
+            await _writeSnapshot(state.weekStart, state.weekData, 'pre-restore');
+            // Fetch the chosen snapshot
+            const uid = state.currentUser.uid;
+            const doc = await db_fs
+              .doc(`users/${uid}/weeks/${state.weekStart}/snapshots/${snapId}`)
+              .get();
+            if (!doc.exists) { showToast('Snapshot not found.'); return; }
+            const snapData = doc.data();
+            const restored = { weekStart: state.weekStart, days: snapData.days, _updatedAt: Date.now() };
+            // Write restored data as the live week
+            await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: restored, updatedAt: restored._updatedAt });
+            await fsSetWeek(state.weekStart, restored);
+            state.weekData = deepCopy(restored);
+            render();
+            closeSnapshotModal();
+            showToast('Week restored.');
+          } catch (e) { showToast('Restore failed: ' + (e.message || e)); }
+        }
+      );
+    }
+
+    function openSnapshotModal() {
+      closeThemeMenu();
+      // Populate device name label
+      const lbl = document.getElementById('snap-device-label');
+      if (lbl) lbl.textContent = 'This device: ' + getDeviceName();
+      document.getElementById('snapshot-modal').classList.add('open');
+      renderSnapshotList(state.weekStart);
+    }
+
+    function closeSnapshotModal() {
+      document.getElementById('snapshot-modal').classList.remove('open');
+    }
+
+    function renameDevice() {
+      const current = getDeviceName();
+      const name = prompt('Name this device:', current);
+      if (name && name.trim()) {
+        localStorage.setItem('deviceName', name.trim());
+        const lbl = document.getElementById('snap-device-label');
+        if (lbl) lbl.textContent = 'This device: ' + name.trim();
+        showToast('Device renamed.');
+      }
+    }
+
+    // Close on backdrop tap
+    document.getElementById('snapshot-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeSnapshotModal();
+    });
 
     // ============================================================
     // DATA MANAGEMENT (GDPR)
@@ -7100,11 +7519,28 @@
     }
 
     async function signOutUser() {
-      // Cancel any pending auto-saves BEFORE signing out.
-      // Without this, the flush inside loadWeek() would use the previous
-      // user's weekData but the new user's Firestore path — corrupting data.
-      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
-      if (notesSaveTimer) { clearTimeout(notesSaveTimer); notesSaveTimer = null; }
+      // Flush any pending saves to Firestore BEFORE clearing state or signing out.
+      // Cancelling the timers without flushing first would permanently lose any
+      // edits that hadn't yet been written (this was the confirmed data-loss bug).
+      if (saveTimer && state.weekStart && state.weekData && state.currentUser) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+        await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
+        await fsSetWeek(state.weekStart, state.weekData).catch(() => { });
+      } else if (saveTimer) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+      }
+      if (notesSaveTimer && state.notes && state.currentUser) {
+        clearTimeout(notesSaveTimer);
+        notesSaveTimer = null;
+        const ts = Date.now();
+        await dbPut('notes', { id: 'notes_all', userId: state.currentUser.uid, data: state.notes, updatedAt: ts });
+        await fsSetNotes(state.notes).catch(() => { });
+      } else if (notesSaveTimer) {
+        clearTimeout(notesSaveTimer);
+        notesSaveTimer = null;
+      }
       state.weekData = null;
       state.notes = [];
       // Wipe local IDB so the next user never sees this user's cached data
