@@ -3566,6 +3566,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.22);
     }
     #snapshot-modal-header {
       display: flex;
@@ -7346,6 +7347,8 @@
     }
 
     function confirmRestoreSnapshot(snapId, savedAt) {
+      // Close the snapshot modal first so it doesn't sit on top of the confirm dialog
+      closeSnapshotModal();
       showConfirm(
         'Restore this snapshot?',
         `This will replace the current week's data with the snapshot from ${_formatSnapTime(savedAt).exact}. Current data will be snapshotted first.`,
@@ -7368,7 +7371,6 @@
             await fsSetWeek(state.weekStart, restored);
             state.weekData = deepCopy(restored);
             render();
-            closeSnapshotModal();
             showToast('Week restored.');
           } catch (e) { showToast('Restore failed: ' + (e.message || e)); }
         }
