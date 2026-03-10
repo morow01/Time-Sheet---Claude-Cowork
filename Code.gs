@@ -3,7 +3,7 @@
 // Paste this entire file into script.google.com
 // ============================================================
 
-const SPREADSHEET_NAME = 'TimeSheet App Data';
+const SPREADSHEET_NAME = 'Rian App Data';
 const TIMESHEETS_SHEET = 'TimeSheets';
 const NOTES_SHEET      = 'Notes';
 const SNAPSHOTS_SHEET  = 'Snapshots';

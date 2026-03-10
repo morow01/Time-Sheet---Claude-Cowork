@@ -7,8 +7,8 @@
   <meta name="theme-color" content="#1e3a8a" id="meta-theme">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TimeSheet">
-  <title>TimeSheet</title>
+  <meta name="apple-mobile-web-app-title" content="Rian">
+  <title>Rian</title>
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -767,20 +767,23 @@
       display: block;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0);
+      background: rgba(0, 0, 0, 0);
       z-index: 149;
       pointer-events: none;
       transition: background 0.28s;
     }
+
     .menu-backdrop.show {
-      background: rgba(0,0,0,0.3);
+      background: rgba(0, 0, 0, 0.3);
       pointer-events: auto;
     }
 
     /* ── Menu panel — mobile: slide-in from right ── */
     .theme-dropdown {
       position: fixed;
-      top: 0; right: 0; bottom: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
       width: 85%;
       max-width: 340px;
       background: var(--bg-page);
@@ -789,49 +792,90 @@
       flex-direction: column;
       overflow-y: auto;
       transform: translateX(100%);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: -8px 0 32px rgba(0,0,0,0.18);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18);
     }
+
     .theme-dropdown.open {
       transform: translateX(0);
     }
 
     /* ── Desktop: compact dropdown card ── */
     @media (min-width: 768px) {
-      .menu-backdrop { display: none !important; }
+      .menu-backdrop {
+        display: none !important;
+      }
+
       .theme-dropdown {
         position: absolute;
-        top: calc(100% + 8px); right: 0;
-        bottom: auto; left: auto;
+        top: calc(100% + 8px);
+        right: 0;
+        bottom: auto;
+        left: auto;
         width: 300px;
         max-height: 85vh;
         border-radius: 16px;
-        box-shadow: 0 8px 36px rgba(0,0,0,0.18);
+        box-shadow: 0 8px 36px rgba(0, 0, 0, 0.18);
         border: 1px solid var(--border);
         transform: translateY(-8px);
         opacity: 0;
         pointer-events: none;
-        transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
       }
+
       .theme-dropdown.open {
         transform: translateY(0);
         opacity: 1;
         pointer-events: auto;
       }
+
       .menu-header-block {
         padding: 20px 16px 16px !important;
         border-radius: 16px 16px 0 0;
       }
-      .menu-avatar-wrap { width: 40px !important; height: 40px !important; }
-      .menu-avatar-initials { font-size: 15px !important; }
-      .menu-signed-in-label { font-size: 10px !important; }
-      .menu-display-name { font-size: 14px !important; }
-      .menu-signout-btn { padding: 7px 14px !important; font-size: 12px !important; margin-top: 2px !important; }
-      .menu-section-wrap { padding: 10px 10px 4px !important; }
-      .menu-row { padding: 10px 12px !important; }
-      .menu-row-label { font-size: 13px !important; }
-      .menu-version { padding: 10px 0 16px !important; }
-      .menu-close-btn { display: none !important; }
+
+      .menu-avatar-wrap {
+        width: 40px !important;
+        height: 40px !important;
+      }
+
+      .menu-avatar-initials {
+        font-size: 15px !important;
+      }
+
+      .menu-signed-in-label {
+        font-size: 10px !important;
+      }
+
+      .menu-display-name {
+        font-size: 14px !important;
+      }
+
+      .menu-signout-btn {
+        padding: 7px 14px !important;
+        font-size: 12px !important;
+        margin-top: 2px !important;
+      }
+
+      .menu-section-wrap {
+        padding: 10px 10px 4px !important;
+      }
+
+      .menu-row {
+        padding: 10px 12px !important;
+      }
+
+      .menu-row-label {
+        font-size: 13px !important;
+      }
+
+      .menu-version {
+        padding: 10px 0 16px !important;
+      }
+
+      .menu-close-btn {
+        display: none !important;
+      }
     }
 
     /* ── Dark header block ── */
@@ -846,103 +890,199 @@
       position: relative;
       flex-shrink: 0;
     }
+
     .menu-close-btn {
       position: absolute;
-      top: 14px; right: 14px;
-      background: rgba(255,255,255,0.1);
-      border: none; cursor: pointer;
-      width: 30px; height: 30px;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
       border-radius: 8px;
-      color: rgba(255,255,255,0.7);
-      display: flex; align-items: center; justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background 0.15s;
     }
-    .menu-close-btn:hover { background: rgba(255,255,255,0.18); }
+
+    .menu-close-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
 
     .menu-avatar-wrap {
       flex-shrink: 0;
-      width: 52px; height: 52px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       overflow: hidden;
     }
+
     .menu-avatar-img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
+
     .menu-avatar-initials {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       background: linear-gradient(135deg, var(--accent), #7c73e6);
-      color: #fff; font-weight: 700; font-size: 20px;
-      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
     .menu-signed-in-label {
       font-size: 11px;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255, 255, 255, 0.45);
       margin-bottom: -6px;
     }
+
     .menu-display-name {
-      font-size: 18px; font-weight: 700;
+      font-size: 18px;
+      font-weight: 700;
       color: #fff;
     }
+
     .menu-signout-btn {
       width: 100%;
-      display: flex; align-items: center; justify-content: center; gap: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       padding: 10px 16px;
       border-radius: 10px;
-      border: 1.5px solid rgba(239,68,68,0.35);
-      background: rgba(239,68,68,0.08);
-      color: #ff7070; font-size: 13px; font-weight: 600;
-      cursor: pointer; font-family: inherit;
+      border: 1.5px solid rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ff7070;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
       transition: background 0.15s;
       margin-top: 4px;
     }
-    .menu-signout-btn:hover { background: rgba(239,68,68,0.15); }
+
+    .menu-signout-btn:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
 
     /* ── Section wrappers ── */
     .menu-section-wrap {
       padding: 16px 12px 4px;
     }
+
     .menu-section-label {
       padding: 0 4px 8px;
-      font-size: 10px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.09em;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
       color: var(--text-muted);
     }
-    .menu-section-label.danger { color: rgba(239,68,68,0.6); }
+
+    .menu-section-label.danger {
+      color: rgba(239, 68, 68, 0.6);
+    }
 
     /* ── White card container ── */
     .menu-card {
       background: var(--bg-card);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
     }
 
     /* ── Rows inside cards ── */
     .menu-row {
-      display: flex; align-items: center; gap: 14px;
-      width: 100%; padding: 13px 14px;
-      border: none; background: none; cursor: pointer;
-      color: var(--text-primary); text-align: left;
-      font-family: inherit; transition: background 0.13s;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 13px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text-primary);
+      text-align: left;
+      font-family: inherit;
+      transition: background 0.13s;
     }
-    .menu-row + .menu-row { border-top: 1px solid var(--border); }
-    .menu-row:hover { background: var(--bg-card-alt); }
-    .menu-row.danger { color: #ef4444; }
-    .menu-row.danger + .menu-row.danger { border-top-color: rgba(239,68,68,0.12); }
 
-    .menu-row-icon { opacity: 0.55; flex-shrink: 0; display: flex; }
-    .menu-row.danger .menu-row-icon { opacity: 0.9; }
-    .menu-row-body { flex: 1; min-width: 0; }
-    .menu-row-label { font-size: 14px; font-weight: 500; display: block; }
-    .menu-row-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; display: block; }
-    .menu-row.danger .menu-row-sub { color: rgba(239,68,68,0.55); }
-    .menu-row-chevron { color: var(--border); flex-shrink: 0; display: flex; }
-    .menu-row.danger .menu-row-chevron { color: rgba(239,68,68,0.25); }
+    .menu-row+.menu-row {
+      border-top: 1px solid var(--border);
+    }
 
-    .menu-spacer { flex: 1; }
+    .menu-row:hover {
+      background: var(--bg-card-alt);
+    }
+
+    .menu-row.danger {
+      color: #ef4444;
+    }
+
+    .menu-row.danger+.menu-row.danger {
+      border-top-color: rgba(239, 68, 68, 0.12);
+    }
+
+    .menu-row-icon {
+      opacity: 0.55;
+      flex-shrink: 0;
+      display: flex;
+    }
+
+    .menu-row.danger .menu-row-icon {
+      opacity: 0.9;
+    }
+
+    .menu-row-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .menu-row-label {
+      font-size: 14px;
+      font-weight: 500;
+      display: block;
+    }
+
+    .menu-row-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+      display: block;
+    }
+
+    .menu-row.danger .menu-row-sub {
+      color: rgba(239, 68, 68, 0.55);
+    }
+
+    .menu-row-chevron {
+      color: var(--border);
+      flex-shrink: 0;
+      display: flex;
+    }
+
+    .menu-row.danger .menu-row-chevron {
+      color: rgba(239, 68, 68, 0.25);
+    }
+
+    .menu-spacer {
+      flex: 1;
+    }
+
     .menu-version {
-      text-align: center; padding: 16px 0 28px;
-      font-size: 11px; color: var(--text-muted);
+      text-align: center;
+      padding: 16px 0 28px;
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
     .theme-option {
@@ -4549,7 +4689,7 @@
 
               <!-- Footer -->
               <tr><td style="background:${C.footBg};border-radius:0 0 12px 12px;padding:12px 24px;text-align:center;border:1px solid ${C.border};border-top:none;">
-                <span style="font-size:11px;color:${C.footTxt};">eir Fieldlog &mdash; v${esc(VERSION)}</span>
+                <span style="font-size:11px;color:${C.footTxt};">Rian &mdash; v${esc(VERSION)}</span>
               </td></tr>
 
             </table>
@@ -4744,7 +4884,7 @@
               </div>
 
               <div class="menu-spacer"></div>
-              <div class="menu-version">FieldLog v${VERSION}</div>
+              <div class="menu-version">Rian v${VERSION}</div>
             `;
         })()}
         </div>
@@ -6825,7 +6965,7 @@
         <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-page);">
           <div style="background:var(--bg-card);border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%;box-shadow:0 4px 24px rgba(0,0,0,0.10);border:1px solid var(--border);">
             <div style="font-size:2.5rem;margin-bottom:12px;">⏱️</div>
-            <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);margin-bottom:6px;">TimeSheet</h1>
+            <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);margin-bottom:6px;">Rian</h1>
             <p style="color:var(--text-secondary);margin-bottom:28px;font-size:0.88rem;">Sign in to sync your timesheet across all devices.</p>
             <button onclick="signInWithGoogle()" style="background:#1e3a8a;color:#fff;border:none;border-radius:10px;padding:13px 20px;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;">
               <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
