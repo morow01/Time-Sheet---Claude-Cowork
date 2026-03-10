@@ -32,12 +32,76 @@
       line-height: 1.6;
     }
 
+    /* ── STICKY NAVBAR ── */
+    .site-nav {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0 28px;
+      display: flex; align-items: center;
+      height: 62px;
+      gap: 16px;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+      text-decoration: none;
+    }
+    .nav-logo-box {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, #2D6BE4, #7c73e6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800; color: #fff;
+      flex-shrink: 0;
+    }
+    .nav-brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .nav-brand-name { font-weight: 800; font-size: 15px; color: #fff; }
+    .nav-brand-ver  { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+    .nav-links {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .nav-link {
+      padding: 7px 16px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      color: rgba(255,255,255,0.45);
+      background: transparent;
+      text-decoration: none; cursor: pointer;
+      transition: all 0.15s;
+      border: none; white-space: nowrap;
+    }
+    .nav-link.active {
+      color: #fff;
+      background: rgba(45,107,228,0.22);
+    }
+    .nav-link:hover:not(.active) {
+      color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.07);
+    }
+    .nav-cta {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--accent); color: #fff;
+      font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif;
+      padding: 9px 20px; border-radius: 10px;
+      text-decoration: none; border: none; cursor: pointer;
+      flex-shrink: 0; white-space: nowrap;
+      box-shadow: 0 3px 12px rgba(45,107,228,0.45);
+      transition: background 0.15s, transform 0.1s;
+    }
+    .nav-cta:hover { background: #2559c8; transform: translateY(-1px); }
+
+    /* On mobile, hide centre nav links to save space */
+    @media (max-width: 600px) {
+      .site-nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .nav-brand-ver { display: none; }
+    }
+
     /* ── HERO ── */
     .hero {
       background: var(--navy);
       color: #fff;
       text-align: center;
-      padding: 72px 24px 80px;
+      padding: 60px 24px 72px;
       position: relative;
       overflow: hidden;
     }
@@ -71,31 +135,6 @@
       max-width: 520px;
       margin: 0 auto 36px;
     }
-    .hero-tabs {
-      display: flex; gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 36px;
-    }
-    .hero-tab {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.8);
-      padding: 8px 20px; border-radius: 24px;
-      font-size: 13px; font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .hero-tab:hover {
-      background: rgba(255,255,255,0.15);
-    }
-    .hero-tab.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
     /* ── HERO CTA ── */
     .hero-cta {
       display: flex; gap: 12px;
@@ -474,16 +513,33 @@
 </head>
 <body>
 
+<!-- ════ STICKY NAVBAR ════ -->
+<nav class="site-nav">
+  <a href="#" class="nav-brand">
+    <div class="nav-logo-box">F</div>
+    <div class="nav-brand-text">
+      <span class="nav-brand-name">FieldLog</span>
+      <span class="nav-brand-ver">v3.6.75</span>
+    </div>
+  </a>
+
+  <div class="nav-links">
+    <a href="#timesheet" class="nav-link active" data-section="timesheet">Timesheet</a>
+    <a href="#notes"     class="nav-link"        data-section="notes">Notes</a>
+    <a href="#finder"    class="nav-link"        data-section="finder">Finder</a>
+  </div>
+
+  <a href="../.." class="nav-cta">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    Launch App
+  </a>
+</nav>
+
 <!-- ════ HERO ════ -->
 <section class="hero">
   <div class="hero-badge">Mobile First · Field Ready</div>
   <h1>Everything you need<br><span>on the job site</span></h1>
   <p>FieldLog keeps your timesheets, field notes, and site finder in one fast, cloud-synced app.</p>
-  <div class="hero-tabs">
-    <a href="#timesheet" class="hero-tab active" data-section="timesheet">Timesheet</a>
-    <a href="#notes"     class="hero-tab"        data-section="notes">Notes</a>
-    <a href="#finder"    class="hero-tab"        data-section="finder">Finder</a>
-  </div>
   <div class="hero-cta">
     <a href="../.." class="btn-launch">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -1056,8 +1112,8 @@
 </footer>
 
 <script>
-  // Smooth scroll for tab links
-  document.querySelectorAll('a.hero-tab').forEach(link => {
+  // Smooth scroll for all in-page section links (navbar + any hero links)
+  document.querySelectorAll('a[data-section]').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
       const target = document.getElementById(link.dataset.section);
@@ -1065,14 +1121,14 @@
     });
   });
 
-  // Highlight active tab based on scroll position
+  // Highlight active nav-link based on scroll position
   const sections = ['timesheet', 'notes', 'finder'].map(id => document.getElementById(id));
-  const tabs = document.querySelectorAll('a.hero-tab');
+  const navLinks = document.querySelectorAll('a.nav-link[data-section]');
   window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY + 120;
+    const scrollY = window.scrollY + 100;
     let current = 0;
     sections.forEach((s, i) => { if (s && s.offsetTop <= scrollY) current = i; });
-    tabs.forEach((t, i) => t.classList.toggle('active', i === current));
+    navLinks.forEach((t, i) => t.classList.toggle('active', i === current));
   }, { passive: true });
 </script>
 
