@@ -283,14 +283,13 @@
     }
 
     .act-codes-wrap {
-      background: var(--accent-chip-bg, #EBF1FD);
-      border-radius: 12px;
+      background: #F8F8F6;
+      border-radius: 10px;
       padding: 10px 12px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
-      border: 1.5px solid rgba(45, 107, 228, 0.12);
     }
 
     .act-code-chip {
@@ -298,37 +297,35 @@
       align-items: center;
       gap: 6px;
       background: #fff;
-      border: 1.5px solid rgba(45, 107, 228, 0.2);
-      border-radius: 8px;
-      padding: 5px 10px;
+      border: 1.5px solid #EBEBEA;
+      border-radius: 7px;
+      padding: 4px 10px;
       font-size: 12px;
-      font-weight: 600;
-      color: var(--text-primary, #0F1C2E);
-      box-shadow: 0 1px 3px rgba(45, 107, 228, 0.06);
+      font-weight: 500;
+      color: #1A1A1A;
     }
 
     .act-code-mono {
       font-family: var(--font-mono, 'DM Mono', monospace);
       font-size: 10px;
       font-weight: 600;
-      color: #fff;
-      background: var(--accent, #2D6BE4);
+      color: var(--accent, #2D6BE4);
+      background: var(--accent-chip-bg, #EBF1FD);
       padding: 2px 6px;
       border-radius: 5px;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
     }
 
     .act-code-del {
       background: none;
       border: none;
       cursor: pointer;
-      color: rgba(45, 107, 228, 0.35);
-      font-size: 15px;
+      color: #BBBBB8;
+      font-size: 13px;
       line-height: 1;
       padding: 0;
       display: flex;
       align-items: center;
-      transition: color 0.15s;
     }
 
     .act-code-del:hover {
@@ -336,23 +333,21 @@
     }
 
     .act-add-code {
-      background: rgba(45, 107, 228, 0.08);
-      border: 1.5px dashed rgba(45, 107, 228, 0.35);
-      border-radius: 8px;
-      padding: 5px 12px;
+      background: none;
+      border: 1.5px dashed #D0D0CE;
+      border-radius: 7px;
+      padding: 4px 10px;
       font-family: inherit;
       font-size: 12px;
-      font-weight: 600;
-      color: var(--accent, #2D6BE4);
+      color: #8A8A88;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       transition: all 0.15s;
     }
 
     .act-add-code:hover {
-      background: rgba(45, 107, 228, 0.14);
       border-color: var(--accent, #2D6BE4);
       color: var(--accent, #2D6BE4);
     }
