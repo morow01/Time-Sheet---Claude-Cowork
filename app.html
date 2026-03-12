@@ -443,6 +443,8 @@
       position: relative;
       /* Timeline gutter */
       padding-left: 36px;
+      /* Prevent timeline from appearing to "draw" while cards resize */
+      overflow: visible;
     }
 
     /* Timeline Vertical Line */
@@ -3944,7 +3946,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.8.4';
+    const VERSION = '3.8.6';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
