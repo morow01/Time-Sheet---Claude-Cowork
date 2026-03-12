@@ -542,14 +542,14 @@
       padding: 16px;
       overflow: hidden;
       max-height: 0;
-      transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+      transition: opacity 0.16s ease;
       opacity: 0;
       padding-top: 0;
       padding-bottom: 0;
     }
 
     .activity-detail.open {
-      max-height: 2000px;
+      max-height: none;
       opacity: 1;
       padding: 16px;
     }
@@ -3946,7 +3946,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.8.6';
+    const VERSION = '3.8.7';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5075,28 +5075,12 @@
       });
     }
 
-    function syncTimelineAfterTransition(detailEl) {
-      if (!detailEl) {
+    function syncTimelineAfterTransition() {
+      requestAnimationFrame(() => {
         fixTimelineLines();
-        return;
-      }
-      let done = false;
-      const finish = () => {
-        if (done) return;
-        done = true;
-        detailEl.removeEventListener('transitionend', onEnd);
-        fixTimelineLines();
-      };
-      const onEnd = (e) => {
-        if (!e || e.target !== detailEl) return;
-        // Only react when the actual height animation is complete.
-        if (e.propertyName === 'max-height') {
-          finish();
-        }
-      };
-      detailEl.addEventListener('transitionend', onEnd);
-      // Safety fallback for browsers that occasionally skip transitionend.
-      setTimeout(finish, ANIM_EXPAND_MS + 250);
+        requestAnimationFrame(fixTimelineLines);
+      });
+      setTimeout(fixTimelineLines, 60);
     }
 
     function renderHeader() {
