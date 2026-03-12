@@ -451,10 +451,10 @@
       position: absolute;
       left: 26px;
       /* Center of day expand button */
-      top: -1px;
-      /* Touch the header border */
-      bottom: 60px;
-      /* Stop before the 'Add Task' button */
+      /* height is set dynamically via --tl-height so the line ends exactly
+         at the last task node rather than overrunning it */
+      height: var(--tl-height, 0px);
+      bottom: auto;
       width: 2px;
       background: #818CF8;
       /* Gemini indigo */
@@ -3943,7 +3943,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.8.2';
+    const VERSION = '3.8.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5053,6 +5053,20 @@
       app.querySelectorAll('textarea[data-field="notes"], textarea[data-field="description"], textarea[data-note-field="description"]').forEach(autoGrow);
       // Restore scroll position after DOM is painted
       if (savedScroll > 0) requestAnimationFrame(() => window.scrollTo(0, savedScroll));
+      // Fix timeline lines so they end exactly at the last task node
+      requestAnimationFrame(fixTimelineLines);
+    }
+
+    function fixTimelineLines() {
+      document.querySelectorAll('.day-activities.active').forEach(container => {
+        const cards = container.querySelectorAll('.activity-card');
+        if (!cards.length) { container.style.setProperty('--tl-height', '0px'); return; }
+        const lastCard = cards[cards.length - 1];
+        // Node circle: top:20px, height:10px → centre at top+25px
+        const nodeCenter = lastCard.offsetTop + 25;
+        const heightPx = Math.max(0, nodeCenter + 1);
+        container.style.setProperty('--tl-height', heightPx + 'px');
+      });
     }
 
     function renderHeader() {
@@ -5576,7 +5590,11 @@
           activities.classList.add('hidden');
           activities.style.maxHeight = '0px';
           if (chevron) chevron.style.transform = 'rotate(0deg)';
-          setTimeout(() => { if (!state.expandedDays.has(di)) activities.style.display = 'none'; }, ANIM_EXPAND_MS);
+          requestAnimationFrame(fixTimelineLines);
+          setTimeout(() => {
+            if (!state.expandedDays.has(di)) activities.style.display = 'none';
+            fixTimelineLines();
+          }, ANIM_EXPAND_MS + 20);
         } else {
           activities.style.display = 'block';
           activities.style.maxHeight = '0px';
@@ -5587,7 +5605,11 @@
           if (chevron) chevron.style.transform = 'rotate(90deg)';
           // Trigger autoGrow for all textareas within the expanded day
           activities.querySelectorAll('textarea').forEach(autoGrow);
-          setTimeout(() => { if (state.expandedDays.has(di)) activities.style.maxHeight = 'none'; }, ANIM_EXPAND_MS);
+          requestAnimationFrame(fixTimelineLines);
+          setTimeout(() => {
+            if (state.expandedDays.has(di)) activities.style.maxHeight = 'none';
+            fixTimelineLines();
+          }, ANIM_EXPAND_MS + 20);
         }
       }
     }
@@ -5623,6 +5645,8 @@
           detail.querySelectorAll('textarea').forEach(autoGrow);
         }
         if (chevron) chevron.style.transform = 'rotate(90deg)';
+        requestAnimationFrame(fixTimelineLines);
+        setTimeout(fixTimelineLines, ANIM_EXPAND_MS + 20);
       } else {
         card.classList.remove('expanded');
         if (detail) {
@@ -5647,6 +5671,8 @@
             card.style.boxShadow = '0 0 8px rgba(232, 69, 60, 0.2)';
           }
         }
+        requestAnimationFrame(fixTimelineLines);
+        setTimeout(fixTimelineLines, ANIM_EXPAND_MS + 20);
       }
     }
 
