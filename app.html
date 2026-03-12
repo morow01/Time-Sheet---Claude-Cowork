@@ -3944,7 +3944,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.8.2';
+    const VERSION = '3.8.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5073,6 +5073,28 @@
       });
     }
 
+    function syncTimelineAfterTransition(detailEl) {
+      if (!detailEl) {
+        fixTimelineLines();
+        return;
+      }
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        detailEl.removeEventListener('transitionend', onEnd);
+        fixTimelineLines();
+      };
+      const onEnd = (e) => {
+        if (!e || e.target !== detailEl) return;
+        if (e.propertyName === 'max-height' || e.propertyName === 'padding-top' || e.propertyName === 'padding-bottom') {
+          finish();
+        }
+      };
+      detailEl.addEventListener('transitionend', onEnd);
+      setTimeout(finish, ANIM_EXPAND_MS + 80);
+    }
+
     function renderHeader() {
       const syncIcons = {
         idle: '',
@@ -5643,7 +5665,7 @@
           detail.querySelectorAll('textarea').forEach(autoGrow);
         }
         if (chevron) chevron.style.transform = 'rotate(90deg)';
-        setTimeout(fixTimelineLines, ANIM_EXPAND_MS + 20);
+        syncTimelineAfterTransition(detail);
       } else {
         card.classList.remove('expanded');
         if (detail) {
@@ -5668,7 +5690,7 @@
             card.style.boxShadow = '0 0 8px rgba(232, 69, 60, 0.2)';
           }
         }
-        setTimeout(fixTimelineLines, ANIM_EXPAND_MS + 20);
+        syncTimelineAfterTransition(detail);
       }
     }
 
