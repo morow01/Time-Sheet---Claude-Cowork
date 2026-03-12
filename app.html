@@ -436,17 +436,23 @@
       }
     }
 
-    .day-activities.active {
+    .day-activities {
       padding-top: 14px;
       padding-bottom: 4px;
       background-color: var(--bg-page);
       position: relative;
-      /* Timeline gutter */
+      /* Timeline gutter - Persistent during collapse */
       padding-left: 36px;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Timeline Vertical Line */
-    .day-activities.active::before {
+    .day-activities.active {
+      /* Padding moved to base class for stability during animation */
+    }
+
+    /* Timeline Vertical Line - Persistent during collapse */
+    .day-activities::before {
       content: "";
       position: absolute;
       left: 26px;
@@ -3945,7 +3951,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '3.8.9';
+    const VERSION = '3.9.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5599,21 +5605,29 @@
         const activities = card.querySelector('.day-activities');
 
         if (isExpanded) {
+          // Explicitly set maxHeight to current scrollHeight to give transition a basis
           activities.style.maxHeight = activities.scrollHeight + 'px';
           activities.offsetHeight; // force reflow
+
           activities.classList.remove('active');
-          activities.classList.add('hidden');
+          // DO NOT add 'hidden' yet as it might contain display:none (Tailwind)
+
           activities.style.maxHeight = '0px';
           if (chevron) chevron.style.transform = 'rotate(0deg)';
           syncTimelineAnimation();
+
           setTimeout(() => {
-            if (!state.expandedDays.has(di)) activities.style.display = 'none';
+            if (!state.expandedDays.has(di)) {
+              activities.style.display = 'none';
+              activities.classList.add('hidden');
+            }
             fixTimelineLines();
           }, ANIM_EXPAND_MS + 20);
         } else {
           activities.style.display = 'block';
           activities.style.maxHeight = '0px';
           activities.offsetHeight; // force reflow
+
           activities.classList.add('active');
           activities.classList.remove('hidden');
           activities.style.maxHeight = activities.scrollHeight + 'px';
@@ -5664,9 +5678,20 @@
       } else {
         card.classList.remove('expanded');
         if (detail) {
+          // Explicitly set maxHeight to current scrollHeight to give transition a basis
+          detail.style.maxHeight = detail.scrollHeight + 'px';
+          detail.offsetHeight; // force reflow
+
           detail.classList.remove('open');
-          detail.classList.add('hidden');
-          setTimeout(() => { detail.style.display = 'none'; }, ANIM_EXPAND_MS);
+          detail.style.maxHeight = '0px';
+
+          setTimeout(() => {
+            if (!state.activitiesExpanded.has(actId)) {
+              detail.style.display = 'none';
+              detail.classList.add('hidden');
+            }
+            fixTimelineLines();
+          }, ANIM_EXPAND_MS + 20);
         }
         if (chevron) chevron.style.transform = 'rotate(0deg)';
 
