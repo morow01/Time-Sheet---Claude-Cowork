@@ -8145,7 +8145,7 @@
           const dotHtml = visited ? '' : `<span class="rtn-dot"></span>`;
 
           cells += `<td class="rtn-td-cell${isCur ? ' cur-col' : ''}">
-            <button class="${btnClass}" onclick="openRoutinesLogModal(${JSON.stringify(site)},${year},${m})" title="${esc(site)} — ${MONTHS_FULL[m-1]} ${year}">
+            <button class="${btnClass}" onclick="openRoutinesLogModal('${esc(site)}',${year},${m})" title="${esc(site)} — ${MONTHS_FULL[m-1]} ${year}">
               ${dayHtml}${autoHtml}${dotHtml}
             </button>
           </td>`;
@@ -8247,7 +8247,7 @@
         ? `<div class="rtn-picker-chk checked"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,7 5,10 11,3" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
         : `<div class="rtn-picker-chk"></div>`;
       const subHtml = sub ? `<span class="rtn-picker-row-sub">${esc(sub)}</span>` : '';
-      return `<div class="rtn-picker-row" onclick="toggleRoutinesSite(${JSON.stringify(name)})">
+      return `<div class="rtn-picker-row" onclick="toggleRoutinesSite('${esc(name)}')">
         ${checkHtml}
         <div style="flex:1;min-width:0;">
           <div class="rtn-picker-row-name">${esc(name)}</div>
