@@ -4583,10 +4583,14 @@
     async function fsSetWeek(weekStart, weekData) {
       const ref = userDoc(`weeks/${weekStart}`);
       if (!ref) return;
-      // Use serverTimestamp for _updatedAt to ensure cross-device consistency
-      await ref.set({ ...weekData, _updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-      // After a successful Firestore write, opportunistically take an auto-snapshot
-      // (throttled to once per 10 min so it doesn't spam the subcollection).
+      // IMPORTANT: use the client-side _updatedAt (Date.now()) set at edit time,
+      // NOT serverTimestamp(). serverTimestamp() is assigned by Firestore when it
+      // *processes* the write — so a stale offline write flushed later gets a brand-
+      // new timestamp, making old data look newer than fresh data on another device
+      // and defeating the conflict check in onSnapshot. Client timestamps represent
+      // when the data was actually created, which is what we want to compare.
+      const ts = weekData._updatedAt || Date.now();
+      await ref.set({ ...weekData, _updatedAt: ts });
       maybeTakeAutoSnapshot(weekStart, weekData).catch(() => { });
     }
 
@@ -4827,8 +4831,13 @@
         const localTs = state.weekData._updatedAt || 0;
 
         // Skip stale snapshots — if the remote data is older than our local
-        // state, ignore it to prevent overwriting unsaved changes.
-        if (remoteTs > 0 && localTs > 0 && remoteTs < localTs) return;
+        // state, ignore it AND push our newer data back to Firestore to
+        // restore the correct version (otherwise Firestore stays poisoned
+        // with the stale data and other devices will receive it).
+        if (remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
+          fsSetWeek(weekStart, state.weekData).catch(() => {});
+          return;
+        }
 
         enforceCorrectDates(weekStart, remote);
         state.weekData = deepCopy(remote);
@@ -4858,9 +4867,9 @@
       state.weekData._updatedAt = Date.now();
       const capturedWeekStart = state.weekStart;
       updateHeaderStatus();
-      // Capture weekData alongside weekStart so a week switch mid-debounce
-      // never causes us to silently drop the edit or save the wrong data.
-      const capturedWeekData = state.weekData;
+      // Deep-copy weekData so a week switch mid-debounce saves the correct
+      // version rather than whatever state.weekData points to at fire time.
+      const capturedWeekData = deepCopy(state.weekData);
       saveTimer = setTimeout(async () => {
         // If the week has changed, loadWeek() should have already flushed this
         // save — but if not (e.g. unexpected state), save to the captured week
