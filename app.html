@@ -3858,16 +3858,16 @@
     .rtn-table { border-collapse:separate; border-spacing:0; width:auto; }
     /* Header cells */
     .rtn-th-site { position:sticky; left:0; z-index:7; white-space:nowrap; background:var(--bg-page); padding:7px 16px 7px 14px; font-size:11px; font-weight:700; color:var(--text-muted); text-align:left; }
-    .rtn-th-month { width:36px; min-width:36px; background:var(--bg-page); padding:7px 2px; font-size:11px; font-weight:700; color:var(--text-muted); text-align:center; }
+    .rtn-th-month { width:46px; min-width:46px; background:var(--bg-page); padding:7px 2px; font-size:11px; font-weight:700; color:var(--text-muted); text-align:center; }
     .rtn-th-month.cur { color:var(--accent); }
     /* Data rows */
     .rtn-td-site { position:sticky; left:0; z-index:3; white-space:nowrap; background:var(--bg-card); padding:6px 16px 6px 14px; font-size:13px; font-weight:600; color:var(--text-primary); border-bottom:1px solid var(--border); vertical-align:middle; }
     .rtn-tr:last-child .rtn-td-site { border-bottom:none; }
     .rtn-tr:last-child .rtn-td-cell { border-bottom:none; }
-    .rtn-td-cell { width:36px; min-width:36px; vertical-align:middle; text-align:center; border-bottom:1px solid var(--border); padding:3px 2px; }
+    .rtn-td-cell { width:46px; min-width:46px; vertical-align:middle; text-align:center; border-bottom:1px solid var(--border); padding:3px 2px; }
     .rtn-td-cell.cur-col { background:rgba(45,107,228,0.05); }
     /* Cell button */
-    .rtn-cell-btn { width:32px; height:38px; border-radius:8px; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:0 auto; gap:1px; background:transparent; -webkit-tap-highlight-color:transparent; transition:background 0.12s; }
+    .rtn-cell-btn { width:42px; height:38px; border-radius:8px; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:0 auto; gap:1px; background:transparent; -webkit-tap-highlight-color:transparent; transition:background 0.12s; }
     .rtn-cell-btn:active { opacity:0.7; }
     .rtn-cell-btn .rtn-dot { width:6px; height:6px; border-radius:50%; background:var(--border); }
     .rtn-cell-btn.visited { background:#d1fae5; }
@@ -8027,7 +8027,7 @@
     // ============================================================
     // ROUTINES FEATURE
     // ============================================================
-    const MONTHS_SHORT = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+    const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     // Composite key for a visit slot
