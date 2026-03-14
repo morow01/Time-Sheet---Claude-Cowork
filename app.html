@@ -2212,10 +2212,10 @@
         justify-content: center;
       }
       .finder-search-wrap { position:relative; }
-      .finder-search-wrap input { padding-right:44px !important; width:100%; box-sizing:border-box; }
-      .finder-mic-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); width:32px; height:32px; border-radius:50%; background:var(--accent) !important; color:#fff !important; border:none !important; display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background 0.15s, transform 0.15s; padding:0 !important; }
-      .finder-mic-btn:active { transform:translateY(-50%) scale(0.88); }
-      .finder-mic-btn.listening { background:#e53935 !important; animation:voiceFabPulse 1s ease-in-out infinite; }
+      .finder-search-wrap input { width:100%; box-sizing:border-box; padding-right:48px !important; }
+      .finder-mic-btn { position:absolute; right:8px; top:50%; transform:translateY(-50%); width:32px; height:32px; border-radius:50%; background:var(--accent) !important; color:#fff !important; border:none !important; outline:none !important; display:flex !important; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:background 0.15s, box-shadow 0.15s; padding:0 !important; box-shadow:0 2px 8px rgba(45,107,228,0.35); }
+      .finder-mic-btn:active { box-shadow:none; }
+      .finder-mic-btn.listening { background:#e53935 !important; box-shadow:0 2px 8px rgba(229,57,53,0.45); animation:voiceFabPulse 1s ease-in-out infinite; }
 
       #finder-modal-inner {
         width: 540px;
@@ -4042,7 +4042,8 @@
         style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
         <div class="finder-search-wrap">
           <input id="finder-modal-search" type="text" placeholder="Name or Code…"
-            class="rounded-xl px-4 py-2.5 text-base" style="border:1px solid var(--border-input);background:var(--bg-input)"
+            class="w-full rounded-xl px-4 py-2.5 text-base"
+            style="border:1px solid var(--border-input);background:var(--bg-input)"
             oninput="filterFinderModal(this.value)">
           <button class="finder-mic-btn" id="finder-mic-btn" onclick="startFinderVoice()" title="Voice search" aria-label="Voice search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -4200,7 +4201,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.9';
+    const VERSION = '4.1.10';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
