@@ -1219,7 +1219,10 @@
     .menu-ai-key-hint a { color:var(--accent); text-decoration:none; }
     .menu-ai-key-input { width:100%; box-sizing:border-box; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg-card); color:var(--text); font-size:14px; outline:none; }
     .menu-ai-key-input:focus { border-color:var(--accent); }
-    .menu-ai-key-save { align-self:flex-start; padding:8px 20px; border-radius:10px; background:var(--accent); color:#fff; border:none; font-size:14px; font-weight:600; cursor:pointer; }
+    .menu-ai-key-btns { display:flex; gap:8px; }
+    .menu-ai-key-save { padding:8px 20px; border-radius:10px; background:var(--accent); color:#fff; border:none; font-size:14px; font-weight:600; cursor:pointer; }
+    .menu-ai-key-test { padding:8px 16px; border-radius:10px; background:transparent; color:var(--accent); border:1.5px solid var(--accent); font-size:14px; font-weight:600; cursor:pointer; }
+    .menu-ai-key-status { font-size:13px; font-weight:600; min-height:18px; }
 
     .theme-option {
       display: flex;
@@ -4170,7 +4173,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.0.3';
+    const VERSION = '4.0.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5455,9 +5458,13 @@
                 <div class="menu-section-label">AI Settings</div>
                 <div class="menu-card">
                   <div class="menu-ai-key-row">
-                    <div class="menu-ai-key-hint">Gemini API key — makes voice &amp; text entry smarter (understands "two hours", natural phrasing, etc.). Get a free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></div>
-                    <input class="menu-ai-key-input" id="menu-gemini-key" type="password" placeholder="AIza…" value="${esc(state.geminiKey || '')}">
-                    <button class="menu-ai-key-save" onclick="saveGeminiKey()">Save Key</button>
+                    <div class="menu-ai-key-hint">Gemini API key — makes voice &amp; text entry smarter. Get a free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></div>
+                    <input class="menu-ai-key-input" id="menu-gemini-key" type="text" placeholder="AIza…" value="${esc(state.geminiKey || '')}" autocomplete="off" spellcheck="false">
+                    <div class="menu-ai-key-btns">
+                      <button class="menu-ai-key-save" onclick="saveGeminiKey()">Save Key</button>
+                      <button class="menu-ai-key-test" onclick="testGeminiKey()">Test</button>
+                    </div>
+                    <div class="menu-ai-key-status" id="menu-gemini-status">${state.geminiKey ? '🔑 Key saved' : ''}</div>
                   </div>
                 </div>
               </div>
@@ -8729,7 +8736,40 @@
       state.geminiKey = key;
       if (key) localStorage.setItem('geminiKey', key);
       else localStorage.removeItem('geminiKey');
-      showToast(key ? 'Gemini API key saved ✓' : 'API key removed');
+      const status = document.getElementById('menu-gemini-status');
+      if (status) status.textContent = key ? '🔑 Key saved' : '';
+      if (status) status.style.color = 'var(--text-muted)';
+      showToast(key ? 'Key saved — tap Test to verify' : 'API key removed');
+    }
+
+    async function testGeminiKey() {
+      const input = document.getElementById('menu-gemini-key');
+      const key = (input ? input.value : '').trim();
+      const status = document.getElementById('menu-gemini-status');
+      if (!key) { showToast('Enter a key first'); return; }
+      if (status) { status.textContent = '⏳ Testing…'; status.style.color = 'var(--text-muted)'; }
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply with the single word OK' }] }] })
+          }
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const msg = err?.error?.message || ('HTTP ' + res.status);
+          if (status) { status.textContent = '❌ ' + msg; status.style.color = '#e53935'; }
+        } else {
+          if (status) { status.textContent = '✅ Key working — Gemini is active'; status.style.color = '#43a047'; }
+          // Auto-save the key if not already saved
+          state.geminiKey = key;
+          localStorage.setItem('geminiKey', key);
+        }
+      } catch (e) {
+        if (status) { status.textContent = '❌ Network error — check connection'; status.style.color = '#e53935'; }
+      }
     }
 
     async function parseWithGemini(text) {
