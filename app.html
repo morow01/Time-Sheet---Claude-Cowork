@@ -3906,6 +3906,45 @@
     .rtn-log-btn.primary { background:var(--accent); color:#fff; }
     .rtn-log-btn.danger { background:var(--btn-danger-bg); color:var(--btn-danger-color); border:1px solid var(--btn-danger-border); }
     .rtn-log-btn.cancel { background:var(--bg-card-alt); color:var(--text-secondary); border:1px solid var(--border); }
+
+    /* ===== VOICE-TO-TASK ===== */
+    /* Floating mic button */
+    .voice-fab { position:fixed; right:20px; bottom:28px; z-index:500; width:56px; height:56px; border-radius:50%; background:var(--accent); color:#fff; border:none; box-shadow:0 4px 18px rgba(45,107,228,0.45); display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform 0.15s, opacity 0.2s; }
+    .voice-fab:active { transform:scale(0.9); }
+    .voice-fab.vf-hidden { opacity:0; pointer-events:none; }
+    .voice-fab.listening { background:#e53935; animation:voiceFabPulse 1s ease-in-out infinite; }
+    @keyframes voiceFabPulse { 0%,100%{box-shadow:0 4px 18px rgba(229,57,53,0.5)} 50%{box-shadow:0 4px 28px rgba(229,57,53,0.85)} }
+    /* Listening overlay */
+    #voice-listen-modal { display:none; position:fixed; inset:0; z-index:510; background:rgba(10,18,30,0.82); align-items:center; justify-content:center; flex-direction:column; gap:22px; padding:20px; }
+    #voice-listen-modal.open { display:flex; }
+    .vl-ring { width:88px; height:88px; border-radius:50%; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; }
+    .vl-ring.active { animation:vlRingPulse 1.1s ease-in-out infinite; }
+    @keyframes vlRingPulse { 0%,100%{transform:scale(1);background:rgba(229,57,53,0.15)} 50%{transform:scale(1.12);background:rgba(229,57,53,0.28)} }
+    .vl-transcript { color:#fff; font-size:17px; font-weight:500; text-align:center; max-width:300px; min-height:52px; line-height:1.4; opacity:0.92; }
+    .vl-hint { color:rgba(255,255,255,0.45); font-size:13px; text-align:center; }
+    .vl-btns { display:flex; gap:12px; margin-top:4px; }
+    .vl-btn { padding:12px 28px; border-radius:24px; border:none; font-size:15px; font-weight:700; cursor:pointer; }
+    .vl-btn.done { background:#fff; color:#0F1C2E; }
+    .vl-btn.cancel { background:rgba(255,255,255,0.12); color:#fff; }
+    /* Confirm bottom sheet */
+    #voice-confirm-modal { display:none; position:fixed; inset:0; z-index:520; background:rgba(0,0,0,0.5); align-items:flex-end; justify-content:center; }
+    #voice-confirm-modal.open { display:flex; }
+    .vc-sheet { background:var(--bg-modal); border-radius:24px 24px 0 0; padding:22px 18px 36px; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; }
+    .vc-heard { font-size:12px; color:var(--text-muted); background:var(--bg-card-alt); border-radius:8px; padding:8px 12px; margin-bottom:16px; line-height:1.5; }
+    .vc-heard strong { color:var(--text-secondary); }
+    .vc-title { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:16px; }
+    .vc-field { margin-bottom:12px; }
+    .vc-label { font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:5px; display:block; }
+    .vc-input { width:100%; border-radius:10px; padding:11px 13px; font-size:15px; border:1px solid var(--border-input); background:var(--bg-input); color:var(--text-primary); outline:none; font-family:var(--font-body); }
+    .vc-input:focus { border-color:var(--accent); }
+    .vc-codes-wrap { display:flex; flex-wrap:wrap; gap:7px; padding:10px 12px; border-radius:10px; border:1px solid var(--border-input); background:var(--bg-input); min-height:44px; cursor:pointer; }
+    .vc-code-chip { display:flex; align-items:center; gap:5px; background:var(--accent-chip-bg); color:var(--accent-chip-text); border-radius:6px; padding:4px 8px; font-size:12px; font-weight:600; }
+    .vc-code-chip button { background:none; border:none; color:var(--accent-chip-text); cursor:pointer; font-size:14px; line-height:1; padding:0 2px; opacity:0.7; }
+    .vc-no-codes { color:var(--text-muted); font-size:13px; align-self:center; }
+    .vc-btns { display:flex; gap:10px; margin-top:18px; }
+    .vc-btn { flex:1; padding:14px; border-radius:13px; border:none; font-size:15px; font-weight:700; cursor:pointer; font-family:var(--font-body); }
+    .vc-btn.primary { background:var(--accent); color:#fff; }
+    .vc-btn.secondary { background:var(--bg-card-alt); color:var(--text-secondary); border:1px solid var(--border); }
   </style>
 </head>
 
@@ -5256,6 +5295,12 @@
       requestAnimationFrame(fixTimelineLines);
       // Sync sticky header width/scroll for Routines view
       if (state.view === 'routines') requestAnimationFrame(initRtnStickyHeader);
+      // Show voice FAB only on the week view (and only if browser supports speech)
+      const fab = document.getElementById('voice-fab');
+      if (fab) {
+        const show = state.view === 'week' && voiceSupported();
+        fab.classList.toggle('vf-hidden', !show);
+      }
     }
 
     function fixTimelineLines() {
@@ -8386,6 +8431,223 @@
       await fsSetRoutines().catch(() => {});
     }
 
+    // ============================================================
+    // VOICE-TO-TASK
+    // ============================================================
+    const VOICE_ROUTINES_BUNDLE = ['MXY0005A10', 'MCY0003A10', 'MTX0005A10'];
+
+    let voiceRec = null;
+    let voiceRawTranscript = '';
+    let voiceConfirmCodes = []; // array of {a,d,c} objects currently selected in confirm sheet
+
+    function voiceSupported() {
+      return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    }
+
+    function startVoiceEntry() {
+      if (!voiceSupported()) {
+        showToast('Voice not supported in this browser — use Chrome');
+        return;
+      }
+      voiceRawTranscript = '';
+      // Show listen modal
+      const modal = document.getElementById('voice-listen-modal');
+      const ring = document.getElementById('vl-ring');
+      const txt = document.getElementById('vl-transcript');
+      if (modal) modal.classList.add('open');
+      if (ring) ring.classList.add('active');
+      if (txt) txt.textContent = 'Listening…';
+      // Update FAB
+      const fab = document.getElementById('voice-fab');
+      if (fab) fab.classList.add('listening');
+
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      voiceRec = new SR();
+      voiceRec.lang = 'en-IE';
+      voiceRec.continuous = true;
+      voiceRec.interimResults = true;
+
+      voiceRec.onresult = e => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          if (e.results[i].isFinal) final += t;
+          else interim += t;
+        }
+        voiceRawTranscript = (voiceRawTranscript + final).trim();
+        const display = voiceRawTranscript + (interim ? ' ' + interim : '');
+        const el = document.getElementById('vl-transcript');
+        if (el) el.textContent = display || 'Listening…';
+      };
+
+      voiceRec.onerror = e => {
+        showToast('Mic error: ' + (e.error || 'unknown'));
+        cancelVoice();
+      };
+
+      voiceRec.onend = () => {
+        // If stopped naturally (e.g. silence timeout), auto-process
+        const modal = document.getElementById('voice-listen-modal');
+        if (modal && modal.classList.contains('open')) {
+          stopVoiceRecognition();
+        }
+      };
+
+      voiceRec.start();
+    }
+
+    function stopVoiceRecognition() {
+      if (voiceRec) { try { voiceRec.stop(); } catch(e) {} voiceRec = null; }
+      const ring = document.getElementById('vl-ring');
+      if (ring) ring.classList.remove('active');
+      const fab = document.getElementById('voice-fab');
+      if (fab) fab.classList.remove('listening');
+      const listenModal = document.getElementById('voice-listen-modal');
+      if (listenModal) listenModal.classList.remove('open');
+
+      const transcript = voiceRawTranscript.trim();
+      if (!transcript) { showToast('Nothing heard — try again'); return; }
+
+      const parsed = parseVoiceText(transcript);
+      showVoiceConfirm(parsed, transcript);
+    }
+
+    function parseVoiceText(text) {
+      const t = text.toLowerCase();
+      const result = { description: '', location: '', ordinary: '', codes: [], dayIndex: null };
+
+      // ── Description & codes ──────────────────────────────────────
+      if (/\broutin/i.test(text)) {
+        result.description = 'Routines';
+        result.codes = VOICE_ROUTINES_BUNDLE
+          .map(code => WORK_CODES.find(c => c.c === code))
+          .filter(Boolean);
+      }
+
+      // ── Hours: "2 hours", "2.5 hours", "half an hour" ───────────
+      const hoursMatch = text.match(/(\d+\.?\d*)\s*hours?/i);
+      if (hoursMatch) {
+        result.ordinary = hoursMatch[1];
+      } else if (/half\s+(an?\s+)?hour/i.test(text)) {
+        result.ordinary = '0.5';
+      }
+
+      // ── Location: longest matching town name or code ─────────────
+      let bestTown = null, bestLen = 0;
+      for (const town of (TOWNS || [])) {
+        const name = town.name.toLowerCase();
+        const code = town.code.toLowerCase();
+        if (t.includes(name) && name.length > bestLen) {
+          bestTown = town; bestLen = name.length;
+        } else if (t.includes(code) && code.length > bestLen) {
+          bestTown = town; bestLen = code.length;
+        }
+      }
+      if (bestTown) result.location = bestTown.name + ' (' + bestTown.code + ')';
+
+      // ── Day: match spoken day name or "today" / "yesterday" ─────
+      if (state.weekData) {
+        const days = state.weekData.days;
+        const today = new Date();
+        const todayStr = dateToStr(today);
+        if (/\btoday\b/i.test(text)) {
+          const idx = days.findIndex(d => d.date === todayStr);
+          if (idx >= 0) result.dayIndex = idx;
+        } else if (/\byesterday\b/i.test(text)) {
+          const yest = new Date(today); yest.setDate(yest.getDate() - 1);
+          const idx = days.findIndex(d => d.date === dateToStr(yest));
+          if (idx >= 0) result.dayIndex = idx;
+        } else {
+          const dn = DAY_NAMES; // ['Friday','Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday']
+          for (let i = 0; i < dn.length; i++) {
+            if (t.includes(dn[i].toLowerCase())) { result.dayIndex = i; break; }
+          }
+        }
+        // Default: today if in current week, otherwise first day
+        if (result.dayIndex === null) {
+          const idx = days.findIndex(d => d.date === todayStr);
+          result.dayIndex = idx >= 0 ? idx : 0;
+        }
+      }
+
+      return result;
+    }
+
+    function showVoiceConfirm(parsed, transcript) {
+      voiceConfirmCodes = [...(parsed.codes || [])];
+
+      // Populate fields
+      document.getElementById('vc-heard-text').textContent = transcript;
+      document.getElementById('vc-desc').value = parsed.description || '';
+      document.getElementById('vc-loc').value = parsed.location || '';
+      document.getElementById('vc-hrs').value = parsed.ordinary || '';
+
+      // Day selector
+      const sel = document.getElementById('vc-day');
+      sel.innerHTML = '';
+      if (state.weekData) {
+        state.weekData.days.forEach((day, i) => {
+          const opt = document.createElement('option');
+          const d = new Date(day.date + 'T12:00:00');
+          opt.value = i;
+          opt.textContent = DAY_NAMES[i] + ' ' + d.getDate() + '/' + (d.getMonth() + 1);
+          if (i === parsed.dayIndex) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+
+      renderVoiceCodeChips();
+      document.getElementById('voice-confirm-modal').classList.add('open');
+    }
+
+    function renderVoiceCodeChips() {
+      const wrap = document.getElementById('vc-codes-wrap');
+      if (!wrap) return;
+      if (!voiceConfirmCodes.length) {
+        wrap.innerHTML = `<span class="vc-no-codes">No codes — tap to add</span>`;
+        return;
+      }
+      wrap.innerHTML = voiceConfirmCodes.map((c, i) =>
+        `<span class="vc-code-chip">${esc(c.c)}<button onclick="removeVoiceCode(${i})" title="Remove">×</button></span>`
+      ).join('');
+    }
+
+    function removeVoiceCode(i) {
+      voiceConfirmCodes.splice(i, 1);
+      renderVoiceCodeChips();
+    }
+
+    function confirmVoiceEntry() {
+      if (!state.weekData) return;
+      const di = parseInt(document.getElementById('vc-day').value);
+      if (isNaN(di)) return;
+
+      const act = createActivity();
+      act.description = (document.getElementById('vc-desc').value || '').trim();
+      act.location    = (document.getElementById('vc-loc').value || '').trim();
+      act.ordinary    = (document.getElementById('vc-hrs').value || '').trim();
+      act.codes       = [...voiceConfirmCodes];
+
+      state.weekData.days[di].activities.push(act);
+      state.activitiesExpanded.add(act.id);
+      state.expandedDays.add(di);
+
+      cancelVoice();
+      scheduleAutoSave();
+      render();
+      showToast('Entry added ✓');
+    }
+
+    function cancelVoice() {
+      if (voiceRec) { try { voiceRec.stop(); } catch(e) {} voiceRec = null; }
+      const fab = document.getElementById('voice-fab');
+      if (fab) fab.classList.remove('listening');
+      ['voice-listen-modal', 'voice-confirm-modal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('open');
+      });
+    }
+
     async function init() {
       initTheme();
       if ('serviceWorker' in navigator) {
@@ -8447,6 +8709,66 @@
 
     init();
   </script>
+
+  <!-- ===== VOICE FAB ===== -->
+  <button class="voice-fab vf-hidden" id="voice-fab" onclick="startVoiceEntry()" title="Voice entry" aria-label="Voice entry">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="2" width="6" height="12" rx="3"/>
+      <path d="M5 10a7 7 0 0 0 14 0"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="8" y1="22" x2="16" y2="22"/>
+    </svg>
+  </button>
+
+  <!-- ===== VOICE LISTENING MODAL ===== -->
+  <div id="voice-listen-modal">
+    <div class="vl-ring" id="vl-ring">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="2" width="6" height="12" rx="3"/>
+        <path d="M5 10a7 7 0 0 0 14 0"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="8" y1="22" x2="16" y2="22"/>
+      </svg>
+    </div>
+    <div class="vl-transcript" id="vl-transcript">Listening…</div>
+    <div class="vl-hint">Speak clearly — e.g. "Routines in Kildare, 2 hours, Wednesday"</div>
+    <div class="vl-btns">
+      <button class="vl-btn done" onclick="stopVoiceRecognition()">Done</button>
+      <button class="vl-btn cancel" onclick="cancelVoice()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ===== VOICE CONFIRM SHEET ===== -->
+  <div id="voice-confirm-modal">
+    <div class="vc-sheet">
+      <div class="vc-title">Add Entry</div>
+      <div class="vc-heard"><strong>Heard:</strong> <span id="vc-heard-text"></span></div>
+      <div class="vc-field">
+        <label class="vc-label">Day</label>
+        <select id="vc-day" class="vc-input"></select>
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Description</label>
+        <input id="vc-desc" class="vc-input" type="text" placeholder="e.g. Routines">
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Location</label>
+        <input id="vc-loc" class="vc-input" type="text" placeholder="Town name or code">
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Ordinary Hours</label>
+        <input id="vc-hrs" class="vc-input" type="number" min="0" max="24" step="0.5" placeholder="e.g. 2">
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Work Codes</label>
+        <div class="vc-codes-wrap" id="vc-codes-wrap"></div>
+      </div>
+      <div class="vc-btns">
+        <button class="vc-btn primary" onclick="confirmVoiceEntry()">Add to Timesheet</button>
+        <button class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 
