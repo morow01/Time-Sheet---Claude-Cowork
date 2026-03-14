@@ -4173,7 +4173,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.1';
+    const VERSION = '4.1.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -8211,7 +8211,8 @@
       }
 
       let rows = '';
-      r.selectedSites.forEach(site => {
+      const sortedSites = [...r.selectedSites].sort((a, b) => a.localeCompare(b));
+      sortedSites.forEach(site => {
         let cells = `<td class="rtn-td-site" title="${esc(site)}">${esc(site)}</td>`;
         for (let m = 1; m <= 12; m++) {
           const isCur = (m === curMonth && year === curYear);
@@ -8310,14 +8311,15 @@
       const q = search.trim().toLowerCase();
 
       // Get all unique location names from TOWNS (exchanges)
-      const allSites = (TOWNS || []).map(t => ({ name: t.name, code: t.code }));
+      const allSites = (TOWNS || []).map(t => ({ name: t.name, code: t.code }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
       // Filter
       const filtered = q
         ? allSites.filter(s => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q))
         : allSites;
 
-      const selected = state.routinesPickerSites;
+      const selected = [...(state.routinesPickerSites || [])].sort((a, b) => a.localeCompare(b));
       const selectedSet = new Set(selected);
 
       let html = '';
@@ -8584,7 +8586,7 @@
 
     function parseVoiceText(text) {
       const t = text.toLowerCase();
-      const result = { description: '', location: '', ordinary: '', codes: [], dayIndex: null };
+      const result = { description: '', location: '', ordinary: '', overtime: '', codes: [], dayIndex: null };
 
       // ── Description & codes ──────────────────────────────────────
       if (/\broutin/i.test(text)) {
@@ -8615,7 +8617,14 @@
       // ── Hours: "2 hours", "two hours", "half an hour", etc. ────────
       const wordNums = { one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9, ten:10, half:0.5, quarter:0.25 };
       const normalised = text.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/gi, m => wordNums[m.toLowerCase()]);
-      const hoursMatch = normalised.match(/(\d+\.?\d*)\s*hours?/i);
+      // Overtime: look for "X overtime/OT hours" or "overtime X hours" before ordinary hours
+      const otMatch = normalised.match(/(\d+\.?\d*)\s*(?:overtime|over\s*time|ot)\s*hours?/i)
+                   || normalised.match(/(?:overtime|over\s*time|ot)\s+(?:of\s+)?(\d+\.?\d*)\s*hours?/i);
+      if (otMatch) result.overtime = otMatch[1];
+      // Ordinary: first hours mention not preceded by overtime keywords
+      const normNoOT = normalised.replace(/(\d+\.?\d*)\s*(?:overtime|over\s*time|ot)\s*hours?/gi, '')
+                                  .replace(/(?:overtime|over\s*time|ot)\s+(?:of\s+)?(\d+\.?\d*)\s*hours?/gi, '');
+      const hoursMatch = normNoOT.match(/(\d+\.?\d*)\s*hours?/i);
       if (hoursMatch) {
         result.ordinary = hoursMatch[1];
       } else if (/half\s+(an?\s+)?hour/i.test(text)) {
@@ -8674,6 +8683,7 @@
       document.getElementById('vc-desc').value = parsed.description || '';
       document.getElementById('vc-loc').value = parsed.location || '';
       document.getElementById('vc-hrs').value = parsed.ordinary || '';
+      document.getElementById('vc-ot').value = parsed.overtime || '';
 
       // Day selector
       const sel = document.getElementById('vc-day');
@@ -8719,6 +8729,7 @@
       act.description = (document.getElementById('vc-desc').value || '').trim();
       act.location    = (document.getElementById('vc-loc').value || '').trim();
       act.ordinary    = (document.getElementById('vc-hrs').value || '').trim();
+      act.overtime    = (document.getElementById('vc-ot').value || '').trim();
       act.codes       = [...voiceConfirmCodes];
 
       state.weekData.days[di].activities.push(act);
@@ -8811,28 +8822,30 @@
 
       const locs = (TOWNS || []).map(t => t.name).join(', ');
 
-      const prompt = `You are a timesheet entry assistant. Parse this voice/text entry into JSON.
+      const prompt = `You are a field engineer timesheet assistant. Extract structured data from this spoken entry.
 
 Entry: "${text}"
 
-Week days available (index:name date): ${days}
+Week days (index:name date): ${days}
 Today's day index: ${todayIdx}
-Known locations (match loosely against these): ${locs}
+Known locations: ${locs}
 
-Return ONLY valid JSON with these exact fields:
+Return ONLY valid JSON:
 {
-  "description": "task description, capitalized (e.g. Routines, Meeting, Site Visit)",
-  "location": "matched location name only, no code, empty string if not found",
+  "description": "",
+  "location": "",
   "hours": 0,
+  "overtime": 0,
   "dayIndex": ${todayIdx},
   "isRoutines": false
 }
 
 Rules:
-- If "routines/routine/rtn" mentioned → description="Routines", isRoutines=true
-- location: fuzzy-match against known locations. Name only, no brackets. Empty string if not mentioned.
-- hours: convert word numbers to digits (two=2, three=3, half=0.5, quarter=0.25). 0 if not mentioned.
-- dayIndex: use the integer index from the week days list. Default to today's index (${todayIdx}) if no day mentioned.`;
+- description: extract the SPECIFIC task or fault type — NOT generic words like "work" or "working". Examples: "fiber break"→"Fiber Break", "cable fault"→"Cable Fault", "pole replacement"→"Pole Replacement", "site survey"→"Site Survey". If routines/routine/rtn → "Routines" and isRoutines=true.
+- location: fuzzy-match the place name against known locations. Return matched name only (no code). If not in list, return what was said. Empty string only if no place mentioned.
+- hours: ordinary/regular hours as a number. Convert words (two=2, three=3, half=0.5). 0 if not mentioned.
+- overtime: overtime hours as a number. Look for words like "overtime", "OT", "over time". Convert words to digits. 0 if not mentioned.
+- dayIndex: integer index from week days. Use today (${todayIdx}) if no day mentioned.`;
 
       try {
         // Use cached model or discover one on the fly
@@ -8858,9 +8871,10 @@ Rules:
         const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
         const p = JSON.parse(jsonText);
 
-        const result = { description: '', location: '', ordinary: '', codes: [], dayIndex: null };
+        const result = { description: '', location: '', ordinary: '', overtime: '', codes: [], dayIndex: null };
         result.description = p.description || '';
         result.ordinary    = p.hours > 0 ? String(p.hours) : '';
+        result.overtime    = p.overtime > 0 ? String(p.overtime) : '';
         result.dayIndex    = typeof p.dayIndex === 'number' ? p.dayIndex : todayIdx;
 
         if (p.location) {
@@ -9016,6 +9030,10 @@ Rules:
       <div class="vc-field">
         <label class="vc-label">Ordinary Hours</label>
         <input id="vc-hrs" class="vc-input" type="number" min="0" max="24" step="0.5" placeholder="e.g. 2">
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Overtime Hours</label>
+        <input id="vc-ot" class="vc-input" type="number" min="0" max="24" step="0.5" placeholder="e.g. 0">
       </div>
       <div class="vc-field">
         <label class="vc-label">Work Codes</label>
