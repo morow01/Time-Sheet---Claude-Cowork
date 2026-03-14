@@ -296,6 +296,9 @@
     .act-mic-btn { background:none; border:none; padding:0; margin:0; cursor:pointer; color:var(--accent); opacity:0.7; display:flex; align-items:center; line-height:1; -webkit-tap-highlight-color:transparent; }
     .act-mic-btn:active { opacity:1; transform:scale(0.9); }
     .act-mic-btn.listening { color:#e53935; opacity:1; animation:voiceFabPulse 1s ease-in-out infinite; }
+    .act-field-mic-wrap { position:relative; }
+    .act-field-mic-wrap textarea { padding-right:28px !important; width:100%; box-sizing:border-box; }
+    .act-field-mic-wrap .act-mic-btn { position:absolute; top:8px; right:8px; opacity:0.5; }
 
     .act-codes-wrap {
       background: #fff;
@@ -4212,7 +4215,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.13';
+    const VERSION = '4.1.14';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6136,15 +6139,15 @@
         <div class="activity-detail ${isExpanded ? 'open' : ''}" style="${isExpanded ? '' : 'display:none'}">
           <div class="act-detail-inner">
             <div class="flex flex-col gap-1.5">
-              <div class="act-field-label-row">
-                <span class="act-field-label">Description</span>
+              <span class="act-field-label">Description</span>
+              <div class="act-field-mic-wrap">
+                <textarea placeholder="Description of work" rows="1"
+                  class="act-textarea"
+                  data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
                 <button class="act-mic-btn" id="act-mic-desc-${act.id}" onclick="startActFieldVoice('${act.id}',${di},'description')" title="Voice input">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
                 </button>
               </div>
-              <textarea placeholder="Description of work" rows="1"
-                class="act-textarea"
-                data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
             </div>
 
             <div class="flex flex-col gap-1.5">
@@ -6220,15 +6223,14 @@
                 </svg>
               </div>
               <div class="notes-panel-body ${notesOpen ? 'open' : ''}" data-notes-wrap="${act.id}">
-                <div class="act-field-label-row" style="padding:6px 10px 0;">
-                  <span></span>
+                <div class="act-field-mic-wrap">
+                  <textarea placeholder="Notes…" rows="2"
+                    class="act-notes-area"
+                    data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>
                   <button class="act-mic-btn" id="act-mic-note-${act.id}" onclick="startActFieldVoice('${act.id}',${di},'notes')" title="Voice note">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
                   </button>
                 </div>
-                <textarea placeholder="Notes…" rows="2"
-                  class="act-notes-area"
-                  data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.notes || '')}</textarea>
               </div>
             </div>
 
