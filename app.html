@@ -5295,12 +5295,9 @@
       requestAnimationFrame(fixTimelineLines);
       // Sync sticky header width/scroll for Routines view
       if (state.view === 'routines') requestAnimationFrame(initRtnStickyHeader);
-      // Show voice FAB only on the week view (and only if browser supports speech)
+      // Show voice FAB on the week view (always visible — unsupported browsers get a toast on tap)
       const fab = document.getElementById('voice-fab');
-      if (fab) {
-        const show = state.view === 'week' && voiceSupported();
-        fab.classList.toggle('vf-hidden', !show);
-      }
+      if (fab) fab.classList.toggle('vf-hidden', state.view !== 'week');
     }
 
     function fixTimelineLines() {
