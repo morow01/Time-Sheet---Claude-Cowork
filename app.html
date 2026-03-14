@@ -4173,7 +4173,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.0';
+    const VERSION = '4.1.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -4674,6 +4674,7 @@
       routinesYear: new Date().getFullYear(),
       routinesPickerSites: [],  // working copy while picker is open
       geminiKey: localStorage.getItem('geminiKey') || '',
+      geminiModel: localStorage.getItem('geminiModel') || '',
     };
 
     let codeModalCtx = { dayIndex: null, activityId: null, selected: [] };
@@ -8742,15 +8743,35 @@
       showToast(key ? 'Key saved — tap Test to verify' : 'API key removed');
     }
 
+    async function discoverGeminiModel(key) {
+      // Ask Google which models are available for this key, pick the best flash model
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const models = (data.models || [])
+        .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+        .map(m => m.name.replace('models/', ''));
+      // Prefer flash models (fast + cheap), newest first
+      const order = ['flash'];
+      const flash = models.filter(m => m.includes('flash')).sort().reverse();
+      return flash[0] || models[0] || null;
+    }
+
     async function testGeminiKey() {
       const input = document.getElementById('menu-gemini-key');
       const key = (input ? input.value : '').trim();
       const status = document.getElementById('menu-gemini-status');
       if (!key) { showToast('Enter a key first'); return; }
-      if (status) { status.textContent = '⏳ Testing…'; status.style.color = 'var(--text-muted)'; }
+      if (status) { status.textContent = '⏳ Discovering model…'; status.style.color = 'var(--text-muted)'; }
       try {
+        const model = await discoverGeminiModel(key);
+        if (!model) {
+          if (status) { status.textContent = '❌ Could not list models — check your key'; status.style.color = '#e53935'; }
+          return;
+        }
+        if (status) status.textContent = `⏳ Testing ${model}…`;
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -8759,16 +8780,14 @@
         );
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          const code = res.status;
-          const msg = err?.error?.message || err?.error?.status || ('HTTP ' + code);
-          if (status) {
-            status.textContent = `❌ [${code}] ${msg.substring(0, 120)}`;
-            status.style.color = '#e53935';
-          }
+          const msg = err?.error?.message || ('HTTP ' + res.status);
+          if (status) { status.textContent = `❌ [${res.status}] ${msg.substring(0, 100)}`; status.style.color = '#e53935'; }
         } else {
-          if (status) { status.textContent = '✅ Key working — Gemini is active'; status.style.color = '#43a047'; }
           state.geminiKey = key;
+          state.geminiModel = model;
           localStorage.setItem('geminiKey', key);
+          localStorage.setItem('geminiModel', model);
+          if (status) { status.textContent = `✅ Working — using ${model}`; status.style.color = '#43a047'; }
         }
       } catch (e) {
         if (status) { status.textContent = '❌ Network error: ' + (e.message || e); status.style.color = '#e53935'; }
@@ -8816,8 +8835,15 @@ Rules:
 - dayIndex: use the integer index from the week days list. Default to today's index (${todayIdx}) if no day mentioned.`;
 
       try {
+        // Use cached model or discover one on the fly
+        let model = state.geminiModel;
+        if (!model) {
+          model = await discoverGeminiModel(key);
+          if (model) { state.geminiModel = model; localStorage.setItem('geminiModel', model); }
+        }
+        if (!model) throw new Error('No available model found');
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
