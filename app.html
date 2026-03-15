@@ -5334,7 +5334,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.27';
+    const VERSION = '4.1.28';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7432,21 +7432,6 @@
         }
         if (chevron) chevron.style.transform = 'rotate(0deg)';
 
-        // Re-evaluate red border on collapse (renderActivity doesn't re-run here)
-        let act = null;
-        for (const day of state.weekData.days) {
-          act = day.activities.find(a => a.id === actId);
-          if (act) break;
-        }
-        if (act) {
-          const ord = parseFloat(act.ordinary) || 0;
-          const ot = parseFloat(act.overtime) || 0;
-          const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-          if (isMissingHours) {
-            card.style.borderColor = 'var(--btn-danger-color)';
-            card.style.boxShadow = '0 0 8px rgba(232, 69, 60, 0.2)';
-          }
-        }
         syncTimelineAnimation();
       }
     }
@@ -7706,19 +7691,13 @@
       const isExpanded = state.activitiesExpanded.has(act.id);
       const ordinary = parseFloat(act.ordinary) || 0;
       const overtime = parseFloat(act.overtime) || 0;
-      const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
-      const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
-      const isInvalid = isMissingCode || isMissingHours;
-      // Hours with no code → red immediately
-      // Code with no hours → red only on collapse (grace period while entering hours)
-      const showRedBorder = isMissingCode || (isMissingHours && !isExpanded);
       const numTasks = act.codes.length || 1;
       const hrsPerTask = ordinary > 0 ? Math.round(ordinary / numTasks) : '—';
       const otPerTask = overtime > 0 ? Math.round(overtime / numTasks) : '—';
       const notesOpen = state.notesOpen.has(act.id) ? state.notesOpen.get(act.id) : !!act.notes;
 
       return `
-      <div class="activity-card ${isExpanded ? 'expanded' : ''}" data-act-id="${act.id}" style="${showRedBorder ? 'border-color:var(--btn-danger-color); box-shadow: 0 0 8px rgba(232, 69, 60, 0.2)' : ''}">
+      <div class="activity-card ${isExpanded ? 'expanded' : ''}" data-act-id="${act.id}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="toggleActivityDetails('${act.id}')">
           <div class="task-num">${actIndex + 1}</div>
           <div class="flex-1 min-w-0 act-meta">
@@ -7730,8 +7709,8 @@
                 ${act.location ? `<span style="margin-right:2px">📍</span>${esc(act.location)}` : '<span style="opacity:0.4">No location</span>'}
               </div>
               <div class="act-pill-row">
-                ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" style="display:none"></span>`}
-                ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" style="display:none"></span>`}
+                <span data-row-hrs="${act.id}" style="display:none"></span>
+                <span data-row-ot="${act.id}" style="display:none"></span>
               </div>
             </div>
           </div>
@@ -7782,8 +7761,6 @@
                 </button>
               </div>
               <div id="suggest-wrap-${act.id}"></div>
-              ${isMissingCode ? `<div class="act-missing-warn">⚠️ Missing work code</div>` : ''}
-              ${isMissingHours ? `<div class="act-missing-warn">⚠️ Missing hours</div>` : ''}
             </div>
 
             <div class="flex gap-3">
