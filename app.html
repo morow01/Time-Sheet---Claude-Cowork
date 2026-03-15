@@ -5390,7 +5390,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.35';
+    const VERSION = '4.1.36';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -11168,14 +11168,19 @@ Rules:
     // AI FAULT ASSISTANT
     // ============================================================
 
-    // Load knowledge base stats from IndexedDB
+    // Load knowledge base stats — scans IndexedDB + current week in memory
     async function loadAIStats() {
       try {
         const allWeeks = await dbGetAll('weeks');
+        // Include current week from memory if not already in the DB results
+        const weeksToScan = [...allWeeks];
+        if (state.weekData && !weeksToScan.find(w => w.weekStart === state.weekData.weekStart)) {
+          weeksToScan.push(state.weekData);
+        }
         let noteCount = 0;
         const faultTypes = new Set();
         let oldestDate = '';
-        allWeeks.forEach(week => {
+        weeksToScan.forEach(week => {
           if (!week.days) return;
           week.days.forEach(day => {
             (day.activities || []).forEach(act => {
@@ -11198,14 +11203,19 @@ Rules:
       }
     }
 
-    // Search local IndexedDB for activities with notes matching query keywords
+    // Search IndexedDB + current week in memory for activities with notes matching query
     async function searchFaultNotes(query) {
       const stopWords = new Set(['the','and','for','that','this','with','from','have','been','was','are','will','not','but','you','your','they','them','their','what','when','how','all','can','its']);
       const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
       if (!keywords.length) return [];
       const allWeeks = await dbGetAll('weeks');
+      // Also include current week from memory in case IndexedDB write is still pending
+      const weeksToScan = [...allWeeks];
+      if (state.weekData && !weeksToScan.find(w => w.weekStart === state.weekData.weekStart)) {
+        weeksToScan.push(state.weekData);
+      }
       const matches = [];
-      allWeeks.forEach(week => {
+      weeksToScan.forEach(week => {
         if (!week.days) return;
         week.days.forEach(day => {
           (day.activities || []).forEach(act => {
@@ -11292,10 +11302,10 @@ QUESTION: ${query}`;
 
     function aiRecentTap(q) {
       state.aiQuery = q;
-      render();
+      renderFaultAssistantModal();
       setTimeout(() => {
         const el = document.getElementById('ai-query-input');
-        if (el) { el.value = q; el.focus(); }
+        if (el) { el.value = q; el.focus(); runAIQuery(); }
       }, 50);
     }
 
