@@ -5309,7 +5309,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.24';
+    const VERSION = '4.1.25';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7510,9 +7510,10 @@
       renderSuggestPanel(actId, di, null, true);
 
       const act = state.weekData?.days[di]?.activities.find(a => a.id === actId);
-      const desc = (act?.description || '').trim();
+      const desc  = (act?.description || '').trim();
+      const notes = (act?.notes || '').trim();
 
-      const suggestions = await buildSuggestions(desc, act?.codes || []);
+      const suggestions = await buildSuggestions(desc, act?.codes || [], notes);
       activeSuggestions.set(actId, suggestions);
       renderSuggestPanel(actId, di, suggestions, false);
     }
@@ -7563,14 +7564,15 @@
         </div>`;
     }
 
-    async function buildSuggestions(description, existingCodes) {
+    async function buildSuggestions(description, existingCodes, notes) {
       const existingSet = new Set((existingCodes || []).map(c => c.c));
-      const desc = description.toLowerCase().trim();
-      if (!desc) return [];
+      // Combine description + notes into one search string
+      const combinedText = [description, notes].filter(Boolean).join(' ').toLowerCase().trim();
+      if (!combinedText) return [];
 
       // Extract meaningful keywords (3+ chars, skip common words)
-      const stopWords = new Set(['and','the','for','with','from','that','this','has','have','are','was','been']);
-      const keywords = desc.split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
+      const stopWords = new Set(['and','the','for','with','from','that','this','has','have','are','was','been','also','just','some']);
+      const keywords = combinedText.split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
       if (keywords.length === 0) return [];
 
       const codeCounts = {}; // { code: { code, description, count, totalMatches } }
@@ -7583,9 +7585,9 @@
           if (!weekData?.days) return;
           weekData.days.forEach(day => {
             (day.activities || []).forEach(act => {
-              if (!act.description || !act.codes?.length) return;
-              const actDesc = act.description.toLowerCase();
-              const isMatch = keywords.some(kw => actDesc.includes(kw));
+              if (!act.codes?.length) return;
+              const actText = [act.description, act.notes].filter(Boolean).join(' ').toLowerCase();
+              const isMatch = keywords.some(kw => actText.includes(kw));
               if (!isMatch) return;
               act.codes.forEach(c => {
                 if (existingSet.has(c.c)) return; // skip already-added codes
@@ -7602,9 +7604,9 @@
       // Also scan current week in memory
       (state.weekData?.days || []).forEach(day => {
         (day.activities || []).forEach(act => {
-          if (!act.description || !act.codes?.length) return;
-          const actDesc = act.description.toLowerCase();
-          const isMatch = keywords.some(kw => actDesc.includes(kw));
+          if (!act.codes?.length) return;
+          const actText = [act.description, act.notes].filter(Boolean).join(' ').toLowerCase();
+          const isMatch = keywords.some(kw => actText.includes(kw));
           if (!isMatch) return;
           act.codes.forEach(c => {
             if (existingSet.has(c.c)) return;
