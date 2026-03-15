@@ -5400,7 +5400,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.2.4';
+    const VERSION = '4.2.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -11349,6 +11349,28 @@ Work week = Friday to Thursday.
         ctx += '\n';
       });
 
+      // SECTION 3: Notes (open and done)
+      if (state.notes?.length) {
+        const open = state.notes.filter(n => n.status !== 'done').sort((a,b) => (b.date||'').localeCompare(a.date||''));
+        const done = state.notes.filter(n => n.status === 'done').sort((a,b) => (b.date||'').localeCompare(a.date||''));
+        const noteLine = n => {
+          const parts = [n.description || '(no description)'];
+          if (n.location) parts.push('@ ' + n.location);
+          if (n.date) parts.push('[' + n.date + ']');
+          if (n.priority && n.priority !== 'medium') parts.push(n.priority + ' priority');
+          return '    - ' + parts.join(' ');
+        };
+        ctx += `\nNOTES:\n`;
+        if (open.length) {
+          ctx += `  Open (${open.length}):\n`;
+          open.forEach(n => { ctx += noteLine(n) + '\n'; });
+        }
+        if (done.length) {
+          ctx += `  Completed (${done.length}):\n`;
+          done.forEach(n => { ctx += noteLine(n) + '\n'; });
+        }
+      }
+
       return ctx;
     }
 
@@ -11445,7 +11467,7 @@ QUESTION: ${query}`;
       renderFaultAssistantModal();
       // Update header stat chip
       const stat = document.getElementById('ai-fault-kb-stat');
-      if (stat && state.aiStats) stat.textContent = `${state.aiStats.weekCount} weeks`;
+      if (stat && state.aiStats) stat.textContent = `${state.aiStats.weekCount}w · ${state.notes?.length || 0} notes`;
       // Focus search input
       setTimeout(() => document.getElementById('ai-query-input')?.focus(), 100);
     }
