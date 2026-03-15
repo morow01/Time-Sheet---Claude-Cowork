@@ -2945,107 +2945,399 @@
     }
 
     /* ===== AI FAULT ASSISTANT ===== */
-    .ai-view { padding: 0 0 80px; }
-    .ai-search-wrap { padding: 14px 14px 0; }
-    .ai-search-row { display: flex; gap: 8px; align-items: center; }
-    .ai-search-input {
-      flex: 1; padding: 10px 14px; border-radius: 12px; font-size: 14px;
-      border: 1.5px solid var(--border); background: var(--bg-input);
-      color: var(--text-primary); outline: none;
+    .ai-view {
+      padding: 0 0 80px;
     }
-    .ai-search-input:focus { border-color: #818cf8; }
+
+    .ai-search-wrap {
+      padding: 14px 14px 0;
+    }
+
+    .ai-search-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .ai-search-input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .ai-search-input:focus {
+      border-color: #818cf8;
+    }
+
     .ai-ask-btn {
-      padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
-      background: #818cf8; color: #fff; border: none; cursor: pointer; white-space: nowrap;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #818cf8;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
       transition: opacity .2s;
     }
-    .ai-ask-btn:disabled { opacity: 0.5; cursor: default; }
-    .ai-section { padding: 14px 14px 0; }
-    .ai-section-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+
+    .ai-ask-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .ai-section {
+      padding: 14px 14px 0;
+    }
+
+    .ai-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+    }
+
     .ai-answer-card {
-      background: #f3f2ff; border-radius: 12px; padding: 14px;
+      background: #f3f2ff;
+      border-radius: 12px;
+      padding: 14px;
       border-left: 3px solid #818cf8;
     }
-    .dark .ai-answer-card { background: #1e1b3a; }
-    .ai-answer-label { font-size: 10px; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-    .ai-answer-text { font-size: 13px; color: var(--text-primary); line-height: 1.6; }
-    .ai-answer-footer { font-size: 11px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+
+    .dark .ai-answer-card {
+      background: #1e1b3a;
+    }
+
+    .ai-answer-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #818cf8;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ai-answer-text {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .ai-answer-footer {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
     .ai-source-card {
-      background: var(--bg-card); border-radius: 10px; padding: 10px 12px;
-      margin-bottom: 8px; border: 1px solid var(--border);
-      cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
       transition: border-color 0.15s, background 0.15s;
     }
-    .ai-source-card:active { opacity: 0.75; }
-    .ai-source-card-footer { font-size: 10px; color: #818cf8; margin-top: 5px; }
-    .ai-source-date { font-size: 10px; font-weight: 700; color: #f59e0b; margin-bottom: 3px; }
-    .ai-source-desc { font-size: 11px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
-    .ai-source-notes { font-size: 11px; color: var(--text-secondary); line-height: 1.45; }
+
+    .ai-source-card:active {
+      opacity: 0.75;
+    }
+
+    .ai-source-card-footer {
+      font-size: 10px;
+      color: #818cf8;
+      margin-top: 5px;
+    }
+
+    .ai-source-date {
+      font-size: 10px;
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 3px;
+    }
+
+    .ai-source-desc {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .ai-source-notes {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
     .ai-note-card {
-      background: var(--bg-card); border-radius: 10px; padding: 10px 12px;
-      margin-bottom: 8px; border: 1px solid #6ee7b7;
-      cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid #6ee7b7;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
       transition: border-color 0.15s, background 0.15s;
     }
-    .ai-note-card:active { opacity: 0.75; }
-    .ai-note-card-footer { font-size: 10px; color: #10b981; margin-top: 5px; }
-    .ai-note-card-date { font-size: 10px; font-weight: 700; color: #10b981; margin-bottom: 3px; }
-    .ai-note-card-desc { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
-    .ai-note-card-loc { font-size: 11px; color: var(--text-secondary); }
+
+    .ai-note-card:active {
+      opacity: 0.75;
+    }
+
+    .ai-note-card-footer {
+      font-size: 10px;
+      color: #10b981;
+      margin-top: 5px;
+    }
+
+    .ai-note-card-date {
+      font-size: 10px;
+      font-weight: 700;
+      color: #10b981;
+      margin-bottom: 3px;
+    }
+
+    .ai-note-card-desc {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .ai-note-card-loc {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
     .ai-note-status-badge {
-      display: inline-block; font-size: 9px; font-weight: 700; text-transform: uppercase;
-      padding: 1px 5px; border-radius: 4px; margin-left: 5px; vertical-align: middle;
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 5px;
+      vertical-align: middle;
     }
-    .ai-note-status-open { background: #fef3c7; color: #92400e; }
-    .ai-note-status-done { background: #d1fae5; color: #065f46; }
-    .ai-stats-row { display: flex; gap: 8px; }
+
+    .ai-note-status-open {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .ai-note-status-done {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .ai-stats-row {
+      display: flex;
+      gap: 8px;
+    }
+
     .ai-stat-tile {
-      flex: 1; background: var(--bg-card); border-radius: 10px; padding: 10px 8px;
-      text-align: center; border: 1px solid var(--border);
+      flex: 1;
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+      border: 1px solid var(--border);
     }
-    .ai-stat-val { font-size: 22px; font-weight: 800; color: #818cf8; }
-    .ai-stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    .ai-stat-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: #818cf8;
+    }
+
+    .ai-stat-lbl {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
     .ai-recent-chip {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
-      padding: 5px 12px; font-size: 12px; color: var(--text-primary); cursor: pointer;
-      margin: 0 6px 6px 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+      margin: 0 6px 6px 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
       font-family: inherit;
     }
-    .ai-recent-chip:active { opacity: 0.7; }
+
+    .ai-recent-chip:active {
+      opacity: 0.7;
+    }
+
     .ai-setup-card {
-      margin: 20px 14px; background: var(--bg-card); border-radius: 14px;
-      padding: 20px; border: 1px solid var(--border); text-align: center;
+      margin: 20px 14px;
+      background: var(--bg-card);
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      text-align: center;
     }
-    .ai-setup-icon { font-size: 40px; margin-bottom: 12px; }
-    .ai-setup-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
-    .ai-setup-sub { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
+
+    .ai-setup-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .ai-setup-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .ai-setup-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
     .ai-key-input {
-      width: 100%; padding: 10px 12px; border-radius: 10px; font-size: 12px;
-      border: 1.5px solid var(--border); background: var(--bg-input);
-      color: var(--text-primary); outline: none; margin-bottom: 10px; font-family: monospace;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      outline: none;
+      margin-bottom: 10px;
+      font-family: monospace;
     }
-    .ai-key-input:focus { border-color: #818cf8; }
+
+    .ai-key-input:focus {
+      border-color: #818cf8;
+    }
+
     .ai-save-btn {
-      width: 100%; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 700;
-      background: #818cf8; color: #fff; border: none; cursor: pointer;
+      width: 100%;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      background: #818cf8;
+      color: #fff;
+      border: none;
+      cursor: pointer;
     }
-    .ai-how-steps { text-align: left; margin: 14px 0; }
-    .ai-how-step { font-size: 12px; color: var(--text-secondary); padding: 4px 0; display: flex; gap: 8px; }
-    .ai-how-step-num { color: #818cf8; font-weight: 700; min-width: 18px; }
-    .ai-loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+
+    .ai-how-steps {
+      text-align: left;
+      margin: 14px 0;
+    }
+
+    .ai-how-step {
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      display: flex;
+      gap: 8px;
+    }
+
+    .ai-how-step-num {
+      color: #818cf8;
+      font-weight: 700;
+      min-width: 18px;
+    }
+
+    .ai-loading-dots {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+
     .ai-loading-dots span {
-      width: 6px; height: 6px; border-radius: 50%; background: #818cf8;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #818cf8;
       animation: aiDot 1.2s infinite ease-in-out;
     }
-    .ai-loading-dots span:nth-child(2) { animation-delay: .2s; }
-    .ai-loading-dots span:nth-child(3) { animation-delay: .4s; }
-    @keyframes aiDot { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
-    .ai-empty-state { text-align: center; padding: 30px 20px; color: var(--text-muted); font-size: 13px; line-height: 1.6; }
-    .ai-error-card { background: #fff1f2; border-radius: 12px; padding: 12px 14px; border-left: 3px solid #ef4444; margin-bottom: 8px; }
-    .dark .ai-error-card { background: #2d0a0f; }
-    .ai-error-text { font-size: 12px; color: #dc2626; }
-    .ai-key-change { font-size: 11px; color: #818cf8; text-decoration: underline; cursor: pointer; text-align: right; margin-top: 6px; }
+
+    .ai-loading-dots span:nth-child(2) {
+      animation-delay: .2s;
+    }
+
+    .ai-loading-dots span:nth-child(3) {
+      animation-delay: .4s;
+    }
+
+    @keyframes aiDot {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(.6);
+        opacity: .4
+      }
+
+      40% {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    .ai-empty-state {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .ai-error-card {
+      background: #fff1f2;
+      border-radius: 12px;
+      padding: 12px 14px;
+      border-left: 3px solid #ef4444;
+      margin-bottom: 8px;
+    }
+
+    .dark .ai-error-card {
+      background: #2d0a0f;
+    }
+
+    .ai-error-text {
+      font-size: 12px;
+      color: #dc2626;
+    }
+
+    .ai-key-change {
+      font-size: 11px;
+      color: #818cf8;
+      text-decoration: underline;
+      cursor: pointer;
+      text-align: right;
+      margin-top: 6px;
+    }
 
     /* ===== FIELD NOTES ===== */
     .notes-view {
@@ -4559,7 +4851,11 @@
       transition: background 0.15s, border-color 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
-    .act-suggest-btn:active { background: #ede9fe; }
+
+    .act-suggest-btn:active {
+      background: #ede9fe;
+    }
+
     .act-suggest-panel {
       margin-top: 6px;
       background: #faf5ff;
@@ -4567,6 +4863,7 @@
       border-radius: 10px;
       overflow: hidden;
     }
+
     .suggest-panel-head {
       display: flex;
       align-items: center;
@@ -4574,6 +4871,7 @@
       background: #ede9fe;
       gap: 6px;
     }
+
     .suggest-panel-head-title {
       flex: 1;
       font-size: 11px;
@@ -4582,6 +4880,7 @@
       letter-spacing: 0.07em;
       color: #6d28d9;
     }
+
     .suggest-panel-dismiss {
       background: none;
       border: none;
@@ -4592,12 +4891,14 @@
       padding: 0 2px;
       -webkit-tap-highlight-color: transparent;
     }
+
     .suggest-panel-loading {
       padding: 12px;
       font-size: 12px;
       color: #7c3aed;
       text-align: center;
     }
+
     .suggest-panel-empty {
       padding: 12px;
       font-size: 12px;
@@ -4605,6 +4906,7 @@
       text-align: center;
       font-style: italic;
     }
+
     .suggest-item {
       display: flex;
       align-items: center;
@@ -4612,14 +4914,23 @@
       padding: 7px 10px;
       border-bottom: 1px solid #ede9fe;
     }
-    .suggest-item:last-of-type { border-bottom: none; }
-    .suggest-item-info { flex: 1; min-width: 0; }
+
+    .suggest-item:last-of-type {
+      border-bottom: none;
+    }
+
+    .suggest-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
     .suggest-item-code {
       font-family: monospace;
       font-size: 11px;
       font-weight: 700;
       color: #6d28d9;
     }
+
     .suggest-item-desc {
       font-size: 11px;
       color: #475569;
@@ -4627,12 +4938,14 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .suggest-item-badge {
       font-size: 10px;
       color: #a78bfa;
       white-space: nowrap;
       flex-shrink: 0;
     }
+
     .suggest-item-add {
       flex-shrink: 0;
       font-size: 11px;
@@ -4645,12 +4958,17 @@
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
-    .suggest-item-add:active { background: #ede9fe; }
+
+    .suggest-item-add:active {
+      background: #ede9fe;
+    }
+
     .suggest-item-add.added {
       color: #16a34a;
       border-color: #bbf7d0;
       background: #f0fdf4;
     }
+
     .suggest-add-all-btn {
       display: block;
       width: calc(100% - 20px);
@@ -4665,7 +4983,11 @@
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
-    .suggest-add-all-btn:active { background: #6d28d9; }
+
+    .suggest-add-all-btn:active {
+      background: #6d28d9;
+    }
+
     .suggest-source-note {
       text-align: center;
       font-size: 10px;
@@ -4680,12 +5002,14 @@
       overflow: hidden;
       border: 1.5px solid #fed7aa;
       background: #fff7ed;
-      box-shadow: 0 1px 6px rgba(234,88,12,0.08);
+      box-shadow: 0 1px 6px rgba(234, 88, 12, 0.08);
     }
+
     .anomaly-banner.all-ok {
       border-color: #bbf7d0;
       background: #f0fdf4;
     }
+
     .anomaly-banner-head {
       display: flex;
       align-items: center;
@@ -4695,18 +5019,24 @@
       user-select: none;
       -webkit-user-select: none;
     }
+
     .anomaly-banner-icon {
       font-size: 18px;
       line-height: 1;
       flex-shrink: 0;
     }
+
     .anomaly-banner-title {
       flex: 1;
       font-size: 13px;
       font-weight: 700;
       color: #c2410c;
     }
-    .anomaly-banner.all-ok .anomaly-banner-title { color: #15803d; }
+
+    .anomaly-banner.all-ok .anomaly-banner-title {
+      color: #15803d;
+    }
+
     .anomaly-banner-count {
       font-size: 11px;
       font-weight: 700;
@@ -4716,22 +5046,29 @@
       padding: 1px 8px;
       flex-shrink: 0;
     }
+
     .anomaly-banner-chevron {
       color: #c2410c;
       transition: transform 0.2s;
       flex-shrink: 0;
     }
-    .anomaly-banner-chevron.open { transform: rotate(90deg); }
+
+    .anomaly-banner-chevron.open {
+      transform: rotate(90deg);
+    }
+
     .anomaly-banner-body {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.25s ease;
       border-top: 0px solid #fed7aa;
     }
+
     .anomaly-banner-body.open {
       max-height: 400px;
       border-top-width: 1px;
     }
+
     .anomaly-item {
       display: flex;
       align-items: flex-start;
@@ -4741,10 +5078,26 @@
       font-size: 12.5px;
       color: #1e293b;
     }
-    .anomaly-item:last-child { border-bottom: none; }
-    .anomaly-item-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
-    .anomaly-item-msg { flex: 1; line-height: 1.45; }
-    .anomaly-item-msg strong { color: #9a3412; }
+
+    .anomaly-item:last-child {
+      border-bottom: none;
+    }
+
+    .anomaly-item-icon {
+      flex-shrink: 0;
+      font-size: 14px;
+      margin-top: 1px;
+    }
+
+    .anomaly-item-msg {
+      flex: 1;
+      line-height: 1.45;
+    }
+
+    .anomaly-item-msg strong {
+      color: #9a3412;
+    }
+
     .anomaly-item-goto {
       flex-shrink: 0;
       font-size: 11px;
@@ -4757,6 +5110,7 @@
       cursor: pointer;
       white-space: nowrap;
     }
+
     .anomaly-banner-dismiss {
       display: block;
       width: 100%;
@@ -4770,7 +5124,10 @@
       text-align: center;
       opacity: 0.7;
     }
-    .anomaly-banner-dismiss:hover { opacity: 1; }
+
+    .anomaly-banner-dismiss:hover {
+      opacity: 1;
+    }
 
     /* ===== VOICE-TO-TASK ===== */
     /* Floating mic button */
@@ -5417,7 +5774,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.2.19';
+    const VERSION = '4.2.20';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6572,20 +6929,20 @@
       const range = formatWeekRange(weekData.weekStart);
       const summary = calcSummary(weekData);
       const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
-      const totalOT  = summary.reduce((s, r) => s + r.overtime, 0);
+      const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
 
       const C = {
-        border:'#EAEFF5', rowBorder:'#F0F4F8', headBg:'#F4F7FA',
-        label:'#8BA5BE', code:'#8BA5BE', txt:'#1e293b', txtSec:'#475569',
-        ord:'#1e293b', ot:'#C07800', dash:'#C8D8E8', totalBg:'#F4F7FA',
-        dayBg:'#4A6580', dayTxt:'#ffffff', dayDate:'#D4E0EC', cardBg:'#ffffff',
+        border: '#EAEFF5', rowBorder: '#F0F4F8', headBg: '#F4F7FA',
+        label: '#8BA5BE', code: '#8BA5BE', txt: '#1e293b', txtSec: '#475569',
+        ord: '#1e293b', ot: '#C07800', dash: '#C8D8E8', totalBg: '#F4F7FA',
+        dayBg: '#4A6580', dayTxt: '#ffffff', dayDate: '#D4E0EC', cardBg: '#ffffff',
       };
 
       const cpStyle = `cursor:pointer;border-bottom:1.5px dotted #93c5fd;color:inherit;display:inline;padding:1px 2px;border-radius:3px;transition:background 0.15s;`;
 
       function cpSpan(val, extraStyle) {
         const v = val.replace(/'/g, "\\'");
-        return `<span style="${cpStyle}${extraStyle||''}" onclick="cpv('${v}')" title="Tap to copy">${esc(val)}</span>`;
+        return `<span style="${cpStyle}${extraStyle || ''}" onclick="cpv('${v}')" title="Tap to copy">${esc(val)}</span>`;
       }
 
       // Summary table rows
@@ -6608,12 +6965,12 @@
         let actsHtml = '';
         acts.forEach(act => {
           const ord = Math.round(parseFloat(act.ordinary) || 0);
-          const ot  = Math.round(parseFloat(act.overtime)  || 0);
+          const ot = Math.round(parseFloat(act.overtime) || 0);
           const codesHtml = act.codes.map(c =>
             `<span style="display:inline-block;margin-right:6px;margin-top:4px;">${cpSpan(c.c, `font-family:monospace;font-size:12px;font-weight:500;color:${C.code};`)}</span>`
           ).join('');
           const descHtml = cpSpan(act.description || '(no description)', `font-size:14px;font-weight:600;color:${C.txt};`);
-          const locHtml  = act.location ? ` <span style="color:#475569;font-weight:400;font-size:13px;">— ${cpSpan(act.location)}</span>` : '';
+          const locHtml = act.location ? ` <span style="color:#475569;font-weight:400;font-size:13px;">— ${cpSpan(act.location)}</span>` : '';
           actsHtml += `<tr>
             <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
               <div>${descHtml}${locHtml}</div>
@@ -6953,7 +7310,7 @@
         <div class="hdr-metric-lbl">Tasks</div>
       </div>
     </div>
-    <div class="flex" style="background:var(--bg-header-tab);padding-left:10px;">
+    <div class="flex" style="background:var(--bg-header-tab);">
       <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'week' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         Timesheet
       </button>
@@ -6964,7 +7321,7 @@
       <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         Finder
       </button>
-      <button onclick="openFaultAssistant()" class="py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:var(--text-header-sub);padding-left:14px;padding-right:14px;">
+      <button onclick="openFaultAssistant()" class="py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:var(--text-header-sub);padding-left:20px;padding-right:20px;">
         AI
       </button>
     </div>
@@ -6996,50 +7353,62 @@
         // ── 2. Empty weekday with 0 total hours ───────────────
         if (!isWE && isPast && acts.length > 0) {
           const dayOrd = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
-          const dayOT  = acts.reduce((s, a) => s + (parseFloat(a.overtime)  || 0), 0);
+          const dayOT = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
           if (dayOrd === 0 && dayOT === 0) {
-            issues.push({ severity: 'warn', icon: '⏱️', dayIdx: di,
-              msg: `<strong>${day.dayName}</strong> has tasks but <strong>0 hours</strong> recorded.` });
+            issues.push({
+              severity: 'warn', icon: '⏱️', dayIdx: di,
+              msg: `<strong>${day.dayName}</strong> has tasks but <strong>0 hours</strong> recorded.`
+            });
           }
         }
 
         // ── Per-activity checks ───────────────────────────────
         acts.forEach(act => {
           const ord = parseFloat(act.ordinary) || 0;
-          const ot  = parseFloat(act.overtime)  || 0;
+          const ot = parseFloat(act.overtime) || 0;
 
           // 3. Has hours but no work codes
           if ((ord > 0 || ot > 0) && act.codes.length === 0) {
             const desc = act.description ? `"${act.description}"` : 'an activity';
-            issues.push({ severity: 'error', icon: '🔴', dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: ${desc} has hours but <strong>no work code</strong>.` });
+            issues.push({
+              severity: 'error', icon: '🔴', dayIdx: di,
+              msg: `<strong>${day.dayName}</strong>: ${desc} has hours but <strong>no work code</strong>.`
+            });
           }
 
           // 4. Has codes but no hours
           if (act.codes.length > 0 && ord === 0 && ot === 0) {
             const desc = act.description ? `"${act.description}"` : 'an activity';
-            issues.push({ severity: 'warn', icon: '⚠️', dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: ${desc} has a code but <strong>no hours</strong> entered.` });
+            issues.push({
+              severity: 'warn', icon: '⚠️', dayIdx: di,
+              msg: `<strong>${day.dayName}</strong>: ${desc} has a code but <strong>no hours</strong> entered.`
+            });
           }
 
           // 5. Has hours but no description
           if ((ord > 0 || ot > 0) && !act.description) {
-            issues.push({ severity: 'warn', icon: '📝', dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: An activity with ${ord}h has <strong>no description</strong>.` });
+            issues.push({
+              severity: 'warn', icon: '📝', dayIdx: di,
+              msg: `<strong>${day.dayName}</strong>: An activity with ${ord}h has <strong>no description</strong>.`
+            });
           }
         });
 
         // ── 6. Unusually high day total ───────────────────────
         if (!isWE) {
           const dayOrd = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
-          const dayOT  = acts.reduce((s, a) => s + (parseFloat(a.overtime)  || 0), 0);
+          const dayOT = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
           if (dayOrd > 12) {
-            issues.push({ severity: 'warn', icon: '🕐', dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: Ordinary hours (<strong>${Math.round(dayOrd)}h</strong>) look unusually high.` });
+            issues.push({
+              severity: 'warn', icon: '🕐', dayIdx: di,
+              msg: `<strong>${day.dayName}</strong>: Ordinary hours (<strong>${Math.round(dayOrd)}h</strong>) look unusually high.`
+            });
           }
           if (dayOT > 0 && dayOrd === 0) {
-            issues.push({ severity: 'warn', icon: '⚠️', dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: Has <strong>overtime</strong> but no ordinary hours.` });
+            issues.push({
+              severity: 'warn', icon: '⚠️', dayIdx: di,
+              msg: `<strong>${day.dayName}</strong>: Has <strong>overtime</strong> but no ordinary hours.`
+            });
           }
         }
       });
@@ -7087,7 +7456,7 @@
       if (issues.length === 0) return '';
 
       const errorCount = issues.filter(i => i.severity === 'error').length;
-      const titleText  = errorCount > 0
+      const titleText = errorCount > 0
         ? `${issues.length} issue${issues.length > 1 ? 's' : ''} found — ${errorCount} error${errorCount > 1 ? 's' : ''}`
         : `${issues.length} warning${issues.length > 1 ? 's' : ''} — review before submitting`;
 
@@ -7151,11 +7520,12 @@
         <div class="sum-new-col-th r">ORD</div>
         <div class="sum-new-col-th r">OT</div>
       </div>
-      ${(() => { const adjOrd = adjOrdHrs(summary, totalOrd); return summary.map((row, idx) => {
-        const m = row.isUncategorized;
-        const pct = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
-        const pctOT = totalOrd > 0 ? Math.round((row.overtime / totalOrd) * 100) : 0;
-        return `
+      ${(() => {
+          const adjOrd = adjOrdHrs(summary, totalOrd); return summary.map((row, idx) => {
+            const m = row.isUncategorized;
+            const pct = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
+            const pctOT = totalOrd > 0 ? Math.round((row.overtime / totalOrd) * 100) : 0;
+            return `
       <div class="sum-new-row${m ? ' sum-missing' : ''}">
         <div>
           <div class="sum-row-code">${row.code}</div>
@@ -7166,7 +7536,8 @@
         <div class="sum-td-num${m ? ' missing' : ''}">${adjOrd[idx]}</div>
         <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? fmtHrs(row.overtime) : '—'}</div>
       </div>`;
-      }).join(''); })()}
+          }).join('');
+        })()}
       <div class="sum-new-footer">
         <div class="sum-footer-label">Total</div>
         <div class="sum-footer-totals">
@@ -7220,20 +7591,22 @@
           </tr>
         </thead>
         <tbody>
-          ${(() => { const adjOrd = adjOrdHrs(summary, totalOrd); return summary.map((row, i) => {
-        const isUncat = row.isUncategorized;
-        const bgStyle = isUncat ? 'background:rgba(239,68,68,0.1)' : (i % 2 === 0 ? '' : 'background:var(--summary-even)');
-        const textColor = isUncat ? 'color:#ef4444' : 'color:var(--text-secondary)';
-        const accentColor = isUncat ? 'color:#ef4444;font-weight:bold' : 'color:var(--accent)';
+          ${(() => {
+            const adjOrd = adjOrdHrs(summary, totalOrd); return summary.map((row, i) => {
+              const isUncat = row.isUncategorized;
+              const bgStyle = isUncat ? 'background:rgba(239,68,68,0.1)' : (i % 2 === 0 ? '' : 'background:var(--summary-even)');
+              const textColor = isUncat ? 'color:#ef4444' : 'color:var(--text-secondary)';
+              const accentColor = isUncat ? 'color:#ef4444;font-weight:bold' : 'color:var(--accent)';
 
-        return `
+              return `
           <tr class="summary-row" style="${bgStyle}">
             <td class="px-3 py-2 font-mono text-xs whitespace-nowrap" style="${accentColor}">${row.code}</td>
             <td class="px-3 py-2 text-xs" style="${textColor}">${row.description}</td>
             <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-primary)'}">${adjOrd[i]}</td>
             <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-ot)'}">${row.overtime > 0 ? fmtHrs(row.overtime) : '—'}</td>
           </tr>`;
-      }).join(''); })()}
+            }).join('');
+          })()}
           <tr class="font-bold text-sm" style="background:var(--bg-day-header)">
             <td colspan="2" class="px-3 py-2" style="color:var(--text-day)">TOTAL</td>
             <td class="px-3 py-2 text-right" style="color:var(--text-day)">${Math.round(totalOrd)}</td>
@@ -7659,7 +8032,7 @@
       renderSuggestPanel(actId, di, null, true);
 
       const act = state.weekData?.days[di]?.activities.find(a => a.id === actId);
-      const desc  = (act?.description || '').trim();
+      const desc = (act?.description || '').trim();
       const notes = (act?.notes || '').trim();
 
       const suggestions = await buildSuggestions(desc, act?.codes || [], notes);
@@ -7694,7 +8067,7 @@
             </div>
             <span class="suggest-item-badge">${s.count}×</span>
             <button class="suggest-item-add" id="suggest-add-${actId}-${i}"
-              onclick="addSuggestedCode('${actId}',${di},'${s.code}','${s.description.replace(/'/g,"\\'")}',${i})">Add</button>
+              onclick="addSuggestedCode('${actId}',${di},'${s.code}','${s.description.replace(/'/g, "\\'")}',${i})">Add</button>
           </div>`).join('');
 
         const addAllLabel = suggestions.length > 1 ? `Add All ${suggestions.length}` : 'Add';
@@ -7720,7 +8093,7 @@
       if (!combinedText) return [];
 
       // Extract meaningful keywords (3+ chars, skip common words)
-      const stopWords = new Set(['and','the','for','with','from','that','this','has','have','are','was','been','also','just','some']);
+      const stopWords = new Set(['and', 'the', 'for', 'with', 'from', 'that', 'this', 'has', 'have', 'are', 'was', 'been', 'also', 'just', 'some']);
       const keywords = combinedText.split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
       if (keywords.length === 0) return [];
 
@@ -11118,7 +11491,7 @@ Rules:
         else if (state.view === 'routines') loadRoutines();
 
         // Seed local history cache for Suggest feature (runs silently in background)
-        syncHistoryCache(user.uid).catch(() => {});
+        syncHistoryCache(user.uid).catch(() => { });
       });
     }
 
@@ -11240,7 +11613,7 @@ Rules:
 
     // Search IndexedDB + current week in memory for activities with notes matching query
     async function searchFaultNotes(query) {
-      const stopWords = new Set(['the','and','for','that','this','with','from','have','been','was','are','will','not','but','you','your','they','them','their','what','when','how','all','can','its']);
+      const stopWords = new Set(['the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'been', 'was', 'are', 'will', 'not', 'but', 'you', 'your', 'they', 'them', 'their', 'what', 'when', 'how', 'all', 'can', 'its']);
       const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
       if (!keywords.length) return [];
       const allWeeks = await dbGetAll('weeks');
@@ -11271,7 +11644,7 @@ Rules:
 
     // Search state.notes (open + done) for keyword matches
     function searchMatchingNotes(query) {
-      const stopWords = new Set(['the','and','for','that','this','with','from','have','been','was','are','will','not','but','you','your','they','them','their','what','when','how','all','can','its']);
+      const stopWords = new Set(['the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'been', 'was', 'are', 'will', 'not', 'but', 'you', 'your', 'they', 'them', 'their', 'what', 'when', 'how', 'all', 'can', 'its']);
       const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length >= 3 && !stopWords.has(w));
       if (!keywords.length || !state.notes?.length) return [];
       return state.notes
@@ -11376,8 +11749,8 @@ Work week = Friday to Thursday.
       sortedMonths.forEach(month => {
         const m = months[month];
         const label = new Date(month + '-15').toLocaleDateString('en-IE', { month: 'long', year: 'numeric' });
-        const topLocs = Object.entries(m.locations).sort((a,b) => b[1]-a[1]).slice(0,8).map(([k,v]) => `${k}(${v}x)`).join(', ');
-        const topDescs = Object.entries(m.descriptions).sort((a,b) => b[1]-a[1]).slice(0,6).map(([k,v]) => `${k}(${v}x)`).join(', ');
+        const topLocs = Object.entries(m.locations).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${k}(${v}x)`).join(', ');
+        const topDescs = Object.entries(m.descriptions).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => `${k}(${v}x)`).join(', ');
         ctx += `  ${label}: ${m.ord.toFixed(1)}h ord, ${m.ot.toFixed(1)}h OT, ${m.actCount} entries`;
         if (topLocs) ctx += ` | Sites: ${topLocs}`;
         if (topDescs) ctx += ` | Tasks: ${topDescs}`;
@@ -11386,8 +11759,8 @@ Work week = Friday to Thursday.
 
       // SECTION 3: Notes (open and done)
       if (state.notes?.length) {
-        const open = state.notes.filter(n => n.status !== 'done').sort((a,b) => (b.date||'').localeCompare(a.date||''));
-        const done = state.notes.filter(n => n.status === 'done').sort((a,b) => (b.date||'').localeCompare(a.date||''));
+        const open = state.notes.filter(n => n.status !== 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        const done = state.notes.filter(n => n.status === 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
         const noteLine = n => {
           const parts = [n.description || '(no description)'];
           if (n.location) parts.push('@ ' + n.location);
@@ -11585,7 +11958,7 @@ QUESTION: ${query}`;
       <div class="ai-section">
         <div class="ai-section-label">Recent searches</div>
         <div style="display:flex;flex-wrap:wrap;padding-top:2px;">
-          ${state.aiRecentQueries.map(q => `<button type="button" class="ai-recent-chip" data-q="${q.replace(/"/g,'&quot;')}" onclick="aiRecentTap(this.getAttribute('data-q'))">🔍 ${q}</button>`).join('')}
+          ${state.aiRecentQueries.map(q => `<button type="button" class="ai-recent-chip" data-q="${q.replace(/"/g, '&quot;')}" onclick="aiRecentTap(this.getAttribute('data-q'))">🔍 ${q}</button>`).join('')}
         </div>
       </div>` : '';
 
@@ -11622,15 +11995,15 @@ QUESTION: ${query}`;
         <div class="ai-section" style="margin-top:6px;">
           <div class="ai-section-label">📝 Matching notes (${state.aiResult.noteMatches.length})</div>
           ${state.aiResult.noteMatches.map(n => {
-            const statusBadge = `<span class="ai-note-status-badge ${n.status === 'done' ? 'ai-note-status-done' : 'ai-note-status-open'}">${n.status === 'done' ? '✓ done' : 'open'}</span>`;
-            const dateStr = n.date ? `${n.date} · ` : '';
-            return `<div class="ai-note-card" data-note-id="${n.id}" onclick="goToNote(this.getAttribute('data-note-id'))">
+          const statusBadge = `<span class="ai-note-status-badge ${n.status === 'done' ? 'ai-note-status-done' : 'ai-note-status-open'}">${n.status === 'done' ? '✓ done' : 'open'}</span>`;
+          const dateStr = n.date ? `${n.date} · ` : '';
+          return `<div class="ai-note-card" data-note-id="${n.id}" onclick="goToNote(this.getAttribute('data-note-id'))">
               <div class="ai-note-card-date">${dateStr}${n.priority ? n.priority + ' priority' : ''}${statusBadge}</div>
               <div class="ai-note-card-desc">${n.description || '(no description)'}</div>
               ${n.location ? `<div class="ai-note-card-loc">📍 ${n.location}</div>` : ''}
               <div class="ai-note-card-footer">↗ Tap to open this note</div>
             </div>`;
-          }).join('')}
+        }).join('')}
         </div>` : '';
         const hasExtras = state.aiResult.sources.length || (state.aiResult.noteMatches && state.aiResult.noteMatches.length);
         const footerParts = [];
@@ -11774,10 +12147,13 @@ QUESTION: ${query}`;
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
         <button onclick="closeEmailPreview()" class="text-white p-1 text-xl leading-none">✕</button>
         <h2 class="text-base font-semibold flex-1">Weekly Summary</h2>
-        <button onclick="sendWeeklyEmailFromPreview()" class="bg-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">Send Email</button>
+        <button onclick="sendWeeklyEmailFromPreview()"
+          class="bg-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">Send Email</button>
       </div>
-      <div style="background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:8px 16px;font-size:12px;color:#2563eb;text-align:center;">
-        💡 Tap any <span style="text-decoration:underline;text-decoration-style:dotted;">underlined value</span> to copy it to clipboard
+      <div
+        style="background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:8px 16px;font-size:12px;color:#2563eb;text-align:center;">
+        💡 Tap any <span style="text-decoration:underline;text-decoration-style:dotted;">underlined value</span> to copy
+        it to clipboard
       </div>
       <div id="email-preview-body" class="flex-1 overflow-y-auto" style="background:#f1f5f9;padding:16px 12px;"></div>
     </div>
