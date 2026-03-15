@@ -5309,7 +5309,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.29';
+    const VERSION = '4.1.30';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6067,6 +6067,14 @@
       return Object.values(map).sort((a, b) => (a.sorting - b.sorting) || (b.ordinary - a.ordinary));
     }
 
+    // Format hours — whole numbers show no decimal, fractions show up to 2dp
+    // e.g. 4 → "4", 1.333... → "1.33", 1.5 → "1.5"
+    function fmtHrs(n) {
+      if (!n || n === 0) return 0;
+      const r = Math.round(n * 100) / 100;
+      return r % 1 === 0 ? r : parseFloat(r.toFixed(2));
+    }
+
     // ============================================================
     // LOAD / SAVE
     // ============================================================
@@ -6269,12 +6277,12 @@
       // ── Summary by Code table ──
       const sel = ``; // styling removed — copy now done via in-app preview modal
       const summaryRows = summary.map(r => {
-        const otVal = Math.round(r.overtime);
+        const otVal = fmtHrs(r.overtime);
         return `
         <tr>
           <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:12px;font-weight:500;color:${C.code};vertical-align:middle;white-space:nowrap;"><span style="${sel}" title="Click to select">${esc(r.code)}</span></td>
           <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-size:13px;color:${C.txtSec};vertical-align:middle;"><span style="${sel}" title="Click to select">${esc(r.description)}</span></td>
-          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;vertical-align:middle;white-space:nowrap;">${Math.round(r.ordinary)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;vertical-align:middle;white-space:nowrap;">${fmtHrs(r.ordinary)}</td>
           <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${otVal > 0 ? C.ot : C.dash};text-align:right;vertical-align:middle;white-space:nowrap;">${otVal > 0 ? otVal : '—'}</td>
         </tr>`;
       }).join('');
@@ -6446,11 +6454,11 @@
 
       // Summary table rows
       const summaryRows = summary.map(r => {
-        const otVal = Math.round(r.overtime);
+        const otVal = fmtHrs(r.overtime);
         return `<tr>
           <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:12px;font-weight:500;color:${C.code};white-space:nowrap;vertical-align:middle;">${cpSpan(r.code, `color:${C.code};`)}</td>
           <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-size:13px;color:${C.txtSec};vertical-align:middle;">${cpSpan(r.description)}</td>
-          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:middle;">${Math.round(r.ordinary)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:middle;">${fmtHrs(r.ordinary)}</td>
           <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${otVal > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:middle;">${otVal > 0 ? otVal : '—'}</td>
         </tr>`;
       }).join('');
@@ -7014,8 +7022,8 @@
           <div class="sum-row-bar-wrap"><div class="sum-row-bar-fill" style="width:${pct}%"></div></div>
           ${row.overtime > 0 ? `<div class="sum-row-bar-ot-wrap"><div class="sum-row-bar-ot-fill" style="width:${pctOT}%"></div></div>` : ''}
         </div>
-        <div class="sum-td-num${m ? ' missing' : ''}">${Math.round(row.ordinary)}</div>
-        <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? Math.round(row.overtime) : '—'}</div>
+        <div class="sum-td-num${m ? ' missing' : ''}">${fmtHrs(row.ordinary)}</div>
+        <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? fmtHrs(row.overtime) : '—'}</div>
       </div>`;
       }).join('')}
       <div class="sum-new-footer">
@@ -7081,8 +7089,8 @@
           <tr class="summary-row" style="${bgStyle}">
             <td class="px-3 py-2 font-mono text-xs whitespace-nowrap" style="${accentColor}">${row.code}</td>
             <td class="px-3 py-2 text-xs" style="${textColor}">${row.description}</td>
-            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-primary)'}">${Math.round(row.ordinary)}</td>
-            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-ot)'}">${row.overtime > 0 ? Math.round(row.overtime) : '—'}</td>
+            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-primary)'}">${fmtHrs(row.ordinary)}</td>
+            <td class="px-3 py-2 text-right font-semibold" style="${isUncat ? 'color:#ef4444' : 'color:var(--text-ot)'}">${row.overtime > 0 ? fmtHrs(row.overtime) : '—'}</td>
           </tr>`;
       }).join('')}
           <tr class="font-bold text-sm" style="background:var(--bg-day-header)">
