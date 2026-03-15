@@ -1,4 +1,4 @@
-const CACHE = 'timesheet-v213';
+const CACHE = 'timesheet-v214';
 
 // Detect base path dynamically — works on GitHub Pages AND localhost
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
