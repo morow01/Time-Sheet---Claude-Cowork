@@ -5084,7 +5084,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.19';
+    const VERSION = '4.1.20';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6153,6 +6153,158 @@
       </body></html>`;
     }
 
+    // ── Email preview modal ──────────────────────────────────────
+    function showEmailPreview() {
+      if (!state.weekData) { showToast('No week data.'); return; }
+      const body = document.getElementById('email-preview-body');
+      if (body) body.innerHTML = buildPreviewHtml(state.weekData);
+      document.getElementById('email-preview-modal').classList.remove('hidden');
+    }
+
+    function closeEmailPreview() {
+      document.getElementById('email-preview-modal').classList.add('hidden');
+    }
+
+    function copyPreviewVal(el) {
+      const val = el.getAttribute('data-copy');
+      if (!val) return;
+      const finish = () => {
+        showToast('Copied: ' + val, 1800);
+        el.style.background = '#d1fae5';
+        el.style.borderRadius = '3px';
+        setTimeout(() => { el.style.background = ''; el.style.borderRadius = ''; }, 900);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(val).then(finish).catch(() => {
+          legacyCopy(val); finish();
+        });
+      } else { legacyCopy(val); finish(); }
+    }
+
+    function legacyCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); } catch (e) { /* silent */ }
+      document.body.removeChild(ta);
+    }
+
+    function cpv(val) {
+      // inline-friendly wrapper called by onclick in preview HTML
+      const finish = () => {
+        showToast('Copied: ' + val, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(val).then(finish).catch(() => { legacyCopy(val); finish(); });
+      } else { legacyCopy(val); finish(); }
+    }
+
+    function buildPreviewHtml(weekData) {
+      if (!weekData) return '<p style="padding:16px;color:#64748b">No data.</p>';
+      const range = formatWeekRange(weekData.weekStart);
+      const summary = calcSummary(weekData);
+      const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
+      const totalOT  = summary.reduce((s, r) => s + r.overtime, 0);
+
+      const C = {
+        border:'#EAEFF5', rowBorder:'#F0F4F8', headBg:'#F4F7FA',
+        label:'#8BA5BE', code:'#8BA5BE', txt:'#1e293b', txtSec:'#475569',
+        ord:'#1e293b', ot:'#C07800', dash:'#C8D8E8', totalBg:'#F4F7FA',
+        dayBg:'#4A6580', dayTxt:'#ffffff', dayDate:'#D4E0EC', cardBg:'#ffffff',
+      };
+
+      const cpStyle = `cursor:pointer;border-bottom:1.5px dotted #93c5fd;color:inherit;display:inline;padding:1px 2px;border-radius:3px;transition:background 0.15s;`;
+
+      function cpSpan(val, extraStyle) {
+        const v = val.replace(/'/g, "\\'");
+        return `<span style="${cpStyle}${extraStyle||''}" onclick="cpv('${v}')" title="Tap to copy">${esc(val)}</span>`;
+      }
+
+      // Summary table rows
+      const summaryRows = summary.map(r => {
+        const otVal = Math.round(r.overtime);
+        return `<tr>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:12px;font-weight:500;color:${C.code};white-space:nowrap;vertical-align:middle;">${cpSpan(r.code, `color:${C.code};`)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-size:13px;color:${C.txtSec};vertical-align:middle;">${cpSpan(r.description)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:middle;">${Math.round(r.ordinary)}</td>
+          <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${otVal > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:middle;">${otVal > 0 ? otVal : '—'}</td>
+        </tr>`;
+      }).join('');
+
+      // Daily sections
+      let daysHtml = '';
+      weekData.days.forEach(day => {
+        const acts = day.activities.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0);
+        if (!acts.length) return;
+        let actsHtml = '';
+        acts.forEach(act => {
+          const ord = Math.round(parseFloat(act.ordinary) || 0);
+          const ot  = Math.round(parseFloat(act.overtime)  || 0);
+          const codesHtml = act.codes.map(c =>
+            `<span style="display:inline-block;margin-right:6px;margin-top:4px;">${cpSpan(c.c, `font-family:monospace;font-size:12px;font-weight:500;color:${C.code};`)}</span>`
+          ).join('');
+          const descHtml = cpSpan(act.description || '(no description)', `font-size:14px;font-weight:600;color:${C.txt};`);
+          const locHtml  = act.location ? ` <span style="color:#475569;font-weight:400;font-size:13px;">— ${cpSpan(act.location)}</span>` : '';
+          actsHtml += `<tr>
+            <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
+              <div>${descHtml}${locHtml}</div>
+              ${act.codes.length ? `<div>${codesHtml}</div>` : ''}
+              ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#475569;font-style:italic;">${esc(act.notes)}</div>` : ''}
+            </td>
+            <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:top;">${ord}</td>
+            <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${ot > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:top;">${ot > 0 ? ot : '—'}</td>
+          </tr>`;
+        });
+        daysHtml += `<div style="margin-bottom:12px;border-radius:10px;overflow:hidden;border:1px solid ${C.border};background:${C.cardBg};">
+          <div style="padding:10px 14px;background:${C.dayBg};">
+            <span style="font-size:13px;font-weight:800;color:${C.dayTxt};">${esc(day.dayName)}</span>
+            <span style="font-size:12px;color:${C.dayDate};margin-left:8px;">${esc(formatDate(day.date))}</span>
+          </div>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <thead><tr style="background:${C.headBg};">
+              <th style="padding:7px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Tasks</th>
+              <th style="padding:7px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Ord</th>
+              <th style="padding:7px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">OT</th>
+            </tr></thead>
+            <tbody>${actsHtml}</tbody>
+          </table>
+        </div>`;
+      });
+
+      return `<div style="max-width:600px;margin:0 auto;">
+        <div style="background:${C.dayBg};border-radius:12px 12px 0 0;padding:20px 24px 16px;margin-bottom:0;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.dayDate};margin-bottom:6px;">Weekly Timesheet</div>
+          <div style="font-size:22px;font-weight:800;color:${C.dayTxt};">${esc(range)}</div>
+        </div>
+        <div style="padding:16px 0;">
+          <div style="padding:0 4px 8px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};">Summary by Code</div>
+          <div style="border-radius:12px;overflow:hidden;border:1px solid ${C.border};background:${C.cardBg};margin-bottom:20px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <thead><tr style="background:${C.headBg};">
+                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Code</th>
+                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Description</th>
+                <th style="padding:8px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Ord</th>
+                <th style="padding:8px 14px;text-align:right;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">OT</th>
+              </tr></thead>
+              <tbody>${summaryRows}</tbody>
+              <tfoot><tr style="background:${C.totalBg};">
+                <td colspan="2" style="padding:10px 14px;font-size:10px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Total</td>
+                <td style="padding:10px 14px;font-family:monospace;font-size:15px;font-weight:700;color:${C.ord};text-align:right;">${Math.round(totalOrd)}</td>
+                <td style="padding:10px 14px;font-family:monospace;font-size:15px;font-weight:700;color:${totalOT > 0 ? C.ot : C.dash};text-align:right;">${totalOT > 0 ? Math.round(totalOT) : '—'}</td>
+              </tr></tfoot>
+            </table>
+          </div>
+          <div style="padding:0 4px 8px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};">Daily Breakdown</div>
+          ${daysHtml}
+        </div>
+      </div>`;
+    }
+
+    async function sendWeeklyEmailFromPreview() {
+      closeEmailPreview();
+      await sendWeeklyEmail();
+    }
+
     async function sendWeeklyEmail() {
       if (!state.weekData) { showToast('No week data to send.'); return; }
       if (!state.currentUser) { showToast('Please sign in to send email.'); return; }
@@ -6343,9 +6495,9 @@
                     <span class="menu-row-body"><span class="menu-row-label">Jump to Week</span><span class="menu-row-sub">Navigate to any date</span></span>
                     ${chev}
                   </button>
-                  <button class="menu-row" onclick="sendWeeklyEmail();closeThemeMenu()">
+                  <button class="menu-row" onclick="showEmailPreview();closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
-                    <span class="menu-row-body"><span class="menu-row-label">Email / Export Week</span><span class="menu-row-sub">Send formatted summary</span></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Email / Export Week</span><span class="menu-row-sub">Preview &amp; copy, or send email</span></span>
                     ${chev}
                   </button>
                   ${state.view === 'week' && window.innerWidth >= 768 ? `
@@ -10353,6 +10505,21 @@ Rules:
         <button class="vc-btn primary" onclick="confirmVoiceEntry()">Add to Timesheet</button>
         <button class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== EMAIL PREVIEW MODAL ===== -->
+  <div id="email-preview-modal" class="hidden fixed inset-0 z-50 flex flex-col" style="background:var(--bg-modal)">
+    <div class="flex flex-col flex-1 overflow-hidden">
+      <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
+        <button onclick="closeEmailPreview()" class="text-white p-1 text-xl leading-none">✕</button>
+        <h2 class="text-base font-semibold flex-1">Weekly Summary</h2>
+        <button onclick="sendWeeklyEmailFromPreview()" class="bg-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">Send Email</button>
+      </div>
+      <div style="background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:8px 16px;font-size:12px;color:#2563eb;text-align:center;">
+        💡 Tap any <span style="text-decoration:underline;text-decoration-style:dotted;">underlined value</span> to copy it to clipboard
+      </div>
+      <div id="email-preview-body" class="flex-1 overflow-y-auto" style="background:#f1f5f9;padding:16px 12px;"></div>
     </div>
   </div>
 
