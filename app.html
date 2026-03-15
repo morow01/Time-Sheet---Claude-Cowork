@@ -5417,7 +5417,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.2.18';
+    const VERSION = '4.2.19';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6953,7 +6953,7 @@
         <div class="hdr-metric-lbl">Tasks</div>
       </div>
     </div>
-    <div class="flex" style="background:var(--bg-header-tab)">
+    <div class="flex" style="background:var(--bg-header-tab);padding-left:10px;">
       <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'week' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         Timesheet
       </button>
@@ -6964,7 +6964,7 @@
       <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         Finder
       </button>
-      <button onclick="openFaultAssistant()" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:var(--text-header-sub);">
+      <button onclick="openFaultAssistant()" class="py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:var(--text-header-sub);padding-left:14px;padding-right:14px;">
         AI
       </button>
     </div>
