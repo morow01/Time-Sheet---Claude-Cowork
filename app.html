@@ -5309,7 +5309,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.25';
+    const VERSION = '4.1.26';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10966,7 +10966,73 @@ Rules:
 
         if (state.view === 'notes') loadNotes();
         else if (state.view === 'routines') loadRoutines();
+
+        // Seed local history cache for Suggest feature (runs silently in background)
+        syncHistoryCache(user.uid).catch(() => {});
       });
+    }
+
+    // ── History cache sync (seeds local IndexedDB from Firestore for Suggest) ──
+    // Runs once in the background after sign-in.
+    // Fetches up to 52 weeks that are missing from the local cache — one at a time
+    // with a small delay so it never competes with normal app network traffic.
+    async function syncHistoryCache(uid) {
+      if (!uid) return;
+
+      // Throttle: only run once per day per device
+      const THROTTLE_KEY = 'historySyncDate_' + uid;
+      const lastSync = localStorage.getItem(THROTTLE_KEY);
+      const today = dateToStr(new Date());
+      if (lastSync === today) return;
+
+      // Build list of last 52 Friday week-start dates (excluding current week)
+      const WEEKS_TO_SYNC = 52;
+      const weekStarts = [];
+      const base = getCurrentFriday();
+      for (let i = 1; i <= WEEKS_TO_SYNC; i++) {
+        const d = new Date(base);
+        d.setDate(d.getDate() - (i * 7));
+        weekStarts.push(dateToStr(d));
+      }
+
+      // Find which ones are missing from local IndexedDB
+      const missing = [];
+      for (const ws of weekStarts) {
+        const local = await dbGet('weeks', ws);
+        // Only fetch if not cached at all, or cached for a different user
+        if (!local || (local.userId && local.userId !== uid)) {
+          missing.push(ws);
+        }
+      }
+
+      if (missing.length === 0) {
+        localStorage.setItem(THROTTLE_KEY, today);
+        return;
+      }
+
+      // Fetch missing weeks from Firestore one at a time with a small gap
+      // to avoid hammering the network on a fresh install
+      let fetched = 0;
+      for (const ws of missing) {
+        try {
+          const ref = db_fs.doc(`users/${uid}/weeks/${ws}`);
+          const snap = await ref.get();
+          if (snap.exists) {
+            const data = snap.data();
+            await dbPut('weeks', {
+              weekStart: ws,
+              userId: uid,
+              data: data,
+              updatedAt: data._updatedAt || Date.now()
+            });
+            fetched++;
+          }
+          // Small pause between fetches — keeps it unobtrusive
+          await new Promise(r => setTimeout(r, 120));
+        } catch (e) { /* skip this week silently */ }
+      }
+
+      localStorage.setItem(THROTTLE_KEY, today);
     }
 
     async function forcePullWeek() {
