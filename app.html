@@ -5417,7 +5417,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.2.6';
+    const VERSION = '4.2.7';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -11527,6 +11527,7 @@ QUESTION: ${query}`;
       const weekStart = getNearestFriday(dateStr);
       closeFaultAssistant();
       closeThemeMenu();
+      await setView('week');
       await loadWeek(weekStart);
       if (!state.weekData) return;
       // Expand the specific day
