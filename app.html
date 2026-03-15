@@ -5178,7 +5178,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.22';
+    const VERSION = '4.1.23';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6701,10 +6701,8 @@
       const issues = [];
 
       weekData.days.forEach((day, di) => {
-        const isWeekend = di === 0 || di === 6; // Sun=0, Sat=6
-        // weekData days are Mon–Sun (di 0=Mon … 6=Sun)
-        // weekend = Sat(di=5) or Sun(di=6)
-        const isWE = di === 5 || di === 6;
+        // Week starts Friday: Fri(0) Sat(1) Sun(2) Mon(3) Tue(4) Wed(5) Thu(6)
+        const isWE = di === 1 || di === 2; // Saturday=1, Sunday=2
         const isPast = day.date <= today;
 
         const acts = day.activities.filter(a =>
