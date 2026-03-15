@@ -5400,7 +5400,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.2.3';
+    const VERSION = '4.2.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -11249,19 +11249,46 @@ Rules:
       return matches.sort((a, b) => b.hitCount - a.hitCount || b.date.localeCompare(a.date));
     }
 
-    // Build a full month-by-month summary of all timesheet data for Gemini context
+    // Build a full timesheet context for Gemini
     async function buildTimesheetContext() {
       const allWeeks = await dbGetAll('weeks');
-      const months = {};
+      const today = new Date();
+      const todayStr = dateToStr(today);
 
-      const processWeekData = (weekData) => {
-        if (!weekData?.days) return;
+      // --- Date reference helpers ---
+      const thisWeekStart = getNearestFriday(todayStr);
+      const addDays = (dateStr, n) => { const d = new Date(dateStr + 'T00:00:00'); d.setDate(d.getDate() + n); return dateToStr(d); };
+      const thisWeekEnd = addDays(thisWeekStart, 6);
+      const lastWeekStart = addDays(thisWeekStart, -7);
+      const lastWeekEnd = addDays(thisWeekStart, -1);
+      const thisMonthStr = todayStr.slice(0, 7);
+      const lastMonthStr = addDays(dateToStr(new Date(today.getFullYear(), today.getMonth() - 1, 1)), 0).slice(0, 7);
+      const thisYearStr = todayStr.slice(0, 4);
+      const dayNames = ['Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
+
+      // --- Collect all week data ---
+      const weekMap = {}; // weekStart -> weekData
+      allWeeks.forEach(r => { if (r.data?.days) weekMap[r.weekStart] = r.data; });
+      if (state.weekData?.days) {
+        const inDB = allWeeks.find(w => w.weekStart === state.weekData.weekStart);
+        if (!inDB) weekMap[state.weekData.weekStart] = state.weekData;
+      }
+
+      // --- Build month aggregates (for older data summary) ---
+      const months = {};
+      const actLine = (act) => {
+        const parts = [act.description || 'unnamed'];
+        if (act.location?.trim()) parts.push('@ ' + act.location.trim());
+        if (parseFloat(act.ordinary)) parts.push(parseFloat(act.ordinary) + 'h ord');
+        if (parseFloat(act.overtime)) parts.push(parseFloat(act.overtime) + 'h OT');
+        return parts.join(' ');
+      };
+      Object.values(weekMap).forEach(weekData => {
         weekData.days.forEach(day => {
           if (!day.date) return;
           const month = day.date.slice(0, 7);
-          if (!months[month]) months[month] = { ord: 0, ot: 0, actCount: 0, locations: {}, descriptions: {}, dayDetails: {} };
+          if (!months[month]) months[month] = { ord: 0, ot: 0, actCount: 0, locations: {}, descriptions: {} };
           const m = months[month];
-          const dayActs = [];
           (day.activities || []).forEach(act => {
             const hasData = act.description || act.codes?.length || parseFloat(act.ordinary) > 0 || parseFloat(act.overtime) > 0;
             if (!hasData) return;
@@ -11270,72 +11297,58 @@ Rules:
             m.actCount++;
             if (act.location?.trim()) m.locations[act.location.trim()] = (m.locations[act.location.trim()] || 0) + 1;
             if (act.description?.trim()) m.descriptions[act.description.trim()] = (m.descriptions[act.description.trim()] || 0) + 1;
-            const parts = [act.description || 'unnamed'];
-            if (act.location) parts.push('@ ' + act.location);
-            if (parseFloat(act.ordinary)) parts.push(act.ordinary + 'h ord');
-            if (parseFloat(act.overtime)) parts.push(act.overtime + 'h OT');
-            dayActs.push(parts.join(' '));
           });
-          if (dayActs.length) {
-            const lines = dayActs.map((a, i) => `    ${i + 1}. ${a}`).join('\n');
-            m.dayDetails[day.date] = `(${dayActs.length} task${dayActs.length > 1 ? 's' : ''}):\n${lines}`;
-          }
         });
-      };
-
-      allWeeks.forEach(r => processWeekData(r.data));
-      if (state.weekData) {
-        const inDB = allWeeks.find(w => w.weekStart === state.weekData.weekStart);
-        if (!inDB) processWeekData(state.weekData);
-      }
+      });
 
       const sortedMonths = Object.keys(months).sort().reverse();
       if (!sortedMonths.length) return 'No timesheet data available yet.';
 
-      const today = new Date();
-      const todayStr = dateToStr(today);
-      const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().slice(0, 7);
-
-      // Pre-compute common date ranges so Gemini never has to guess
-      const thisWeekStart = getNearestFriday(todayStr);
-      const thisWeekEnd = dateToStr(new Date(new Date(thisWeekStart + 'T00:00:00').setDate(new Date(thisWeekStart + 'T00:00:00').getDate() + 6)));
-      const lastWeekStartD = new Date(thisWeekStart + 'T00:00:00'); lastWeekStartD.setDate(lastWeekStartD.getDate() - 7);
-      const lastWeekEndD = new Date(thisWeekStart + 'T00:00:00'); lastWeekEndD.setDate(lastWeekEndD.getDate() - 1);
-      const lastWeekStart = dateToStr(lastWeekStartD);
-      const lastWeekEnd = dateToStr(lastWeekEndD);
-      const thisMonthStr = todayStr.slice(0, 7);
-      const lastMonthD = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const lastMonthStr = dateToStr(lastMonthD).slice(0, 7);
-      const thisYearStr = todayStr.slice(0, 4);
-
-      let ctx = `DATE REFERENCES (use these exact ranges when interpreting time words in the question):
+      // --- Build context ---
+      let ctx = `DATE REFERENCES (use these exact ranges for time words in the question):
 Today: ${todayStr}
 This week (Fri–Thu): ${thisWeekStart} to ${thisWeekEnd}
 Last week (Fri–Thu): ${lastWeekStart} to ${lastWeekEnd}
-This month: ${thisMonthStr}
-Last month: ${lastMonthStr}
-This year: ${thisYearStr}
-Note: the work week always runs Friday to Thursday.
+This month: ${thisMonthStr} | Last month: ${lastMonthStr} | This year: ${thisYearStr}
+Work week = Friday to Thursday.
 
-TIMESHEET HISTORY (${sortedMonths.length} months of data):\n\n`;
+`;
+
+      // SECTION 1: Recent 8 weeks — explicit per-day, per-activity breakdown
+      const sortedWeeks = Object.keys(weekMap).sort().reverse().slice(0, 8);
+      ctx += `RECENT WEEKS (full detail — list EVERY activity, do not skip any):\n`;
+      sortedWeeks.forEach(ws => {
+        const weekData = weekMap[ws];
+        const we = addDays(ws, 6);
+        const label = ws === thisWeekStart ? ' ← THIS WEEK' : ws === lastWeekStart ? ' ← LAST WEEK' : '';
+        ctx += `\nWeek ${ws} to ${we}${label}:\n`;
+        weekData.days.forEach((day, di) => {
+          const acts = (day.activities || []).filter(a => a.description || a.codes?.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0);
+          const totOrd = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
+          const totOT = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
+          const dayLabel = `  ${dayNames[di]} ${day.date}`;
+          if (!acts.length) {
+            ctx += `${dayLabel}: (no entries)\n`;
+          } else {
+            ctx += `${dayLabel}: ${acts.length} task${acts.length > 1 ? 's' : ''}, ${totOrd}h ord${totOT ? ' + ' + totOT + 'h OT' : ''}\n`;
+            acts.forEach((act, i) => { ctx += `    ${i + 1}. ${actLine(act)}\n`; });
+          }
+        });
+      });
+
+      // SECTION 2: Monthly summaries for all history
+      ctx += `\nMONTHLY SUMMARIES (for questions about longer periods):\n`;
       sortedMonths.forEach(month => {
         const m = months[month];
-        const d = new Date(month + '-15');
-        const label = d.toLocaleDateString('en-IE', { month: 'long', year: 'numeric' });
-        const topLocs = Object.entries(m.locations).sort((a,b) => b[1]-a[1]).slice(0,6).map(([k,v]) => `${k}(${v}x)`).join(', ');
+        const label = new Date(month + '-15').toLocaleDateString('en-IE', { month: 'long', year: 'numeric' });
+        const topLocs = Object.entries(m.locations).sort((a,b) => b[1]-a[1]).slice(0,8).map(([k,v]) => `${k}(${v}x)`).join(', ');
         const topDescs = Object.entries(m.descriptions).sort((a,b) => b[1]-a[1]).slice(0,6).map(([k,v]) => `${k}(${v}x)`).join(', ');
-        ctx += `### ${label}\n`;
-        ctx += `  Ordinary: ${m.ord.toFixed(1)}h | Overtime: ${m.ot.toFixed(1)}h | Entries: ${m.actCount}\n`;
-        if (topLocs) ctx += `  Sites: ${topLocs}\n`;
-        if (topDescs) ctx += `  Tasks: ${topDescs}\n`;
-        // Day-by-day detail for the last 3 months — one activity per line
-        if (month >= threeMonthsAgo) {
-          Object.entries(m.dayDetails).sort().forEach(([date, detail]) => {
-            ctx += `  ${date}:\n${detail}\n`;
-          });
-        }
+        ctx += `  ${label}: ${m.ord.toFixed(1)}h ord, ${m.ot.toFixed(1)}h OT, ${m.actCount} entries`;
+        if (topLocs) ctx += ` | Sites: ${topLocs}`;
+        if (topDescs) ctx += ` | Tasks: ${topDescs}`;
         ctx += '\n';
       });
+
       return ctx;
     }
 
