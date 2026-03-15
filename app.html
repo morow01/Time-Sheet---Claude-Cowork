@@ -5400,7 +5400,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.2.1';
+    const VERSION = '4.2.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -11274,9 +11274,9 @@ Rules:
             if (act.location) parts.push('@ ' + act.location);
             if (parseFloat(act.ordinary)) parts.push(act.ordinary + 'h ord');
             if (parseFloat(act.overtime)) parts.push(act.overtime + 'h OT');
-            dayActs.push(parts.join(' '));
+            dayActs.push('    - ' + parts.join(' '));
           });
-          if (dayActs.length) m.dayDetails[day.date] = dayActs.join(' | ');
+          if (dayActs.length) m.dayDetails[day.date] = dayActs.join('\n');
         });
       };
 
@@ -11325,10 +11325,10 @@ TIMESHEET HISTORY (${sortedMonths.length} months of data):\n\n`;
         ctx += `  Ordinary: ${m.ord.toFixed(1)}h | Overtime: ${m.ot.toFixed(1)}h | Entries: ${m.actCount}\n`;
         if (topLocs) ctx += `  Sites: ${topLocs}\n`;
         if (topDescs) ctx += `  Tasks: ${topDescs}\n`;
-        // Day-by-day detail for the last 3 months
+        // Day-by-day detail for the last 3 months — one activity per line
         if (month >= threeMonthsAgo) {
           Object.entries(m.dayDetails).sort().forEach(([date, detail]) => {
-            ctx += `  ${date}: ${detail}\n`;
+            ctx += `  ${date}:\n${detail}\n`;
           });
         }
         ctx += '\n';
