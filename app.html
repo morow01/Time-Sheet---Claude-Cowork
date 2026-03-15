@@ -5400,7 +5400,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.2.0';
+    const VERSION = '4.2.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -11290,9 +11290,31 @@ Rules:
       if (!sortedMonths.length) return 'No timesheet data available yet.';
 
       const today = new Date();
+      const todayStr = dateToStr(today);
       const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().slice(0, 7);
 
-      let ctx = `TIMESHEET HISTORY (${sortedMonths.length} months, today is ${today.toISOString().slice(0, 10)}):\n\n`;
+      // Pre-compute common date ranges so Gemini never has to guess
+      const thisWeekStart = getNearestFriday(todayStr);
+      const thisWeekEnd = dateToStr(new Date(new Date(thisWeekStart + 'T00:00:00').setDate(new Date(thisWeekStart + 'T00:00:00').getDate() + 6)));
+      const lastWeekStartD = new Date(thisWeekStart + 'T00:00:00'); lastWeekStartD.setDate(lastWeekStartD.getDate() - 7);
+      const lastWeekEndD = new Date(thisWeekStart + 'T00:00:00'); lastWeekEndD.setDate(lastWeekEndD.getDate() - 1);
+      const lastWeekStart = dateToStr(lastWeekStartD);
+      const lastWeekEnd = dateToStr(lastWeekEndD);
+      const thisMonthStr = todayStr.slice(0, 7);
+      const lastMonthD = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const lastMonthStr = dateToStr(lastMonthD).slice(0, 7);
+      const thisYearStr = todayStr.slice(0, 4);
+
+      let ctx = `DATE REFERENCES (use these exact ranges when interpreting time words in the question):
+Today: ${todayStr}
+This week (Fri–Thu): ${thisWeekStart} to ${thisWeekEnd}
+Last week (Fri–Thu): ${lastWeekStart} to ${lastWeekEnd}
+This month: ${thisMonthStr}
+Last month: ${lastMonthStr}
+This year: ${thisYearStr}
+Note: the work week always runs Friday to Thursday.
+
+TIMESHEET HISTORY (${sortedMonths.length} months of data):\n\n`;
       sortedMonths.forEach(month => {
         const m = months[month];
         const d = new Date(month + '-15');
@@ -11323,9 +11345,9 @@ Rules:
         ? `\nMATCHING FAULT NOTES:\n${faultSources.slice(0, 10).map(n => `Date: ${n.date} | Task: ${n.description || '(no description)'}\nNotes: ${n.notes}`).join('\n---\n')}\n`
         : '';
       const prompt = `You are a personal timesheet assistant for a telecommunications field technician.
-You have full access to their work history. Answer their question accurately using the data below.
-Be concise and specific — include actual numbers, dates, and site names from the data.
-If the data doesn't contain enough to answer, say so clearly.
+You have their full work history. Answer their question directly and confidently using the data below.
+Use the DATE REFERENCES section to resolve any time words like "last week", "this month", "yesterday".
+Be specific — include actual numbers, dates, and site names. Do not hedge or say the data is unclear when it is present.
 
 ${timesheetContext}${faultNotesSection}
 QUESTION: ${query}`;
