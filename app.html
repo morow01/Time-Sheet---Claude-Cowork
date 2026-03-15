@@ -5400,7 +5400,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.45';
+    const VERSION = '4.2.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6879,7 +6879,7 @@
                 <div class="menu-card">
                   <button class="menu-row" onclick="openFaultAssistant()">
                     <span class="menu-row-icon">🤖</span>
-                    <span class="menu-row-body"><span class="menu-row-label">Fault Assistant</span><span class="menu-row-sub">Search your fault history with AI</span></span>
+                    <span class="menu-row-body"><span class="menu-row-label">AI Assistant</span><span class="menu-row-sub">Ask about hours, faults, sites & more</span></span>
                     ${chev}
                   </button>
                   <div class="menu-ai-key-row">
@@ -11181,48 +11181,40 @@ Rules:
     // AI FAULT ASSISTANT
     // ============================================================
 
-    // Load knowledge base stats — scans IndexedDB + current week in memory
+    // Load AI assistant stats — scans all weeks for overview numbers
     async function loadAIStats() {
       try {
         const allWeeks = await dbGetAll('weeks');
-        let noteCount = 0;
-        const faultTypes = new Set();
+        let entryCount = 0, noteCount = 0;
         let oldestDate = '';
-        // Scan IndexedDB records — stored as { weekStart, data: weekData, ... }
-        allWeeks.forEach(record => {
-          const week = record.data;
-          if (!week?.days) return;
-          week.days.forEach(day => {
+
+        const scanWeekData = (weekData) => {
+          if (!weekData?.days) return;
+          weekData.days.forEach(day => {
             (day.activities || []).forEach(act => {
-              if (act.notes && act.notes.trim()) {
+              const hasData = act.description || act.codes?.length || parseFloat(act.ordinary) > 0 || parseFloat(act.overtime) > 0;
+              if (hasData) entryCount++;
+              if (act.notes?.trim()) {
                 noteCount++;
-                if (act.description && act.description.trim()) faultTypes.add(act.description.toLowerCase().trim());
                 if (!oldestDate || day.date < oldestDate) oldestDate = day.date;
               }
             });
           });
-        });
-        // Also scan current week from memory (in case write is still pending)
-        const currentWeekInDB = allWeeks.find(w => w.weekStart === state.weekData?.weekStart);
-        if (state.weekData && !currentWeekInDB) {
-          state.weekData.days?.forEach(day => {
-            (day.activities || []).forEach(act => {
-              if (act.notes && act.notes.trim()) {
-                noteCount++;
-                if (act.description && act.description.trim()) faultTypes.add(act.description.toLowerCase().trim());
-                if (!oldestDate || day.date < oldestDate) oldestDate = day.date;
-              }
-            });
-          });
-        }
+        };
+
+        allWeeks.forEach(r => scanWeekData(r.data));
+        const currentInDB = allWeeks.find(w => w.weekStart === state.weekData?.weekStart);
+        if (state.weekData && !currentInDB) scanWeekData(state.weekData);
+
         let monthsBack = 0;
         if (oldestDate) {
-          const diff = new Date() - new Date(oldestDate);
+          const diff = new Date() - new Date(oldestDate + 'T00:00:00');
           monthsBack = Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24 * 30)));
         }
-        state.aiStats = { noteCount, faultTypeCount: faultTypes.size, monthsBack };
+        const weekCount = allWeeks.length + (state.weekData && !currentInDB ? 1 : 0);
+        state.aiStats = { entryCount, noteCount, weekCount, monthsBack };
       } catch (e) {
-        state.aiStats = { noteCount: 0, faultTypeCount: 0, monthsBack: 0 };
+        state.aiStats = { entryCount: 0, noteCount: 0, weekCount: 0, monthsBack: 0 };
       }
     }
 
@@ -11257,22 +11249,85 @@ Rules:
       return matches.sort((a, b) => b.hitCount - a.hitCount || b.date.localeCompare(a.date));
     }
 
-    // Call Gemini API with fault notes as context — uses shared state.geminiKey
-    async function askGemini(query, sources) {
+    // Build a full month-by-month summary of all timesheet data for Gemini context
+    async function buildTimesheetContext() {
+      const allWeeks = await dbGetAll('weeks');
+      const months = {};
+
+      const processWeekData = (weekData) => {
+        if (!weekData?.days) return;
+        weekData.days.forEach(day => {
+          if (!day.date) return;
+          const month = day.date.slice(0, 7);
+          if (!months[month]) months[month] = { ord: 0, ot: 0, actCount: 0, locations: {}, descriptions: {}, dayDetails: {} };
+          const m = months[month];
+          const dayActs = [];
+          (day.activities || []).forEach(act => {
+            const hasData = act.description || act.codes?.length || parseFloat(act.ordinary) > 0 || parseFloat(act.overtime) > 0;
+            if (!hasData) return;
+            m.ord += parseFloat(act.ordinary) || 0;
+            m.ot += parseFloat(act.overtime) || 0;
+            m.actCount++;
+            if (act.location?.trim()) m.locations[act.location.trim()] = (m.locations[act.location.trim()] || 0) + 1;
+            if (act.description?.trim()) m.descriptions[act.description.trim()] = (m.descriptions[act.description.trim()] || 0) + 1;
+            const parts = [act.description || 'unnamed'];
+            if (act.location) parts.push('@ ' + act.location);
+            if (parseFloat(act.ordinary)) parts.push(act.ordinary + 'h ord');
+            if (parseFloat(act.overtime)) parts.push(act.overtime + 'h OT');
+            dayActs.push(parts.join(' '));
+          });
+          if (dayActs.length) m.dayDetails[day.date] = dayActs.join(' | ');
+        });
+      };
+
+      allWeeks.forEach(r => processWeekData(r.data));
+      if (state.weekData) {
+        const inDB = allWeeks.find(w => w.weekStart === state.weekData.weekStart);
+        if (!inDB) processWeekData(state.weekData);
+      }
+
+      const sortedMonths = Object.keys(months).sort().reverse();
+      if (!sortedMonths.length) return 'No timesheet data available yet.';
+
+      const today = new Date();
+      const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().slice(0, 7);
+
+      let ctx = `TIMESHEET HISTORY (${sortedMonths.length} months, today is ${today.toISOString().slice(0, 10)}):\n\n`;
+      sortedMonths.forEach(month => {
+        const m = months[month];
+        const d = new Date(month + '-15');
+        const label = d.toLocaleDateString('en-IE', { month: 'long', year: 'numeric' });
+        const topLocs = Object.entries(m.locations).sort((a,b) => b[1]-a[1]).slice(0,6).map(([k,v]) => `${k}(${v}x)`).join(', ');
+        const topDescs = Object.entries(m.descriptions).sort((a,b) => b[1]-a[1]).slice(0,6).map(([k,v]) => `${k}(${v}x)`).join(', ');
+        ctx += `### ${label}\n`;
+        ctx += `  Ordinary: ${m.ord.toFixed(1)}h | Overtime: ${m.ot.toFixed(1)}h | Entries: ${m.actCount}\n`;
+        if (topLocs) ctx += `  Sites: ${topLocs}\n`;
+        if (topDescs) ctx += `  Tasks: ${topDescs}\n`;
+        // Day-by-day detail for the last 3 months
+        if (month >= threeMonthsAgo) {
+          Object.entries(m.dayDetails).sort().forEach(([date, detail]) => {
+            ctx += `  ${date}: ${detail}\n`;
+          });
+        }
+        ctx += '\n';
+      });
+      return ctx;
+    }
+
+    // Call Gemini API with full timesheet context — uses shared state.geminiKey
+    async function askGemini(query, timesheetContext, faultSources) {
       const apiKey = state.geminiKey;
       if (!apiKey) throw new Error('No API key. Add your Gemini key in ☰ Menu → AI Settings.');
       const model = state.geminiModel || 'gemini-2.0-flash';
-      const notesContext = sources.slice(0, 12).map(n =>
-        `Date: ${n.date}\nFault: ${n.description || '(no description)'}\nNotes: ${n.notes}`
-      ).join('\n\n---\n\n');
-      const prompt = `You are a fault diagnosis assistant for a field telecommunications technician.
-Based ONLY on the technician's past fault notes provided below, answer the question.
-Be concise and practical. Focus on causes found and steps taken to resolve the fault.
-If the notes don't contain relevant information, say so clearly.
+      const faultNotesSection = faultSources?.length
+        ? `\nMATCHING FAULT NOTES:\n${faultSources.slice(0, 10).map(n => `Date: ${n.date} | Task: ${n.description || '(no description)'}\nNotes: ${n.notes}`).join('\n---\n')}\n`
+        : '';
+      const prompt = `You are a personal timesheet assistant for a telecommunications field technician.
+You have full access to their work history. Answer their question accurately using the data below.
+Be concise and specific — include actual numbers, dates, and site names from the data.
+If the data doesn't contain enough to answer, say so clearly.
 
-PAST FAULT NOTES:
-${notesContext}
-
+${timesheetContext}${faultNotesSection}
 QUESTION: ${query}`;
       const resp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -11303,13 +11358,13 @@ QUESTION: ${query}`;
       state.aiError = null;
       renderFaultAssistantModal();
       try {
-        const sources = await searchFaultNotes(query);
-        if (!sources.length) {
-          state.aiResult = { answer: "I couldn't find any past fault notes matching your query. Try different keywords, or make sure you've been adding notes to your timesheet activities.", sources: [] };
-        } else {
-          const answer = await askGemini(query, sources);
-          state.aiResult = { answer, sources: sources.slice(0, 5) };
-        }
+        // Build full timesheet context + search fault notes in parallel
+        const [timesheetContext, faultSources] = await Promise.all([
+          buildTimesheetContext(),
+          searchFaultNotes(query)
+        ]);
+        const answer = await askGemini(query, timesheetContext, faultSources);
+        state.aiResult = { answer, sources: faultSources.slice(0, 5) };
         // Save to recent queries
         state.aiRecentQueries = [query, ...state.aiRecentQueries.filter(q => q !== query)].slice(0, 8);
         localStorage.setItem('rian_ai_recent', JSON.stringify(state.aiRecentQueries));
@@ -11352,7 +11407,7 @@ QUESTION: ${query}`;
       renderFaultAssistantModal();
       // Update header stat chip
       const stat = document.getElementById('ai-fault-kb-stat');
-      if (stat && state.aiStats) stat.textContent = `${state.aiStats.noteCount} notes`;
+      if (stat && state.aiStats) stat.textContent = `${state.aiStats.weekCount} weeks`;
       // Focus search input
       setTimeout(() => document.getElementById('ai-query-input')?.focus(), 100);
     }
@@ -11399,7 +11454,7 @@ QUESTION: ${query}`;
         body.innerHTML = `<div class="ai-view"><div class="ai-setup-card">
           <div class="ai-setup-icon">🔑</div>
           <div class="ai-setup-title">API Key Required</div>
-          <div class="ai-setup-sub">Add your Gemini API key in <strong>☰ Menu → AI Settings</strong> to use the Fault Assistant.<br><br>The same key is shared with the voice entry feature.</div>
+          <div class="ai-setup-sub">Add your Gemini API key in <strong>☰ Menu → AI Settings</strong> to use the AI Assistant.<br><br>The same key is shared with the voice entry feature.</div>
         </div></div>`;
         return;
       }
@@ -11407,13 +11462,14 @@ QUESTION: ${query}`;
       const stats = state.aiStats;
       const statsHtml = stats && !state.aiResult && !state.aiLoading ? `
       <div class="ai-section">
-        <div class="ai-section-label">Your Knowledge Base</div>
+        <div class="ai-section-label">Your Timesheet History</div>
         <div class="ai-stats-row">
-          <div class="ai-stat-tile"><div class="ai-stat-val">${stats.noteCount}</div><div class="ai-stat-lbl">fault notes</div></div>
-          <div class="ai-stat-tile"><div class="ai-stat-val">${stats.faultTypeCount}</div><div class="ai-stat-lbl">fault types</div></div>
+          <div class="ai-stat-tile"><div class="ai-stat-val">${stats.entryCount}</div><div class="ai-stat-lbl">entries</div></div>
+          <div class="ai-stat-tile"><div class="ai-stat-val">${stats.weekCount}</div><div class="ai-stat-lbl">weeks</div></div>
           <div class="ai-stat-tile"><div class="ai-stat-val">${stats.monthsBack || '—'}</div><div class="ai-stat-lbl">months data</div></div>
         </div>
-        ${stats.noteCount === 0 ? `<div class="ai-empty-state" style="margin-top:10px;">💡 Start adding <strong>Notes</strong> to your timesheet activities when you're on a fault. The more detail you add, the smarter the suggestions become.</div>` : ''}
+        ${stats.noteCount > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">📝 ${stats.noteCount} fault note${stats.noteCount === 1 ? '' : 's'} available for fault diagnosis</div>` : ''}
+        ${stats.entryCount === 0 ? `<div class="ai-empty-state" style="margin-top:10px;">💡 Your timesheet history will appear here once you start logging work entries.</div>` : ''}
       </div>` : '';
 
       const recentHtml = !state.aiResult && !state.aiLoading && state.aiRecentQueries.length ? `
@@ -11430,7 +11486,7 @@ QUESTION: ${query}`;
         <div class="ai-section" id="ai-result-top">
           <div class="ai-answer-card">
             <div class="ai-answer-label">🤖 Thinking <div class="ai-loading-dots"><span></span><span></span><span></span></div></div>
-            <div class="ai-answer-text" style="color:var(--text-muted);">Searching your fault history and asking Gemini…</div>
+            <div class="ai-answer-text" style="color:var(--text-muted);">Reading your timesheet history and asking Gemini…</div>
           </div>
         </div>`;
       } else if (state.aiError) {
@@ -11445,7 +11501,7 @@ QUESTION: ${query}`;
       } else if (state.aiResult) {
         const sourcesHtml = state.aiResult.sources.length ? `
         <div class="ai-section" style="margin-top:6px;">
-          <div class="ai-section-label">Matching past notes (${state.aiResult.sources.length})</div>
+          <div class="ai-section-label">Matching fault notes (${state.aiResult.sources.length})</div>
           ${state.aiResult.sources.map(s => `
           <div class="ai-source-card" data-date="${s.date}" data-act-id="${s.actId || ''}" onclick="goToFaultDay(this.getAttribute('data-date'), this.getAttribute('data-act-id'))">
             <div class="ai-source-date">${s.date} · ${s.description || 'No description'}</div>
@@ -11462,7 +11518,7 @@ QUESTION: ${query}`;
           <div class="ai-answer-card">
             <div class="ai-answer-label">🤖 Gemini</div>
             <div class="ai-answer-text">${state.aiResult.answer.replace(/\n/g, '<br>')}</div>
-            <div class="ai-answer-footer">Based on ${state.aiResult.sources.length} matching entr${state.aiResult.sources.length === 1 ? 'y' : 'ies'} from your fault history</div>
+            <div class="ai-answer-footer">${state.aiResult.sources.length ? `Also found ${state.aiResult.sources.length} matching fault note${state.aiResult.sources.length === 1 ? '' : 's'} ↓` : 'Based on your full timesheet history'}</div>
           </div>
         </div>
         ${sourcesHtml}`;
@@ -11470,9 +11526,9 @@ QUESTION: ${query}`;
 
       body.innerHTML = `<div class="ai-view">
       <div class="ai-search-wrap">
-        <div class="ai-section-label" style="margin-bottom:6px;">Ask about a past fault</div>
+        <div class="ai-section-label" style="margin-bottom:6px;">Ask about your timesheet</div>
         <div class="ai-search-row">
-          <input id="ai-query-input" class="ai-search-input" type="text" placeholder="e.g. CN Isolated, fibre break, no signal…"
+          <input id="ai-query-input" class="ai-search-input" type="text" placeholder="e.g. OT hours last month? Most visited site? Fibre break fix?"
             value="${(state.aiQuery || '').replace(/"/g, '&quot;')}"
             onkeydown="aiQueryKeydown(event)">
           <button class="ai-ask-btn" onclick="runAIQuery()" ${state.aiLoading ? 'disabled' : ''}>Ask</button>
@@ -11577,7 +11633,7 @@ QUESTION: ${query}`;
   <div id="ai-fault-modal" class="hidden fixed inset-0 z-50 flex flex-col" style="background:var(--bg-modal)">
     <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
       <button onclick="closeFaultAssistant()" class="text-white p-1 text-xl leading-none">✕</button>
-      <h2 class="text-base font-semibold flex-1">🤖 Fault Assistant</h2>
+      <h2 class="text-base font-semibold flex-1">🤖 AI Assistant</h2>
       <span style="font-size:11px;color:rgba(255,255,255,0.5);" id="ai-fault-kb-stat"></span>
     </div>
     <div id="ai-fault-body" class="flex-1 overflow-y-auto" style="background:var(--bg-main)"></div>
