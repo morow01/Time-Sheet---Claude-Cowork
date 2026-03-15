@@ -4706,10 +4706,15 @@
     }
     .anomaly-banner-chevron.open { transform: rotate(90deg); }
     .anomaly-banner-body {
-      display: none;
-      border-top: 1px solid #fed7aa;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+      border-top: 0px solid #fed7aa;
     }
-    .anomaly-banner-body.open { display: block; }
+    .anomaly-banner-body.open {
+      max-height: 400px;
+      border-top-width: 1px;
+    }
     .anomaly-item {
       display: flex;
       align-items: flex-start;
@@ -5395,7 +5400,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.1.44';
+    const VERSION = '4.1.45';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7042,6 +7047,8 @@
       if (!body) return;
       const isOpen = body.classList.toggle('open');
       if (chev) chev.classList.toggle('open', isOpen);
+      // Force a reflow so the transition fires when opening from max-height:0
+      if (isOpen) body.scrollHeight;
     }
 
     function gotoAnomalyDay(di) {
