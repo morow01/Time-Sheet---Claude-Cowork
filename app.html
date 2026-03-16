@@ -303,6 +303,7 @@
       border-radius: 0 0 8px 8px;
       overflow: hidden;
     }
+
     .act-expand-note-btn {
       display: flex;
       align-items: center;
@@ -317,7 +318,12 @@
       -webkit-tap-highlight-color: transparent;
       transition: background 0.15s;
     }
-    .act-expand-note-btn:active { background: var(--accent-light); color: var(--accent); }
+
+    .act-expand-note-btn:active {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
     .act-dictate-bar {
       flex: 1;
       display: flex;
@@ -516,7 +522,8 @@
     }
 
     .act-notes-area {
-      display: none; /* hidden — used only for data storage / dictation */
+      display: none;
+      /* hidden — used only for data storage / dictation */
     }
 
     .act-notes-rich-preview {
@@ -529,14 +536,29 @@
       line-height: 1.6;
       cursor: pointer;
     }
-    .act-notes-rich-preview p { margin: 0 0 4px; }
-    .act-notes-rich-preview p:last-child { margin-bottom: 0; }
-    .act-notes-rich-preview ul, .act-notes-rich-preview ol { margin: 0 0 4px; padding-left: 20px; }
+
+    .act-notes-rich-preview p {
+      margin: 0 0 4px;
+    }
+
+    .act-notes-rich-preview p:last-child {
+      margin-bottom: 0;
+    }
+
+    .act-notes-rich-preview ul,
+    .act-notes-rich-preview ol {
+      margin: 0 0 4px;
+      padding-left: 20px;
+    }
+
     .notes-rich-placeholder {
       color: var(--text-muted);
       font-style: italic;
     }
-    .notes-ta-wrap:hover .act-notes-rich-preview { opacity: 0.85; }
+
+    .notes-ta-wrap:hover .act-notes-rich-preview {
+      opacity: 0.85;
+    }
 
     .act-delete-btn {
       width: 100%;
@@ -2998,6 +3020,7 @@
       display: flex;
       align-items: center;
     }
+
     .ai-search-input {
       width: 100%;
       padding: 10px 42px 10px 14px;
@@ -3008,9 +3031,11 @@
       color: var(--text-primary);
       outline: none;
     }
+
     .ai-search-input:focus {
       border-color: #818cf8;
     }
+
     .ai-mic-inline {
       position: absolute;
       right: 10px;
@@ -3025,7 +3050,10 @@
       transition: color 0.2s;
       touch-action: manipulation;
     }
-    .ai-mic-inline.listening { color: #ef4444; }
+
+    .ai-mic-inline.listening {
+      color: #ef4444;
+    }
 
     /* ── Quill rich text editor (note fullscreen) ── */
     #note-fs-editor .ql-toolbar {
@@ -3035,6 +3063,7 @@
       padding: 8px 12px;
       flex-shrink: 0;
     }
+
     #note-fs-editor .ql-container {
       border: none;
       font-size: 14px;
@@ -3043,33 +3072,105 @@
       overflow-y: auto;
       background: var(--bg-page);
     }
+
     #note-fs-editor .ql-editor {
       padding: 16px;
       line-height: 1.7;
       color: var(--text-primary);
       min-height: 200px;
+      background-color: var(--bg-card);
     }
+
     #note-fs-editor .ql-editor.ql-blank::before {
       color: var(--text-muted);
       font-style: normal;
     }
-    #note-fs-editor .ql-toolbar button svg .ql-stroke { stroke: var(--text-secondary); }
-    #note-fs-editor .ql-toolbar button svg .ql-fill { fill: var(--text-secondary); }
+
+    #note-fs-editor .ql-toolbar button svg .ql-stroke {
+      stroke: var(--text-secondary);
+    }
+
+    #note-fs-editor .ql-toolbar button svg .ql-fill {
+      fill: var(--text-secondary);
+    }
+
     #note-fs-editor .ql-toolbar button:hover svg .ql-stroke,
-    #note-fs-editor .ql-toolbar button.ql-active svg .ql-stroke { stroke: #818cf8; }
+    #note-fs-editor .ql-toolbar button.ql-active svg .ql-stroke {
+      stroke: #818cf8;
+    }
+
     #note-fs-editor .ql-toolbar button:hover svg .ql-fill,
-    #note-fs-editor .ql-toolbar button.ql-active svg .ql-fill { fill: #818cf8; }
-    #note-fs-editor .ql-toolbar .ql-picker-label { color: var(--text-secondary); border-color: var(--border); }
-    #note-fs-editor .ql-toolbar .ql-picker-label:hover { color: #818cf8; }
-    #note-fs-editor .ql-toolbar .ql-picker-options { background: var(--bg-card); border-color: var(--border); }
-    #note-fs-editor .ql-toolbar .ql-picker-item:hover { color: #818cf8; }
+    #note-fs-editor .ql-toolbar button.ql-active svg .ql-fill {
+      fill: #818cf8;
+    }
+
+    #note-fs-editor .ql-toolbar .ql-picker-label {
+      color: var(--text-secondary);
+      border-color: var(--border);
+    }
+
+    #note-fs-editor .ql-toolbar .ql-picker-label:hover {
+      color: #818cf8;
+    }
+
+    #note-fs-editor .ql-toolbar .ql-picker-options {
+      background: var(--bg-card);
+      border-color: var(--border);
+    }
+
+    #note-fs-editor .ql-toolbar .ql-picker-item:hover {
+      color: #818cf8;
+    }
+
     #note-fs-editor .ql-toolbar .ql-color-picker .ql-picker-label svg,
-    #note-fs-editor .ql-toolbar .ql-background .ql-picker-label svg { width: 18px; height: 18px; }
+    #note-fs-editor .ql-toolbar .ql-background .ql-picker-label svg {
+      width: 18px;
+      height: 18px;
+    }
+
     #note-fs-editor .ql-snow.ql-toolbar button,
-    #note-fs-editor .ql-snow .ql-toolbar button { width: 30px; height: 30px; }
-    #note-fs-editor .ql-formats { margin-right: 8px; }
-    #note-fs-editor .ql-toolbar .ql-color-picker.ql-color .ql-picker-label::before { content: 'A'; font-weight:700; font-size:13px; color:var(--text-secondary); }
-    #note-fs-editor .ql-toolbar .ql-color-picker.ql-background .ql-picker-label::before { content: '▌'; font-size:16px; color:var(--text-secondary); }
+    #note-fs-editor .ql-snow .ql-toolbar button {
+      width: 30px;
+      height: 30px;
+    }
+
+    #note-fs-editor .ql-formats {
+      margin-right: 8px;
+    }
+
+    #note-fs-editor .ql-toolbar .ql-color-picker.ql-color .ql-picker-label::before {
+      content: 'A';
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    #note-fs-editor .ql-toolbar .ql-color-picker.ql-background .ql-picker-label::before {
+      content: '▌';
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    /* Size picker — show friendly names instead of raw px values */
+    #note-fs-editor .ql-snow .ql-picker.ql-size { width: 66px; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label::before,
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item::before { content: 'Normal'; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="11px"]::before,
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11px"]::before { content: 'Small'; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="13px"]::before,
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="13px"]::before { content: 'Default'; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before { content: 'Large'; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="22px"]::before,
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="22px"]::before { content: 'Bigger'; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="28px"]::before,
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="28px"]::before { content: 'Huge'; }
+    /* Show each size option at its own size for a visual preview */
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11px"] { font-size: 11px; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="13px"] { font-size: 13px; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"] { font-size: 18px; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="22px"] { font-size: 22px; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="28px"] { font-size: 28px; }
 
     .ai-ask-btn {
       padding: 10px 16px;
@@ -5871,7 +5972,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.3.7';
+    const VERSION = '4.3.8';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -8425,8 +8526,8 @@
                 <div class="notes-ta-wrap" onclick="event.stopPropagation();openNoteFullscreen('${act.id}',${di})">
                   <div class="act-notes-rich-preview" data-notes-preview="${act.id}">
                     ${act.notes && act.notes.trim()
-                      ? (act.notes.trim().startsWith('<') ? act.notes : esc(act.notes).replace(/\n/g, '<br>'))
-                      : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
+          ? (act.notes.trim().startsWith('<') ? act.notes : esc(act.notes).replace(/\n/g, '<br>'))
+          : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
                   </div>
                   <textarea class="act-notes-area"
                     data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes || '')}</textarea>
@@ -12039,13 +12140,19 @@ QUESTION: ${query}`;
       document.getElementById('note-fs-modal').classList.remove('hidden');
       setTimeout(() => {
         if (!_quillInstance) {
+          // Register style-based font sizes before first instantiation
+          const Size = Quill.import('attributors/style/size');
+          Size.whitelist = ['11px', '13px', '15px', '18px', '22px', '28px'];
+          Quill.register(Size, true);
+
           _quillInstance = new Quill('#note-fs-editor', {
             theme: 'snow',
             modules: {
               toolbar: [
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'color': ['#000000','#e53935','#f57c00','#2e7d32','#1565c0','#6a1b9a','#ffffff'] },
-                 { 'background': ['','#ffeb3b','#a5d6a7','#ef9a9a','#90caf9','#ce93d8','#ffe0b2'] }],
+                [{ 'size': ['11px', '13px', false, '18px', '22px', '28px'] },
+                 'bold', 'italic', 'underline', 'strike'],
+                [{ 'color': ['#000000', '#e53935', '#f57c00', '#2e7d32', '#1565c0', '#6a1b9a', '#ffffff'] },
+                 { 'background': ['', '#ffeb3b', '#a5d6a7', '#ef9a9a', '#90caf9', '#ce93d8', '#ffe0b2'] }],
                 [{ 'header': 3 }, { 'list': 'ordered' }, { 'list': 'bullet' }],
                 ['clean']
               ]
@@ -12343,7 +12450,8 @@ QUESTION: ${query}`;
   </div>
 
   <!-- ===== AI FAULT ASSISTANT MODAL ===== -->
-  <div id="ai-fault-modal" class="hidden fixed inset-0 flex flex-col items-center" style="background:var(--bg-page);z-index:9999;">
+  <div id="ai-fault-modal" class="hidden fixed inset-0 flex flex-col items-center"
+    style="background:var(--bg-page);z-index:9999;">
     <div class="flex flex-col w-full flex-1 overflow-hidden" style="max-width:672px;background:var(--bg-page);">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
         <button onclick="closeFaultAssistant()" class="text-white p-1 text-xl leading-none">✕</button>
@@ -12355,12 +12463,14 @@ QUESTION: ${query}`;
   </div>
 
   <!-- ===== NOTE FULLSCREEN MODAL ===== -->
-  <div id="note-fs-modal" class="hidden fixed inset-0 flex flex-col items-center" style="background:var(--bg-page);z-index:9999;">
+  <div id="note-fs-modal" class="hidden fixed inset-0 flex flex-col items-center"
+    style="background:var(--bg-page);z-index:9999;">
     <div class="flex flex-col w-full flex-1 overflow-hidden" style="max-width:672px;background:var(--bg-page);">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
         <button onclick="closeNoteFullscreen()" class="text-white p-1 text-xl leading-none">✕</button>
         <h2 class="text-base font-semibold flex-1">Edit Note</h2>
-        <button onclick="closeNoteFullscreen()" style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;font-weight:600;">Done</button>
+        <button onclick="closeNoteFullscreen()"
+          style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;font-weight:600;">Done</button>
       </div>
       <div id="note-fs-editor" class="flex-1 overflow-hidden" style="display:flex;flex-direction:column;"></div>
     </div>
