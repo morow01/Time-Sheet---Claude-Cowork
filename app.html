@@ -522,6 +522,8 @@
     .act-notes-rich-preview {
       width: 100%;
       min-height: 44px;
+      max-height: 140px;
+      overflow-y: auto;
       font-size: 13px;
       color: var(--text-primary);
       line-height: 1.6;
@@ -5862,7 +5864,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.3.5';
+    const VERSION = '4.3.6';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
