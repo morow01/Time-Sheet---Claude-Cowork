@@ -15,6 +15,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Press+Start+2P&family=Silkscreen&family=VT323&family=Pixelify+Sans:wght@400..700&family=Bitcount+Single&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -3015,6 +3017,43 @@
     }
     .ai-mic-inline.listening { color: #ef4444; }
 
+    /* ── Quill rich text editor (note fullscreen) ── */
+    #note-fs-editor .ql-toolbar {
+      border: none;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      padding: 8px 12px;
+      flex-shrink: 0;
+    }
+    #note-fs-editor .ql-container {
+      border: none;
+      font-size: 14px;
+      font-family: inherit;
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg-page);
+    }
+    #note-fs-editor .ql-editor {
+      padding: 16px;
+      line-height: 1.7;
+      color: var(--text-primary);
+      min-height: 200px;
+    }
+    #note-fs-editor .ql-editor.ql-blank::before {
+      color: var(--text-muted);
+      font-style: normal;
+    }
+    #note-fs-editor .ql-toolbar button svg .ql-stroke { stroke: var(--text-secondary); }
+    #note-fs-editor .ql-toolbar button svg .ql-fill { fill: var(--text-secondary); }
+    #note-fs-editor .ql-toolbar button:hover svg .ql-stroke,
+    #note-fs-editor .ql-toolbar button.ql-active svg .ql-stroke { stroke: #818cf8; }
+    #note-fs-editor .ql-toolbar button:hover svg .ql-fill,
+    #note-fs-editor .ql-toolbar button.ql-active svg .ql-fill { fill: #818cf8; }
+    #note-fs-editor .ql-toolbar .ql-picker-label { color: var(--text-secondary); }
+    #note-fs-editor .ql-snow.ql-toolbar button,
+    #note-fs-editor .ql-snow .ql-toolbar button { width: 32px; height: 32px; }
+    #note-fs-editor .ql-formats { margin-right: 12px; }
+
     .ai-ask-btn {
       padding: 10px 16px;
       border-radius: 12px;
@@ -5815,7 +5854,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.3.3';
+    const VERSION = '4.3.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -5832,6 +5871,7 @@
     const DB_NAME = 'timesheet-db';
     const DB_VERSION = 2;
     const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const stripHtml = s => String(s || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
 
     // ============================================================
     // ANIMATION / UI CONSTANTS
@@ -6838,7 +6878,7 @@
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
                 <div style="font-size:14px;font-weight:600;color:${C.txt};"><span style="${sel}" title="Click to select">${esc(act.description || '(no description)')}</span>${act.location ? `<span style="color:#475569;font-weight:400;font-size:13px;"> &mdash; <span style="${sel}" title="Click to select">${esc(act.location)}</span></span>` : ''}</div>
                 ${act.codes.length ? `<div style="margin-top:4px;">${codesHtml}</div>` : ''}
-                ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#0F1C2E;font-style:italic;">${esc(act.notes)}</div>` : ''}
+                ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#0F1C2E;font-style:italic;">${act.notes.trim().startsWith('<') ? act.notes : esc(act.notes)}</div>` : ''}
               </td>
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:top;">${ord}</td>
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${ot > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:top;">${ot > 0 ? ot : '—'}</td>
@@ -7016,7 +7056,7 @@
             <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
               <div>${descHtml}${locHtml}</div>
               ${act.codes.length ? `<div>${codesHtml}</div>` : ''}
-              ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#475569;font-style:italic;">${esc(act.notes)}</div>` : ''}
+              ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#475569;font-style:italic;">${act.notes.trim().startsWith('<') ? act.notes : esc(act.notes)}</div>` : ''}
             </td>
             <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:top;">${ord}</td>
             <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${ot > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:top;">${ot > 0 ? ot : '—'}</td>
@@ -7787,7 +7827,7 @@
       <td style="text-align:center;padding:0;">
         <button class="tbl-note-btn ${act.notes ? 'has-note' : ''}"
           data-act="${act.id}" data-day="${di}"
-          data-note="${esc(act.notes || '')}"
+          data-note="${esc(stripHtml(act.notes || ''))}"
           onclick="openNotesModal(${di},'${act.id}')"
           onmouseenter="showNoteTooltip(event)"
           onmouseleave="hideNoteTooltip()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></button>
@@ -8357,7 +8397,7 @@
                   <path d="M4 4.5h5M4 6.5h3" stroke="#BBBBB8" stroke-width="1.3" stroke-linecap="round"/>
                 </svg>
                 <div class="notes-panel-preview ${act.notes && act.notes.trim() ? 'has-note' : ''}">
-                  ${act.notes && act.notes.trim() ? esc(act.notes).replace(/\n/g, ' ') : 'Add a note…'}
+                  ${act.notes && act.notes.trim() ? esc(stripHtml(act.notes)).replace(/\n/g, ' ') : 'Add a note…'}
                 </div>
                 <svg class="notes-chevron" data-notes-btn="${act.id}" width="12" height="12" viewBox="0 0 12 12" fill="none"
                   style="flex-shrink:0; transition: transform 0.25s ease; transform: ${notesOpen ? 'rotate(90deg)' : 'rotate(0deg)'}">
@@ -11671,10 +11711,11 @@ Rules:
         days.forEach(day => {
           (day.activities || []).forEach(act => {
             if (!act.notes || !act.notes.trim()) return;
-            const text = [act.description, act.notes].filter(Boolean).join(' ').toLowerCase();
+            const plainNotes = stripHtml(act.notes);
+            const text = [act.description, plainNotes].filter(Boolean).join(' ').toLowerCase();
             const hitCount = keywords.filter(kw => text.includes(kw)).length;
             if (hitCount > 0) {
-              matches.push({ date: day.date, actId: act.id, description: act.description || '', notes: act.notes, hitCount });
+              matches.push({ date: day.date, actId: act.id, description: act.description || '', notes: plainNotes, hitCount });
             }
           });
         });
@@ -11948,21 +11989,47 @@ QUESTION: ${query}`;
       rec.start();
     }
 
-    // ── Note fullscreen editor ───────────────────────────────────
-    let _noteFsActId = null, _noteFsDi = null;
+    // ── Note fullscreen editor (Quill) ───────────────────────────
+    let _noteFsActId = null, _noteFsDi = null, _quillInstance = null;
     function openNoteFullscreen(actId, di) {
       _noteFsActId = actId; _noteFsDi = di;
       const ta = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
-      const fsTa = document.getElementById('note-fs-ta');
-      if (fsTa && ta) fsTa.value = ta.value;
-      fsTa.oninput = function() {
-        const mainTa = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
-        if (mainTa) { mainTa.value = this.value; updateField(mainTa); }
-      };
+      const currentValue = ta ? ta.value : '';
       document.getElementById('note-fs-modal').classList.remove('hidden');
-      setTimeout(() => fsTa?.focus(), 100);
+      setTimeout(() => {
+        if (!_quillInstance) {
+          _quillInstance = new Quill('#note-fs-editor', {
+            theme: 'snow',
+            modules: {
+              toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['clean']
+              ]
+            }
+          });
+        }
+        // Load current value — detect if it's HTML or plain text
+        if (currentValue && currentValue.trim().startsWith('<')) {
+          _quillInstance.root.innerHTML = currentValue;
+        } else {
+          _quillInstance.setText(currentValue || '');
+        }
+        // Remove previous listener then add a new one
+        _quillInstance.off('text-change');
+        _quillInstance.on('text-change', () => {
+          const html = _quillInstance.root.innerHTML;
+          const mainTa = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
+          if (mainTa) {
+            mainTa.value = (html === '<p><br></p>' || html === '') ? '' : html;
+            updateField(mainTa);
+          }
+        });
+        _quillInstance.focus();
+      }, 80);
     }
     function closeNoteFullscreen() {
+      if (_quillInstance) _quillInstance.off('text-change');
       document.getElementById('note-fs-modal').classList.add('hidden');
       _noteFsActId = null; _noteFsDi = null;
     }
@@ -12252,7 +12319,7 @@ QUESTION: ${query}`;
         <h2 class="text-base font-semibold flex-1">Edit Note</h2>
         <button onclick="closeNoteFullscreen()" style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;font-weight:600;">Done</button>
       </div>
-      <textarea id="note-fs-ta" class="flex-1 w-full" style="background:var(--bg-page);color:var(--text-primary);border:none;outline:none;resize:none;font-size:14px;line-height:1.7;padding:16px;"></textarea>
+      <div id="note-fs-editor" class="flex-1 overflow-hidden" style="display:flex;flex-direction:column;"></div>
     </div>
   </div>
 
