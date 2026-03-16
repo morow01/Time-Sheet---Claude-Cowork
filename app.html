@@ -294,23 +294,43 @@
       color: var(--text-ot);
     }
 
+    .act-dictate-wrap {
+      display: flex;
+      border-top: 1px solid var(--border);
+      background: var(--bg-card-alt);
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+    .act-expand-note-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 14px;
+      border: none;
+      border-left: 1px solid var(--border);
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .act-expand-note-btn:active { background: var(--accent-light); color: var(--accent); }
     .act-dictate-bar {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       padding: 9px 12px;
-      border-top: 1px solid var(--border);
-      background: var(--bg-card-alt);
+      background: none;
       color: var(--text-muted);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: background 0.15s, color 0.15s;
-      border-radius: 0 0 8px 8px;
-      width: 100%;
-      box-sizing: border-box;
+      border: none;
     }
 
     .act-dictate-bar:active {
@@ -5795,7 +5815,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.3.2';
+    const VERSION = '4.3.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -8339,13 +8359,6 @@
                 <div class="notes-panel-preview ${act.notes && act.notes.trim() ? 'has-note' : ''}">
                   ${act.notes && act.notes.trim() ? esc(act.notes).replace(/\n/g, ' ') : 'Add a note…'}
                 </div>
-                ${notesOpen ? `<button onclick="event.stopPropagation();openNoteFullscreen('${act.id}',${di})" title="Full screen"
-                  style="background:none;border:none;cursor:pointer;color:#BBBBB8;padding:4px;flex-shrink:0;display:flex;align-items:center;touch-action:manipulation;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                    <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                  </svg>
-                </button>` : ''}
                 <svg class="notes-chevron" data-notes-btn="${act.id}" width="12" height="12" viewBox="0 0 12 12" fill="none"
                   style="flex-shrink:0; transition: transform 0.25s ease; transform: ${notesOpen ? 'rotate(90deg)' : 'rotate(0deg)'}">
                   <path d="M4.5 3l3 3-3 3" stroke="#D0D0CE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -8357,10 +8370,18 @@
                     class="act-notes-area"
                     data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">${esc(act.notes || '')}</textarea>
                 </div>
-                <button class="act-dictate-bar" id="act-mic-note-${act.id}" onclick="startActFieldVoice('${act.id}',${di},'notes')">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-                  Tap to dictate
-                </button>
+                <div class="act-dictate-wrap">
+                  <button class="act-dictate-bar" id="act-mic-note-${act.id}" onclick="startActFieldVoice('${act.id}',${di},'notes')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+                    Tap to dictate
+                  </button>
+                  <button class="act-expand-note-btn" onclick="event.stopPropagation();openNoteFullscreen('${act.id}',${di})" title="Full screen">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+                      <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 
