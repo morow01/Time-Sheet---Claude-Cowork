@@ -3151,26 +3151,10 @@
       color: var(--text-secondary);
     }
 
-    /* Size picker — show friendly names instead of raw px values */
+    /* Size picker — labels set via JS (data-label attr), rendered via content: attr() */
     #note-fs-editor .ql-snow .ql-picker.ql-size { width: 66px; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label::before,
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item::before { content: 'Normal'; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="11px"]::before,
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11px"]::before { content: 'Small'; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="13px"]::before,
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="13px"]::before { content: 'Default'; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before { content: 'Large'; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="22px"]::before,
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="22px"]::before { content: 'Bigger'; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="28px"]::before,
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="28px"]::before { content: 'Huge'; }
-    /* Show each size option at its own size for a visual preview */
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="11px"] { font-size: 11px; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="13px"] { font-size: 13px; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"] { font-size: 18px; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="22px"] { font-size: 22px; }
-    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="28px"] { font-size: 28px; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-item::before { content: attr(data-label) !important; }
+    #note-fs-editor .ql-snow .ql-picker.ql-size .ql-picker-label::before { content: 'Size' !important; }
 
     .ai-ask-btn {
       padding: 10px 16px;
@@ -5972,7 +5956,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.3.8';
+    const VERSION = '4.3.9';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12157,6 +12141,12 @@ QUESTION: ${query}`;
                 ['clean']
               ]
             }
+          });
+          // Set human-readable labels on size picker items (Quill doesn't expose data-value
+          // reliably for style-based sizes, so we label by known index order instead)
+          const _sizeLabels = ['Small', 'Default', 'Normal', 'Large', 'Bigger', 'Huge'];
+          document.querySelectorAll('#note-fs-editor .ql-size .ql-picker-item').forEach((el, i) => {
+            el.setAttribute('data-label', _sizeLabels[i] || el.getAttribute('data-value') || '?');
           });
         }
         // Load current value — detect if it's HTML or plain text
