@@ -2960,9 +2960,15 @@
       align-items: center;
     }
 
-    .ai-search-input {
+    .ai-search-input-wrap {
       flex: 1;
-      padding: 10px 14px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .ai-search-input {
+      width: 100%;
+      padding: 10px 42px 10px 14px;
       border-radius: 12px;
       font-size: 14px;
       border: 1.5px solid var(--border);
@@ -2970,10 +2976,24 @@
       color: var(--text-primary);
       outline: none;
     }
-
     .ai-search-input:focus {
       border-color: #818cf8;
     }
+    .ai-mic-inline {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+      touch-action: manipulation;
+    }
+    .ai-mic-inline.listening { color: #ef4444; }
 
     .ai-ask-btn {
       padding: 10px 16px;
@@ -5775,7 +5795,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.3.1';
+    const VERSION = '4.3.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -8319,23 +8339,23 @@
                 <div class="notes-panel-preview ${act.notes && act.notes.trim() ? 'has-note' : ''}">
                   ${act.notes && act.notes.trim() ? esc(act.notes).replace(/\n/g, ' ') : 'Add a note…'}
                 </div>
+                ${notesOpen ? `<button onclick="event.stopPropagation();openNoteFullscreen('${act.id}',${di})" title="Full screen"
+                  style="background:none;border:none;cursor:pointer;color:#BBBBB8;padding:4px;flex-shrink:0;display:flex;align-items:center;touch-action:manipulation;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+                    <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                  </svg>
+                </button>` : ''}
                 <svg class="notes-chevron" data-notes-btn="${act.id}" width="12" height="12" viewBox="0 0 12 12" fill="none"
                   style="flex-shrink:0; transition: transform 0.25s ease; transform: ${notesOpen ? 'rotate(90deg)' : 'rotate(0deg)'}">
                   <path d="M4.5 3l3 3-3 3" stroke="#D0D0CE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </div>
               <div class="notes-panel-body ${notesOpen ? 'open' : ''}" data-notes-wrap="${act.id}">
-                <div class="notes-ta-wrap" style="position:relative;">
+                <div class="notes-ta-wrap">
                   <textarea placeholder="Notes…" rows="3"
                     class="act-notes-area"
                     data-field="notes" data-act="${act.id}" data-day="${di}" oninput="updateField(this)">${esc(act.notes || '')}</textarea>
-                  <button onclick="openNoteFullscreen('${act.id}',${di})" title="Full screen"
-                    style="position:absolute;top:0;right:0;background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;line-height:1;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                      <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                    </svg>
-                  </button>
                 </div>
                 <button class="act-dictate-bar" id="act-mic-note-${act.id}" onclick="startActFieldVoice('${act.id}',${di},'notes')">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
@@ -11896,14 +11916,14 @@ QUESTION: ${query}`;
       rec.lang = 'en-IE';
       rec.interimResults = false;
       rec.maxAlternatives = 1;
-      if (btn) { btn.style.background = '#ef4444'; btn.style.color = '#fff'; }
+      if (btn) btn.classList.add('listening');
       rec.onresult = e => {
         const t = e.results[0][0].transcript;
         state.aiQuery = t;
         if (input) input.value = t;
       };
-      rec.onend = () => { if (btn) { btn.style.background = ''; btn.style.color = ''; } };
-      rec.onerror = () => { if (btn) { btn.style.background = ''; btn.style.color = ''; } };
+      rec.onend = () => { if (btn) btn.classList.remove('listening'); };
+      rec.onerror = () => { if (btn) btn.classList.remove('listening'); };
       rec.start();
     }
 
@@ -12082,16 +12102,17 @@ QUESTION: ${query}`;
       <div class="ai-search-wrap">
         <div class="ai-section-label" style="margin-bottom:6px;">Ask about your timesheet</div>
         <div class="ai-search-row">
-          <input id="ai-query-input" class="ai-search-input" type="text" placeholder="e.g. OT hours last month? Most visited site? Fibre break fix?"
-            value="${(state.aiQuery || '').replace(/"/g, '&quot;')}"
-            onkeydown="aiQueryKeydown(event)">
-          <button id="ai-mic-btn" type="button" onclick="startAIVoice()" title="Voice input"
-            style="flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--bg-card);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:background 0.2s,color 0.2s;padding:0;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/>
-              <line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
-            </svg>
-          </button>
+          <div class="ai-search-input-wrap">
+            <input id="ai-query-input" class="ai-search-input" type="text" placeholder="e.g. OT hours last month? Most visited site? Fibre break fix?"
+              value="${(state.aiQuery || '').replace(/"/g, '&quot;')}"
+              onkeydown="aiQueryKeydown(event)">
+            <button id="ai-mic-btn" type="button" onclick="startAIVoice()" title="Voice input" class="ai-mic-inline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/>
+                <line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+              </svg>
+            </button>
+          </div>
           <button class="ai-ask-btn" onclick="runAIQuery()" ${state.aiLoading ? 'disabled' : ''}>Ask</button>
         </div>
       </div>
