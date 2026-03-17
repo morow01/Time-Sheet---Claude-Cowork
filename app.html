@@ -80,8 +80,7 @@
     /* ===== SHARED LAYOUT (Phase 2) ===== */
     .week-list {
       background: #FFFFFF;
-      border-top: 1px solid #E0E8F0;
-      border-bottom: 1px solid #E0E8F0;
+
     }
 
     .day-card {
@@ -89,9 +88,10 @@
       background: #FFFFFF;
       border-radius: 14px;
       border: none;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 3px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 3px 10px rgba(0, 0, 0, 0.05);
       overflow: clip;
       position: relative;
+      border: 1px solid #e5e7eb;
     }
 
     .day-card:last-child {
@@ -109,7 +109,7 @@
     .day-header {
       display: flex;
       align-items: center;
-      padding: 8px 12px 8px 8px;
+      padding: 18px 15px 18px 21px;
       background: transparent;
       cursor: pointer;
       position: sticky;
@@ -139,7 +139,7 @@
       min-width: 48px;
       height: 48px;
       border-radius: 10px;
-      background: #1e2d4a;
+      background: #7a8ba8;
       color: #fff;
       flex-shrink: 0;
       transition: background 0.2s;
@@ -167,8 +167,8 @@
 
     /* Weekend — slightly muted badge */
     .day-weekend .date-badge {
-      background: #3a4a6a;
-      opacity: 0.75;
+      background: #7a8ba8;
+      opacity: 0.6;
     }
 
     /* Day info — name + pills */
@@ -206,7 +206,7 @@
       justify-content: center;
       flex-shrink: 0;
       color: #c0c8d8;
-      transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .day-card.expanded .day-chevron {
@@ -246,7 +246,7 @@
     /* Task row hour pills */
     .pill-hrs {
       padding: 2px 7px;
-      border-radius: 20px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 500;
       background: #EBF1FD;
@@ -256,7 +256,7 @@
 
     .pill-ot {
       padding: 2px 7px;
-      border-radius: 20px;
+      border-radius: 8px;
       font-size: 11px;
       font-weight: 500;
       background: #FEF3DC;
@@ -3179,14 +3179,17 @@
     #note-fs-editor .ql-toolbar.ql-snow .ql-formats {
       margin-right: 0 !important;
     }
+
     /* Force row 1 full-width so row 2 wraps below it */
     #note-fs-editor .ql-toolbar.ql-snow .ql-formats:nth-child(1) {
       width: 100%;
     }
+
     /* Push undo/redo to the right on row 2 */
     #note-fs-editor .ql-toolbar button.ql-undo {
       margin-left: auto;
     }
+
     #note-fs-editor .ql-toolbar button.ql-undo svg,
     #note-fs-editor .ql-toolbar button.ql-redo svg {
       width: 18px;
@@ -6018,7 +6021,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.8';
+    const VERSION = '4.5.9';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12229,11 +12232,11 @@ QUESTION: ${query}`;
               toolbar: {
                 container: [
                   [{ 'size': ['small', false, 'large', 'huge'] },
-                   'bold', 'italic', 'underline', 'strike', 'clean'],
+                    'bold', 'italic', 'underline', 'strike', 'clean'],
                   [{ 'list': 'ordered' }, { 'list': 'bullet' },
-                   { 'color': ['#000000', '#e53935', '#f57c00', '#2e7d32', '#1565c0', '#6a1b9a', '#ffffff'] },
-                   { 'background': ['', '#ffeb3b', '#a5d6a7', '#ef9a9a', '#90caf9', '#ce93d8', '#ffe0b2'] },
-                   'undo', 'redo']
+                  { 'color': ['#000000', '#e53935', '#f57c00', '#2e7d32', '#1565c0', '#6a1b9a', '#ffffff'] },
+                  { 'background': ['', '#ffeb3b', '#a5d6a7', '#ef9a9a', '#90caf9', '#ce93d8', '#ffe0b2'] },
+                    'undo', 'redo']
                 ],
                 handlers: {
                   'undo': function () { this.quill.history.undo(); },
@@ -12548,7 +12551,8 @@ QUESTION: ${query}`;
         <h2 class="text-base font-semibold flex-1">🤖 AI Assistant</h2>
         <span style="font-size:11px;color:rgba(255,255,255,0.5);" id="ai-fault-kb-stat"></span>
         <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
