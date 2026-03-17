@@ -610,7 +610,7 @@
       background-color: var(--bg-page);
       position: relative;
       /* Timeline gutter - Persistent during collapse */
-      padding-left: 36px;
+      padding-left: 27px;
       overflow: hidden;
       transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -623,7 +623,7 @@
     .day-activities::before {
       content: "";
       position: absolute;
-      left: 26px;
+      left: 17px;
       /* Center of day expand button */
       /* height is set dynamically via --tl-height so the line ends exactly
          at the last task node. Top is offset to connect into header. */
@@ -5993,7 +5993,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.6';
+    const VERSION = '4.5.7';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
