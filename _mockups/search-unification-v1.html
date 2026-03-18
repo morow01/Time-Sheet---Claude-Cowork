@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Unification Mockup v5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap');
+        :root {
+            --navy: #0F1C2E;
+            --accent: #2D6BE4;
+            --border: #D4E0EC;
+            --muted: #8BA5BE;
+            --page: #E8EEF5;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--page);
+            color: var(--navy);
+            padding: 24px;
+        }
+        textarea::placeholder {
+            color: #CBD5E1;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const Icon = ({ name, size = 20, className = "" }) => {
+            useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
+
+        const ExpandingTextarea = ({ value, onChange, placeholder }) => {
+            const textareaRef = useRef(null);
+
+            useEffect(() => {
+                const textarea = textareaRef.current;
+                if (textarea) {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = `${Math.min(textarea.scrollHeight, 240)}px`;
+                }
+            }, [value]);
+
+            return (
+                <textarea
+                    ref={textareaRef}
+                    rows="1"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full bg-transparent px-2 text-base outline-none resize-none overflow-y-auto font-medium leading-relaxed"
+                />
+            );
+        };
+
+        const Main = () => {
+            const [query, setQuery] = useState("");
+
+            return (
+                <div className="max-w-md mx-auto space-y-12 pb-20">
+                    <header className="text-center">
+                        <h1 className="text-2xl font-black text-slate-800">Search Unification v5</h1>
+                        <p className="text-slate-500 mt-2">Maximizing Text Width for Long Queries</p>
+                    </header>
+
+                    {/* STYLE E: STACKED (FULL WIDTH) */}
+                    <div className="space-y-4">
+                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-400 ml-1">Style E: Full Width (Stacked Actions)</label>
+                        <div className="bg-white border-[1.5px] border-slate-200 rounded-[28px] p-4 shadow-xl focus-within:ring-4 ring-blue-50 transition-all flex flex-col">
+                            {/* Text Area takes full width */}
+                            <div className="min-h-[60px]">
+                                <ExpandingTextarea 
+                                    value={query} 
+                                    onChange={setQuery} 
+                                    placeholder="Type or talk here..." 
+                                />
+                            </div>
+                            
+                            {/* Action Row at the bottom */}
+                            <div className="flex items-center justify-between mt-4 pt-2 border-t border-slate-50">
+                                <button className="h-10 w-10 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-full transition-colors flex items-center justify-center">
+                                    <Icon name="mic" size={20} />
+                                </button>
+                                
+                                <div className="flex items-center gap-2">
+                                    {query.trim().length > 20 && (
+                                         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter mr-2">
+                                            {query.trim().length} chars
+                                         </span>
+                                    )}
+                                    <button className={`h-10 px-6 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 font-black text-[11px] uppercase tracking-widest ${query.trim() ? 'bg-blue-600 text-white shadow-blue-200' : 'bg-slate-100 text-slate-300'}`}>
+                                        <span>Send</span>
+                                        <Icon name="arrow-up" size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[11px] text-slate-400 px-2 italic text-center">By moving the buttons to a dedicated action row, the text gets the <strong>Full Width</strong> of the box. No more squeezing!</p>
+                    </div>
+
+                    {/* SAMPLE TRIGGER */}
+                    <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 block">Test Multi-line:</label>
+                         <div className="flex gap-2">
+                            <button onClick={() => setQuery("Can you summarize my ordinary hours from last month and compare them to the previous month? I'd also like to see any tasks that have more than 2 hours of overtime.\n\nAlso, check if there are any gaps in my Wednesday logs.")} className="flex-1 bg-slate-50 text-slate-500 text-[10px] px-4 py-3 rounded-2xl border border-slate-100 font-bold uppercase hover:bg-blue-50 hover:text-blue-600 transition-all text-center">Load Long Query</button>
+                         </div>
+                    </div>
+
+                    <div className="mt-12 bg-[#0F1C2E] rounded-[40px] p-10 text-white relative shadow-2xl">
+                         <h3 className="font-bold text-sm text-blue-400 mb-4 flex items-center gap-2">
+                            <Icon name="layout" size={16} /> 
+                            Layout Benefits:
+                        </h3>
+                        <div className="space-y-4 text-xs leading-relaxed text-slate-300">
+                            <p>• <strong>Full Width Text</strong>: The textarea is no longer squeezed between side buttons.</p>
+                            <p>• <strong>Visual Separator</strong>: A subtle line (or just space) separates the writing area from the actions, making it feel like a professional tool.</p>
+                            <p>• <strong>Scalability</strong>: This layout is future-proof for if we add more icons (attachments, images, etc.).</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<Main />);
+    </script>
+</body>
+</html>

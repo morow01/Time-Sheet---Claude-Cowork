@@ -1,3 +1,3 @@
 @echo off
 echo Starting TimeSheet Local Server...
-npx serve -l 3000
+npx serve -l 3000 "c:\Users\morow\OneDrive\Vibe Code\TimeSheet"

@@ -3245,6 +3245,96 @@
       margin-bottom: 8px;
     }
 
+    /* --- REFINED STACKED AI SEARCH BAR (v5) --- */
+    .ai-search-stacked {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin: 0 14px 20px;
+      padding: 4px;
+      transition: all .3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .ai-search-stacked:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(45, 107, 228, 0.1);
+    }
+    .ai-expanding-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 12px 14px 8px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text-main);
+      resize: none;
+      min-height: 48px;
+      max-height: 240px;
+      line-height: 1.5;
+    }
+    .ai-action-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-top: 1px solid var(--border);
+      margin-top: 2px;
+    }
+    .ai-mic-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .ai-mic-btn:hover {
+      background: var(--bg-page);
+      color: var(--accent);
+    }
+    .ai-mic-btn.listening {
+      background: #ef4444 !important;
+      color: #fff !important;
+      animation: aiPulse 1.5s infinite;
+    }
+    .ai-send-btn {
+      height: 36px;
+      padding: 0 16px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .ai-send-btn:disabled {
+      background: var(--border);
+      color: var(--text-muted);
+      cursor: default;
+    }
+    .ai-send-btn:not(:disabled):active {
+      transform: scale(0.96);
+    }
+
+    @keyframes aiPulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
     .ai-answer-card {
       background: #f3f2ff;
       border-radius: 12px;
@@ -6021,7 +6111,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.14';
+    const VERSION = '4.5.15';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7367,7 +7457,11 @@
         (async () => {
           if (!state.aiStats) await loadAIStats();
           renderFaultAssistantModal();
-          setTimeout(() => document.getElementById('ai-query-input')?.focus(), 100);
+          const el = document.getElementById('ai-query-input');
+          if (el) {
+            el.focus();
+            aiQueryInputEvent(el);
+          }
         })();
       }
     }
@@ -12162,8 +12256,18 @@ QUESTION: ${query}`;
       }
     }
 
+    function aiQueryInputEvent(el) {
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 240) + 'px';
+      state.aiQuery = el.value;
+    }
+
     function aiQueryKeydown(e) {
-      if (e.key === 'Enter') runAIQuery();
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        runAIQuery();
+      }
     }
 
     function aiRecentTap(q) {
@@ -12171,7 +12275,10 @@ QUESTION: ${query}`;
       state.aiResult = null;
       state.aiError = null;
       const el = document.getElementById('ai-query-input');
-      if (el) el.value = q;
+      if (el) {
+        el.value = q;
+        aiQueryInputEvent(el);
+      }
       runAIQuery();
     }
 
@@ -12208,7 +12315,10 @@ QUESTION: ${query}`;
       rec.onresult = e => {
         const t = e.results[0][0].transcript;
         state.aiQuery = t;
-        if (input) input.value = t;
+        if (input) {
+          input.value = t;
+          aiQueryInputEvent(input);
+        }
       };
       rec.onend = () => { if (btn) btn.classList.remove('listening'); };
       rec.onerror = () => { if (btn) btn.classList.remove('listening'); };
@@ -12439,21 +12549,29 @@ QUESTION: ${query}`;
       }
 
       body.innerHTML = `<div class="ai-view">
-      <div class="ai-search-wrap">
+      <div style="padding: 14px 14px 0;">
         <div class="ai-section-label" style="margin-bottom:6px;">Ask about your timesheet</div>
-        <div class="ai-search-row">
-          <div class="ai-search-input-wrap">
-            <input id="ai-query-input" class="ai-search-input" type="text" placeholder="e.g. OT hours last month? Most visited site? Fibre break fix?"
-              value="${(state.aiQuery || '').replace(/"/g, '&quot;')}"
-              onkeydown="aiQueryKeydown(event)">
-            <button id="ai-mic-btn" type="button" onclick="startAIVoice()" title="Voice input" class="ai-mic-inline">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/>
-                <line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
-              </svg>
-            </button>
-          </div>
-          <button class="ai-ask-btn" onclick="runAIQuery()" ${state.aiLoading ? 'disabled' : ''}>Ask</button>
+      </div>
+      <div class="ai-search-stacked">
+        <textarea id="ai-query-input" class="ai-expanding-input" 
+          placeholder="e.g. OT hours last month? Most visited site? Fibre break fix?"
+          onkeydown="aiQueryKeydown(event)"
+          oninput="aiQueryInputEvent(this)">${(state.aiQuery || '').replace(/"/g, '&quot;')}</textarea>
+        
+        <div class="ai-action-row">
+          <button id="ai-mic-btn" type="button" onclick="startAIVoice()" title="Voice input" class="ai-mic-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/>
+              <line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+          </button>
+          
+          <button class="ai-send-btn" onclick="runAIQuery()" ${state.aiLoading ? 'disabled' : ''}>
+            <span>${state.aiLoading ? 'Thinking' : 'Ask'}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+            </svg>
+          </button>
         </div>
       </div>
       ${resultHtml}

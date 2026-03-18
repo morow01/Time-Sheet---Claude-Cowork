@@ -103,3 +103,31 @@ Use this file to avoid re-asking about folders the user has already confirmed.
 - `Roald Dahl - Vyvrcholeni` is still `Audioknihy` even with two narrators.
 - `Tomas Zmeskal - Milostny dopis klinovym pismem` is `Audioknihy` even with multiple narrators.
 - `William Saroyan - Tracyho tygr` is `Audioknihy` even with multiple narrators.
+
+## Additional Confirmations
+
+### `Rozhlasove Hry`
+
+- `Zajic Vladimir - Perute soumraku`
+- `Proskova Hana - Krivy prostor`
+- `Legatova Kveta - Skrtidla`
+- `Legatova Kveta - Superkocka`
+- `Idalberto Fei - Siena, jednoho deštivého dne`
+- `Gilbert Keith Chesterton - Povídky otce Browna`
+- `Jack London - Bílý tesák`
+- `Karel Čapek - R.U.R`
+- `Karel Čapek - Továrna na Absolutno`
+- `Rychle.sipy.na.gramodeskach.1941.42`
+
+### `Audioknihy`
+
+- `Ash-Timothy-Garton---Vsichni-radi-zapominame`
+- `David Mitchell - Atlas mraků (2013)`
+- `Francisco Coloane - Země zapomnění`
+- `Howard Phillips Lovecraft - Vydedenec, Vypoved Randolpha Cartera`
+- `Jaroslav Rudis - Nebe pod Berlinem`
+- `Michal Viewegh - Báječná léta pod psa`
+- `Pristav vola`
+- `Robert James Waller - Madisonske mosty 4CD`
+- `Steklac Vojtech - Borikovy lapalie [CRo] (2006)`
+- `Tor Age Bringsvaerd - Jakou me chces`
