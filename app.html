@@ -4058,7 +4058,7 @@
 
     .note-row {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
       padding: 14px 16px;
       cursor: pointer;
@@ -4125,6 +4125,8 @@
       width: 9px;
       height: 9px;
       border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
       flex-shrink: 0;
     }
 
@@ -6252,7 +6254,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.25';
+    const VERSION = '4.5.26';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
