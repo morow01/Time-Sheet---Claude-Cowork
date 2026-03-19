@@ -4934,9 +4934,16 @@
     }
 
     .rtn-site-link::after {
-      content: '📍';
-      font-size: 11px;
-      opacity: 0.5;
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-left: 4px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
+      opacity: 0.8;
+      vertical-align: middle;
       flex-shrink: 0;
     }
 
@@ -6179,7 +6186,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.17';
+    const VERSION = '4.5.18';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6363,7 +6370,7 @@
         scheduleAutoSave();
         const locEl = document.querySelector(`[data-row-loc="${actId}"]`);
         if (locEl) locEl.innerHTML = val
-          ? `<span style="margin-right:2px">📍</span>${esc(val)}`
+          ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(val)}`
           : '<span style="opacity:0.4">No location</span>';
         render();
       }
@@ -7580,7 +7587,7 @@
       return `
   <header class="shadow-lg" style="background:var(--bg-header);color:var(--text-header)">
     <div class="flex items-center px-4 py-3 gap-2">
-      <button onclick="prevWeek()" class="hdr-nav-btn"><svg width="6" height="8" viewBox="0 0 6 8"><polygon points="6,0 0,4 6,8" fill="rgba(255,255,255,0.55)"/></svg></button>
+      <button onclick="prevWeek()" class="hdr-nav-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div class="flex-1 text-center">
         <div onclick="toggleHeader()" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:6px;transition:background 0.2s;" onmousedown="this.style.background='rgba(255,255,255,0.08)'" onmouseup="this.style.background='transparent'" onmouseleave="this.style.background='transparent'">
           <span class="font-bold text-base leading-tight">${state.weekStart ? formatWeekRange(state.weekStart) : '—'}</span>
@@ -7592,7 +7599,7 @@
           <span style="color:var(--text-muted)" class="text-xs">v${VERSION}</span>
         </div>
       </div>
-      <button onclick="nextWeek()" class="hdr-nav-btn"><svg width="6" height="8" viewBox="0 0 6 8"><polygon points="0,0 6,4 0,8" fill="rgba(255,255,255,0.55)"/></svg></button>
+      <button onclick="nextWeek()" class="hdr-nav-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
       <div class="theme-menu-wrap">
         <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -7672,7 +7679,7 @@
                 <div class="menu-section-label">AI Settings</div>
                 <div class="menu-card">
                   <button class="menu-row" onclick="openFaultAssistant()">
-                    <span class="menu-row-icon">🤖</span>
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">AI Assistant</span><span class="menu-row-sub">Ask about hours, faults, sites & more</span></span>
                     ${chev}
                   </button>
@@ -7683,7 +7690,7 @@
                       <button class="menu-ai-key-save" onclick="saveGeminiKey()">Save Key</button>
                       <button class="menu-ai-key-test" onclick="testGeminiKey()">Test</button>
                     </div>
-                    <div class="menu-ai-key-status" id="menu-gemini-status">${state.geminiKey ? '🔑 Key saved' : ''}</div>
+                    <div class="menu-ai-key-status" id="menu-gemini-status">${state.geminiKey ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:4px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-4-4"/></svg>Key saved' : ''}</div>
                   </div>
                 </div>
               </div>
@@ -7776,7 +7783,7 @@
           const dayOT = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
           if (dayOrd === 0 && dayOT === 0) {
             issues.push({
-              severity: 'warn', icon: '⏱️', dayIdx: di,
+              severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, dayIdx: di,
               msg: `<strong>${day.dayName}</strong> has tasks but <strong>0 hours</strong> recorded.`
             });
           }
@@ -7791,7 +7798,7 @@
           if ((ord > 0 || ot > 0) && act.codes.length === 0) {
             const desc = act.description ? `"${act.description}"` : 'an activity';
             issues.push({
-              severity: 'error', icon: '🔴', dayIdx: di,
+              severity: 'error', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, dayIdx: di,
               msg: `<strong>${day.dayName}</strong>: ${desc} has hours but <strong>no work code</strong>.`
             });
           }
@@ -7800,7 +7807,7 @@
           if (act.codes.length > 0 && ord === 0 && ot === 0) {
             const desc = act.description ? `"${act.description}"` : 'an activity';
             issues.push({
-              severity: 'warn', icon: '⚠️', dayIdx: di,
+              severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`, dayIdx: di,
               msg: `<strong>${day.dayName}</strong>: ${desc} has a code but <strong>no hours</strong> entered.`
             });
           }
@@ -7808,7 +7815,7 @@
           // 5. Has hours but no description
           if ((ord > 0 || ot > 0) && !act.description) {
             issues.push({
-              severity: 'warn', icon: '📝', dayIdx: di,
+              severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`, dayIdx: di,
               msg: `<strong>${day.dayName}</strong>: An activity with ${ord}h has <strong>no description</strong>.`
             });
           }
@@ -7820,13 +7827,13 @@
           const dayOT = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
           if (dayOrd > 12) {
             issues.push({
-              severity: 'warn', icon: '🕐', dayIdx: di,
+              severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, dayIdx: di,
               msg: `<strong>${day.dayName}</strong>: Ordinary hours (<strong>${Math.round(dayOrd)}h</strong>) look unusually high.`
             });
           }
           if (dayOT > 0 && dayOrd === 0) {
             issues.push({
-              severity: 'warn', icon: '⚠️', dayIdx: di,
+              severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`, dayIdx: di,
               msg: `<strong>${day.dayName}</strong>: Has <strong>overtime</strong> but no ordinary hours.`
             });
           }
@@ -7890,7 +7897,7 @@
       return `
       <div class="anomaly-banner" id="anomaly-banner">
         <div class="anomaly-banner-head" onclick="toggleAnomalyBanner()">
-          <span class="anomaly-banner-icon">⚠️</span>
+          <span class="anomaly-banner-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
           <span class="anomaly-banner-title">${titleText}</span>
           <span class="anomaly-banner-count">${issues.length}</span>
           <svg id="anomaly-banner-chev" class="anomaly-banner-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -7925,7 +7932,7 @@
   <div class="sum-section">
     <button onclick="toggleSummary()" class="sum-new-head">
       <div class="sum-head-left">
-        <div class="sum-sum-icon">📊</div>
+        <div class="sum-sum-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
         <div class="sum-new-title">Weekly Summary</div>
       </div>
       <div class="sum-head-right">
@@ -7996,7 +8003,7 @@
       <span style="color:var(--text-header-sub)" class="text-sm">
         <span class="font-mono" data-sum-ord>${Math.round(totalOrd)}</span> hrs &nbsp;
         <span class="font-mono" style="color:var(--tab-active)" data-sum-ot>${Math.round(totalOT)}</span> OT
-        <span class="ml-2">${state.showSummary ? '▲' : '▼'}</span>
+        <span class="ml-2"><svg class="sum-chevron-svg inline-block" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)'}"><polyline points="6 9 12 15 18 9"/></svg></span>
       </span>
     </button>
     ${state.showSummary ? `
@@ -8662,7 +8669,7 @@
             <!-- Line 2: location left, hour pills right -->
             <div class="act-row2">
               <div class="act-loc-txt" data-row-loc="${act.id}">
-                ${act.location ? `<span style="margin-right:2px">📍</span>${esc(act.location)}` : '<span style="opacity:0.4">No location</span>'}
+                ${act.location ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(act.location)}` : '<span style="opacity:0.4">No location</span>'}
               </div>
               <div class="act-pill-row">
                 ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" style="display:none"></span>`}
@@ -8836,7 +8843,7 @@
       if (field === 'location') {
         const locEl = document.querySelector(`[data-row-loc="${actId}"]`);
         if (locEl) locEl.innerHTML = val
-          ? `<span style="margin-right:2px">📍</span>${esc(val)}`
+          ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(val)}`
           : '<span style="opacity:0.4">No location</span>';
       }
 
@@ -9728,7 +9735,7 @@
       if (GOOGLE_MAPS_API_KEY === 'YOUR_KEY_HERE') {
         el.innerHTML = `
           <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gray-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-gray-300 dark:border-slate-700">
-            <div class="text-3xl mb-3">📍</div>
+            <div class="text-3xl mb-3"><svg width="32" height="32" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg></div>
             <div class="text-sm font-bold mb-1" style="color:var(--text-primary)">Google Maps Key Required</div>
             <div class="text-xs text-muted mb-4 max-w-[200px]">Please add your Google Maps API Key to index.html to enable the interactive map.</div>
             <div class="text-[10px] bg-accent-light px-2 py-1 rounded font-mono" style="color:var(--accent)">GOOGLE_MAPS_API_KEY = '...'</div>
@@ -10340,7 +10347,7 @@
       document.getElementById('app').innerHTML = `
         <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-page);">
           <div style="background:var(--bg-card);border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%;box-shadow:0 4px 24px rgba(0,0,0,0.10);border:1px solid var(--border);">
-            <div style="font-size:2.5rem;margin-bottom:12px;">⏱️</div>
+            <div style="font-size:2.5rem;margin-bottom:12px;color:var(--accent);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);margin-bottom:6px;">Rian</h1>
             <p style="color:var(--text-secondary);margin-bottom:28px;font-size:0.88rem;">Sign in to sync your timesheet across all devices.</p>
             <button onclick="signInWithGoogle()" style="background:#1e3a8a;color:#fff;border:none;border-radius:10px;padding:13px 20px;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;">
@@ -10883,9 +10890,9 @@
         <div class="rtn-page">
           <div class="rtn-top-bar">
             <div class="rtn-year-nav">
-              <button class="rtn-year-btn" onclick="routinesChangeYear(-1)">&#8249;</button>
+              <button class="rtn-year-btn" onclick="routinesChangeYear(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
               <span class="rtn-year-label">${year}</span>
-              <button class="rtn-year-btn" onclick="routinesChangeYear(1)">&#8250;</button>
+              <button class="rtn-year-btn" onclick="routinesChangeYear(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
             </div>
             <button class="rtn-edit-btn" onclick="openRoutinesSitePicker()">Edit Sites</button>
           </div>
@@ -12530,7 +12537,7 @@ QUESTION: ${query}`;
 
       if (!state.geminiKey) {
         body.innerHTML = `<div class="ai-view"><div class="ai-setup-card">
-          <div class="ai-setup-icon">🔑</div>
+          <div class="ai-setup-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-4-4"/></svg></div>
           <div class="ai-setup-title">API Key Required</div>
           <div class="ai-setup-sub">Add your Gemini API key in <strong>☰ Menu → AI Settings</strong> to use the AI Assistant.<br><br>The same key is shared with the voice entry feature.</div>
         </div></div>`;
@@ -12546,15 +12553,15 @@ QUESTION: ${query}`;
           <div class="ai-stat-tile"><div class="ai-stat-val">${stats.weekCount}</div><div class="ai-stat-lbl">weeks</div></div>
           <div class="ai-stat-tile"><div class="ai-stat-val">${stats.monthsBack || '—'}</div><div class="ai-stat-lbl">months data</div></div>
         </div>
-        ${stats.noteCount > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">📝 ${stats.noteCount} fault note${stats.noteCount === 1 ? '' : 's'} available for fault diagnosis</div>` : ''}
-        ${stats.entryCount === 0 ? `<div class="ai-empty-state" style="margin-top:10px;">💡 Your timesheet history will appear here once you start logging work entries.</div>` : ''}
+        ${stats.noteCount > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> ${stats.noteCount} fault note${stats.noteCount === 1 ? '' : 's'} available for fault diagnosis</div>` : ''}
+        ${stats.entryCount === 0 ? `<div class="ai-empty-state" style="margin-top:10px;display:flex;align-items:center;gap:6px;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6m-3-3a6 6 0 1 0-3.46-10.74 8.5 8.5 0 0 1-1.04 1.74 6 6 0 0 0 4.5 9z"/><line x1="12" y1="18" x2="12" y2="22"/></svg> Your timesheet history will appear here once you start logging work entries.</div>` : ''}
       </div>` : '';
 
       const recentHtml = !state.aiResult && !state.aiLoading && state.aiRecentQueries.length ? `
       <div class="ai-section">
         <div class="ai-section-label">Recent searches</div>
         <div style="display:flex;flex-wrap:wrap;padding-top:2px;">
-          ${state.aiRecentQueries.map(q => `<button type="button" class="ai-recent-chip" data-q="${q.replace(/"/g, '&quot;')}" onclick="aiRecentTap(this.getAttribute('data-q'))">🔍 ${q}</button>`).join('')}
+          ${state.aiRecentQueries.map(q => `<button type="button" class="ai-recent-chip" data-q="${q.replace(/"/g, '&quot;')}" onclick="aiRecentTap(this.getAttribute('data-q'))"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:2px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> ${q}</button>`).join('')}
         </div>
       </div>` : '';
 
@@ -12596,7 +12603,7 @@ QUESTION: ${query}`;
           return `<div class="ai-note-card" data-note-id="${n.id}" onclick="goToNote(this.getAttribute('data-note-id'))">
               <div class="ai-note-card-date">${dateStr}${n.priority ? n.priority + ' priority' : ''}${statusBadge}</div>
               <div class="ai-note-card-desc">${n.description || '(no description)'}</div>
-              ${n.location ? `<div class="ai-note-card-loc">📍 ${n.location}</div>` : ''}
+              ${n.location ? `<div class="ai-note-card-loc"><svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:3px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${n.location}</div>` : ''}
               <div class="ai-note-card-footer">↗ Tap to open this note</div>
             </div>`;
         }).join('')}
@@ -12748,8 +12755,8 @@ QUESTION: ${query}`;
     style="background:var(--bg-page);z-index:9999;">
     <div class="flex flex-col w-full flex-1 overflow-hidden" style="max-width:672px;background:var(--bg-page);">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
-        <button onclick="closeFaultAssistant()" class="text-white p-1 text-xl leading-none">✕</button>
-        <h2 class="text-base font-semibold flex-1">🤖 AI Assistant</h2>
+        <button onclick="closeFaultAssistant()" class="text-white p-1 flex items-center justify-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <h2 class="text-base font-semibold flex-1 flex items-center gap-2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg> AI Assistant</h2>
         <span style="font-size:11px;color:rgba(255,255,255,0.5);" id="ai-fault-kb-stat"></span>
         <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -12769,7 +12776,7 @@ QUESTION: ${query}`;
     style="background:var(--bg-page);z-index:9999;">
     <div class="flex flex-col w-full flex-1 overflow-hidden" style="max-width:672px;background:var(--bg-page);">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
-        <button onclick="closeNoteFullscreen()" class="text-white p-1 text-xl leading-none">✕</button>
+        <button onclick="closeNoteFullscreen()" class="text-white p-1 flex items-center justify-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <h2 class="text-base font-semibold flex-1">Edit Note</h2>
         <button onclick="closeNoteFullscreen()"
           style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;font-weight:600;">Done</button>
@@ -12782,14 +12789,14 @@ QUESTION: ${query}`;
   <div id="email-preview-modal" class="hidden fixed inset-0 z-50 flex flex-col" style="background:var(--bg-modal)">
     <div class="flex flex-col flex-1 overflow-hidden">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
-        <button onclick="closeEmailPreview()" class="text-white p-1 text-xl leading-none">✕</button>
+        <button onclick="closeEmailPreview()" class="text-white p-1 flex items-center justify-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <h2 class="text-base font-semibold flex-1">Weekly Summary</h2>
         <button onclick="sendWeeklyEmailFromPreview()"
           class="bg-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">Send Email</button>
       </div>
       <div
         style="background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:8px 16px;font-size:12px;color:#2563eb;text-align:center;">
-        💡 Tap any <span style="text-decoration:underline;text-decoration-style:dotted;">underlined value</span> to copy
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:4px;"><path d="M9 18h6m-3-3a6 6 0 1 0-3.46-10.74 8.5 8.5 0 0 1-1.04 1.74 6 6 0 0 0 4.5 9z"/><line x1="12" y1="18" x2="12" y2="22"/></svg> Tap any <span style="text-decoration:underline;text-decoration-style:dotted;">underlined value</span> to copy
         it to clipboard
       </div>
       <div id="email-preview-body" class="flex-1 overflow-y-auto" style="background:#f1f5f9;padding:16px 12px;"></div>

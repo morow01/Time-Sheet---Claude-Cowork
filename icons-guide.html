@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeSheet Icon Reference Guide</title>
+    <style>
+        :root {
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --accent: #2563EB;
+            --accent-light: #EFF6FF;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.02em;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0 0 40px 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .icon-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .icon-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .icon-wrapper {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-light);
+            color: var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .icon-wrapper svg {
+            width: 24px;
+            height: 24px;
+        }
+        /* Specific colors */
+        .icon-wrapper.red-pin {
+            color: #ea4335;
+            background: #fdf5f4;
+        }
+        .icon-wrapper.warn {
+            color: #f59e0b;
+            background: #fffbeb;
+        }
+        .info h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+        .info p.desc {
+            margin: 0 0 8px 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .info p.loc {
+            margin: 0;
+            font-size: 0.8rem;
+            font-family: ui-monospace, monospace;
+            color: var(--accent);
+            background: var(--accent-light);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Icon Reference Guide</h1>
+    <p class="subtitle">A complete list of the unified flat SVG icons used across the Rian TimeSheet app.</p>
+
+    <div class="grid">
+        
+        <!-- Icon: Header Chevron Left -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </div>
+            <div class="info">
+                <h3>Previous Chevron</h3>
+                <p class="desc">Navigates to the previous item</p>
+                <p class="loc">Header, Routines Year Nav</p>
+            </div>
+        </div>
+
+        <!-- Icon: Header Chevron Right -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+            <div class="info">
+                <h3>Next Chevron</h3>
+                <p class="desc">Navigates to the next item</p>
+                <p class="loc">Header, Routines Year Nav</p>
+            </div>
+        </div>
+
+        <!-- Icon: Menu -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </div>
+            <div class="info">
+                <h3>Hamburger Menu</h3>
+                <p class="desc">Opens the main application drawer</p>
+                <p class="loc">Header Navigation</p>
+            </div>
+        </div>
+
+        <!-- Icon: AI Assistant Robot -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+            </div>
+            <div class="info">
+                <h3>AI Robot</h3>
+                <p class="desc">Represents the Rian AI Fault Assistant tool</p>
+                <p class="loc">☰ Menu, Fault Assistant Header</p>
+            </div>
+        </div>
+
+        <!-- Icon: Google Map Pin -->
+        <div class="icon-card">
+            <div class="icon-wrapper red-pin">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            </div>
+            <div class="info">
+                <h3>Map Location Pin</h3>
+                <p class="desc">Indicates a site or geographical location</p>
+                <p class="loc">Activity rows, AI Notes, Modals</p>
+            </div>
+        </div>
+
+        <!-- Icon: Warning/Fault -->
+        <div class="icon-card">
+            <div class="icon-wrapper warn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="info">
+                <h3>Fault Warning</h3>
+                <p class="desc">Alerts user to incomplete entries or errors</p>
+                <p class="loc">Anomaly Banner, Missing Code Inline</p>
+            </div>
+        </div>
+
+        <!-- Icon: Notes/Clipboard -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="info">
+                <h3>Clipboard Document</h3>
+                <p class="desc">Count of available fault notes / routines</p>
+                <p class="loc">AI Assistant Overview, ☰ Menu</p>
+            </div>
+        </div>
+
+        <!-- Icon: API Key Status -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-4-4"/></svg>
+            </div>
+            <div class="info">
+                <h3>API Key Status</h3>
+                <p class="desc">Indicates if the Gemini API key is linked</p>
+                <p class="loc">AI Setup Modal, ☰ Menu Status</p>
+            </div>
+        </div>
+
+        <!-- Icon: Summary Chart -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div class="info">
+                <h3>Bar Chart</h3>
+                <p class="desc">Represents the weekly rollup/summary pane</p>
+                <p class="loc">Summary Banner Header</p>
+            </div>
+        </div>
+
+        <!-- Icon: Add Task (Plus) -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+            <div class="info">
+                <h3>Plus (Add)</h3>
+                <p class="desc">Button to add a new task or code</p>
+                <p class="loc">Add Task Button, Add Code Dialog</p>
+            </div>
+        </div>
+
+        <!-- Icon: Microphone (Voice) -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            </div>
+            <div class="info">
+                <h3>Microphone</h3>
+                <p class="desc">Hardware trigger for voice dictation features</p>
+                <p class="loc">FAB Voice Button, Search Input Voice</p>
+            </div>
+        </div>
+
+        <!-- Icon: Search (Magnifying Glass) -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="info">
+                <h3>Search Glass</h3>
+                <p class="desc">Visual indicator for search & queries</p>
+                <p class="loc">AI Recent queries, Finder and Modals</p>
+            </div>
+        </div>
+
+        <!-- Icon: Clock (Login) -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="info">
+                <h3>Clock/Stopwatch</h3>
+                <p class="desc">App logo/iconography for timesheets</p>
+                <p class="loc">Login Screen Hero Icon</p>
+            </div>
+        </div>
+        
+        <!-- Icon: Info/Bulb -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6m-3-3a6 6 0 1 0-3.46-10.74 8.5 8.5 0 0 1-1.04 1.74 6 6 0 0 0 4.5 9z"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+            </div>
+            <div class="info">
+                <h3>Idea Bulb</h3>
+                <p class="desc">Shows helpful tips or empty states</p>
+                <p class="loc">AI Assistant Empty State Placeholder</p>
+            </div>
+        </div>
+
+        <!-- Icon: Delete Trash -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </div>
+            <div class="info">
+                <h3>Trash Can</h3>
+                <p class="desc">Used for destructive actions or clearing data</p>
+                <p class="loc">Activity rows (Delete task), Main Menu</p>
+            </div>
+        </div>
+
+        <!-- Icon: Expand Grid (Fullscreen) -->
+        <div class="icon-card">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            </div>
+            <div class="info">
+                <h3>Expand To Fullscreen</h3>
+                <p class="desc">Expands the active modal or feature to fill screen</p>
+                <p class="loc">Activity Notes Header</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

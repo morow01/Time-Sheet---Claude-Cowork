@@ -1,0 +1,299 @@
+﻿{
+    "scanned":  1545,
+    "candidate_count":  71,
+    "moved_count":  48,
+    "skipped_count":  0,
+    "moved":  [
+                  {
+                      "Name":  "Giovanni Boccaccio - Dekameron",
+                      "Score":  196,
+                      "Hits":  "rozhlasova hra",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Giovanni Boccaccio - Dekameron"
+                  },
+                  {
+                      "Name":  "David Mitchell - Atlas mraků (2013)",
+                      "Score":  112,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\David Mitchell - Atlas mraků (2013)"
+                  },
+                  {
+                      "Name":  "Kubin Alfred-Zeme snivcu 128kbps",
+                      "Score":  112,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Kubin Alfred-Zeme snivcu 128kbps"
+                  },
+                  {
+                      "Name":  "M. R. Carey - Všemi dary obdarovaná",
+                      "Score":  112,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\M. R. Carey - Všemi dary obdarovaná"
+                  },
+                  {
+                      "Name":  "Malaparte Curzio-Kaput 128kbps",
+                      "Score":  112,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Malaparte Curzio-Kaput 128kbps"
+                  },
+                  {
+                      "Name":  "Mirbeau Octave-Denik komorne 128kbps",
+                      "Score":  112,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Mirbeau Octave-Denik komorne 128kbps"
+                  },
+                  {
+                      "Name":  "Pagnol Marcel-Ziva voda 128kbps",
+                      "Score":  112,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Pagnol Marcel-Ziva voda 128kbps"
+                  },
+                  {
+                      "Name":  "Sacher-Masoch-Venuse v kozichu 128kbps",
+                      "Score":  112,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Sacher-Masoch-Venuse v kozichu 128kbps"
+                  },
+                  {
+                      "Name":  "Vedral Jan-Xaver 128kbps",
+                      "Score":  112,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Vedral Jan-Xaver 128kbps"
+                  },
+                  {
+                      "Name":  "Kubin Alfred-Zeme snivcu VBR-HQ",
+                      "Score":  98,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Kubin Alfred-Zeme snivcu VBR-HQ"
+                  },
+                  {
+                      "Name":  "Malaparte Curzio-Kaput VBR-HQ",
+                      "Score":  98,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Malaparte Curzio-Kaput VBR-HQ"
+                  },
+                  {
+                      "Name":  "Pagnol Marcel-Ziva voda VBR-HQ",
+                      "Score":  98,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Pagnol Marcel-Ziva voda VBR-HQ"
+                  },
+                  {
+                      "Name":  "Palan Ales-Ratajsky les VBR-HQ",
+                      "Score":  98,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Palan Ales-Ratajsky les VBR-HQ"
+                  },
+                  {
+                      "Name":  "Rosten Leo-Pan Kaplan ma stale tridu rad VBR-HQ",
+                      "Score":  98,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Rosten Leo-Pan Kaplan ma stale tridu rad VBR-HQ"
+                  },
+                  {
+                      "Name":  "Sacher-Masoch-Venuse v kozichu VBR-HQ",
+                      "Score":  98,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Sacher-Masoch-Venuse v kozichu VBR-HQ"
+                  },
+                  {
+                      "Name":  "Spanelske pohadky VBR-HQ",
+                      "Score":  98,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Spanelske pohadky VBR-HQ"
+                  },
+                  {
+                      "Name":  "Meyrink Gustav-Golem VBR-HQ",
+                      "Score":  84,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Meyrink Gustav-Golem VBR-HQ"
+                  },
+                  {
+                      "Name":  "Polacek Karel-Soudnicky VBR-HQ nahr2010",
+                      "Score":  84,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Polacek Karel-Soudnicky VBR-HQ nahr2010"
+                  },
+                  {
+                      "Name":  "Polacek Karel-Soudnicky VBR-HQ nahr2016",
+                      "Score":  84,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Polacek Karel-Soudnicky VBR-HQ nahr2016"
+                  },
+                  {
+                      "Name":  "London Jack-McCoyovo seme 128kbps",
+                      "Score":  80,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\London Jack-McCoyovo seme 128kbps"
+                  },
+                  {
+                      "Name":  "Stransky Jiri-Stesti 128kbps",
+                      "Score":  80,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Stransky Jiri-Stesti 128kbps"
+                  },
+                  {
+                      "Name":  "Wallace Edgar-Kriminalni pribehy Johna G Reedera 128kbps",
+                      "Score":  80,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Wallace Edgar-Kriminalni pribehy Johna G Reedera 128kbps"
+                  },
+                  {
+                      "Name":  "Coudenhove-Calergi_Micu-Pameti_hrabenky_VBR-HQ",
+                      "Score":  70,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Coudenhove-Calergi_Micu-Pameti_hrabenky_VBR-HQ"
+                  },
+                  {
+                      "Name":  "London Jack-McCoyovo seme VBR-HQ",
+                      "Score":  70,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\London Jack-McCoyovo seme VBR-HQ"
+                  },
+                  {
+                      "Name":  "Stransky Jiri-Stesti VBR-HQ",
+                      "Score":  70,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Stransky Jiri-Stesti VBR-HQ"
+                  },
+                  {
+                      "Name":  "Sladkova Vera-volna trilogie Posledni vlak etc 128kbps",
+                      "Score":  48,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Sladkova Vera-volna trilogie Posledni vlak etc 128kbps"
+                  },
+                  {
+                      "Name":  "Kosiner Bernard-Pohadka o trech kouzelnicich casu VBR-HQ",
+                      "Score":  42,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Kosiner Bernard-Pohadka o trech kouzelnicich casu VBR-HQ"
+                  },
+                  {
+                      "Name":  "Updike John-Ruzne druhy nabozenskeho prozitku VBR-HQ",
+                      "Score":  42,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Updike John-Ruzne druhy nabozenskeho prozitku VBR-HQ"
+                  },
+                  {
+                      "Name":  "Mirbeau Octave-Denik komorne VBR-HQ",
+                      "Score":  28,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Mirbeau Octave-Denik komorne VBR-HQ"
+                  },
+                  {
+                      "Name":  "Smid Jan-Ciste radosti meho zivota VBR-HQ",
+                      "Score":  28,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Smid Jan-Ciste radosti meho zivota VBR-HQ"
+                  },
+                  {
+                      "Name":  "Twain Mark-povidky a jine-8x",
+                      "Score":  28,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Twain Mark-povidky a jine-8x"
+                  },
+                  {
+                      "Name":  "Jan Neruda-Pane Liebeltuv spacek (18 02 2016 20;00)",
+                      "Score":  16,
+                      "Hits":  "ucinkuji; broadcast",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Jan Neruda-Pane Liebeltuv spacek (18 02 2016 20;00)"
+                  },
+                  {
+                      "Name":  "Adriena Simotova-Hlava k listovani-SCH S LIT 2016 08 07 D Cermakova VBR-HQ OK",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Adriena Simotova\\Adriena Simotova-Hlava k listovani-SCH S LIT 2016 08 07 D Cermakova VBR-HQ OK"
+                  },
+                  {
+                      "Name":  "Adriena Simotova-Magie casu casu casu-SOUZVUK 2016 08 07 V Babka VBR-HQ OK",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Adriena Simotova\\Adriena Simotova-Magie casu casu casu-SOUZVUK 2016 08 07 V Babka VBR-HQ OK"
+                  },
+                  {
+                      "Name":  "Anatole France Baltazar",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Anatole France Baltazar"
+                  },
+                  {
+                      "Name":  "Ciler Ilhanova",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Ciler Ilhanova"
+                  },
+                  {
+                      "Name":  "Fjodor Michajlovic Dostojevskij",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Fjodor Michajlovic Dostojevskij"
+                  },
+                  {
+                      "Name":  "Grmolec_Zdenek-Kasja_VBR-HQ",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Grmolec_Zdenek-Kasja_VBR-HQ"
+                  },
+                  {
+                      "Name":  "Gundega Repseova",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Gundega Repseova"
+                  },
+                  {
+                      "Name":  "Guy de Maupassant",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Guy de Maupassant"
+                  },
+                  {
+                      "Name":  "JO NESBO SYN 2",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Jo Nesbo\\JO NESBO SYN 2"
+                  },
+                  {
+                      "Name":  "Klukanova L-Jeden ze zapomenutych plukovnik Josef Jiri Svec",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Klukanova L-Jeden ze zapomenutych plukovnik Josef Jiri Svec"
+                  },
+                  {
+                      "Name":  "Mark Twain-Podivny sen 2016 05 30 VBR-HQ",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Mark Twain-Podivny sen 2016 05 30 VBR-HQ"
+                  },
+                  {
+                      "Name":  "Mark Twain-Prosluly skakavy zabak z okresu Calaveras 2016 06 02 VBR-HQ",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Mark Twain-Prosluly skakavy zabak z okresu Calaveras 2016 06 02 VBR-HQ"
+                  },
+                  {
+                      "Name":  "Pianino na rance Lomito",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\O Henry\\Pianino na rance Lomito"
+                  },
+                  {
+                      "Name":  "Prvni maj s tematikou kamenu-cetby hudba poezie aj 2017-05-01",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Prvni maj s tematikou kamenu-cetby hudba poezie aj 2017-05-01"
+                  },
+                  {
+                      "Name":  "Sny-Karel IV 2016 05 14-23 58 04 VBR-HQ OK",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Sny-Karel IV 2016 05 14-23 58 04 VBR-HQ OK"
+                  },
+                  {
+                      "Name":  "Zelny list z klastera Songgwangsa-buddhisticke legendy-SOUZ",
+                      "Score":  14,
+                      "Hits":  "ucinkuji",
+                      "From":  "\\\\Synology1621\\Hovorene Slovo\\-= Audioknihy =-\\Zelny list z klastera Songgwangsa-buddhisticke legendy-SOUZ"
+                  }
+              ],
+    "skipped":  [
+
+                ]
+}

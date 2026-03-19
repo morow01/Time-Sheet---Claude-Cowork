@@ -118,16 +118,73 @@ Use this file to avoid re-asking about folders the user has already confirmed.
 - `Karel Čapek - R.U.R`
 - `Karel Čapek - Továrna na Absolutno`
 - `Rychle.sipy.na.gramodeskach.1941.42`
+- `Jan Neruda-Pane Liebeltuv spacek (18 02 2016 20;00)`
+- `London Jack-McCoyovo seme 128kbps`
+- `Mirbeau Octave-Denik komorne 128kbps`
+- `Rosten Leo-Pan Kaplan ma stale tridu rad VBR-HQ`
+- `Sladkova Vera-volna trilogie Posledni vlak etc 128kbps`
+- `Stransky Jiri-Stesti 128kbps`
+- `Vedral Jan-Xaver 128kbps`
+- `Wallace Edgar-Kriminalni pribehy Johna G Reedera 128kbps`
 
 ### `Audioknihy`
 
 - `Ash-Timothy-Garton---Vsichni-radi-zapominame`
+- `Adriena Simotova-Hlava k listovani-SCH S LIT 2016 08 07 D Cermakova VBR-HQ OK`
+- `Adriena Simotova-Magie casu casu casu-SOUZVUK 2016 08 07 V Babka VBR-HQ OK`
+- `Anatole France Baltazar`
+- `Broch_Hermann-Ocarovani_128kbps`
+- `Cary_Joyce-Kopytem_do_hlavy_128kbps`
+- `Ciler Ilhanova`
+- `Coudenhove-Calergi_Micu-Pameti_hrabenky_VBR-HQ`
 - `David Mitchell - Atlas mraků (2013)`
+- `Fjodor Michajlovic Dostojevskij`
+- `Drozda_Zdenek-Kosi_hnizdo_128kbps`
+- `Durych_Jaroslav-Bozi_duha_128kbps`
 - `Francisco Coloane - Země zapomnění`
+- `Giovanni Boccaccio - Dekameron`
+- `Golombek_Bedrich-Vysazena_okna_128kbps`
+- `Grmolec_Zdenek-Kasja_VBR-HQ`
+- `Gundega Repseova`
+- `Guy de Maupassant`
+- `Hasek_Jaroslav-Osudy_dobreho_vojaka_Svejka_II`
+- `Hasek_Jaroslav-Osudy_dobreho_vojaka_Svejka_III 128kbps`
+- `Hasek_Jaroslav-Osudy_dobreho_vojaka_Svejka_IV 128kbps`
+- `Härtling_Peter-Ucit_se_zit_128kbps`
 - `Howard Phillips Lovecraft - Vydedenec, Vypoved Randolpha Cartera`
+- `JO NESBO SYN 2`
 - `Jaroslav Rudis - Nebe pod Berlinem`
+- `Klukanova L-Jeden ze zapomenutych plukovnik Josef Jiri Svec`
+- `Kosiner Bernard-Pohadka o trech kouzelnicich casu VBR-HQ`
+- `Kubin Alfred-Zeme snivcu 128kbps`
+- `Lagerkvist Pär-Trpaslik 128kbps`
+- `Landsmann Ivan-Fotr 128kbps`
+- `M. R. Carey - Všemi dary obdarovaná`
+- `Malaparte Curzio-Kaput 128kbps`
+- `Marijengof Anatolij-Roman bez lhani 128kbps`
+- `Marijengof Anatolij-Roman bez lhani VBR-HQ`
+- `Mark Twain-Podivny sen 2016 05 30 VBR-HQ`
+- `Mark Twain-Prosluly skakavy zabak z okresu Calaveras 2016 06 02 VBR-HQ`
+- `Marquez Gabriel Garcia-Sto roku samoty 128kbps`
+- `Melville Herman-Bila velryba 128kbps`
+- `Menasse Robert-Celem vzad 128kbps`
+- `Meyrink Gustav-Golem VBR-HQ`
 - `Michal Viewegh - Báječná léta pod psa`
+- `Muir John-Me prvni leto v Siere Nevade VBR-HQ zdroj-OGG`
+- `Musil Robert-Muz bez vlastnosti 128kbps`
+- `Musil Robert-Muz bez vlastnosti VBR-HQ`
+- `Pagnol Marcel-Ziva voda 128kbps`
+- `Palan Ales-Ratajsky les VBR-HQ`
+- `Pianino na rance Lomito`
+- `Polacek Karel-Soudnicky VBR-HQ nahr2010`
+- `Polacek Karel-Soudnicky VBR-HQ nahr2016`
+- `Pollack Martin-Americky cisar 128kbps`
 - `Pristav vola`
 - `Robert James Waller - Madisonske mosty 4CD`
+- `Sacher-Masoch-Venuse v kozichu 128kbps`
+- `Smid Jan-Ciste radosti meho zivota VBR-HQ`
+- `Sny-Karel IV 2016 05 14-23 58 04 VBR-HQ OK`
+- `Spanelske pohadky VBR-HQ`
 - `Steklac Vojtech - Borikovy lapalie [CRo] (2006)`
 - `Tor Age Bringsvaerd - Jakou me chces`
+- `Wallace Edgar-Kriminalni pribehy Johna G Reedera 128kbps`
