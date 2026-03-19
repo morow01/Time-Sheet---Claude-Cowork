@@ -2912,16 +2912,16 @@
     }
 
     .note-pri-chip.sel-high {
-      background: #ef4444;
+      background: #ff0000;
       color: #fff;
-      border-color: #ef4444;
+      border-color: #ff0000;
     }
 
     .note-pri-chip.sel-medium {
       background: #fff;
-      color: #f97316;
-      border-color: #f97316;
-      box-shadow: 0 2px 4px rgba(249, 115, 22, 0.1);
+      color: #f5a623;
+      border-color: #f5a623;
+      box-shadow: 0 2px 4px rgba(245, 166, 35, 0.1);
     }
 
     .note-pri-chip.sel-low {
@@ -3458,12 +3458,14 @@
       -webkit-tap-highlight-color: transparent;
       transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
     }
+
     @media (hover: hover) {
       .ai-source-card:hover {
         border-color: #3b82f6;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       }
     }
+
     .ai-source-card:active {
       transform: scale(0.98);
       opacity: 0.9;
@@ -3485,11 +3487,13 @@
       color: #94a3b8;
       margin-bottom: 8px;
     }
+
     .ai-card-meta-item {
       display: flex;
       align-items: center;
       gap: 5px;
     }
+
     .ai-card-meta-sep {
       margin: 0 8px;
       color: #e2e8f0;
@@ -3498,7 +3502,7 @@
     }
 
     .ai-source-notes {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-secondary);
       line-height: 1.5;
       margin-bottom: 12px;
@@ -3526,19 +3530,21 @@
       -webkit-tap-highlight-color: transparent;
       transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
     }
+
     @media (hover: hover) {
       .ai-note-card:hover {
         border-color: #059669;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       }
     }
+
     .ai-note-card:active {
       transform: scale(0.98);
       opacity: 0.9;
     }
 
     .ai-note-card-desc {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-secondary);
       line-height: 1.45;
       margin-bottom: 8px;
@@ -3563,12 +3569,14 @@
       margin-bottom: 8px;
       width: 100%;
     }
+
     .ai-card-meta-item {
       display: flex;
       align-items: center;
       gap: 4px;
       flex-shrink: 0;
     }
+
     .ai-card-meta-sep {
       margin: 0 4px;
       color: #e2e8f0;
@@ -3576,6 +3584,7 @@
       font-size: 12px;
       display: none;
     }
+
     @media (min-width: 480px) {
       .ai-card-meta-sep {
         display: block;
@@ -12683,14 +12692,14 @@ QUESTION: ${query}`;
           <div class="ai-section-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Matching notes (${state.aiResult.noteMatches.length})</div>
           ${state.aiResult.noteMatches.map(n => {
           const statusBadge = `<span class="ai-note-status-badge ${n.status === 'done' ? 'ai-note-status-done' : 'ai-note-status-open'}">${n.status === 'done' ? 'DONE' : 'OPEN'}</span>`;
-          
-          let priColor = 'var(--text-secondary)';
-          if (n.priority === 'high') priColor = '#ef4444';
-          if (n.priority === 'medium') priColor = '#f97316';
-          if (n.priority === 'low') priColor = '#10b981';
-          
-          const priorityLabel = n.priority ? `<span class="ai-card-meta-sep">|</span> <div class="ai-card-meta-item"><span style="color:${priColor};">${n.priority.charAt(0).toUpperCase() + n.priority.slice(1).toLowerCase()} Priority</span></div>` : '';
-          
+
+          let priColor = 'transparent';
+          if (n.priority === 'high') priColor = '#ff0000';
+          else if (n.priority === 'medium') priColor = '#f5a623';
+          else if (n.priority === 'low') priColor = '#10b981';
+
+          const priorityLabel = n.priority ? `<span class="ai-card-meta-sep">|</span> <div class="ai-card-meta-item"><span style="color:${priColor}; font-size: 14px; line-height: 1;">●</span></div>` : '';
+
           // Use first line or first 40 chars as title, rest as desc
           const text = n.description || '(no description)';
           const firstLine = text.split('\n')[0];
