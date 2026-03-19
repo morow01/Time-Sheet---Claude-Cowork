@@ -1,4 +1,32 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
+
+# Repair mojibake folder names from the failed inline pass
+$repairs = @(
+    @{
+        Old = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\BedÃ…â„¢ich Golombek - VysazenÃƒÂ¡ okna'
+        New = 'BedÅ™ich Golombek - VysazenÃ¡ okna'
+    },
+    @{
+        Old = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Jaroslav Veis - Historka z bezÃ„ÂasÃƒÂ­'
+        New = 'Jaroslav Veis - Historka z bezÄasÃ­'
+    },
+    @{
+        Old = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Johannes Urzidil - O mÃƒÂ©m praÃ…Â¾skÃƒÂ©m tatÃƒÂ­Ã„Âkovi'
+        New = 'Johannes Urzidil - O mÃ©m praÅ¾skÃ©m tatÃ­Äkovi'
+    },
+    @{
+        Old = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Josef Knap - MaÃ…Â¡kary na PopeleÃ„ÂnÃƒÂ­ stÃ…â„¢edu'
+        New = 'Josef Knap - MaÅ¡kary na PopeleÄnÃ­ stÅ™edu'
+    }
+)
+foreach ($repair in $repairs) {
+    if (Test-Path -LiteralPath $repair.Old) {
+        $target = Join-Path (Split-Path -Parent $repair.Old) $repair.New
+        if (-not (Test-Path -LiteralPath $target)) {
+            Rename-Item -LiteralPath $repair.Old -NewName $repair.New
+        }
+    }
+}
 
 # Apply approved batch to real AB library
 
@@ -7,32 +35,32 @@ $dir = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Golombek_Bedrich-Vysazena
 if (Test-Path -LiteralPath $dir) {
     Get-ChildItem -LiteralPath $dir -File -Filter *.mp3 | Sort-Object Name | ForEach-Object {
         if ($_.Name -match '(\d{2})') {
-            $new = 'Bedřich Golombek - Vysazená okna {0}.mp3' -f $matches[1]
+            $new = 'BedÅ™ich Golombek - VysazenÃ¡ okna {0}.mp3' -f $matches[1]
             if ($_.Name -ne $new) {
                 Rename-Item -LiteralPath $_.FullName -NewName $new
             }
         }
     }
-    $target = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Bedřich Golombek - Vysazená okna'
+    $target = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\BedÅ™ich Golombek - VysazenÃ¡ okna'
     if (-not (Test-Path -LiteralPath $target)) {
-        Rename-Item -LiteralPath $dir -NewName 'Bedřich Golombek - Vysazená okna'
+        Rename-Item -LiteralPath $dir -NewName 'BedÅ™ich Golombek - VysazenÃ¡ okna'
     }
 }
 
 # 2. Peter Hartling series
-$dir = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Härtling_Peter-Ucit_se_zit_128kbps'
+$dir = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\HÃ¤rtling_Peter-Ucit_se_zit_128kbps'
 if (Test-Path -LiteralPath $dir) {
     Get-ChildItem -LiteralPath $dir -File -Filter *.mp3 | Sort-Object Name | ForEach-Object {
         if ($_.Name -match '(\d{2})') {
-            $new = 'Peter Härtling - Učit se žít {0}.mp3' -f $matches[1]
+            $new = 'Peter HÃ¤rtling - UÄit se Å¾Ã­t {0}.mp3' -f $matches[1]
             if ($_.Name -ne $new) {
                 Rename-Item -LiteralPath $_.FullName -NewName $new
             }
         }
     }
-    $target = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Peter Härtling - Učit se žít'
+    $target = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Peter HÃ¤rtling - UÄit se Å¾Ã­t'
     if (-not (Test-Path -LiteralPath $target)) {
-        Rename-Item -LiteralPath $dir -NewName 'Peter Härtling - Učit se žít'
+        Rename-Item -LiteralPath $dir -NewName 'Peter HÃ¤rtling - UÄit se Å¾Ã­t'
     }
 }
 
@@ -40,18 +68,18 @@ if (Test-Path -LiteralPath $dir) {
 $single = @(
     @{
         Dir = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Jaroslav Veis'
-        NewDir = 'Jaroslav Veis - Historka z bezčasí'
-        NewFile = 'Jaroslav Veis - Historka z bezčasí.mp3'
+        NewDir = 'Jaroslav Veis - Historka z bezÄasÃ­'
+        NewFile = 'Jaroslav Veis - Historka z bezÄasÃ­.mp3'
     },
     @{
         Dir = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Johannes Urzidil'
-        NewDir = 'Johannes Urzidil - O mém pražském tatíčkovi'
-        NewFile = 'Johannes Urzidil - O mém pražském tatíčkovi.mp3'
+        NewDir = 'Johannes Urzidil - O mÃ©m praÅ¾skÃ©m tatÃ­Äkovi'
+        NewFile = 'Johannes Urzidil - O mÃ©m praÅ¾skÃ©m tatÃ­Äkovi.mp3'
     },
     @{
         Dir = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Josef Knap'
-        NewDir = 'Josef Knap - Maškary na Popeleční středu'
-        NewFile = 'Josef Knap - Maškary na Popeleční středu.mp3'
+        NewDir = 'Josef Knap - MaÅ¡kary na PopeleÄnÃ­ stÅ™edu'
+        NewFile = 'Josef Knap - MaÅ¡kary na PopeleÄnÃ­ stÅ™edu.mp3'
     }
 )
 
@@ -84,17 +112,17 @@ New-Item -ItemType Directory -Path $after | Out-Null
 
 $sets = @(
     @{
-        Source = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Böll Heinrich-Chleb mladych let 128kbps\Heinrich Böll - Chléb mladých let'
-        Before = 'Heinrich Böll - Chléb mladých let'
-        After = 'Heinrich Böll - Chléb mladých let'
-        Prefix = 'Heinrich Böll - Chléb mladých let '
+        Source = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\BÃ¶ll Heinrich-Chleb mladych let 128kbps\Heinrich BÃ¶ll - ChlÃ©b mladÃ½ch let'
+        Before = 'Heinrich BÃ¶ll - ChlÃ©b mladÃ½ch let'
+        After = 'Heinrich BÃ¶ll - ChlÃ©b mladÃ½ch let'
+        Prefix = 'Heinrich BÃ¶ll - ChlÃ©b mladÃ½ch let '
         Count = 5
     },
     @{
         Source = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\Coudenhove-Calergi_Micu-Pameti_hrabenky_VBR-HQ'
         Before = 'Coudenhove-Calergi_Micu-Pameti_hrabenky_VBR-HQ'
-        After = 'Micu Coudenhove-Calergi - Paměti hraběnky'
-        Prefix = 'Micu Coudenhove-Calergi - Paměti hraběnky '
+        After = 'Micu Coudenhove-Calergi - PamÄ›ti hrabÄ›nky'
+        Prefix = 'Micu Coudenhove-Calergi - PamÄ›ti hrabÄ›nky '
         Count = 5
     },
     @{
@@ -107,8 +135,8 @@ $sets = @(
     @{
         Source = '\\Synology1621\Hovorene Slovo\-= Audioknihy =-\James Henry-Mala cesta po Francii'
         Before = 'James Henry-Mala cesta po Francii'
-        After = 'Henry James - Malá cesta po Francii'
-        Prefix = 'Henry James - Malá cesta po Francii '
+        After = 'Henry James - MalÃ¡ cesta po Francii'
+        Prefix = 'Henry James - MalÃ¡ cesta po Francii '
         Count = 5
     }
 )

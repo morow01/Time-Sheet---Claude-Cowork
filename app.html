@@ -12704,7 +12704,11 @@ QUESTION: ${query}`;
           const text = n.description || '(no description)';
           const firstLine = text.split('\n')[0];
           const titleText = firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine;
-          const bodyText = text.length > titleText.length ? text : '';
+          let bodyText = text.length > titleText.length ? text : '';
+          
+          if (bodyText.length > 220) {
+            bodyText = bodyText.slice(0, 220) + '…';
+          }
 
           return `<div class="ai-note-card" data-note-id="${n.id}" onclick="goToNote(this.getAttribute('data-note-id'))">
               <div class="ai-note-card-title">${titleText}</div>
