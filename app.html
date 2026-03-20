@@ -3220,53 +3220,45 @@
       line-height: 1.5;
     }
 
-    .ai-scope-row {
+    /* ── AI scope segmented control ── */
+    .ai-scope-bar {
       display: flex;
       align-items: center;
-      gap: 5px;
-      padding: 8px 14px 4px;
-      flex-wrap: wrap;
+      gap: 3px;
+      background: var(--bg-page);
+      border-radius: 12px;
+      padding: 3px;
+      margin: 0 0 8px;
     }
 
-    .ai-scope-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      flex-shrink: 0;
-      margin-right: 2px;
-    }
-
-    .ai-scope-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
+    .ai-scope-seg {
+      flex: 1;
+      padding: 7px 4px;
+      border: none;
+      border-radius: 10px;
       background: transparent;
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
+      text-align: center;
       cursor: pointer;
-      transition: all 0.15s;
       white-space: nowrap;
-      line-height: 1;
+      transition: all 0.15s;
+      line-height: 1.2;
     }
 
-    .ai-scope-pill.active {
-      border-color: var(--accent);
-      background: rgba(45, 107, 228, 0.08);
+    .ai-scope-seg.active {
+      background: var(--bg-card);
       color: var(--accent);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .dark .ai-scope-pill.active {
-      background: rgba(45, 107, 228, 0.18);
+    .dark .ai-scope-seg.active {
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
     }
 
-    .ai-scope-pill:active {
-      transform: scale(0.95);
+    .ai-scope-seg:active {
+      opacity: 0.75;
     }
 
     .ai-action-row {
@@ -6225,7 +6217,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.34';
+    const VERSION = '4.5.35';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12793,24 +12785,22 @@ QUESTION: ${query}`;
       <div style="padding: 14px 14px 0;">
         <div class="ai-section-label" style="margin-bottom:6px;">Ask about your timesheet & notes</div>
       </div>
+      <div class="ai-scope-bar">
+        ${[
+          { key: 'savedNotes', label: 'Saved Notes' },
+          { key: 'taskNotes',  label: 'Task Notes'  },
+          { key: 'timesheet',  label: 'Timesheet'   }
+        ].map(({ key, label }) => {
+          const on = state.aiScope[key];
+          return `<button class="ai-scope-seg${on ? ' active' : ''}" onclick="toggleAIScope('${key}')">${on ? '✓ ' : ''}${label}</button>`;
+        }).join('')}
+      </div>
+
       <div class="ai-search-stacked">
         <textarea id="ai-query-input" class="ai-expanding-input"
           placeholder="e.g. OT hours last month? Most visited site? Fibre break fix?"
           onkeydown="aiQueryKeydown(event)"
           oninput="aiQueryInputEvent(this)">${(state.aiQuery || '').replace(/"/g, '&quot;')}</textarea>
-
-        <div class="ai-scope-row">
-          <span class="ai-scope-label">Search in</span>
-          ${[
-            { key: 'savedNotes', label: 'Saved Notes' },
-            { key: 'taskNotes',  label: 'Task Notes'  },
-            { key: 'timesheet',  label: 'Timesheet'   }
-          ].map(({ key, label }) => {
-            const on = state.aiScope[key];
-            const tick = on ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
-            return `<button class="ai-scope-pill${on ? ' active' : ''}" onclick="toggleAIScope('${key}')">${tick}${label}</button>`;
-          }).join('')}
-        </div>
 
         <div class="ai-action-row">
           <button id="ai-mic-btn" type="button" onclick="startAIVoice()" title="Voice input" class="ai-mic-btn">
