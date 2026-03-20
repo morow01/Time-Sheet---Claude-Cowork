@@ -6424,7 +6424,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.61';
+    const VERSION = '4.5.62';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10651,20 +10651,20 @@
         const show = () => {
           if (miniNav.classList.contains('visible')) return;
           miniNav.classList.add('visible');
-          // Scroll page down so content stays visually behind the bar
+          // Scroll UP so content shifts down below the nav (nav is at top:0)
           _navCompensating = true;
-          window.scrollBy(0, miniH);
-          _lastScrollY += miniH;
+          window.scrollBy(0, -miniH);
+          _lastScrollY = Math.max(0, _lastScrollY - miniH);
           setTimeout(() => { _navCompensating = false; }, 100);
         };
         const hide = (compensate) => {
           if (!miniNav.classList.contains('visible')) return;
           miniNav.classList.remove('visible');
           if (compensate) {
-            // Scroll page up to reclaim the space the bar occupied
+            // Scroll DOWN to reclaim space the bar was occupying
             _navCompensating = true;
-            window.scrollBy(0, -miniH);
-            _lastScrollY = Math.max(0, _lastScrollY - miniH);
+            window.scrollBy(0, miniH);
+            _lastScrollY += miniH;
             setTimeout(() => { _navCompensating = false; }, 100);
           }
         };
