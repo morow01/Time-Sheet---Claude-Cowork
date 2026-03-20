@@ -1612,6 +1612,18 @@
       transition: background 0.3s ease, color 0.3s ease;
     }
 
+    /* ── Sticky hide-on-scroll header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
+    }
+    header.nav-hidden {
+      transform: translateY(-100%);
+    }
+
     input,
     select,
     textarea {
@@ -9219,6 +9231,9 @@
       state.view = v;
       localStorage.setItem('lastView', v);
       window.scrollTo(0, 0);
+      // Always reveal header when switching tabs
+      document.querySelector('header')?.classList.remove('nav-hidden');
+      _scrollDelta = 0;
 
       if (v === 'notes') await loadNotes();
       else if (v === 'ai') {
@@ -10595,9 +10610,33 @@
     // ============================================================
     // INIT
     // ============================================================
-    // Save scroll position per view (debounced, for cross-refresh memory)
+    // Save scroll position per view + hide/show header on scroll direction
     let _scrollTimer = null;
+    let _lastScrollY = 0;
+    let _scrollDelta = 0;
+    const HIDE_THRESHOLD = 60;   // px scrolled down before header hides
+    const SHOW_THRESHOLD = 10;   // px scrolled up before header reveals
     window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      const delta = y - _lastScrollY;
+      _scrollDelta += delta;
+      _lastScrollY = y;
+
+      const header = document.querySelector('header');
+      if (header) {
+        if (y < 10) {
+          // Always show at top of page
+          header.classList.remove('nav-hidden');
+          _scrollDelta = 0;
+        } else if (_scrollDelta > HIDE_THRESHOLD) {
+          header.classList.add('nav-hidden');
+          _scrollDelta = HIDE_THRESHOLD;
+        } else if (_scrollDelta < -SHOW_THRESHOLD) {
+          header.classList.remove('nav-hidden');
+          _scrollDelta = -SHOW_THRESHOLD;
+        }
+      }
+
       clearTimeout(_scrollTimer);
       _scrollTimer = setTimeout(() => {
         sessionStorage.setItem('scrollPos_' + state.view, window.scrollY);
