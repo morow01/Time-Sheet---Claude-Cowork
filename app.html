@@ -3424,6 +3424,23 @@
       font-size: 13px;
       color: var(--text-primary);
       line-height: 1.6;
+      max-height: 168px; /* ~8 lines */
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
+    }
+
+    .ai-answer-text::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .ai-answer-text::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .ai-answer-text::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
     }
 
     .ai-answer-footer {
@@ -6222,7 +6239,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.36';
+    const VERSION = '4.5.37';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
