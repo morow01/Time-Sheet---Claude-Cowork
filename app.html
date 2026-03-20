@@ -1369,20 +1369,43 @@
       text-decoration: none;
     }
 
+    .menu-ai-key-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
     .menu-ai-key-input {
       width: 100%;
       box-sizing: border-box;
-      padding: 10px 12px;
+      padding: 10px 40px 10px 12px;
       border-radius: 10px;
       border: 1.5px solid var(--border);
       background: var(--bg-card);
-      color: var(--text);
-      font-size: 14px;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-family: monospace;
       outline: none;
     }
 
     .menu-ai-key-input:focus {
       border-color: var(--accent);
+    }
+
+    .menu-ai-key-eye {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .menu-ai-key-eye:hover {
+      color: var(--text-primary);
     }
 
     .menu-ai-key-btns {
@@ -3428,6 +3451,55 @@
       overflow-y: auto;
       overscroll-behavior: contain;
       padding-right: 4px;
+    }
+
+    .ai-answer-text p {
+      margin: 0 0 6px;
+    }
+
+    .ai-answer-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    .ai-answer-text strong {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .ai-answer-text em {
+      font-style: italic;
+    }
+
+    .ai-answer-text h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 8px 0 4px;
+      letter-spacing: 0.01em;
+    }
+
+    .ai-answer-text h3:first-child {
+      margin-top: 0;
+    }
+
+    .ai-answer-text ul,
+    .ai-answer-text ol {
+      margin: 4px 0 6px;
+      padding-left: 18px;
+    }
+
+    .ai-answer-text li {
+      margin-bottom: 3px;
+    }
+
+    .ai-answer-text li:last-child {
+      margin-bottom: 0;
+    }
+
+    .ai-answer-text hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 8px 0;
     }
 
     .ai-answer-text::-webkit-scrollbar {
@@ -6239,7 +6311,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.37';
+    const VERSION = '4.5.38';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7748,7 +7820,14 @@
                   </button>
                   <div class="menu-ai-key-row">
                     <div class="menu-ai-key-hint">Gemini API key — used for voice entry &amp; Fault Assistant. Get a free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></div>
-                    <input class="menu-ai-key-input" id="menu-gemini-key" type="text" placeholder="AIza…" value="${esc(state.geminiKey || '')}" autocomplete="off" spellcheck="false">
+                    <div class="menu-ai-key-wrap">
+                      <input class="menu-ai-key-input" id="menu-gemini-key" type="password" placeholder="AIza…" value="${esc(state.geminiKey || '')}" autocomplete="off" spellcheck="false">
+                      <button class="menu-ai-key-eye" type="button" onclick="toggleKeyVisibility()" title="Show / hide key">
+                        <svg id="menu-key-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </button>
+                    </div>
                     <div class="menu-ai-key-btns">
                       <button class="menu-ai-key-save" onclick="saveGeminiKey()">Save Key</button>
                       <button class="menu-ai-key-test" onclick="testGeminiKey()">Test</button>
@@ -11809,6 +11888,18 @@ Rules:
       cancelVoice();
     }
 
+    function toggleKeyVisibility() {
+      const input = document.getElementById('menu-gemini-key');
+      const icon  = document.getElementById('menu-key-eye-icon');
+      if (!input) return;
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      // Swap to eye-off icon when key is visible
+      icon.innerHTML = showing
+        ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+        : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    }
+
     function saveGeminiKey() {
       const input = document.getElementById('menu-gemini-key');
       const key = (input ? input.value : '').trim();
@@ -12185,6 +12276,60 @@ Rules:
       }
     }
 
+    // ── Lightweight markdown → HTML renderer for Gemini answers ────────────────
+    function renderMarkdown(text) {
+      if (!text) return '';
+      const lines = text.split('\n');
+      const out = [];
+      let inUl = false, inOl = false;
+
+      const closeList = () => {
+        if (inUl) { out.push('</ul>'); inUl = false; }
+        if (inOl) { out.push('</ol>'); inOl = false; }
+      };
+
+      const inline = s => s
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code style="font-family:monospace;font-size:12px;background:var(--bg-page);padding:1px 4px;border-radius:4px;">$1</code>');
+
+      lines.forEach(line => {
+        const h3 = line.match(/^###\s+(.+)/);
+        const h2 = line.match(/^##\s+(.+)/);
+        const h1 = line.match(/^#\s+(.+)/);
+        const ul = line.match(/^[\*\-]\s+(.+)/);
+        const ol = line.match(/^(\d+)\.\s+(.+)/);
+        const hr = line.match(/^[-*_]{3,}$/);
+
+        if (h1 || h2 || h3) {
+          closeList();
+          const content = inline((h1 || h2 || h3)[1]);
+          out.push(`<h3>${content}</h3>`);
+        } else if (ul) {
+          if (inOl) { out.push('</ol>'); inOl = false; }
+          if (!inUl) { out.push('<ul>'); inUl = true; }
+          out.push(`<li>${inline(ul[1])}</li>`);
+        } else if (ol) {
+          if (inUl) { out.push('</ul>'); inUl = false; }
+          if (!inOl) { out.push('<ol>'); inOl = true; }
+          out.push(`<li>${inline(ol[2])}</li>`);
+        } else if (hr) {
+          closeList();
+          out.push('<hr>');
+        } else if (line.trim() === '') {
+          closeList();
+        } else {
+          closeList();
+          out.push(`<p>${inline(line)}</p>`);
+        }
+      });
+
+      closeList();
+      return out.join('');
+    }
+    // ────────────────────────────────────────────────────────────────────────────
+
     // ── Shared keyword helpers ──────────────────────────────────────────────────
     // Strip punctuation, split into clean keywords, remove stop words.
     const _searchStopWords = new Set(['the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'been', 'was', 'are', 'will', 'not', 'but', 'you', 'your', 'they', 'them', 'their', 'what', 'when', 'how', 'all', 'can', 'its', 'any', 'has', 'did']);
@@ -12539,6 +12684,16 @@ QUESTION: ${query}`;
       _noteFsActId = actId; _noteFsDi = di;
       const ta = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
       const currentValue = ta ? ta.value : '';
+      // Populate header with description + location context
+      const act = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
+      const titleEl = document.getElementById('note-fs-title');
+      const subEl   = document.getElementById('note-fs-subtitle');
+      if (titleEl) titleEl.textContent = act?.description || 'Edit Note';
+      if (subEl) {
+        const loc = act?.location?.trim();
+        subEl.textContent = loc || '';
+        subEl.style.display = loc ? 'block' : 'none';
+      }
       document.getElementById('note-fs-modal').classList.remove('hidden');
       setTimeout(() => {
         if (!_quillInstance) {
@@ -12795,7 +12950,7 @@ QUESTION: ${query}`;
           </div>
           <div class="ai-answer-card">
             <div class="ai-answer-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px;"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg> Gemini</div>
-            <div class="ai-answer-text">${state.aiResult.answer.replace(/\n/g, '<br>')}</div>
+            <div class="ai-answer-text">${renderMarkdown(state.aiResult.answer)}</div>
             <div class="ai-answer-footer">${footerText}</div>
           </div>
         </div>
@@ -12978,9 +13133,12 @@ QUESTION: ${query}`;
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg></button>
-        <h2 class="text-base font-semibold flex-1">Edit Note</h2>
+        <div class="flex-1" style="min-width:0;">
+          <div id="note-fs-title" style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Edit Note</div>
+          <div id="note-fs-subtitle" style="font-size:11px;opacity:0.7;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;"></div>
+        </div>
         <button onclick="closeNoteFullscreen()"
-          style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;font-weight:600;">Done</button>
+          style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;font-weight:600;flex-shrink:0;">Done</button>
       </div>
       <div id="note-fs-editor" class="flex-1 overflow-hidden" style="display:flex;flex-direction:column;"></div>
     </div>
