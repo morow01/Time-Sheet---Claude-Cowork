@@ -112,14 +112,16 @@
       display: flex;
       align-items: center;
       padding: 15px 16px 15px 15px;
-      background: transparent;
+      background: var(--bg-day-header);
       cursor: pointer;
+      user-select: none;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 5;
       transition: background 0.15s;
       border-radius: 0;
       gap: 18px;
+      box-shadow: 0 3px 10px -2px rgba(0, 0, 0, 0.18);
     }
 
     .day-header:active {
@@ -637,11 +639,7 @@
       /* Timeline gutter - Persistent during collapse */
       padding-left: 27px;
       overflow: hidden;
-      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .day-activities.active {
-      /* Padding moved to base class for stability during animation */
+      transition: max-height 0.35s ease, opacity 0.25s ease;
     }
 
     /* Timeline Vertical Line - Persistent during collapse */
@@ -1558,16 +1556,6 @@
     }
 
 
-    .day-header {
-      cursor: pointer;
-      user-select: none;
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      background: var(--bg-day-header);
-      box-shadow: 0 3px 10px -2px rgba(0, 0, 0, 0.18);
-    }
-
     .day-weekend .day-header {
       background: var(--bg-day-header-we);
     }
@@ -1579,11 +1567,6 @@
 
     .day-header .expand-arrow.collapsed {
       transform: rotate(-90deg);
-    }
-
-    .day-activities {
-      overflow: hidden;
-      transition: max-height 0.35s ease, opacity 0.25s ease;
     }
 
     .day-activities.collapsed {
@@ -1643,7 +1626,7 @@
     }
 
     .notes-header-btn.open {
-      border-radius: 10px 10px 0 0 !important;
+      border-radius: 10px 10px 0 0;
     }
 
     .notes-chevron {
@@ -1664,8 +1647,8 @@
     }
 
     .activity-item.expanded .activity-num-badge {
-      background: var(--accent) !important;
-      color: #fff !important;
+      background: var(--accent);
+      color: #fff;
     }
 
     .activity-item.expanded .activity-chevron {
@@ -1794,15 +1777,6 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
 
-    /* Increase code + description font on mobile */
-    .sum-td-code-mob {
-      font-size: 11px;
-    }
-
-    .sum-td-desc {
-      font-size: 12px;
-    }
-
     /* ── Summary header button (matches day card header) ── */
     .sum-hero {
       width: 100%;
@@ -1857,7 +1831,7 @@
       }
 
       .sum-td-code-desk {
-        display: block !important;
+        display: block;
       }
     }
 
@@ -2354,7 +2328,7 @@
     /* Work Codes modal — desktop: centered dialog instead of full-screen */
     @media (min-width: 1024px) {
       #code-modal {
-        background: rgba(0, 0, 0, 0.55) !important;
+        background: rgba(0, 0, 0, 0.55);
         align-items: center;
         justify-content: center;
       }
@@ -2370,12 +2344,12 @@
       }
 
       #code-modal-inner .safe-top {
-        padding-top: 12px !important;
+        padding-top: 12px;
       }
 
       /* Location modal — desktop: centered dialog */
       #location-modal {
-        background: rgba(0, 0, 0, 0.55) !important;
+        background: rgba(0, 0, 0, 0.55);
         align-items: center;
         justify-content: center;
       }
@@ -2391,19 +2365,19 @@
       }
 
       #location-modal-inner .safe-top {
-        padding-top: 12px !important;
+        padding-top: 12px;
       }
 
       /* Finder search modal — desktop: centered dialog */
       #finder-search-modal {
-        background: rgba(0, 0, 0, 0.55) !important;
+        background: rgba(0, 0, 0, 0.55);
         align-items: center;
         justify-content: center;
       }
 
       .finder-mic-btn.listening,
       #location-mic-btn.listening {
-        background: #e53935 !important;
+        background: #e53935;
         animation: voiceFabPulse 1s ease-in-out infinite;
       }
 
@@ -2418,7 +2392,7 @@
       }
 
       #finder-modal-inner .safe-top {
-        padding-top: 12px !important;
+        padding-top: 12px;
       }
     }
 
@@ -2505,19 +2479,19 @@
 
     /* ===== DESKTOP SPREADSHEET TABLE VIEW ===== */
     .tbl-toggle-btn {
-      display: none !important;
+      display: none;
     }
 
     @media (min-width: 768px) {
       .tbl-toggle-btn {
-        display: flex !important;
+        display: flex;
       }
     }
 
     /* When table mode is active, break out of the 2xl max-width cap */
     #app.tbl-mode {
-      max-width: 1280px !important;
-      width: 1280px !important;
+      max-width: 1280px;
+      width: 1280px;
     }
 
     .table-view-wrap {
@@ -2577,36 +2551,36 @@
       color: var(--text-primary);
     }
 
-    .tbl-day-cell {
+    .timesheet-table .tbl-day-cell {
       font-weight: 700;
       font-size: 12px;
-      color: var(--text-day) !important;
+      color: var(--text-day);
       white-space: nowrap;
       border-right: 3px solid var(--border-day);
-      background: var(--bg-day-header) !important;
+      background: var(--bg-day-header);
       text-align: center;
-      padding: 6px 10px !important;
+      padding: 6px 10px;
       min-width: 72px;
     }
 
-    .tbl-date-cell {
+    .timesheet-table .tbl-date-cell {
       font-size: 11px;
-      color: var(--text-muted) !important;
+      color: var(--text-muted);
       white-space: nowrap;
-      background: var(--bg-day-header) !important;
+      background: var(--bg-day-header);
       text-align: center;
-      padding: 6px 8px !important;
+      padding: 6px 8px;
       min-width: 56px;
     }
 
-    .tbl-we .tbl-day-cell {
-      color: var(--text-day-we) !important;
+    .timesheet-table .tbl-we .tbl-day-cell {
+      color: var(--text-day-we);
       border-right-color: var(--border-day-we);
-      background: var(--bg-day-header-we) !important;
+      background: var(--bg-day-header-we);
     }
 
-    .tbl-we .tbl-date-cell {
-      background: var(--bg-day-header-we) !important;
+    .timesheet-table .tbl-we .tbl-date-cell {
+      background: var(--bg-day-header-we);
     }
 
     .tbl-act-input {
@@ -2721,13 +2695,13 @@
     }
 
     .tbl-add-row td {
-      background: var(--bg-card-alt) !important;
-      padding: 5px 8px !important;
-      border-bottom: 2px solid var(--border) !important;
+      background: var(--bg-card-alt);
+      padding: 5px 8px;
+      border-bottom: 2px solid var(--border);
     }
 
     .tbl-we.tbl-add-row td {
-      background: var(--bg-day-header-we) !important;
+      background: var(--bg-day-header-we);
     }
 
     .tbl-add-activity-btn {
@@ -2885,49 +2859,6 @@
       display: flex;
       justify-content: flex-end;
       gap: 8px;
-    }
-
-    /* Segmented Control for Priority */
-    .note-priority-row {
-      display: flex;
-      background: #f1f5f9;
-      border-radius: 12px;
-      padding: 4px;
-      gap: 4px;
-      margin-bottom: 12px;
-    }
-
-    .note-pri-chip {
-      flex: 1;
-      text-align: center;
-      padding: 10px 0;
-      font-size: 13px;
-      font-weight: 700;
-      border-radius: 10px;
-      cursor: pointer;
-      color: #64748b;
-      transition: all 0.2s;
-      border: 1px solid transparent;
-      background: transparent;
-    }
-
-    .note-pri-chip.sel-high {
-      background: #ff0000;
-      color: #fff;
-      border-color: #ff0000;
-    }
-
-    .note-pri-chip.sel-medium {
-      background: #fff;
-      color: #f5a623;
-      border-color: #f5a623;
-      box-shadow: 0 2px 4px rgba(245, 166, 35, 0.1);
-    }
-
-    .note-pri-chip.sel-low {
-      background: #10b981;
-      color: #fff;
-      border-color: #10b981;
     }
 
     .note-footer {
@@ -3307,8 +3238,8 @@
     }
 
     .ai-mic-btn.listening {
-      background: #ef4444 !important;
-      color: #fff !important;
+      background: #ef4444;
+      color: #fff;
       animation: aiPulse 1.5s infinite;
     }
 
@@ -3487,19 +3418,6 @@
       color: #94a3b8;
       margin-bottom: 8px;
       gap: 13px;
-    }
-
-    .ai-card-meta-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .ai-card-meta-sep {
-      margin: 0 8px;
-      color: #e2e8f0;
-      font-weight: 400;
-      font-size: 12px;
     }
 
     .ai-source-notes {
@@ -4487,6 +4405,10 @@
       cursor: pointer;
     }
 
+    .result-card:active {
+      transform: scale(0.98);
+    }
+
     .result-card.highlighted {
       border-color: var(--accent);
       box-shadow: 0 0 0 2px var(--accent-light), var(--shadow-card);
@@ -4655,15 +4577,6 @@
       border: 1px solid var(--border);
       background: var(--bg-card-alt);
       position: relative;
-    }
-
-    .result-card {
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-
-    .result-card:active {
-      transform: scale(0.98);
     }
 
     /* ===== SNAPSHOT MODAL ===== */
@@ -6254,7 +6167,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.28';
+    const VERSION = '4.5.29';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6266,7 +6179,7 @@
     firebase.initializeApp(firebaseConfig);
     const db_fs = firebase.firestore();
     const auth_fb = firebase.auth();
-    db_fs.enablePersistence({ synchronizeTabs: true }).catch(() => { });
+    db_fs.enablePersistence({ synchronizeTabs: true }).catch(e => console.warn('[Rian]', e));
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
     const DB_VERSION = 2;
@@ -6842,7 +6755,7 @@
       // when the data was actually created, which is what we want to compare.
       const ts = weekData._updatedAt || Date.now();
       await ref.set({ ...weekData, _updatedAt: ts });
-      maybeTakeAutoSnapshot(weekStart, weekData).catch(() => { });
+      maybeTakeAutoSnapshot(weekStart, weekData).catch(e => console.warn('[Rian]', e));
     }
 
     async function fsSetNotes(notes) {
@@ -6953,7 +6866,7 @@
           state.activitiesExpanded = new Set(saved.activitiesExpanded || []); // Load expanded activities
           return true;
         }
-      } catch (e) { }
+      } catch (e) { /* expected: localStorage unavailable or corrupt */ }
       return false;
     }
 
@@ -7071,7 +6984,7 @@
         saveTimer = null;
         const flushTs = state.weekData._updatedAt || Date.now();
         await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser?.uid || null, data: state.weekData, updatedAt: flushTs });
-        if (state.currentUser) await fsSetWeek(state.weekStart, state.weekData).catch(() => { });
+        if (state.currentUser) await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
       }
 
       // Unsubscribe from previous week listener
@@ -7124,7 +7037,7 @@
         // restore the correct version (otherwise Firestore stays poisoned
         // with the stale data and other devices will receive it).
         if (remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
-          fsSetWeek(weekStart, state.weekData).catch(() => { });
+          fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
           return;
         }
 
@@ -9123,7 +9036,7 @@
 
         if (!snap.exists) {
           // No notes on server yet — push local
-          fsSetNotes(state.notes).catch(() => { });
+          fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
           state.notesSyncStatus = 'synced';
           updateHeaderStatus();
           return;
@@ -10341,14 +10254,14 @@
         clearTimeout(saveTimer);
         saveTimer = null;
         await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
-        await fsSetWeek(state.weekStart, state.weekData).catch(() => { });
+        await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
       }
       if (flushNotes) {
         clearTimeout(notesSaveTimer);
         notesSaveTimer = null;
         const ts = Date.now();
         await dbPut('notes', { id: 'notes_all', userId: state.currentUser.uid, data: state.notes, updatedAt: ts });
-        await fsSetNotes(state.notes).catch(() => { });
+        await fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
       }
     }
 
@@ -10366,12 +10279,12 @@
       if (state.syncStatus === 'error' && state.weekStart && state.weekData && state.currentUser) {
         fsSetWeek(state.weekStart, state.weekData)
           .then(() => { state.syncStatus = 'synced'; updateHeaderStatus(); })
-          .catch(() => { });
+          .catch(e => console.warn('[Rian]', e));
       }
       if (state.notesSyncStatus === 'error' && state.notes && state.currentUser) {
         fsSetNotes(state.notes)
           .then(() => { state.notesSyncStatus = 'synced'; updateHeaderStatus(); })
-          .catch(() => { });
+          .catch(e => console.warn('[Rian]', e));
       }
       updateHeaderStatus();
     });
@@ -10538,7 +10451,7 @@
         clearTimeout(saveTimer);
         saveTimer = null;
         await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
-        await fsSetWeek(state.weekStart, state.weekData).catch(() => { });
+        await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
       }
       await _writeSnapshot(state.weekStart, state.weekData, 'manual');
       showToast('Snapshot saved.');
@@ -10734,11 +10647,11 @@
             batch.delete(d.ref);
           }
         });
-        await batch.commit().catch(() => { });
+        await batch.commit().catch(e => console.warn('[Rian]', e));
       }
       // Delete notes and user profile
-      await userDoc('data/notes').delete().catch(() => { });
-      await db_fs.doc(`users/${uid}`).delete().catch(() => { });
+      await userDoc('data/notes').delete().catch(e => console.warn('[Rian]', e));
+      await db_fs.doc(`users/${uid}`).delete().catch(e => console.warn('[Rian]', e));
     }
 
     function clearAllData() {
@@ -10816,7 +10729,7 @@
         clearTimeout(saveTimer);
         saveTimer = null;
         await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
-        await fsSetWeek(state.weekStart, state.weekData).catch(() => { });
+        await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
       } else if (saveTimer) {
         clearTimeout(saveTimer);
         saveTimer = null;
@@ -10826,7 +10739,7 @@
         notesSaveTimer = null;
         const ts = Date.now();
         await dbPut('notes', { id: 'notes_all', userId: state.currentUser.uid, data: state.notes, updatedAt: ts });
-        await fsSetNotes(state.notes).catch(() => { });
+        await fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
       } else if (notesSaveTimer) {
         clearTimeout(notesSaveTimer);
         notesSaveTimer = null;
@@ -10878,7 +10791,7 @@
       }
       render();
       // Scan timesheet weeks in background for auto-visits
-      scanWeeksForRoutines().catch(() => { });
+      scanWeeksForRoutines().catch(e => console.warn('[Rian]', e));
     }
 
     async function fsSetRoutines() {
@@ -11122,7 +11035,7 @@
       state.routines.selectedSites = [...state.routinesPickerSites];
       closeRoutinesSitePicker();
       render();
-      await fsSetRoutines().catch(() => { });
+      await fsSetRoutines().catch(e => console.warn('[Rian]', e));
     }
 
     // ── Log / Detail modal ────────────────────────────────────────
@@ -11199,7 +11112,7 @@
       state.routines.visits[key] = { day };
       closeRoutinesLogModal();
       render();
-      await fsSetRoutines().catch(() => { });
+      await fsSetRoutines().catch(e => console.warn('[Rian]', e));
     }
 
     async function removeRoutinesVisit() {
@@ -11208,7 +11121,7 @@
       if (state.routines.visits) delete state.routines.visits[key];
       closeRoutinesLogModal();
       render();
-      await fsSetRoutines().catch(() => { });
+      await fsSetRoutines().catch(e => console.warn('[Rian]', e));
     }
 
     // ============================================================
@@ -11366,7 +11279,7 @@
     }
 
     async function stopVoiceRecognition() {
-      if (voiceRec) { try { voiceRec.stop(); } catch (e) { } voiceRec = null; }
+      if (voiceRec) { try { voiceRec.stop(); } catch (_e) { /* expected if already stopped */ } voiceRec = null; }
       const ring = document.getElementById('vl-ring');
       if (ring) ring.classList.remove('active');
       const fab = document.getElementById('voice-fab');
@@ -12011,7 +11924,7 @@ Rules:
     }
 
     function cancelVoice() {
-      if (voiceRec) { try { voiceRec.stop(); } catch (e) { } voiceRec = null; }
+      if (voiceRec) { try { voiceRec.stop(); } catch (_e) { /* expected if already stopped */ } voiceRec = null; }
       const fab = document.getElementById('voice-fab');
       if (fab) fab.classList.remove('listening');
       const noteFab = document.getElementById('note-voice-fab');
@@ -12034,7 +11947,7 @@ Rules:
     async function init() {
       initTheme();
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => { });
+        navigator.serviceWorker.register('sw.js').catch(e => console.warn('[Rian]', e));
       }
 
       const lastView = localStorage.getItem('lastView');
@@ -12061,7 +11974,7 @@ Rules:
           displayName: user.displayName || '',
           email: user.email || '',
           lastSeen: Date.now(),
-        }, { merge: true }).catch(() => { });
+        }, { merge: true }).catch(e => console.warn('[Rian]', e));
 
         // Signed in — load local data first for instant display
         // Only use cached notes if they belong to this user
@@ -12079,7 +11992,7 @@ Rules:
         else if (state.view === 'routines') loadRoutines();
 
         // Seed local history cache for Suggest feature (runs silently in background)
-        syncHistoryCache(user.uid).catch(() => { });
+        syncHistoryCache(user.uid).catch(e => console.warn('[Rian]', e));
       });
     }
 
