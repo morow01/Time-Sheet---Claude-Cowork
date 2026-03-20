@@ -4329,7 +4329,7 @@
     }
     .note-desc-wrap textarea {
       max-height: 120px;
-      overflow-y: auto !important;
+      overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
     }
     .note-desc-expand-btn {
@@ -6433,7 +6433,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.68';
+    const VERSION = '4.5.69';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9073,6 +9073,10 @@
     function autoGrow(el) {
       el.style.height = 'auto';
       el.style.height = el.scrollHeight + 'px';
+      // If inside a note description wrapper, toggle overflow based on whether content overflows
+      if (el.closest('.note-desc-wrap')) {
+        el.style.overflowY = el.scrollHeight > 120 ? 'auto' : 'hidden';
+      }
     }
 
     function stepHrs(actId, di, field, delta) {
