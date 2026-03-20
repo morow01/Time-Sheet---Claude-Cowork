@@ -1612,19 +1612,13 @@
       transition: background 0.3s ease, color 0.3s ease;
     }
 
-    /* ── Mini nav: fixed tab bar that slides in on scroll-up ── */
-    #mini-nav {
-      position: fixed;
+    /* ── Sticky tab bar: lives in document flow so it NEVER overlaps content ── */
+    #sticky-tabs {
+      position: sticky;
       top: 0;
-      left: 0;
-      right: 0;
       z-index: 50;
-      transform: translateY(-100%);
-      transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: transform;
-    }
-    #mini-nav.visible {
-      transform: translateY(0);
+      background: var(--bg-header-tab);
+      transition: top 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     input,
@@ -6424,7 +6418,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.62';
+    const VERSION = '4.5.63';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7994,26 +7988,11 @@
       </div>
     </div>
     </div><!-- /hdr-top -->
-    <div class="flex" style="background:var(--bg-header-tab);">
-      <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'week' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        Timesheet
-      </button>
-      <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        Notes
-        ${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus]}"></span>` : ''}
-      </button>
-      <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        Finder
-      </button>
-      <button onclick="setView('ai')" class="py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'ai' ? '#F5A623' : 'var(--text-header-sub)'};padding-left:20px;padding-right:20px;${state.view === 'ai' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        AI
-      </button>
-    </div>
   </header>
-  <div id="mini-nav" style="background:var(--bg-header-tab);">
+  <div id="sticky-tabs">
     <div class="flex">
       <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'week' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid #F5A623' : ''}">Timesheet</button>
-      <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #F5A623' : ''}">Notes</button>
+      <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #F5A623' : ''}">Notes${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus]}"></span>` : ''}</button>
       <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">Finder</button>
       <button onclick="setView('ai')" class="py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'ai' ? '#F5A623' : 'var(--text-header-sub)'};padding-left:20px;padding-right:20px;${state.view === 'ai' ? 'border-bottom:2.5px solid #F5A623' : ''}">AI</button>
     </div>
@@ -8021,8 +8000,13 @@
     }
 
     function updateHeaderStatus() {
-      const el = document.querySelector('header');
-      if (el) el.outerHTML = renderHeader();
+      const rendered = renderHeader();
+      const tmp = document.createElement('div');
+      tmp.innerHTML = rendered;
+      const oldHeader = document.querySelector('header');
+      const oldTabs   = document.getElementById('sticky-tabs');
+      if (oldHeader) oldHeader.outerHTML = tmp.querySelector('header').outerHTML;
+      if (oldTabs)   oldTabs.outerHTML   = tmp.querySelector('#sticky-tabs').outerHTML;
     }
 
     // ============================================================
@@ -9244,9 +9228,9 @@
       state.view = v;
       localStorage.setItem('lastView', v);
       window.scrollTo(0, 0);
-      // Hide mini-nav when switching tabs (full header will be visible)
-      document.getElementById('mini-nav')?.classList.remove('visible');
-      _navCompensating = false;
+      // Reset sticky tab bar when switching views (full header will be visible)
+      const _tabsEl = document.getElementById('sticky-tabs');
+      if (_tabsEl) _tabsEl.style.top = '0px';
       _scrollDelta = 0;
 
       if (v === 'notes') await loadNotes();
@@ -10624,56 +10608,36 @@
     // ============================================================
     // INIT
     // ============================================================
-    // Save scroll position per view + hide/show header on scroll direction
+    // Save scroll position per view + hide/show sticky tab bar on scroll direction
     let _scrollTimer = null;
     let _lastScrollY = 0;
     let _scrollDelta = 0;
-    let _navCompensating = false;
     const HIDE_THRESHOLD = 40;
     const SHOW_THRESHOLD = 10;
     window.addEventListener('scroll', () => {
-      // Skip logic during programmatic scroll compensation
-      if (_navCompensating) {
-        _lastScrollY = window.scrollY;
-        return;
-      }
       const y = window.scrollY;
       const delta = y - _lastScrollY;
       _scrollDelta += delta;
       _lastScrollY = y;
 
-      const miniNav = document.getElementById('mini-nav');
-      const header  = document.querySelector('header');
+      const tabs   = document.getElementById('sticky-tabs');
+      const header = document.querySelector('header');
       const headerH = header ? header.offsetHeight : 0;
 
-      if (miniNav) {
-        const miniH = miniNav.offsetHeight;
-        const show = () => {
-          if (miniNav.classList.contains('visible')) return;
-          miniNav.classList.add('visible');
-          // Scroll UP so content shifts down below the nav (nav is at top:0)
-          _navCompensating = true;
-          window.scrollBy(0, -miniH);
-          _lastScrollY = Math.max(0, _lastScrollY - miniH);
-          setTimeout(() => { _navCompensating = false; }, 100);
-        };
-        const hide = (compensate) => {
-          if (!miniNav.classList.contains('visible')) return;
-          miniNav.classList.remove('visible');
-          if (compensate) {
-            // Scroll DOWN to reclaim space the bar was occupying
-            _navCompensating = true;
-            window.scrollBy(0, miniH);
-            _lastScrollY += miniH;
-            setTimeout(() => { _navCompensating = false; }, 100);
-          }
-        };
+      if (tabs) {
+        const tabH = tabs.offsetHeight;
         if (y <= headerH) {
-          hide(false); _scrollDelta = 0;
+          // At page top — full header visible, reset tabs to natural sticky position
+          tabs.style.top = '0px';
+          _scrollDelta = 0;
         } else if (_scrollDelta > HIDE_THRESHOLD) {
-          hide(true); _scrollDelta = HIDE_THRESHOLD;
+          // Scrolling down — slide tab bar above viewport
+          tabs.style.top = '-' + (tabH + 2) + 'px';
+          _scrollDelta = HIDE_THRESHOLD;
         } else if (_scrollDelta < -SHOW_THRESHOLD) {
-          show(); _scrollDelta = -SHOW_THRESHOLD;
+          // Scrolling up — bring tab bar back
+          tabs.style.top = '0px';
+          _scrollDelta = -SHOW_THRESHOLD;
         }
       }
 
