@@ -4323,6 +4323,39 @@
     .note-detail-row {
       margin-bottom: 10px;
     }
+    .desc-collapse-wrap {
+      position: relative;
+      max-height: 5.6em;       /* ~4 lines of text */
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+    .desc-collapse-wrap.expanded {
+      max-height: none;
+    }
+    .desc-collapse-wrap:not(.expanded)::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 28px;
+      background: linear-gradient(transparent, #f8fafc);
+      pointer-events: none;
+    }
+    [data-theme="dark"] .desc-collapse-wrap:not(.expanded)::after {
+      background: linear-gradient(transparent, var(--bg-page));
+    }
+    .desc-show-more {
+      display: block;
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px 0 0;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
 
     .note-detail textarea,
     .note-detail input[type="text"],
@@ -6409,7 +6442,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.59';
+    const VERSION = '4.5.66';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6879,6 +6912,7 @@
       notes: [],            // all field notes
       notesFilter: 'all',   // 'all' | 'high' | 'medium' | 'low' | 'done'
       expandedNotes: new Set(), // note IDs that are expanded
+      expandedDescs: new Set(), // note IDs whose description is fully shown
       activitiesExpanded: new Set(), // activity IDs that are expanded for details
       notesSyncStatus: 'idle',  // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
       syncStatus: 'idle',   // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
@@ -9390,9 +9424,14 @@
           <div class="note-detail">
             <div class="note-detail-row">
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Description</span>
-              <textarea data-note-id="${note.id}" data-note-field="description" rows="1"
-                style="resize:none;overflow:hidden"
-                oninput="updateNoteField(this);autoGrow(this)">${esc(note.description)}</textarea>
+              <div class="desc-collapse-wrap ${state.expandedDescs.has(note.id) ? 'expanded' : ''}" data-desc-wrap="${note.id}">
+                <textarea data-note-id="${note.id}" data-note-field="description" rows="1"
+                  style="resize:none;overflow:hidden"
+                  oninput="updateNoteField(this);autoGrow(this)">${esc(note.description)}</textarea>
+              </div>
+              ${note.description && note.description.length > 120
+                ? `<button class="desc-show-more" onclick="toggleDescExpand('${note.id}')">${state.expandedDescs.has(note.id) ? '▲ Show less' : '▼ Show more'}</button>`
+                : ''}
             </div>
             <div class="note-detail-row">
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Location</span>
@@ -9613,6 +9652,28 @@
         const ta = document.querySelector(`textarea[data-note-id="${note.id}"]`);
         if (ta) ta.focus();
       }, 80);
+    }
+
+    function toggleDescExpand(id) {
+      if (state.expandedDescs.has(id)) {
+        state.expandedDescs.delete(id);
+      } else {
+        state.expandedDescs.add(id);
+      }
+      // Update DOM directly without full re-render
+      const wrap = document.querySelector(`[data-desc-wrap="${id}"]`);
+      if (wrap) {
+        wrap.classList.toggle('expanded', state.expandedDescs.has(id));
+        // Re-grow textarea inside
+        const ta = wrap.querySelector('textarea');
+        if (ta) autoGrow(ta);
+      }
+      // Update button text
+      const card = document.querySelector(`.note-card[data-note-id="${id}"]`);
+      if (card) {
+        const btn = card.querySelector('.desc-show-more');
+        if (btn) btn.innerHTML = state.expandedDescs.has(id) ? '&#9650; Show less' : '&#9660; Show more';
+      }
     }
 
     function toggleNote(id) {
