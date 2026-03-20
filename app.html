@@ -6176,7 +6176,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.32';
+    const VERSION = '4.5.33';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12291,7 +12291,7 @@ Work week = Friday to Thursday.
         ctx += '\n';
       });
 
-      // SECTION 3: Notes (open and done)
+      // SECTION 3: Saved Notes (standalone Notes tab — issues, faults & reminders)
       if (state.notes?.length) {
         const open = state.notes.filter(n => n.status !== 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
         const done = state.notes.filter(n => n.status === 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -12302,7 +12302,7 @@ Work week = Friday to Thursday.
           if (n.priority && n.priority !== 'medium') parts.push(n.priority + ' priority');
           return '    - ' + parts.join(' ');
         };
-        ctx += `\nNOTES:\n`;
+        ctx += `\nSAVED NOTES (Notes tab — standalone issues, faults & reminders, NOT timesheet task notes):\n`;
         if (open.length) {
           ctx += `  Open (${open.length}):\n`;
           open.forEach(n => { ctx += noteLine(n) + '\n'; });
@@ -12321,18 +12321,22 @@ Work week = Friday to Thursday.
       const apiKey = state.geminiKey;
       if (!apiKey) throw new Error('No API key. Add your Gemini key in ☰ Menu → AI Settings.');
       const model = state.geminiModel || 'gemini-2.0-flash';
-      const faultNotesSection = faultSources?.length
-        ? `\nMATCHING FAULT NOTES:\n${faultSources.slice(0, 10).map(n => `Date: ${n.date} | Task: ${n.description || '(no description)'}\nNotes: ${n.notes}`).join('\n---\n')}\n`
+      const matchingTaskNotesSection = faultSources?.length
+        ? `\nMATCHING TASK NOTES (field notes written inside timesheet work entries that match the query):\n${faultSources.slice(0, 10).map(n => `Date: ${n.date} | Task: ${n.description || '(no description)'}\nField note: ${n.notes}`).join('\n---\n')}\n`
         : '';
-      const savedNotesSection = noteMatches?.length
-        ? `\nMATCHING SAVED NOTES:\n${noteMatches.slice(0, 10).map(n => `[${n.status?.toUpperCase() || 'OPEN'}] ${n.description || '(no description)'}${n.location ? ' @ ' + n.location : ''}${n.date ? ' [' + n.date + ']' : ''}`).join('\n')}\n`
+      const matchingSavedNotesSection = noteMatches?.length
+        ? `\nMATCHING SAVED NOTES (standalone notes from the Notes tab that match the query):\n${noteMatches.slice(0, 10).map(n => `[${n.status?.toUpperCase() || 'OPEN'}] ${n.description || '(no description)'}${n.location ? ' @ ' + n.location : ''}${n.date ? ' [' + n.date + ']' : ''}`).join('\n')}\n`
         : '';
       const prompt = `You are a personal timesheet assistant for a telecommunications field technician.
 You have their full work history. Answer their question directly and confidently using the data below.
 Use the DATE REFERENCES section to resolve any time words like "last week", "this month", "yesterday".
 Be specific — include actual numbers, dates, and site names. Do not hedge or say the data is unclear when it is present.
 
-${timesheetContext}${faultNotesSection}${savedNotesSection}
+DATA DICTIONARY — two distinct note types exist in this app:
+- SAVED NOTES (Notes tab): standalone issue/fault/reminder records the user creates independently. When the user says "show my notes" or "recent notes" they almost always mean SAVED NOTES.
+- TASK NOTES (field notes): short notes written inside individual timesheet work entries describing what was done on a job. These are NOT standalone notes.
+
+${timesheetContext}${matchingTaskNotesSection}${matchingSavedNotesSection}
 QUESTION: ${query}`;
       const resp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
