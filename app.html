@@ -1626,10 +1626,6 @@
     #mini-nav.visible {
       transform: translateY(0);
     }
-    /* Push content down to match mini-nav height when visible */
-    #app {
-      transition: padding-top 0.26s cubic-bezier(0.4, 0, 0.2, 1);
-    }
 
     input,
     select,
@@ -6428,7 +6424,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.60';
+    const VERSION = '4.5.61';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9250,8 +9246,7 @@
       window.scrollTo(0, 0);
       // Hide mini-nav when switching tabs (full header will be visible)
       document.getElementById('mini-nav')?.classList.remove('visible');
-      const _appEl = document.getElementById('app');
-      if (_appEl) _appEl.style.paddingTop = '0px';
+      _navCompensating = false;
       _scrollDelta = 0;
 
       if (v === 'notes') await loadNotes();
@@ -10633,9 +10628,15 @@
     let _scrollTimer = null;
     let _lastScrollY = 0;
     let _scrollDelta = 0;
+    let _navCompensating = false;
     const HIDE_THRESHOLD = 40;
     const SHOW_THRESHOLD = 10;
     window.addEventListener('scroll', () => {
+      // Skip logic during programmatic scroll compensation
+      if (_navCompensating) {
+        _lastScrollY = window.scrollY;
+        return;
+      }
       const y = window.scrollY;
       const delta = y - _lastScrollY;
       _scrollDelta += delta;
@@ -10646,20 +10647,31 @@
       const headerH = header ? header.offsetHeight : 0;
 
       if (miniNav) {
-        const app = document.getElementById('app');
         const miniH = miniNav.offsetHeight;
         const show = () => {
+          if (miniNav.classList.contains('visible')) return;
           miniNav.classList.add('visible');
-          if (app) app.style.paddingTop = miniH + 'px';
+          // Scroll page down so content stays visually behind the bar
+          _navCompensating = true;
+          window.scrollBy(0, miniH);
+          _lastScrollY += miniH;
+          setTimeout(() => { _navCompensating = false; }, 100);
         };
-        const hide = () => {
+        const hide = (compensate) => {
+          if (!miniNav.classList.contains('visible')) return;
           miniNav.classList.remove('visible');
-          if (app) app.style.paddingTop = '0px';
+          if (compensate) {
+            // Scroll page up to reclaim the space the bar occupied
+            _navCompensating = true;
+            window.scrollBy(0, -miniH);
+            _lastScrollY = Math.max(0, _lastScrollY - miniH);
+            setTimeout(() => { _navCompensating = false; }, 100);
+          }
         };
         if (y <= headerH) {
-          hide(); _scrollDelta = 0;
+          hide(false); _scrollDelta = 0;
         } else if (_scrollDelta > HIDE_THRESHOLD) {
-          hide(); _scrollDelta = HIDE_THRESHOLD;
+          hide(true); _scrollDelta = HIDE_THRESHOLD;
         } else if (_scrollDelta < -SHOW_THRESHOLD) {
           show(); _scrollDelta = -SHOW_THRESHOLD;
         }
