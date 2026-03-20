@@ -1622,6 +1622,9 @@
       display: none;
       background: var(--bg-header-tab);
       border-bottom: 1px solid var(--border);
+      max-width: 42rem;
+      margin: 0 auto;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     #mini-nav.visible {
       display: block;
@@ -6424,7 +6427,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.64';
+    const VERSION = '4.5.65';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10642,7 +10645,7 @@
           if (miniNav.classList.contains('visible')) return;
           // Scroll UP first (same paint frame) so the newly fixed bar
           // sits over the area that was already above the viewport — not over the day the user was reading.
-          const newY = Math.max(0, y - miniH);
+          const newY = Math.max(0, y - miniH - 50);
           window.scrollTo(0, newY);
           _lastScrollY = newY;
           miniNav.classList.add('visible');
