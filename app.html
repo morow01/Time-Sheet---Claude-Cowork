@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.5';
+    const VERSION = '4.9.6';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10023,13 +10023,23 @@
           appVersion: VERSION
         };
 
-        // Save to Firestore — atomic merge so two devices can't overwrite each other
+        // Save to Firestore — use update() with dot notation to atomically set
+        // only this device's entry without touching other devices' entries
         const ref = userDoc('data/push_subscriptions');
         if (!ref) return;
         const deviceKey = getDeviceName();
-        const subsUpdate = {};
-        subsUpdate[deviceKey] = pushData;
-        await ref.set({ subs: subsUpdate, _updatedAt: Date.now() }, { merge: true });
+        try {
+          // update() only modifies the specified fields (atomic per-device)
+          await ref.update({
+            ['subs.' + deviceKey]: pushData,
+            _updatedAt: Date.now()
+          });
+        } catch (updateErr) {
+          // Document doesn't exist yet — create it
+          const subsObj = {};
+          subsObj[deviceKey] = pushData;
+          await ref.set({ subs: subsObj, _updatedAt: Date.now() });
+        }
         console.log('[Rian Push] subscription saved for', deviceKey);
       } catch (e) {
         console.error('[Rian Push] FAILED:', e);
