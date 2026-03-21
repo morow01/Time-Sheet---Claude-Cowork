@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.8.3';
+    const VERSION = '4.8.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10247,6 +10247,8 @@
       // Double-fire guard: check if already fired (another device may have beaten us)
       const current = getReminders().find(x => x.id === reminder.id);
       if (current && current.fired) return;
+      // Skip if server already pushed this reminder (avoid duplicate notification)
+      if (current && current.firedBy === 'server') return;
 
       // Mark as fired (skip if caller already saved)
       if (!alreadySaved) {
@@ -10357,7 +10359,7 @@
       const reminders = getReminders();
       let changed = false;
       reminders.forEach(r => {
-        if (!r.fired && r.remindAt <= now) {
+        if (!r.fired && r.firedBy !== 'server' && r.remindAt <= now) {
           r.fired = true;
           r.firedBy = getDeviceName();
           r.firedAt = Date.now();
