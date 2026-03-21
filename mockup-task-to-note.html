@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Task to Notes - Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #e8eef5; padding: 20px; color: #1e293b; }
+  h1 { text-align: center; font-size: 22px; color: #1e3a8a; margin-bottom: 8px; }
+  .subtitle { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 30px; }
+  .mockup { max-width: 420px; margin: 0 auto 40px; background: #f1f5f9; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .mockup-label { background: #1e3a8a; color: #fff; padding: 12px 16px; font-size: 13px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+  .mockup-desc { padding: 12px 16px; font-size: 12px; color: #475569; background: #e0e7ff; line-height: 1.5; }
+  .mockup-body { padding: 12px; }
+  .rec { display: inline-block; background: #16a34a; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.05em; }
+
+  .day-card { background: #fff; border-radius: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; overflow: hidden; }
+  .day-header { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+  .date-badge { width: 42px; height: 46px; border-radius: 10px; background: #EDF1F5; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+  .date-badge .dow { font-size: 9px; font-weight: 800; color: #8BA5BE; text-transform: uppercase; letter-spacing: 0.08em; }
+  .date-badge .dom { font-size: 18px; font-weight: 800; color: #2d4a6a; line-height: 1; }
+  .day-name { font-size: 14px; font-weight: 800; color: #1e293b; }
+  .day-pills { display: flex; gap: 6px; margin-top: 2px; }
+  .pill-hrs { font-size: 11px; font-weight: 700; color: #1e3a8a; background: #dbeafe; padding: 2px 8px; border-radius: 6px; }
+  .pill-ot { font-size: 11px; font-weight: 700; color: #c2410c; background: #fef3c7; padding: 2px 8px; border-radius: 6px; }
+
+  .act-card { background: #fff; border-radius: 10px; border: 1px solid #e8eef5; margin: 0 12px 8px; padding: 12px 14px; }
+  .act-card.expanded { border-color: #93c5fd; box-shadow: 0 0 0 1px #93c5fd; }
+  .act-row1 { display: flex; align-items: center; gap: 10px; }
+  .task-num { width: 22px; height: 22px; border-radius: 50%; background: #EDF1F5; color: #5A7289; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .act-desc { font-size: 14px; font-weight: 700; color: #1e293b; flex: 1; }
+  .act-row2 { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; padding-left: 32px; }
+  .act-loc { font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 3px; }
+  .act-pills { display: flex; gap: 4px; }
+
+  /* Action buttons row */
+  .act-actions-row { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
+  .act-action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 9px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; border: none; font-family: inherit; }
+  .act-action-copy { background: #eff6ff; color: #1e3a8a; }
+  .act-action-note { background: #f0fdf4; color: #15803d; }
+  .act-action-delete { background: #fef2f2; color: #dc2626; }
+
+  /* 3-column layout */
+  .act-actions-row-3 { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; }
+  .act-actions-row-3 .act-action-btn { padding: 9px 6px; font-size: 10px; }
+
+  /* Toast mockup */
+  .mock-toast {
+    background: rgba(0,0,0,0.82); color: #fff; padding: 10px 20px; border-radius: 24px;
+    font-size: 14px; text-align: center; max-width: 280px; margin: 16px auto 0;
+  }
+
+  /* Note card preview */
+  .note-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 14px 16px; margin-bottom: 8px; }
+  .note-priority { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .note-priority.medium { background: #f59e0b; }
+  .note-row1 { display: flex; align-items: center; gap: 8px; }
+  .note-title { font-size: 14px; font-weight: 700; color: #1e293b; flex: 1; }
+  .note-row2 { display: flex; align-items: center; gap: 8px; margin-top: 4px; padding-left: 18px; font-size: 12px; color: #94a3b8; }
+  .note-loc { display: flex; align-items: center; gap: 3px; }
+  .note-badge { font-size: 10px; font-weight: 700; background: #dbeafe; color: #1e3a8a; padding: 1px 6px; border-radius: 4px; }
+
+  .step-label { text-align: center; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 24px 0 8px; }
+  .arrow-down { text-align: center; color: #cbd5e1; margin: 8px 0; }
+  .vs-divider { text-align: center; font-size: 16px; font-weight: 800; color: #cbd5e1; letter-spacing: 0.2em; margin: 30px 0 16px; }
+
+  /* Confirm sheet */
+  .confirm-overlay { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px 12px 12px; margin-top: 8px; }
+  .confirm-sheet { background: #fff; border-radius: 16px; padding: 20px; }
+  .confirm-title { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+  .confirm-sub { font-size: 12px; color: #64748b; margin-bottom: 14px; line-height: 1.5; }
+  .confirm-preview { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+  .confirm-preview-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .confirm-preview-title { font-size: 14px; font-weight: 700; color: #1e293b; }
+  .confirm-preview-meta { font-size: 12px; color: #64748b; margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+  .confirm-field { margin-bottom: 10px; }
+  .confirm-field-label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px; }
+  .confirm-select { width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; color: #1e293b; background: #fff; }
+  .confirm-actions { display: flex; gap: 8px; }
+  .confirm-btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0; background: #fff; font-size: 13px; font-weight: 700; color: #64748b; cursor: pointer; font-family: inherit; }
+  .confirm-btn-add { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #15803d; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit; }
+</style>
+</head>
+<body>
+
+<h1>Add Task to Notes</h1>
+<p class="subtitle">3 UI approaches — pick one or mix elements</p>
+
+<!-- ============================================================ -->
+<!-- OPTION A: Third button in action row -->
+<!-- ============================================================ -->
+
+<div class="mockup">
+  <div class="mockup-label">Option A — Third button in actions row &nbsp;<span class="rec">Recommended</span></div>
+  <div class="mockup-desc">
+    Add a "Note" button alongside "Copy to…" and "Delete". One tap creates the note instantly with a toast confirmation. Simplest approach — no extra dialogs.
+  </div>
+  <div class="mockup-body">
+    <div class="day-card">
+      <div class="day-header">
+        <div class="date-badge"><span class="dow">FRI</span><span class="dom">20</span></div>
+        <div>
+          <div class="day-name">Friday</div>
+          <div class="day-pills"><span class="pill-hrs">3 tasks</span><span class="pill-hrs">7h</span><span class="pill-ot">+1 OT</span></div>
+        </div>
+      </div>
+      <div class="act-card expanded">
+        <div class="act-row1">
+          <div class="task-num">1</div>
+          <div class="act-desc">Collecting part in Portlaoise for a fault</div>
+        </div>
+        <div class="act-row2">
+          <div class="act-loc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            Portlaoise (PGS)
+          </div>
+          <div class="act-pills"><span class="pill-hrs">2h</span></div>
+        </div>
+        <div class="act-actions-row-3">
+          <button class="act-action-btn act-action-copy">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy to…
+          </button>
+          <button class="act-action-btn act-action-note" style="border: 1.5px solid #bbf7d0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            + Note
+          </button>
+          <button class="act-action-btn act-action-delete">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock-toast">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg>
+      &nbsp;Added to Notes
+    </div>
+  </div>
+</div>
+
+<div class="step-label">What happens — note is created instantly</div>
+<div class="mockup">
+  <div class="mockup-label">Result in Notes tab</div>
+  <div class="mockup-desc">
+    A new note appears at the top of the Notes list with description, location and date pre-filled from the task. Priority defaults to medium (editable later).
+  </div>
+  <div class="mockup-body" style="padding: 12px 12px 16px;">
+    <div class="note-card" style="border-color: #86efac; box-shadow: 0 0 0 1px #86efac;">
+      <div class="note-row1">
+        <span class="note-priority medium"></span>
+        <span class="note-title">Collecting part in Portlaoise for a fault</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="note-row2">
+        <span class="note-loc">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+          Portlaoise (PGS)
+        </span>
+        <span>📅 Fri 20. Mar '26</span>
+        <span class="note-badge">from task</span>
+      </div>
+    </div>
+    <div class="note-card" style="opacity:0.5">
+      <div class="note-row1">
+        <span class="note-priority medium"></span>
+        <span class="note-title">Two VCM boards to be installed</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- OPTION B: Confirmation dialog with priority picker -->
+<!-- ============================================================ -->
+<div class="vs-divider">— — —</div>
+
+<div class="mockup">
+  <div class="mockup-label">Option B — Quick confirm with priority picker</div>
+  <div class="mockup-desc">
+    Same "Note" button, but instead of creating instantly, a small confirmation dialog appears showing what will be created. Lets you pick priority before saving. One extra tap but more control.
+  </div>
+  <div class="mockup-body">
+    <div class="day-card">
+      <div class="day-header">
+        <div class="date-badge"><span class="dow">FRI</span><span class="dom">20</span></div>
+        <div>
+          <div class="day-name">Friday</div>
+          <div class="day-pills"><span class="pill-hrs">3 tasks</span><span class="pill-hrs">7h</span><span class="pill-ot">+1 OT</span></div>
+        </div>
+      </div>
+      <div class="act-card expanded">
+        <div class="act-row1">
+          <div class="task-num">1</div>
+          <div class="act-desc">Collecting part in Portlaoise for a fault</div>
+        </div>
+        <div class="act-row2">
+          <div class="act-loc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            Portlaoise (PGS)
+          </div>
+          <div class="act-pills"><span class="pill-hrs">2h</span></div>
+        </div>
+        <div class="act-actions-row-3">
+          <button class="act-action-btn act-action-copy">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy to…
+          </button>
+          <button class="act-action-btn act-action-note" style="border: 1.5px solid #bbf7d0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            + Note
+          </button>
+          <button class="act-action-btn act-action-delete">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="confirm-overlay">
+      <div class="confirm-sheet">
+        <div class="confirm-title">Add to Notes?</div>
+        <div class="confirm-sub">This will create a new note from the task details.</div>
+
+        <div class="confirm-preview">
+          <div class="confirm-preview-label">Note preview</div>
+          <div class="confirm-preview-title">Collecting part in Portlaoise for a fault</div>
+          <div class="confirm-preview-meta">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            Portlaoise (PGS)
+            <span style="color:#cbd5e1">·</span>
+            Fri 20 Mar
+          </div>
+        </div>
+
+        <div class="confirm-field">
+          <div class="confirm-field-label">Priority</div>
+          <select class="confirm-select">
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+          </select>
+        </div>
+
+        <div class="confirm-actions">
+          <button class="confirm-btn-cancel">Cancel</button>
+          <button class="confirm-btn-add">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Add to Notes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- OPTION C: Bookmark icon on collapsed cards -->
+<!-- ============================================================ -->
+<div class="vs-divider">— — —</div>
+
+<div class="mockup">
+  <div class="mockup-label">Option C — Bookmark icon on collapsed card</div>
+  <div class="mockup-desc">
+    A small bookmark icon on the right side of every task card (even collapsed). Tap it to instantly add to Notes — no need to expand the task first. Most convenient for quick saves.
+  </div>
+  <div class="mockup-body">
+    <div class="day-card">
+      <div class="day-header">
+        <div class="date-badge"><span class="dow">FRI</span><span class="dom">20</span></div>
+        <div>
+          <div class="day-name">Friday</div>
+          <div class="day-pills"><span class="pill-hrs">3 tasks</span><span class="pill-hrs">7h</span><span class="pill-ot">+1 OT</span></div>
+        </div>
+      </div>
+
+      <!-- Task 1 — not bookmarked -->
+      <div class="act-card" style="position:relative;">
+        <div class="act-row1">
+          <div class="task-num">1</div>
+          <div class="act-desc">Collecting part in Portlaoise</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="pill-hrs">2h</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer;flex-shrink:0;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </div>
+        </div>
+        <div class="act-row2" style="padding-right: 32px;">
+          <div class="act-loc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            Portlaoise (PGS)
+          </div>
+        </div>
+      </div>
+
+      <!-- Task 2 — bookmarked (filled) -->
+      <div class="act-card" style="position:relative;">
+        <div class="act-row1">
+          <div class="task-num">2</div>
+          <div class="act-desc">Admin</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="pill-hrs">2h</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#15803d" stroke="#15803d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer;flex-shrink:0;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </div>
+        </div>
+        <div class="act-row2" style="padding-right: 32px;">
+          <div class="act-loc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            Naas (NAS)
+          </div>
+          <span class="note-badge" style="margin-left:auto;">in notes</span>
+        </div>
+      </div>
+
+      <!-- Task 3 — not bookmarked -->
+      <div class="act-card" style="position:relative;">
+        <div class="act-row1">
+          <div class="task-num">3</div>
+          <div class="act-desc">Van</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="pill-hrs">2h</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="cursor:pointer;flex-shrink:0;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </div>
+        </div>
+        <div class="act-row2" style="padding-right: 32px;">
+          <div class="act-loc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+            Sallins (SLS)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
