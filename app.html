@@ -4612,9 +4612,15 @@
     }
     .remind-sheet {
       background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
-      animation: slideUp 0.2s ease; padding: 0 0 14px;
-      padding-bottom: env(safe-area-inset-bottom, 14px);
-      max-height: 85vh; overflow-y: auto;
+      animation: slideUp 0.2s ease; padding: 0;
+      max-height: 80vh; overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
+    .remind-sheet-body { flex: 1; overflow-y: auto; padding: 0; }
+    .remind-actions-sticky {
+      position: sticky; bottom: 0; background: #fff;
+      padding: 10px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+      border-top: 1px solid #f1f5f9;
     }
     .remind-handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 10px auto 0; }
     .remind-title { font-size: 15px; font-weight: 800; color: #1e293b; padding: 14px 16px 2px; }
@@ -6667,7 +6673,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.94';
+    const VERSION = '4.5.95';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9948,35 +9954,39 @@
       const modal = document.getElementById('remind-modal');
       modal.innerHTML = `<div class="remind-overlay" onclick="if(event.target===this)closeReminder()">
         <div class="remind-sheet">
-          <div class="remind-handle"></div>
-          <div class="remind-title">Set Reminder</div>
-          <div class="remind-sub">You'll get a notification at the chosen time.</div>
-          <div class="remind-preview">
-            ${esc(desc)}
-            ${loc ? '<div class="remind-preview-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ' + esc(loc) + '</div>' : ''}
-          </div>
-          <div class="remind-presets">
-            <button class="remind-preset" onclick="setReminderPreset('1h')">In 1 hour</button>
-            <button class="remind-preset active" onclick="setReminderPreset('tomorrow')">Tomorrow 9am</button>
-            <button class="remind-preset" onclick="setReminderPreset('nextmon')">Next Mon 9am</button>
-            <button class="remind-preset" onclick="setReminderPreset('3d')">In 3 days</button>
-          </div>
-          <div class="remind-fields">
-            <div class="remind-field">
-              <label>Date</label>
-              <input type="date" id="remind-date" value="${defaultDate}">
+          <div class="remind-sheet-body">
+            <div class="remind-handle"></div>
+            <div class="remind-title">Set Reminder</div>
+            <div class="remind-sub">You'll get a notification at the chosen time.</div>
+            <div class="remind-preview">
+              ${esc(desc)}
+              ${loc ? '<div class="remind-preview-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ' + esc(loc) + '</div>' : ''}
             </div>
-            <div class="remind-field">
-              <label>Time</label>
-              <input type="time" id="remind-time" value="${defaultTime}">
+            <div class="remind-presets">
+              <button class="remind-preset" onclick="setReminderPreset('1h')">In 1 hour</button>
+              <button class="remind-preset active" onclick="setReminderPreset('tomorrow')">Tomorrow 9am</button>
+              <button class="remind-preset" onclick="setReminderPreset('nextmon')">Next Mon 9am</button>
+              <button class="remind-preset" onclick="setReminderPreset('3d')">In 3 days</button>
+            </div>
+            <div class="remind-fields">
+              <div class="remind-field">
+                <label>Date</label>
+                <input type="date" id="remind-date" value="${defaultDate}">
+              </div>
+              <div class="remind-field">
+                <label>Time</label>
+                <input type="time" id="remind-time" value="${defaultTime}">
+              </div>
             </div>
           </div>
-          <div class="remind-actions">
-            <button class="btn-cancel" onclick="closeReminder()">Cancel</button>
-            <button class="btn-remind" onclick="executeSetReminder()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              Set Reminder
-            </button>
+          <div class="remind-actions-sticky">
+            <div class="remind-actions">
+              <button class="btn-cancel" onclick="closeReminder()">Cancel</button>
+              <button class="btn-remind" onclick="executeSetReminder()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Set Reminder
+              </button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -10077,11 +10087,13 @@
       }, Math.min(delay, maxDelay));
     }
 
-    function fireReminder(reminder) {
-      // Mark as fired
-      const reminders = getReminders();
-      const r = reminders.find(x => x.id === reminder.id);
-      if (r) { r.fired = true; saveReminders(reminders); }
+    function fireReminder(reminder, alreadySaved) {
+      // Mark as fired (skip if caller already saved)
+      if (!alreadySaved) {
+        const reminders = getReminders();
+        const r = reminders.find(x => x.id === reminder.id);
+        if (r) { r.fired = true; saveReminders(reminders); }
+      }
 
       // Show notification (prefer service worker for mobile support)
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -10114,6 +10126,32 @@
       const active = reminders.filter(r => !r.fired || r.remindAt > cutoff);
       if (active.length !== reminders.length) saveReminders(active);
       active.filter(r => !r.fired).forEach(r => scheduleReminderTimer(r));
+
+      // Mobile fix: setTimeout dies when phone sleeps / browser is backgrounded.
+      // Re-check pending reminders whenever the user returns to the app.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkMissedReminders();
+        }
+      });
+      // Also poll every 30s as a safety net while the tab is active
+      setInterval(checkMissedReminders, 30000);
+    }
+
+    function checkMissedReminders() {
+      const now = Date.now();
+      const reminders = getReminders();
+      let changed = false;
+      reminders.forEach(r => {
+        if (!r.fired && r.remindAt <= now) {
+          r.fired = true;
+          changed = true;
+          // Clear any existing timer
+          if (reminderTimers[r.id]) { clearTimeout(reminderTimers[r.id]); delete reminderTimers[r.id]; }
+          fireReminder(r, true);
+        }
+      });
+      if (changed) saveReminders(reminders);
     }
 
     // ============================================================
