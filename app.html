@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.7.9';
+    const VERSION = '4.8.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9964,18 +9964,17 @@
     // ============================================================
     // FCM PUSH NOTIFICATION REGISTRATION
     // ============================================================
-    async function registerFCMToken() {
-      if (!state.currentUser) { console.log('[Rian FCM] no user'); return; }
-      if (!('Notification' in window)) { console.log('[Rian FCM] no Notification API'); return; }
+    async function registerPushSubscription() {
+      if (!state.currentUser) return;
+      if (!('Notification' in window) || !('PushManager' in window)) return;
       if (Notification.permission === 'default') {
         const perm = await Notification.requestPermission();
         if (perm !== 'granted') return;
       } else if (Notification.permission !== 'granted') { return; }
       try {
         const swReg = await navigator.serviceWorker.ready;
-        console.log('[Rian FCM] SW:', swReg.active ? swReg.active.scriptURL : 'none');
 
-        // DIAGNOSTIC: Test raw PushManager.subscribe first
+        // Convert VAPID public key to Uint8Array
         const vapidKey = 'BMIaAzivNSOgU4v3XnOpZmZ6YIMQdSIRBmCoaKTG5MtOB2liQUDT6tk8EHzywdu7uMneWeaAKAkmK8YNlSqJl_E';
         const padding = '='.repeat((4 - vapidKey.length % 4) % 4);
         const b64 = (vapidKey + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -9983,48 +9982,39 @@
         const keyArr = new Uint8Array(raw.length);
         for (let i = 0; i < raw.length; i++) keyArr[i] = raw.charCodeAt(i);
 
-        // Clear old subscription
-        const oldSub = await swReg.pushManager.getSubscription();
-        if (oldSub) await oldSub.unsubscribe();
-
-        // Try raw push subscribe (bypasses Firebase entirely)
-        let rawSub;
-        try {
-          rawSub = await swReg.pushManager.subscribe({
+        // Get or create push subscription
+        let sub = await swReg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await swReg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: keyArr
           });
-          showToast('Raw push OK! Getting FCM token...');
-          // Unsubscribe raw — we want Firebase to manage it
-          await rawSub.unsubscribe();
-        } catch (rawErr) {
-          showToast('Raw push FAILED: ' + (rawErr.message || rawErr).toString().substring(0, 60));
-          console.error('[Rian FCM] raw push failed:', rawErr);
-          return; // No point trying getToken if raw push fails
         }
 
-        // Now try Firebase getToken
-        try { await fcm.deleteToken(); } catch (_) {}
-        const token = await fcm.getToken({
-          vapidKey: vapidKey,
-          serviceWorkerRegistration: swReg
-        });
-        if (!token) return;
-        const ref = userDoc('data/fcm_tokens');
+        // Extract subscription data for server-side sending
+        const subJson = sub.toJSON();
+        const pushData = {
+          endpoint: subJson.endpoint,
+          keys: {
+            p256dh: subJson.keys.p256dh,
+            auth: subJson.keys.auth
+          },
+          device: getDeviceName(),
+          updatedAt: Date.now()
+        };
+
+        // Save to Firestore — store subscriptions as a map keyed by device name
+        const ref = userDoc('data/push_subscriptions');
         if (!ref) return;
         const doc = await ref.get();
-        let tokens = (doc.exists && Array.isArray(doc.data().tokens)) ? doc.data().tokens : [];
-        if (!tokens.includes(token)) {
-          tokens.push(token);
-          await ref.set({ tokens, _updatedAt: Date.now() });
-          showToast('FCM token registered ✓');
-        } else {
-          showToast('FCM token OK (exists)');
-        }
+        const subs = (doc.exists && doc.data().subs) ? doc.data().subs : {};
+        subs[getDeviceName()] = pushData;
+        await ref.set({ subs, _updatedAt: Date.now() });
+        showToast('Push registered ✓');
+        console.log('[Rian Push] subscription saved for', getDeviceName());
       } catch (e) {
-        console.error('[Rian FCM] FAILED:', e);
-        const errDetail = (e.code ? e.code + ': ' : '') + (e.message || 'unknown');
-        showToast('FCM err: ' + errDetail.substring(0, 80));
+        console.error('[Rian Push] FAILED:', e);
+        showToast('Push err: ' + (e.message || 'unknown').substring(0, 60));
       }
     }
 
@@ -13795,7 +13785,7 @@ Rules:
         initReminders();
 
         // Register FCM push token for background notifications
-        registerFCMToken();
+        registerPushSubscription();
 
         // Seed local history cache for Suggest feature (runs silently in background)
         syncHistoryCache(user.uid).catch(e => console.warn('[Rian]', e));
