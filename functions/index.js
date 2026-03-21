@@ -12,21 +12,17 @@ const messaging = admin.messaging();
 exports.checkReminders = onSchedule("* * * * *", async () => {
   const now = Date.now();
 
-  // Get all users who have reminders
-  const usersSnap = await db.collectionGroup("data").where(
-    admin.firestore.FieldPath.documentId(), ">=", ""
-  ).get();
+  // Get all users
+  const usersSnap = await db.collection("users").get();
 
-  // Filter to just 'reminders' docs
-  const reminderDocs = [];
-  usersSnap.forEach(doc => {
-    if (doc.ref.path.endsWith("/data/reminders")) {
-      reminderDocs.push(doc);
-    }
-  });
+  for (const userDoc of usersSnap.docs) {
+    const uid = userDoc.id;
 
-  for (const doc of reminderDocs) {
-    const data = doc.data();
+    // Get this user's reminders doc
+    const remindersDoc = await db.doc(`users/${uid}/data/reminders`).get();
+    if (!remindersDoc.exists) continue;
+
+    const data = remindersDoc.data();
     if (!Array.isArray(data.reminders)) continue;
 
     let changed = false;
@@ -40,7 +36,6 @@ exports.checkReminders = onSchedule("* * * * *", async () => {
         changed = true;
 
         // Get user's FCM tokens
-        const uid = doc.ref.parent.parent.id;
         const tokensDoc = await db.doc(`users/${uid}/data/fcm_tokens`).get();
         if (!tokensDoc.exists) continue;
 
@@ -85,7 +80,7 @@ exports.checkReminders = onSchedule("* * * * *", async () => {
     }
 
     if (changed) {
-      await doc.ref.update({ reminders, _updatedAt: Date.now() });
+      await db.doc(`users/${uid}/data/reminders`).update({ reminders, _updatedAt: Date.now() });
     }
   }
 });
