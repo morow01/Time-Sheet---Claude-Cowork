@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.8.9';
+    const VERSION = '4.9.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10042,13 +10042,42 @@
       }
     }
 
+    // Navigate to a specific note: switch to notes view, expand it, scroll to it
+    async function navigateToNote(noteId) {
+      if (!noteId) return;
+      // Switch to notes view if not already there
+      if (state.view !== 'notes') await setView('notes');
+      // Expand the note
+      if (!state.expandedNotes.has(noteId)) state.expandedNotes.add(noteId);
+      render();
+      // Scroll to the note card after render
+      requestAnimationFrame(() => {
+        const card = document.querySelector(`.note-card[data-note-id="${noteId}"]`);
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }
+
     // Listen for push messages while app is in foreground
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'reminder') {
           showToast('⏰ ' + (event.data.body || 'Reminder'));
         }
+        // Handle notification tap → open specific note
+        if (event.data && event.data.type === 'openNote' && event.data.noteId) {
+          navigateToNote(event.data.noteId);
+        }
       });
+    }
+
+    // Check URL hash for note deep link (from notification tap when app was closed)
+    function checkNoteDeepLink() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#note=')) {
+        const noteId = hash.substring(6);
+        window.location.hash = ''; // clean up
+        if (noteId) navigateToNote(noteId);
+      }
     }
 
     // ============================================================
@@ -13851,6 +13880,9 @@ Rules:
 
         // Register FCM push token for background notifications
         registerPushSubscription();
+
+        // Check if app was opened via notification tap (deep link to specific note)
+        setTimeout(() => checkNoteDeepLink(), 500);
 
         // Seed local history cache for Suggest feature (runs silently in background)
         syncHistoryCache(user.uid).catch(e => console.warn('[Rian]', e));

@@ -1,4 +1,4 @@
-const CACHE = 'timesheet-v414';
+const CACHE = 'timesheet-v415';
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
 const ASSETS = [
   BASE,
@@ -37,14 +37,19 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
+  const noteId = e.notification.data && e.notification.data.noteId;
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const c of list) {
         if (c.url.includes('app.html') || c.url.endsWith('/')) {
+          // Tell the open app to navigate to this note
+          if (noteId) c.postMessage({ type: 'openNote', noteId });
           return c.focus();
         }
       }
-      return clients.openWindow(BASE + 'app.html');
+      // No open window — open with hash so the app can pick it up on load
+      const url = BASE + 'app.html' + (noteId ? '#note=' + noteId : '');
+      return clients.openWindow(url);
     })
   );
 });
