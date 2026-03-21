@@ -6433,7 +6433,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.69';
+    const VERSION = '4.5.70';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9690,8 +9690,8 @@
               toolbar: {
                 container: [
                   [{ 'font': ['', 'serif', 'monospace'] }, { 'size': ['small', false, 'large', 'huge'] }],
-                  ['bold', 'italic', 'underline', 'strike', 'clean'],
-                  [{ 'list': 'ordered' }, { 'list': 'bullet' },
+                  ['bold', 'italic', 'underline', 'strike', 'clean',
+                  { 'list': 'ordered' }, { 'list': 'bullet' },
                   { 'color': ['#000000', '#e53935', '#f57c00', '#2e7d32', '#1565c0', '#6a1b9a', '#ffffff'] },
                   { 'background': ['', '#ffeb3b', '#a5d6a7', '#ef9a9a', '#90caf9', '#ce93d8', '#ffe0b2'] },
                     'undo', 'redo']
@@ -12991,8 +12991,8 @@ QUESTION: ${query}`;
               toolbar: {
                 container: [
                   [{ 'font': ['', 'serif', 'monospace'] }, { 'size': ['small', false, 'large', 'huge'] }],
-                  ['bold', 'italic', 'underline', 'strike', 'clean'],
-                  [{ 'list': 'ordered' }, { 'list': 'bullet' },
+                  ['bold', 'italic', 'underline', 'strike', 'clean',
+                  { 'list': 'ordered' }, { 'list': 'bullet' },
                   { 'color': ['#000000', '#e53935', '#f57c00', '#2e7d32', '#1565c0', '#6a1b9a', '#ffffff'] },
                   { 'background': ['', '#ffeb3b', '#a5d6a7', '#ef9a9a', '#90caf9', '#ce93d8', '#ffe0b2'] },
                     'undo', 'redo']
@@ -13004,7 +13004,7 @@ QUESTION: ${query}`;
               }
             }
           });
-          // Kill Quill's built-in 15px group margin so toolbar fits on one row
+          // Kill Quill's built-in 15px group margin so toolbar fits on two rows
           const _killMargin = () => document.querySelectorAll('#note-fs-editor .ql-formats').forEach(el => {
             el.style.setProperty('margin-right', '0', 'important');
           });
