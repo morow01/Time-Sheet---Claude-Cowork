@@ -81,23 +81,48 @@
     status('Reading local IndexedDB...', 'info');
 
     try {
-      const stored = await readIDB();
-      if (!stored || !stored.data || !Array.isArray(stored.data)) {
-        status('No notes found in local cache. The cache may have already been overwritten.', 'error');
+      let notes = null;
+      let source = '';
+
+      // Try 1: local IndexedDB
+      const stored = await readIDB().catch(() => null);
+      if (stored && stored.data && Array.isArray(stored.data) && stored.data.length > 0) {
+        notes = stored.data;
+        source = 'local cache';
+      }
+
+      // Try 2: Firestore backup document (if local is empty)
+      if (!notes || notes.length === 0) {
+        status('Local cache empty. Checking Firestore backup...', 'warning');
+        try {
+          await loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+          await loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js');
+          await loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js');
+          if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+          const auth = firebase.auth();
+          const provider = new firebase.auth.GoogleAuthProvider();
+          status('Sign in to check Firestore backup...', 'info');
+          const result = await auth.signInWithPopup(provider);
+          const uid = result.user.uid;
+          const db = firebase.firestore();
+          const backupSnap = await db.doc('users/' + uid + '/data/notes_backup').get();
+          if (backupSnap.exists && backupSnap.data().notes && backupSnap.data().notes.length > 0) {
+            notes = backupSnap.data().notes;
+            source = 'Firestore backup';
+          }
+        } catch (e) { status('Firestore backup check failed: ' + e.message, 'error'); }
+      }
+
+      if (!notes || notes.length === 0) {
+        status('No notes found in local cache or Firestore backup.', 'error');
         return;
       }
 
-      const notes = stored.data;
       const openNotes = notes.filter(n => n.status === 'open');
       const doneNotes = notes.filter(n => n.status === 'done');
 
-      if (notes.length === 0) {
-        status('Local cache exists but contains 0 notes. Already overwritten by sync.', 'error');
-        return;
-      }
-
       recoveredNotes = notes;
-      status(`Found <span class="count">${notes.length}</span> notes in local cache! (${openNotes.length} open, ${doneNotes.length} done)`, 'success');
+      status(`Found <span class="count">${notes.length}</span> notes from ${source}! (${openNotes.length} open, ${doneNotes.length} done)`, 'success');
 
       // Display notes
       notesList.innerHTML = '<h2 style="font-size:16px;margin:12px 0 8px;">Your Notes:</h2>';

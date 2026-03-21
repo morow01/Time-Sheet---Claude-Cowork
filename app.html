@@ -6688,7 +6688,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.6.2';
+    const VERSION = '4.6.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7286,12 +7286,24 @@
       const ref = userDoc('data/notes');
       if (!ref) return;
       await ref.set({ notes, _updatedAt: Date.now() });
+      // Always keep a rolling backup (only if non-empty)
+      fsBackupNotes(notes).catch(() => {});
     }
 
     async function fsSetReminders(reminders) {
       const ref = userDoc('data/reminders');
       if (!ref) return;
       await ref.set({ reminders, _updatedAt: Date.now() });
+    }
+
+    // Rolling notes backup — separate from main notes doc, never overwritten with empty
+    async function fsBackupNotes(notes) {
+      if (!notes || notes.length === 0) return; // NEVER backup empty
+      try {
+        const ref = userDoc('data/notes_backup');
+        if (!ref) return;
+        await ref.set({ notes, _updatedAt: Date.now(), _count: notes.length });
+      } catch (e) { console.warn('[Rian] notes backup failed:', e); }
     }
 
     // ============================================================
@@ -13654,19 +13666,32 @@ Rules:
         const friday = getCurrentFriday();
         await loadWeek(dateToStr(friday));
 
-        // RECOVERY: if local IDB has notes but Firestore is empty, restore them
+        // RECOVERY: if Firestore notes are empty, try local IDB first, then backup doc
         try {
-          const localNotes = await dbGet('notes', 'notes_all');
-          if (localNotes && localNotes.data && localNotes.data.length > 0) {
-            const remoteRef = userDoc('data/notes');
-            if (remoteRef) {
-              const remoteSnap = await remoteRef.get();
-              const remoteNotes = remoteSnap.exists ? remoteSnap.data().notes : null;
-              if (!remoteNotes || remoteNotes.length === 0) {
-                console.warn('[Rian] RECOVERY: Restoring', localNotes.data.length, 'notes from local cache to Firestore');
+          const remoteRef = userDoc('data/notes');
+          if (remoteRef) {
+            const remoteSnap = await remoteRef.get();
+            const remoteNotes = remoteSnap.exists ? remoteSnap.data().notes : null;
+            if (!remoteNotes || remoteNotes.length === 0) {
+              // Try 1: restore from local IDB cache
+              const localNotes = await dbGet('notes', 'notes_all');
+              if (localNotes && localNotes.data && localNotes.data.length > 0) {
+                console.warn('[Rian] RECOVERY: Restoring', localNotes.data.length, 'notes from local cache');
                 state.notes = localNotes.data;
                 await fsSetNotes(state.notes);
                 showToast('Recovered ' + localNotes.data.length + ' notes from local cache!');
+              } else {
+                // Try 2: restore from Firestore backup document
+                const backupRef = userDoc('data/notes_backup');
+                if (backupRef) {
+                  const backupSnap = await backupRef.get();
+                  if (backupSnap.exists && backupSnap.data().notes && backupSnap.data().notes.length > 0) {
+                    console.warn('[Rian] RECOVERY: Restoring', backupSnap.data().notes.length, 'notes from Firestore backup');
+                    state.notes = backupSnap.data().notes;
+                    await fsSetNotes(state.notes);
+                    showToast('Recovered ' + state.notes.length + ' notes from backup!');
+                  }
+                }
               }
             }
           }
