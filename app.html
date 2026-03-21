@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.6';
+    const VERSION = '4.9.7';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9998,16 +9998,29 @@
         const keyArr = new Uint8Array(raw.length);
         for (let i = 0; i < raw.length; i++) keyArr[i] = raw.charCodeAt(i);
 
-        // Always unsubscribe old and create fresh (ensures VAPID key matches)
-        const oldSub = await swReg.pushManager.getSubscription();
-        if (oldSub) {
-          console.log('[Rian Push] Unsubscribing old push subscription');
-          await oldSub.unsubscribe();
+        // Reuse existing subscription if it has the correct VAPID key
+        let sub = await swReg.pushManager.getSubscription();
+        if (sub) {
+          // Check if the existing subscription uses our VAPID key
+          const existingKey = sub.options && sub.options.applicationServerKey
+            ? btoa(String.fromCharCode(...new Uint8Array(sub.options.applicationServerKey)))
+            : null;
+          const expectedKey = btoa(String.fromCharCode(...keyArr));
+          if (existingKey !== expectedKey) {
+            console.log('[Rian Push] VAPID key mismatch — resubscribing');
+            await sub.unsubscribe();
+            sub = null;
+          }
         }
-        let sub = await swReg.pushManager.subscribe({
+        if (!sub) {
+          sub = await swReg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: keyArr
           });
+          console.log('[Rian Push] Created new push subscription');
+        } else {
+          console.log('[Rian Push] Reusing existing push subscription');
+        }
 
         // Extract subscription data for server-side sending
         const subJson = sub.toJSON();
@@ -10023,24 +10036,16 @@
           appVersion: VERSION
         };
 
-        // Save to Firestore — use update() with dot notation to atomically set
-        // only this device's entry without touching other devices' entries
+        // Save to Firestore — read-modify-write
         const ref = userDoc('data/push_subscriptions');
         if (!ref) return;
         const deviceKey = getDeviceName();
-        try {
-          // update() only modifies the specified fields (atomic per-device)
-          await ref.update({
-            ['subs.' + deviceKey]: pushData,
-            _updatedAt: Date.now()
-          });
-        } catch (updateErr) {
-          // Document doesn't exist yet — create it
-          const subsObj = {};
-          subsObj[deviceKey] = pushData;
-          await ref.set({ subs: subsObj, _updatedAt: Date.now() });
-        }
-        console.log('[Rian Push] subscription saved for', deviceKey);
+        const doc = await ref.get();
+        const subs = (doc.exists && doc.data().subs) ? { ...doc.data().subs } : {};
+        subs[deviceKey] = pushData;
+        await ref.set({ subs, _updatedAt: Date.now() });
+        console.log('[Rian Push] Saved. Devices:', Object.keys(subs).join(', '));
+        showToast('Push registered: ' + deviceKey, 2000);
       } catch (e) {
         console.error('[Rian Push] FAILED:', e);
         showToast('Push err: ' + (e.message || 'unknown').substring(0, 60));
