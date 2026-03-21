@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.7.8';
+    const VERSION = '4.7.9';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9967,37 +9967,48 @@
     async function registerFCMToken() {
       if (!state.currentUser) { console.log('[Rian FCM] no user'); return; }
       if (!('Notification' in window)) { console.log('[Rian FCM] no Notification API'); return; }
-      // Request permission if not yet granted (needed for FCM push)
       if (Notification.permission === 'default') {
-        console.log('[Rian FCM] requesting permission...');
         const perm = await Notification.requestPermission();
-        console.log('[Rian FCM] permission result:', perm);
         if (perm !== 'granted') return;
-      } else if (Notification.permission !== 'granted') {
-        console.log('[Rian FCM] permission denied'); return;
-      }
+      } else if (Notification.permission !== 'granted') { return; }
       try {
-        // Register the dedicated Firebase Messaging SW (separate from caching SW)
-        console.log('[Rian FCM] registering firebase-messaging-sw.js...');
-        const fcmReg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
-        // Wait for it to be fully active
-        if (fcmReg.installing || fcmReg.waiting) {
-          const sw = fcmReg.installing || fcmReg.waiting;
-          await new Promise(resolve => {
-            sw.addEventListener('statechange', function handler() {
-              if (sw.state === 'activated') { sw.removeEventListener('statechange', handler); resolve(); }
-            });
-            if (sw.state === 'activated') resolve();
-          });
-        }
-        console.log('[Rian FCM] FCM SW active:', fcmReg.active ? fcmReg.active.scriptURL : 'none');
+        const swReg = await navigator.serviceWorker.ready;
+        console.log('[Rian FCM] SW:', swReg.active ? swReg.active.scriptURL : 'none');
 
-        console.log('[Rian FCM] calling getToken...');
+        // DIAGNOSTIC: Test raw PushManager.subscribe first
+        const vapidKey = 'BMIaAzivNSOgU4v3XnOpZmZ6YIMQdSIRBmCoaKTG5MtOB2liQUDT6tk8EHzywdu7uMneWeaAKAkmK8YNlSqJl_E';
+        const padding = '='.repeat((4 - vapidKey.length % 4) % 4);
+        const b64 = (vapidKey + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const raw = atob(b64);
+        const keyArr = new Uint8Array(raw.length);
+        for (let i = 0; i < raw.length; i++) keyArr[i] = raw.charCodeAt(i);
+
+        // Clear old subscription
+        const oldSub = await swReg.pushManager.getSubscription();
+        if (oldSub) await oldSub.unsubscribe();
+
+        // Try raw push subscribe (bypasses Firebase entirely)
+        let rawSub;
+        try {
+          rawSub = await swReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: keyArr
+          });
+          showToast('Raw push OK! Getting FCM token...');
+          // Unsubscribe raw — we want Firebase to manage it
+          await rawSub.unsubscribe();
+        } catch (rawErr) {
+          showToast('Raw push FAILED: ' + (rawErr.message || rawErr).toString().substring(0, 60));
+          console.error('[Rian FCM] raw push failed:', rawErr);
+          return; // No point trying getToken if raw push fails
+        }
+
+        // Now try Firebase getToken
+        try { await fcm.deleteToken(); } catch (_) {}
         const token = await fcm.getToken({
-          vapidKey: 'BMIaAzivNSOgU4v3XnOpZmZ6YIMQdSIRBmCoaKTG5MtOB2liQUDT6tk8EHzywdu7uMneWeaAKAkmK8YNlSqJl_E',
-          serviceWorkerRegistration: fcmReg
+          vapidKey: vapidKey,
+          serviceWorkerRegistration: swReg
         });
-        console.log('[Rian FCM] token:', token ? token.substring(0, 20) + '...' : 'null');
         if (!token) return;
         const ref = userDoc('data/fcm_tokens');
         if (!ref) return;
@@ -10008,7 +10019,7 @@
           await ref.set({ tokens, _updatedAt: Date.now() });
           showToast('FCM token registered ✓');
         } else {
-          console.log('[Rian FCM] token already exists');
+          showToast('FCM token OK (exists)');
         }
       } catch (e) {
         console.error('[Rian FCM] FAILED:', e);
