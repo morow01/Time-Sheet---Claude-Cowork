@@ -1,4 +1,4 @@
-const CACHE = 'timesheet-v407';
+const CACHE = 'timesheet-v408';
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
 const ASSETS = [
   BASE,
@@ -25,7 +25,14 @@ self.addEventListener('push', (event) => {
     data: data
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(title, options).then(() => {
+      // Notify open clients for foreground toast
+      return self.clients.matchAll({ type: 'window' }).then(clients => {
+        clients.forEach(c => c.postMessage(data));
+      });
+    })
+  );
 });
 
 self.addEventListener('notificationclick', e => {

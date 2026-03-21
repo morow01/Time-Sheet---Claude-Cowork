@@ -21,7 +21,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
+  <!-- Firebase Messaging SDK removed — using raw Web Push API instead -->
   <style>
     /* ===== THEME VARIABLES ===== */
     :root {
@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.8.2';
+    const VERSION = '4.8.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -6701,7 +6701,7 @@
     firebase.initializeApp(firebaseConfig);
     const db_fs = firebase.firestore();
     const auth_fb = firebase.auth();
-    const fcm = firebase.messaging();
+    // FCM removed — using raw Web Push API
     db_fs.enablePersistence({ synchronizeTabs: true }).catch(e => console.warn('[Rian]', e));
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
@@ -9962,7 +9962,7 @@
     }
 
     // ============================================================
-    // FCM PUSH NOTIFICATION REGISTRATION
+    // WEB PUSH NOTIFICATION REGISTRATION
     // ============================================================
     async function registerPushSubscription() {
       if (!state.currentUser) return;
@@ -9984,7 +9984,10 @@
 
         // Always unsubscribe old and create fresh (ensures VAPID key matches)
         const oldSub = await swReg.pushManager.getSubscription();
-        if (oldSub) await oldSub.unsubscribe();
+        if (oldSub) {
+          console.log('[Rian Push] Unsubscribing old push subscription');
+          await oldSub.unsubscribe();
+        }
         let sub = await swReg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: keyArr
@@ -9999,7 +10002,9 @@
             auth: subJson.keys.auth
           },
           device: getDeviceName(),
-          updatedAt: Date.now()
+          updatedAt: Date.now(),
+          vapidKeyPrefix: vapidKey.substring(0, 10),
+          appVersion: VERSION
         };
 
         // Save to Firestore — store subscriptions as a map keyed by device name
@@ -10009,22 +10014,22 @@
         const subs = (doc.exists && doc.data().subs) ? doc.data().subs : {};
         subs[getDeviceName()] = pushData;
         await ref.set({ subs, _updatedAt: Date.now() });
-        showToast('Push registered ✓');
-        console.log('[Rian Push] subscription saved for', getDeviceName());
+        showToast('Push v' + VERSION + ' ✓ key:' + vapidKey.substring(0, 8));
+        console.log('[Rian Push] subscription saved for', getDeviceName(), 'vapid prefix:', vapidKey.substring(0, 10), 'endpoint:', subJson.endpoint.substring(0, 60));
       } catch (e) {
         console.error('[Rian Push] FAILED:', e);
         showToast('Push err: ' + (e.message || 'unknown').substring(0, 60));
       }
     }
 
-    // Listen for token refresh
-    fcm.onMessage((payload) => {
-      // In-app message while app is in foreground — show toast
-      const data = payload.data || {};
-      if (data.type === 'reminder') {
-        showToast('⏰ ' + (data.body || 'Reminder'));
-      }
-    });
+    // Listen for push messages while app is in foreground
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'reminder') {
+          showToast('⏰ ' + (event.data.body || 'Reminder'));
+        }
+      });
+    }
 
     // ============================================================
     // NOTE REMINDERS
