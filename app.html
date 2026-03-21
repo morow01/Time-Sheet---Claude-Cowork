@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.1';
+    const VERSION = '4.9.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10023,19 +10023,19 @@
           appVersion: VERSION
         };
 
-        // Save to Firestore — store subscriptions as a map keyed by device name
+        // Save to Firestore — use merge to avoid race condition where two devices
+        // registering at the same time overwrite each other's subscription
         const ref = userDoc('data/push_subscriptions');
         if (!ref) return;
-        const doc = await ref.get();
-        const subs = (doc.exists && doc.data().subs) ? doc.data().subs : {};
+        const deviceKey = getDeviceName();
+        const updates = { [`subs.${deviceKey}`]: pushData, _updatedAt: Date.now() };
         // Clean up old generic key (e.g. "Chrome · Android") that this device used before migration
         const genericName = _detectDeviceName();
-        if (subs[genericName] && getDeviceName() !== genericName) {
-          delete subs[genericName];
+        if (deviceKey !== genericName) {
+          updates[`subs.${genericName}`] = firebase.firestore.FieldValue.delete();
         }
-        subs[getDeviceName()] = pushData;
-        await ref.set({ subs, _updatedAt: Date.now() });
-        console.log('[Rian Push] subscription saved for', getDeviceName());
+        await ref.set(updates, { merge: true });
+        console.log('[Rian Push] subscription saved for', deviceKey);
       } catch (e) {
         console.error('[Rian Push] FAILED:', e);
         showToast('Push err: ' + (e.message || 'unknown').substring(0, 60));
