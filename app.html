@@ -4677,6 +4677,9 @@
       position: absolute; top: -3px; right: -3px; width: 8px; height: 8px;
       border-radius: 50%; background: #eab308; border: 2px solid #fff;
     }
+    .remind-sheet.input-focused .remind-sheet-body { display: none; }
+    .remind-sheet.input-focused .remind-actions-sticky { display: none; }
+    .remind-sheet.input-focused { min-height: 0; background: transparent; }
     @media (min-width: 640px) {
       .remind-sheet { border-radius: 20px; margin: auto; }
     }
@@ -6688,7 +6691,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.96';
+    const VERSION = '4.5.97';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10027,6 +10030,16 @@
         </div>
       </div>`;
       modal.classList.remove('hidden');
+
+      // On narrow screens (e.g. Fold outer), hide the sheet while native
+      // date/time picker is open so it isn't clipped
+      const sheet = modal.querySelector('.remind-sheet');
+      const onFocus = () => { if (window.innerWidth < 360) sheet.classList.add('input-focused'); };
+      const onBlur = () => { setTimeout(() => sheet.classList.remove('input-focused'), 200); };
+      ['remind-date', 'remind-time'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.addEventListener('focus', onFocus); el.addEventListener('blur', onBlur); }
+      });
     }
 
     function cancelNoteReminder(reminderId) {
