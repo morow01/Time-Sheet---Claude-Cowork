@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.8.4';
+    const VERSION = '4.8.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10228,7 +10228,14 @@
       if (reminder.fired) return;
       const delay = reminder.remindAt - Date.now();
       if (delay <= 0) {
-        fireReminder(reminder);
+        // Delay past-due reminders by 5s to let Firestore sync arrive first
+        // (prevents double-notification when server already pushed)
+        reminderTimers[reminder.id] = setTimeout(() => {
+          const fresh = getReminders().find(x => x.id === reminder.id);
+          if (fresh && fresh.firedBy === 'server') return; // server already handled it
+          if (fresh && fresh.fired) return; // another device handled it
+          fireReminder(reminder);
+        }, 5000);
         return;
       }
       // Cap setTimeout at ~24 days (max safe interval)
