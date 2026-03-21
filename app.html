@@ -6416,7 +6416,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.79';
+    const VERSION = '4.5.80';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7450,7 +7450,6 @@
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
                 <div style="font-size:14px;font-weight:600;color:${C.txt};"><span style="${sel}" title="Click to select">${esc(act.description || '(no description)')}</span>${act.location ? `<span style="color:#475569;font-weight:400;font-size:13px;"> &mdash; <span style="${sel}" title="Click to select">${esc(act.location)}</span></span>` : ''}</div>
                 ${act.codes.length ? `<div style="margin-top:4px;">${codesHtml}</div>` : ''}
-                ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#0F1C2E;font-style:italic;">${act.notes.trim().startsWith('<') ? act.notes : esc(act.notes)}</div>` : ''}
               </td>
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:top;">${ord}</td>
               <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${ot > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:top;">${ot > 0 ? ot : '—'}</td>
@@ -7628,7 +7627,6 @@
             <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};vertical-align:top;">
               <div>${descHtml}${locHtml}</div>
               ${act.codes.length ? `<div>${codesHtml}</div>` : ''}
-              ${act.notes ? `<div style="margin-top:4px;font-size:12px;color:#475569;font-style:italic;">${act.notes.trim().startsWith('<') ? act.notes : esc(act.notes)}</div>` : ''}
             </td>
             <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${C.ord};text-align:right;white-space:nowrap;vertical-align:top;">${ord}</td>
             <td style="padding:10px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:600;color:${ot > 0 ? C.ot : C.dash};text-align:right;white-space:nowrap;vertical-align:top;">${ot > 0 ? ot : '—'}</td>
