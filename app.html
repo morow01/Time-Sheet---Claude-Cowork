@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.8.1';
+    const VERSION = '4.8.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9982,14 +9982,13 @@
         const keyArr = new Uint8Array(raw.length);
         for (let i = 0; i < raw.length; i++) keyArr[i] = raw.charCodeAt(i);
 
-        // Get or create push subscription
-        let sub = await swReg.pushManager.getSubscription();
-        if (!sub) {
-          sub = await swReg.pushManager.subscribe({
+        // Always unsubscribe old and create fresh (ensures VAPID key matches)
+        const oldSub = await swReg.pushManager.getSubscription();
+        if (oldSub) await oldSub.unsubscribe();
+        let sub = await swReg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: keyArr
           });
-        }
 
         // Extract subscription data for server-side sending
         const subJson = sub.toJSON();
