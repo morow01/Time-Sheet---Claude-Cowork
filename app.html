@@ -648,6 +648,15 @@
       opacity: 0.85;
     }
 
+    .act-actions-row { display: flex; gap: 8px; margin-top: 8px; }
+    .act-action-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700;
+      cursor: pointer; border: none; font-family: inherit;
+    }
+    .act-action-copy { background: var(--btn-primary-bg, #eff6ff); color: var(--btn-primary-text, #1e3a8a); }
+    .act-action-delete { background: var(--btn-danger-bg); color: var(--btn-danger-color); }
+
     .act-delete-btn {
       width: 100%;
       background: var(--btn-danger-bg);
@@ -662,6 +671,67 @@
       justify-content: center;
       gap: 6px;
       cursor: pointer;
+    }
+
+    /* Copy-task day picker modal */
+    .copy-picker-overlay {
+      position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4);
+      display: flex; align-items: flex-end; justify-content: center;
+      animation: fadeIn 0.15s ease;
+    }
+    .copy-picker-sheet {
+      background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
+      max-height: 80vh; display: flex; flex-direction: column;
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .copy-picker-handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 10px auto 0; }
+    .copy-picker-title { font-size: 15px; font-weight: 800; color: #1e293b; padding: 14px 16px 2px; }
+    .copy-picker-sub { font-size: 12px; color: #64748b; padding: 0 16px 8px; }
+    .copy-picker-weeknav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 12px; margin: 0 12px 6px; background: #f1f5f9; border-radius: 10px;
+    }
+    .copy-picker-weeknav button {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e2e8f0;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #475569; font-family: inherit;
+    }
+    .copy-picker-weeknav button:hover { background: #eff6ff; border-color: #93c5fd; }
+    .copy-picker-weeknav-label { font-size: 13px; font-weight: 700; color: #1e293b; }
+    .copy-picker-weeknav-badge { font-size: 10px; font-weight: 600; color: #3b82f6; background: #dbeafe; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+    .copy-picker-days { overflow-y: auto; padding: 0 12px 8px; flex: 1; }
+    .copy-picker-day {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      border-radius: 10px; border: 1px solid #e8eef5; margin-bottom: 6px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .copy-picker-day:hover { background: #eff6ff; border-color: #93c5fd; }
+    .copy-picker-day.selected { background: #dbeafe; border-color: #3b82f6; }
+    .copy-picker-day.disabled { opacity: 0.4; pointer-events: none; }
+    .copy-picker-day-check {
+      width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .copy-picker-day-check.checked { background: #3b82f6; border-color: #3b82f6; }
+    .copy-picker-day-name { font-size: 13px; font-weight: 700; color: #1e293b; flex: 1; }
+    .copy-picker-day-date { font-size: 11px; color: #94a3b8; }
+    .copy-picker-actions { display: flex; gap: 8px; padding: 8px 12px 14px; }
+    .copy-picker-actions .btn-cancel {
+      flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0;
+      background: #fff; font-size: 13px; font-weight: 700; color: #64748b;
+      cursor: pointer; font-family: inherit;
+    }
+    .copy-picker-actions .btn-copy {
+      flex: 1; padding: 12px; border-radius: 10px; border: none;
+      background: #1e3a8a; font-size: 13px; font-weight: 700; color: #fff;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-family: inherit;
+    }
+    .copy-picker-actions .btn-copy:disabled { opacity: 0.4; cursor: not-allowed; }
+    @media (min-width: 640px) {
+      .copy-picker-overlay { align-items: center; }
+      .copy-picker-sheet { border-radius: 20px; max-height: 70vh; }
     }
 
     .dot-flash {
@@ -6404,6 +6474,9 @@
     </div>
   </div>
 
+  <!-- Copy task day picker -->
+  <div id="copy-picker-modal" class="hidden"></div>
+
   <div id="toast" class="toast hidden"></div>
 
   <script>
@@ -6416,7 +6489,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.84';
+    const VERSION = '4.5.85';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9055,11 +9128,16 @@
               </div>
             </div>
 
-            <button onclick="showConfirm('Delete task?','${esc(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))"
-              class="act-delete-btn" style="display:flex;align-items:center;justify-content:center;gap:6px;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-              Delete task
-            </button>
+            <div class="act-actions-row">
+              <button onclick="openCopyPicker('${act.id}',${di})" class="act-action-btn act-action-copy">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy to…
+              </button>
+              <button onclick="showConfirm('Delete task?','${esc(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))" class="act-action-btn act-action-delete">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -9173,6 +9251,179 @@
       }
       scheduleAutoSave();
       render();
+    }
+
+    // ============================================================
+    // COPY TASK TO ANOTHER DAY
+    // ============================================================
+    const copyPickerState = { actId: null, sourceDi: null, viewingWeekStart: null, selectedDates: new Set() };
+
+    function openCopyPicker(actId, di) {
+      const act = state.weekData.days[di]?.activities.find(a => a.id === actId);
+      if (!act) return;
+      copyPickerState.actId = actId;
+      copyPickerState.sourceDi = di;
+      copyPickerState.viewingWeekStart = state.weekStart;
+      copyPickerState.selectedDates = new Set();
+      renderCopyPicker();
+    }
+
+    function closeCopyPicker() {
+      document.getElementById('copy-picker-modal').classList.add('hidden');
+      document.getElementById('copy-picker-modal').innerHTML = '';
+    }
+
+    function copyPickerNavWeek(delta) {
+      const d = strToDate(copyPickerState.viewingWeekStart);
+      d.setDate(d.getDate() + (delta * 7));
+      copyPickerState.viewingWeekStart = dateToStr(d);
+      renderCopyPicker();
+    }
+
+    function toggleCopyDay(dateStr) {
+      if (copyPickerState.selectedDates.has(dateStr)) {
+        copyPickerState.selectedDates.delete(dateStr);
+      } else {
+        copyPickerState.selectedDates.add(dateStr);
+      }
+      renderCopyPicker();
+    }
+
+    function renderCopyPicker() {
+      const modal = document.getElementById('copy-picker-modal');
+      const ws = copyPickerState.viewingWeekStart;
+      const sourceDate = state.weekData.days[copyPickerState.sourceDi]?.date;
+      const act = state.weekData.days[copyPickerState.sourceDi]?.activities.find(a => a.id === copyPickerState.actId);
+      const descLabel = act ? (act.description || 'Unnamed') : 'Task';
+      const isCurrent = ws === state.weekStart;
+      const count = copyPickerState.selectedDates.size;
+
+      // Build day rows for this week
+      let daysHtml = '';
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(ws + 'T00:00:00');
+        d.setDate(d.getDate() + i);
+        const dateStr = dateToStr(d);
+        const dayName = DAY_NAMES[i];
+        const isSource = dateStr === sourceDate;
+        const isSelected = copyPickerState.selectedDates.has(dateStr);
+        const cls = isSource ? 'copy-picker-day disabled' : (isSelected ? 'copy-picker-day selected' : 'copy-picker-day');
+        const checkCls = isSelected ? 'copy-picker-day-check checked' : 'copy-picker-day-check';
+        const checkSvg = isSelected ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
+        const label = isSource ? `${dayName} <span style="font-weight:400;color:#94a3b8;">— source</span>` : dayName;
+        daysHtml += `<div class="${cls}" onclick="toggleCopyDay('${dateStr}')">
+          <div class="${checkCls}">${checkSvg}</div>
+          <div class="copy-picker-day-name">${label}</div>
+          <div class="copy-picker-day-date">${formatDate(dateStr)}</div>
+        </div>`;
+      }
+
+      // Week range label
+      const endD = new Date(ws + 'T00:00:00');
+      endD.setDate(endD.getDate() + 6);
+      const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
+
+      modal.innerHTML = `<div class="copy-picker-overlay" onclick="if(event.target===this)closeCopyPicker()">
+        <div class="copy-picker-sheet">
+          <div class="copy-picker-handle"></div>
+          <div class="copy-picker-title">Copy "${esc(descLabel)}" to…</div>
+          <div class="copy-picker-sub">Select one or more days. Description, codes, hours & location will be copied.</div>
+          <div class="copy-picker-weeknav">
+            <button onclick="copyPickerNavWeek(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+            <div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>
+            <button onclick="copyPickerNavWeek(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+          </div>
+          <div class="copy-picker-days">${daysHtml}</div>
+          <div class="copy-picker-actions">
+            <button class="btn-cancel" onclick="closeCopyPicker()">Cancel</button>
+            <button class="btn-copy" ${count === 0 ? 'disabled' : ''} onclick="executeCopyTask()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy to ${count} day${count !== 1 ? 's' : ''}
+            </button>
+          </div>
+        </div>
+      </div>`;
+      modal.classList.remove('hidden');
+    }
+
+    async function executeCopyTask() {
+      const { actId, sourceDi, selectedDates } = copyPickerState;
+      if (!selectedDates.size) return;
+      const sourceAct = state.weekData.days[sourceDi]?.activities.find(a => a.id === actId);
+      if (!sourceAct) return;
+
+      // Group selected dates by weekStart (Friday-based)
+      const datesByWeek = {};
+      selectedDates.forEach(dateStr => {
+        const d = strToDate(dateStr);
+        const dayOfWeek = d.getDay(); // 0=Sun..6=Sat
+        const back = [2, 3, 4, 5, 6, 0, 1][dayOfWeek];
+        const fri = new Date(d);
+        fri.setDate(fri.getDate() - back);
+        const ws = dateToStr(fri);
+        if (!datesByWeek[ws]) datesByWeek[ws] = [];
+        datesByWeek[ws].push(dateStr);
+      });
+
+      // Copy to current week (in-memory)
+      if (datesByWeek[state.weekStart]) {
+        datesByWeek[state.weekStart].forEach(dateStr => {
+          const dayIdx = state.weekData.days.findIndex(d => d.date === dateStr);
+          if (dayIdx < 0) return;
+          const newAct = createActivity();
+          newAct.description = sourceAct.description || '';
+          newAct.location = sourceAct.location || '';
+          newAct.codes = deepCopy(sourceAct.codes || []);
+          newAct.ordinary = sourceAct.ordinary || '';
+          newAct.overtime = sourceAct.overtime || '';
+          newAct.tasks = sourceAct.tasks || '';
+          newAct.timePerTask = sourceAct.timePerTask || '';
+          newAct.otPerTask = sourceAct.otPerTask || '';
+          state.weekData.days[dayIdx].activities.push(newAct);
+        });
+        delete datesByWeek[state.weekStart];
+        scheduleAutoSave();
+      }
+
+      // Copy to other weeks (load, modify, save)
+      for (const ws of Object.keys(datesByWeek)) {
+        try {
+          const local = await dbGet('weeks', ws);
+          const uid = state.currentUser?.uid || null;
+          let weekData;
+          if (local && local.userId === uid) {
+            weekData = deepCopy(local.data);
+          } else {
+            weekData = createEmptyWeek(ws);
+          }
+          enforceCorrectDates(ws, weekData);
+
+          datesByWeek[ws].forEach(dateStr => {
+            const dayIdx = weekData.days.findIndex(d => d.date === dateStr);
+            if (dayIdx < 0) return;
+            const newAct = createActivity();
+            newAct.description = sourceAct.description || '';
+            newAct.location = sourceAct.location || '';
+            newAct.codes = deepCopy(sourceAct.codes || []);
+            newAct.ordinary = sourceAct.ordinary || '';
+            newAct.overtime = sourceAct.overtime || '';
+            newAct.tasks = sourceAct.tasks || '';
+            newAct.timePerTask = sourceAct.timePerTask || '';
+            newAct.otPerTask = sourceAct.otPerTask || '';
+            weekData.days[dayIdx].activities.push(newAct);
+          });
+
+          weekData._updatedAt = Date.now();
+          await dbPut('weeks', { weekStart: ws, userId: uid, data: weekData, updatedAt: weekData._updatedAt });
+          if (state.currentUser) await fsSetWeek(ws, weekData).catch(e => console.warn('[Rian] copy fsSetWeek', e));
+        } catch (e) {
+          console.warn('[Rian] copy to week', ws, e);
+        }
+      }
+
+      closeCopyPicker();
+      render();
+      showToast(`Task copied to ${selectedDates.size} day${selectedDates.size !== 1 ? 's' : ''}`);
     }
 
     function removeCode(actId, di, code) {
