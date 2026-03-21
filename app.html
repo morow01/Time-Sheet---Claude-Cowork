@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.4';
+    const VERSION = '4.9.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10023,14 +10023,14 @@
           appVersion: VERSION
         };
 
-        // Save to Firestore — read-modify-write keyed by unique device name
+        // Save to Firestore — atomic merge so two devices can't overwrite each other
         const ref = userDoc('data/push_subscriptions');
         if (!ref) return;
-        const doc = await ref.get();
-        const subs = (doc.exists && doc.data().subs) ? doc.data().subs : {};
-        subs[getDeviceName()] = pushData;
-        await ref.set({ subs, _updatedAt: Date.now() });
-        console.log('[Rian Push] subscription saved for', getDeviceName());
+        const deviceKey = getDeviceName();
+        const subsUpdate = {};
+        subsUpdate[deviceKey] = pushData;
+        await ref.set({ subs: subsUpdate, _updatedAt: Date.now() }, { merge: true });
+        console.log('[Rian Push] subscription saved for', deviceKey);
       } catch (e) {
         console.error('[Rian Push] FAILED:', e);
         showToast('Push err: ' + (e.message || 'unknown').substring(0, 60));
