@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.7.7';
+    const VERSION = '4.7.8';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9977,35 +9977,25 @@
         console.log('[Rian FCM] permission denied'); return;
       }
       try {
-        // Explicitly register our SW and wait for it to be fully active
-        // This ensures the NEW sw.js (with Firebase SDK) is used, not a stale one
-        console.log('[Rian FCM] registering SW explicitly...');
-        const swReg = await navigator.serviceWorker.register('sw.js');
-        // Wait for the new SW to be active (handles installing/waiting states)
-        if (swReg.installing || swReg.waiting) {
-          const sw = swReg.installing || swReg.waiting;
+        // Register the dedicated Firebase Messaging SW (separate from caching SW)
+        console.log('[Rian FCM] registering firebase-messaging-sw.js...');
+        const fcmReg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+        // Wait for it to be fully active
+        if (fcmReg.installing || fcmReg.waiting) {
+          const sw = fcmReg.installing || fcmReg.waiting;
           await new Promise(resolve => {
             sw.addEventListener('statechange', function handler() {
               if (sw.state === 'activated') { sw.removeEventListener('statechange', handler); resolve(); }
             });
             if (sw.state === 'activated') resolve();
           });
-          console.log('[Rian FCM] new SW activated');
         }
-        console.log('[Rian FCM] SW active:', swReg.active ? swReg.active.scriptURL : 'none');
-
-        // Clear any stale push subscription from old SW
-        const existingSub = await swReg.pushManager.getSubscription();
-        if (existingSub) {
-          console.log('[Rian FCM] clearing stale push sub...');
-          await existingSub.unsubscribe();
-        }
-        try { await fcm.deleteToken(); } catch (_) { /* ok if none */ }
+        console.log('[Rian FCM] FCM SW active:', fcmReg.active ? fcmReg.active.scriptURL : 'none');
 
         console.log('[Rian FCM] calling getToken...');
         const token = await fcm.getToken({
           vapidKey: 'BMIaAzivNSOgU4v3XnOpZmZ6YIMQdSIRBmCoaKTG5MtOB2liQUDT6tk8EHzywdu7uMneWeaAKAkmK8YNlSqJl_E',
-          serviceWorkerRegistration: swReg
+          serviceWorkerRegistration: fcmReg
         });
         console.log('[Rian FCM] token:', token ? token.substring(0, 20) + '...' : 'null');
         if (!token) return;
