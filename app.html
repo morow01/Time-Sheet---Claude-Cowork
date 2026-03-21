@@ -6489,7 +6489,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.85';
+    const VERSION = '4.5.86';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9265,7 +9265,7 @@
       copyPickerState.sourceDi = di;
       copyPickerState.viewingWeekStart = state.weekStart;
       copyPickerState.selectedDates = new Set();
-      renderCopyPicker();
+      renderCopyPicker(true);
     }
 
     function closeCopyPicker() {
@@ -9289,17 +9289,8 @@
       renderCopyPicker();
     }
 
-    function renderCopyPicker() {
-      const modal = document.getElementById('copy-picker-modal');
-      const ws = copyPickerState.viewingWeekStart;
-      const sourceDate = state.weekData.days[copyPickerState.sourceDi]?.date;
-      const act = state.weekData.days[copyPickerState.sourceDi]?.activities.find(a => a.id === copyPickerState.actId);
-      const descLabel = act ? (act.description || 'Unnamed') : 'Task';
-      const isCurrent = ws === state.weekStart;
-      const count = copyPickerState.selectedDates.size;
-
-      // Build day rows for this week
-      let daysHtml = '';
+    function buildCopyPickerDaysHtml(ws, sourceDate) {
+      let html = '';
       for (let i = 0; i < 7; i++) {
         const d = new Date(ws + 'T00:00:00');
         d.setDate(d.getDate() + i);
@@ -9311,14 +9302,46 @@
         const checkCls = isSelected ? 'copy-picker-day-check checked' : 'copy-picker-day-check';
         const checkSvg = isSelected ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
         const label = isSource ? `${dayName} <span style="font-weight:400;color:#94a3b8;">— source</span>` : dayName;
-        daysHtml += `<div class="${cls}" onclick="toggleCopyDay('${dateStr}')">
+        html += `<div class="${cls}" onclick="toggleCopyDay('${dateStr}')">
           <div class="${checkCls}">${checkSvg}</div>
           <div class="copy-picker-day-name">${label}</div>
           <div class="copy-picker-day-date">${formatDate(dateStr)}</div>
         </div>`;
       }
+      return html;
+    }
 
-      // Week range label
+    function renderCopyPicker(fullRebuild) {
+      const modal = document.getElementById('copy-picker-modal');
+      const ws = copyPickerState.viewingWeekStart;
+      const sourceDate = state.weekData.days[copyPickerState.sourceDi]?.date;
+      const count = copyPickerState.selectedDates.size;
+
+      // If the sheet already exists and we don't need a full rebuild, just patch the dynamic parts
+      if (!fullRebuild && modal.querySelector('.copy-picker-sheet')) {
+        // Update days list
+        const daysEl = modal.querySelector('.copy-picker-days');
+        if (daysEl) daysEl.innerHTML = buildCopyPickerDaysHtml(ws, sourceDate);
+        // Update week label
+        const endD = new Date(ws + 'T00:00:00');
+        endD.setDate(endD.getDate() + 6);
+        const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
+        const isCurrent = ws === state.weekStart;
+        const labelEl = modal.querySelector('.copy-picker-weeknav > div');
+        if (labelEl) labelEl.innerHTML = `<span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}`;
+        // Update copy button
+        const copyBtn = modal.querySelector('.copy-picker-actions .btn-copy');
+        if (copyBtn) {
+          copyBtn.disabled = count === 0;
+          copyBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy to ${count} day${count !== 1 ? 's' : ''}`;
+        }
+        return;
+      }
+
+      // Full rebuild (first open)
+      const act = state.weekData.days[copyPickerState.sourceDi]?.activities.find(a => a.id === copyPickerState.actId);
+      const descLabel = act ? (act.description || 'Unnamed') : 'Task';
+      const isCurrent = ws === state.weekStart;
       const endD = new Date(ws + 'T00:00:00');
       endD.setDate(endD.getDate() + 6);
       const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
@@ -9333,7 +9356,7 @@
             <div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>
             <button onclick="copyPickerNavWeek(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
           </div>
-          <div class="copy-picker-days">${daysHtml}</div>
+          <div class="copy-picker-days">${buildCopyPickerDaysHtml(ws, sourceDate)}</div>
           <div class="copy-picker-actions">
             <button class="btn-cancel" onclick="closeCopyPicker()">Cancel</button>
             <button class="btn-copy" ${count === 0 ? 'disabled' : ''} onclick="executeCopyTask()">
