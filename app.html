@@ -6410,7 +6410,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.5.75';
+    const VERSION = '4.5.76';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9266,12 +9266,20 @@
       }, 1000);
     }
 
+    // Decode HTML entities like &amp; &lt; etc.
+    function decodeEntities(str) {
+      const el = document.createElement('textarea');
+      el.innerHTML = str;
+      return el.value;
+    }
+
     // Strip HTML from note descriptions & split long ones into desc + noteContent
     function migrateNotesHTML(notes) {
       let migrated = false;
       notes.forEach(n => {
         const desc = n.description || '';
-        const plain = desc.includes('<') ? desc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : desc;
+        let plain = desc.includes('<') ? desc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : desc;
+        if (plain.includes('&')) plain = decodeEntities(plain);
         if (plain !== desc) {
           n.description = plain;
           migrated = true;
@@ -9380,7 +9388,9 @@
         const isNew = !note.description && !note.location;
         const dotCls = { high: 'note-dot-high', medium: 'note-dot-medium', low: 'note-dot-low' }[note.priority] || 'note-dot-none';
         const rawDesc = note.description || '';
-        const titleText = (rawDesc.includes('<') ? rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : rawDesc) || (isNew ? 'New note…' : 'Untitled');
+        let cleanDesc = rawDesc.includes('<') ? rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : rawDesc;
+        if (cleanDesc.includes('&')) cleanDesc = decodeEntities(cleanDesc);
+        const titleText = cleanDesc || (isNew ? 'New note…' : 'Untitled');
 
         let metaHtml = '';
         if (note.location || note.date) {
