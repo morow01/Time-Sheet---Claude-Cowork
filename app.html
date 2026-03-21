@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.8.8';
+    const VERSION = '4.8.9';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7586,14 +7586,30 @@
         }
 
         enforceCorrectDates(weekStart, remote);
+
+        // Preserve the field being actively edited to prevent echo overwrite
+        const active = document.activeElement;
+        const userEditing = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
+        const editingField = userEditing ? active.dataset.field : null;
+        const editingActId = userEditing ? active.dataset.act : null;
+        const editingDayIdx = userEditing ? parseInt(active.dataset.day) : null;
+        const editingValue = userEditing ? active.value : null;
+
         state.weekData = deepCopy(remote);
         // Ensure the local updatedAt reflects the server time (as a number)
         state.weekData._updatedAt = remoteTs;
 
+        // Restore the value the user is currently typing (prevent echo truncation)
+        if (editingField && editingActId != null && editingDayIdx != null && !isNaN(editingDayIdx)) {
+          const day = state.weekData.days[editingDayIdx];
+          if (day) {
+            const act = day.activities.find(a => a.id === editingActId);
+            if (act) act[editingField] = editingValue;
+          }
+        }
+
         dbPut('weeks', { weekStart, userId: state.currentUser?.uid || null, data: state.weekData, updatedAt: remoteTs || Date.now() });
 
-        const active = document.activeElement;
-        const userEditing = active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
         if (!userEditing) render();
 
         state.syncStatus = 'synced';
