@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.2';
+    const VERSION = '4.9.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10023,18 +10023,15 @@
           appVersion: VERSION
         };
 
-        // Save to Firestore — use merge to avoid race condition where two devices
-        // registering at the same time overwrite each other's subscription
+        // Save to Firestore — use merge so each device only updates its own key
+        // (prevents race condition where two devices overwrite each other)
         const ref = userDoc('data/push_subscriptions');
         if (!ref) return;
         const deviceKey = getDeviceName();
-        const updates = { [`subs.${deviceKey}`]: pushData, _updatedAt: Date.now() };
-        // Clean up old generic key (e.g. "Chrome · Android") that this device used before migration
-        const genericName = _detectDeviceName();
-        if (deviceKey !== genericName) {
-          updates[`subs.${genericName}`] = firebase.firestore.FieldValue.delete();
-        }
-        await ref.set(updates, { merge: true });
+        await ref.set({
+          [`subs.${deviceKey}`]: pushData,
+          _updatedAt: Date.now()
+        }, { merge: true });
         console.log('[Rian Push] subscription saved for', deviceKey);
       } catch (e) {
         console.error('[Rian Push] FAILED:', e);
@@ -10652,6 +10649,15 @@
       notesUnsubscribe = ref.onSnapshot({ includeMetadataChanges: true }, snap => {
         if (snap.metadata.hasPendingWrites) return;
 
+        // If there's a pending local save, our data is newer — skip this echo entirely.
+        // The pending save will push the correct data to Firestore.
+        if (notesSaveTimer) {
+          console.log('[Rian] notes onSnapshot: skipping — local save pending');
+          state.notesSyncStatus = 'synced';
+          updateHeaderStatus();
+          return;
+        }
+
         if (!snap.exists) {
           // No notes on server yet — push local only if we actually have data
           if (state.notes.length > 0) {
@@ -10677,7 +10683,7 @@
           ? active.dataset.noteId : null;
 
         // Preserve the note being actively edited (prevent Firestore echo from overwriting mid-typing)
-        const localEditing = editingNoteId ? state.notes.find(n => n.id === editingNoteId) : null;
+        const localEditing = editingNoteId ? deepCopy(state.notes.find(n => n.id === editingNoteId)) : null;
 
         state.notes = deepCopy(remote.notes);
         // Strip any HTML still in descriptions from remote data
