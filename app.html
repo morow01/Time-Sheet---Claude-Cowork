@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.7';
+    const VERSION = '4.9.8';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10036,16 +10036,26 @@
           appVersion: VERSION
         };
 
-        // Save to Firestore — read-modify-write
+        // Save to Firestore — atomic update using FieldPath (safe with special chars)
         const ref = userDoc('data/push_subscriptions');
         if (!ref) return;
         const deviceKey = getDeviceName();
-        const doc = await ref.get();
-        const subs = (doc.exists && doc.data().subs) ? { ...doc.data().subs } : {};
-        subs[deviceKey] = pushData;
-        await ref.set({ subs, _updatedAt: Date.now() });
-        console.log('[Rian Push] Saved. Devices:', Object.keys(subs).join(', '));
-        showToast('Push registered: ' + deviceKey, 2000);
+        const fp = new firebase.firestore.FieldPath('subs', deviceKey);
+        try {
+          await ref.update(fp, pushData, '_updatedAt', Date.now());
+          console.log('[Rian Push] Updated existing doc for', deviceKey);
+        } catch (updateErr) {
+          // Document doesn't exist yet — create it
+          const subsObj = {};
+          subsObj[deviceKey] = pushData;
+          await ref.set({ subs: subsObj, _updatedAt: Date.now() });
+          console.log('[Rian Push] Created new doc for', deviceKey);
+        }
+        // Verify: read back and confirm both devices are saved
+        const verify = await ref.get();
+        const savedDevices = verify.exists ? Object.keys(verify.data().subs || {}) : [];
+        console.log('[Rian Push] Verified devices:', savedDevices.join(', '));
+        showToast('Push OK: ' + savedDevices.join(', '), 3000);
       } catch (e) {
         console.error('[Rian Push] FAILED:', e);
         showToast('Push err: ' + (e.message || 'unknown').substring(0, 60));
