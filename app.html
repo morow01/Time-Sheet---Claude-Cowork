@@ -6688,7 +6688,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.6.0';
+    const VERSION = '4.6.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12084,14 +12084,23 @@
         const ts = Date.now();
         const summary = _snapshotSummary(weekData);
         const colRef = db_fs.collection(`users/${uid}/weeks/${weekStart}/snapshots`);
-        await colRef.doc(String(ts)).set({
+        const snapData = {
           weekStart,
           days: weekData.days,
           _savedAt: ts,
           _label: label,
           _summary: summary,
           _device: getDeviceName()
-        });
+        };
+        // Include notes backup in every snapshot
+        if (state.notes && state.notes.length > 0) {
+          snapData._notes = state.notes;
+        }
+        // Include reminders backup
+        if (remindersData && remindersData.length > 0) {
+          snapData._reminders = remindersData;
+        }
+        await colRef.doc(String(ts)).set(snapData);
         // Prune oldest if over limit
         const all = await colRef.orderBy('_savedAt', 'asc').get();
         if (all.size > SNAPSHOT_MAX) {
@@ -12191,8 +12200,19 @@
             await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: restored, updatedAt: restored._updatedAt });
             await fsSetWeek(state.weekStart, restored);
             state.weekData = deepCopy(restored);
+            // Also restore notes if the snapshot included them
+            if (snapData._notes && Array.isArray(snapData._notes) && snapData._notes.length > 0) {
+              state.notes = deepCopy(snapData._notes);
+              await dbPut('notes', { id: 'notes_all', userId: uid, data: state.notes, updatedAt: Date.now() });
+              await fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
+            }
+            // Also restore reminders if included
+            if (snapData._reminders && Array.isArray(snapData._reminders)) {
+              remindersData = deepCopy(snapData._reminders);
+              saveReminders(remindersData);
+            }
             render();
-            showToast('Week restored.');
+            showToast('Week restored.' + (snapData._notes ? ' Notes restored too.' : ''));
           } catch (e) { showToast('Restore failed: ' + (e.message || e)); }
         }
       );
@@ -13626,6 +13646,24 @@ Rules:
 
         const friday = getCurrentFriday();
         await loadWeek(dateToStr(friday));
+
+        // RECOVERY: if local IDB has notes but Firestore is empty, restore them
+        try {
+          const localNotes = await dbGet('notes', 'notes_all');
+          if (localNotes && localNotes.data && localNotes.data.length > 0) {
+            const remoteRef = userDoc('data/notes');
+            if (remoteRef) {
+              const remoteSnap = await remoteRef.get();
+              const remoteNotes = remoteSnap.exists ? remoteSnap.data().notes : null;
+              if (!remoteNotes || remoteNotes.length === 0) {
+                console.warn('[Rian] RECOVERY: Restoring', localNotes.data.length, 'notes from local cache to Firestore');
+                state.notes = localNotes.data;
+                await fsSetNotes(state.notes);
+                showToast('Recovered ' + localNotes.data.length + ' notes from local cache!');
+              }
+            }
+          }
+        } catch (e) { console.warn('[Rian] Recovery check failed:', e); }
 
         if (state.view === 'notes') loadNotes();
         else if (state.view === 'routines') loadRoutines();
