@@ -6688,7 +6688,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.6.4';
+    const VERSION = '4.6.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10257,6 +10257,9 @@
             // Re-schedule pending reminders from synced data
             remindersData.filter(r => !r.fired).forEach(r => scheduleReminderTimer(r));
 
+            // Check for any missed reminders in the synced data
+            checkMissedReminders();
+
             // Re-render notes view if visible (to update Reminded badges)
             if (state.view === 'notes') render();
           }, () => {});
@@ -10264,9 +10267,13 @@
       }
 
       // Mobile fix: setTimeout dies when phone sleeps / browser is backgrounded.
+      // Delay checkMissedReminders on resume to let Firestore sync arrive first —
+      // prevents double-notification when another device already fired the reminder.
+      let resumeTimer = null;
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          checkMissedReminders();
+          if (resumeTimer) clearTimeout(resumeTimer);
+          resumeTimer = setTimeout(() => { resumeTimer = null; checkMissedReminders(); }, 3000);
         }
       });
       // Also poll every 30s as a safety net while the tab is active
