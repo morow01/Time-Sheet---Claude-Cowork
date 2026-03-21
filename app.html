@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.7.5';
+    const VERSION = '4.7.6';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9988,9 +9988,15 @@
           return;
         }
 
-        // Check existing push subscription
+        // Clear any stale push subscription that may conflict with new VAPID key
         const existingSub = await swReg.pushManager.getSubscription();
-        console.log('[Rian FCM] existing push sub:', existingSub ? 'yes' : 'none');
+        if (existingSub) {
+          console.log('[Rian FCM] unsubscribing stale push sub...');
+          await existingSub.unsubscribe();
+        }
+
+        // Delete any old FCM token so we get a fresh one
+        try { await fcm.deleteToken(); } catch (_) { /* ok if none */ }
 
         console.log('[Rian FCM] calling getToken...');
         const token = await fcm.getToken({
