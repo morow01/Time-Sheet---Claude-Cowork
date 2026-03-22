@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.8';
+    const VERSION = '4.9.9';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9998,29 +9998,17 @@
         const keyArr = new Uint8Array(raw.length);
         for (let i = 0; i < raw.length; i++) keyArr[i] = raw.charCodeAt(i);
 
-        // Reuse existing subscription if it has the correct VAPID key
-        let sub = await swReg.pushManager.getSubscription();
-        if (sub) {
-          // Check if the existing subscription uses our VAPID key
-          const existingKey = sub.options && sub.options.applicationServerKey
-            ? btoa(String.fromCharCode(...new Uint8Array(sub.options.applicationServerKey)))
-            : null;
-          const expectedKey = btoa(String.fromCharCode(...keyArr));
-          if (existingKey !== expectedKey) {
-            console.log('[Rian Push] VAPID key mismatch — resubscribing');
-            await sub.unsubscribe();
-            sub = null;
-          }
+        // Always create fresh subscription to ensure endpoint is valid
+        // (FieldPath atomic write prevents race condition between devices)
+        const oldSub = await swReg.pushManager.getSubscription();
+        if (oldSub) {
+          await oldSub.unsubscribe();
         }
-        if (!sub) {
-          sub = await swReg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: keyArr
-          });
-          console.log('[Rian Push] Created new push subscription');
-        } else {
-          console.log('[Rian Push] Reusing existing push subscription');
-        }
+        const sub = await swReg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: keyArr
+        });
+        console.log('[Rian Push] Fresh push subscription created');
 
         // Extract subscription data for server-side sending
         const subJson = sub.toJSON();
