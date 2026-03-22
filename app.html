@@ -6806,7 +6806,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.10.5';
+    const VERSION = '4.10.6';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10669,11 +10669,19 @@
 
       // Try Web Share API first — opens native share sheet with calendar apps
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: title }).catch(() => {});
+        navigator.share({ files: [file], title: title }).then(() => {
+          showToast('Event shared');
+        }).catch(err => {
+          // Share was cancelled or failed — fall back to download
+          if (err.name !== 'AbortError') downloadIcsFile(ics, fileName);
+        });
         return;
       }
 
-      // Fallback: download the .ics file
+      downloadIcsFile(ics, fileName);
+    }
+
+    function downloadIcsFile(ics, fileName) {
       const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
