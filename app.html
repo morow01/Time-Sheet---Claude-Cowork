@@ -7786,7 +7786,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.3';
+    const VERSION = '4.14.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14798,8 +14798,8 @@
           <!-- Fault -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Fault Description</span>
-            <textarea id="co-fault-input" class="act-textarea" rows="2" placeholder="e.g. EXTERNAL ALARM: AC MAINS FAIL"
-              oninput="coAutoSave()">${esc(fault)}</textarea>
+            <textarea id="co-fault-input" class="act-textarea" rows="1" placeholder="e.g. EXTERNAL ALARM: AC MAINS FAIL"
+              oninput="autoGrow(this);coAutoSave()">${esc(fault)}</textarea>
           </div>
           <!-- On-Site Time -->
           <div class="flex flex-col gap-1.5">
@@ -14902,10 +14902,13 @@
         state.calloutsNotesOpen = false;
         // Need full render to populate form fields with correct data
         render();
-        // Scroll expanded card into view
+        // Auto-grow textareas and scroll into view
         setTimeout(() => {
           const card = document.querySelector(`[data-co-id="${id}"]`);
-          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          if (card) {
+            card.querySelectorAll('textarea').forEach(autoGrow);
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
         }, 100);
       }
     }
@@ -15021,16 +15024,65 @@
       if (subEl) { subEl.textContent = ''; subEl.style.display = 'none'; }
       document.getElementById('note-fs-modal').classList.remove('hidden');
       setTimeout(() => {
+        // Initialize Quill if not yet created (same init as openNoteFullscreen)
         if (!_quillInstance) {
-          // Quill not yet initialized — the first openNoteFullscreen call will handle it.
-          // For safety, trigger via the task path briefly
-          return;
+          const Size = Quill.import('attributors/class/size');
+          Size.whitelist = ['small', 'large', 'huge'];
+          Quill.register(Size, true);
+          const Font = Quill.import('attributors/class/font');
+          Font.whitelist = ['serif', 'monospace'];
+          Quill.register(Font, true);
+          const icons = Quill.import('ui/icons');
+          icons['undo'] = `<svg viewBox="0 0 18 18"><polygon class="ql-fill ql-stroke" points="6 10 4 12 2 10 6 10"/><path class="ql-stroke" d="M8.09,13.91A4.6,4.6,0,0,0,9,14,5,5,0,1,0,4,9"/></svg>`;
+          icons['redo'] = `<svg viewBox="0 0 18 18"><polygon class="ql-fill ql-stroke" points="12 10 14 12 16 10 12 10"/><path class="ql-stroke" d="M9.91,13.91A4.6,4.6,0,0,1,9,14,5,5,0,1,1,14,9"/></svg>`;
+          _quillInstance = new Quill('#note-fs-editor', {
+            theme: 'snow',
+            modules: {
+              history: { delay: 1000, maxStack: 100, userOnly: true },
+              toolbar: {
+                container: [
+                  [{ 'font': ['', 'serif', 'monospace'] }, { 'size': ['small', false, 'large', 'huge'] }],
+                  ['bold', 'italic', 'underline', 'strike', 'clean',
+                    { 'list': 'ordered' }, { 'list': 'bullet' },
+                    { 'color': ['#000000', '#e53935', '#f57c00', '#2e7d32', '#1565c0', '#6a1b9a', '#ffffff'] },
+                    { 'background': ['', '#ffeb3b', '#a5d6a7', '#ef9a9a', '#90caf9', '#ce93d8', '#ffe0b2'] },
+                    'undo', 'redo']
+                ],
+                handlers: {
+                  'undo': function () { this.quill.history.undo(); },
+                  'redo': function () { this.quill.history.redo(); }
+                }
+              }
+            }
+          });
+          const _killMargin = () => document.querySelectorAll('#note-fs-editor .ql-formats').forEach(el => {
+            el.style.setProperty('margin-right', '0', 'important');
+          });
+          _killMargin();
+          setTimeout(_killMargin, 200);
+          if (!document.getElementById('_ql-color-fix')) {
+            const _s = document.createElement('style');
+            _s.id = '_ql-color-fix';
+            _s.textContent = `
+              .ql-snow.ql-toolbar .ql-picker-label:hover,
+              .ql-snow .ql-toolbar .ql-picker-label:hover,
+              .ql-snow.ql-toolbar .ql-picker-label.ql-active,
+              .ql-snow .ql-toolbar .ql-picker-label.ql-active { color: #475569 !important; }
+              .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+              .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke,
+              .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+              .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke { stroke: #475569 !important; }
+            `;
+            document.head.appendChild(_s);
+          }
         }
+        // Load content
         if (currentValue && currentValue.trim().startsWith('<')) {
           _quillInstance.root.innerHTML = currentValue;
         } else {
           _quillInstance.setText(currentValue || '');
         }
+        // Set up text-change listener for callout notes
         _quillInstance.off('text-change');
         _quillInstance.on('text-change', () => {
           const html = _quillInstance.root.innerHTML;
@@ -15038,13 +15090,12 @@
           if (coTa) {
             coTa.value = (html === '<p><br></p>' || html === '') ? '' : html;
             coAutoSave();
-            // Update rich preview
             const preview = document.querySelector('[data-co-notes-preview]');
             if (preview) preview.innerHTML = coTa.value || '<span class="notes-rich-placeholder">Tap to add a note…</span>';
           }
         });
         _quillInstance.focus();
-      }, 100);
+      }, 80);
     }
 
     function coSelectWeek(weekStart) {
