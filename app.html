@@ -21,11 +21,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script>
-    if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined' || typeof firebase.firestore === 'undefined') {
-      document.write('<div style="margin: 40px auto; max-width: 600px; padding: 20px; background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; font-family: sans-serif; text-align: center;"><h2>⚠️ App Blocked by Brave Shields</h2><p>Your browser is blocking the essential Firebase scripts needed to run this application. Please click the <strong>Lion icon</strong> (Brave Shields) in your address bar and turn Shields <strong>OFF</strong> for localhost, then refresh the page.</p></div>');
-    }
-  </script>
   <!-- Firebase Messaging SDK removed — using raw Web Push API instead -->
   <style>
     /* ===== THEME VARIABLES ===== */
@@ -6835,11 +6830,18 @@
       messagingSenderId: "670175047784",
       appId: "1:670175047784:web:b48dc899508a925652cbdd"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db_fs = firebase.firestore();
-    const auth_fb = firebase.auth();
-    // FCM removed — using raw Web Push API
-    db_fs.enablePersistence({ synchronizeTabs: true }).catch(e => console.warn('[Rian]', e));
+    let db_fs, auth_fb;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db_fs = firebase.firestore();
+      auth_fb = firebase.auth();
+      // FCM removed — using raw Web Push API
+      db_fs.enablePersistence({ synchronizeTabs: true }).catch(e => console.warn('[Rian]', e));
+    } catch (firebaseErr) {
+      console.error("Firebase init failed (likely blocked by Brave Shields):", firebaseErr);
+      document.body.innerHTML = '<div style="margin: 40px auto; max-width: 600px; padding: 20px; background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; font-family: sans-serif; text-align: center;"><h2>⚠️ App Blocked by Brave Shields</h2><p>Your browser is blocking IndexedDB or essential scripts needed to run this application. Please click the <strong>Lion icon</strong> (Brave Shields) in your address bar and turn Shields <strong>OFF</strong> for localhost, then refresh the page.</p></div>';
+      throw firebaseErr; // halt execution
+    }
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
     const DB_VERSION = 2;
@@ -14769,11 +14771,6 @@ Work week = Friday to Thursday.
       const matchingSavedNotesSection = noteMatches?.length
         ? `\nMATCHING SAVED NOTES (standalone notes from the Notes tab that match the query):\n${noteMatches.slice(0, 10).map(n => `[${n.status?.toUpperCase() || 'OPEN'}] ${n.description || '(no description)'}${n.location ? ' @ ' + n.location : ''}${n.date ? ' [' + n.date + ']' : ''}`).join('\n')}\n`
         : '';
-      console.log('[Rian AI] Scope:', JSON.stringify(state.aiScope));
-      console.log('[Rian AI] Notes in state:', state.notes?.length);
-      console.log('[Rian AI] Full context:', timesheetContext);
-      console.log('[Rian AI] Note matches:', noteMatches?.length, noteMatches);
-      console.log('[Rian AI] Fault sources:', faultSources?.length);
       const prompt = `You are a personal timesheet assistant for a telecommunications field technician.
 You have their full work history. Answer their question directly and confidently using the data below.
 Use the DATE REFERENCES section to resolve any time words like "last week", "this month", "yesterday".
