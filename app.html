@@ -1306,7 +1306,16 @@
       font-size: 15px;
       font-weight: 500;
       color: #1A1A1A;
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 0;
+      min-width: 0;
+      padding: 0;
+      -moz-appearance: textfield;
     }
+    .hrs-stepper .val::-webkit-inner-spin-button,
+    .hrs-stepper .val::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
     .ot-box .hrs-stepper .val {
       color: #C27A00;
@@ -7773,7 +7782,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.13.2';
+    const VERSION = '4.13.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10433,7 +10442,7 @@
                 <div class="act-field-label" style="margin-bottom: 8px;">Ordinary HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
-                  <span class="val" data-step-val="${act.id}-ordinary">${act.ordinary || 0}</span>
+                  <input type="number" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" min="0" step="1" inputmode="decimal" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
@@ -10441,7 +10450,7 @@
                 <div class="act-field-label act-field-label-ot" style="margin-bottom: 8px;">Overtime HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
-                  <span class="val" data-step-val="${act.id}-overtime">${act.overtime || 0}</span>
+                  <input type="number" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" min="0" step="1" inputmode="decimal" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
@@ -10533,6 +10542,20 @@
 
       scheduleAutoSave();
       render(); // Guaranteed UI sync
+    }
+
+    function setHrs(actId, di, field, rawVal) {
+      const day = state.weekData.days[di];
+      if (!day) return;
+      const act = day.activities.find(a => a.id === actId);
+      if (!act) return;
+
+      let val = parseFloat(rawVal) || 0;
+      if (val < 0) val = 0;
+      act[field] = val;
+
+      scheduleAutoSave();
+      render();
     }
 
     function updateField(el) {
