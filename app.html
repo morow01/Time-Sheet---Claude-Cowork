@@ -6906,7 +6906,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.37';
+    const VERSION = '4.12.38';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15045,47 +15045,8 @@ QUESTION: ${query}`;
           }).filter(Boolean).sort((a, b) => b.hitCount - a.hitCount);
           if (mentioned.length > 0) noteMatches = mentioned;
         }
-        // Post-filter timesheet entries: only keep entries whose description Gemini specifically listed
-        if (timesheetEntries.length > 1) {
-          const answerLower = answer.toLowerCase();
-          const filtered = timesheetEntries.filter(e => {
-            const desc = (e.description || '').toLowerCase().trim();
-            if (!desc || desc.length < 3) return false;
-            const words = desc.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3);
-            // Long descriptions (3+ words): check if a multi-word phrase appears in the answer
-            if (words.length >= 3) {
-              // Try the full description first
-              if (answerLower.includes(desc)) return true;
-              // Try first 4-5 significant words as phrase
-              const phrase = words.slice(0, Math.min(words.length, 5)).join(' ');
-              if (answerLower.includes(phrase)) return true;
-              // Try any consecutive 3-word window from the description
-              for (let i = 0; i <= words.length - 3; i++) {
-                if (answerLower.includes(words.slice(i, i + 3).join(' '))) return true;
-              }
-              return false;
-            }
-            // Short descriptions (1-2 words like "Routines", "Fault"):
-            // Must appear as "Task: <desc>" or "Task "<desc>" pattern in Gemini answer to confirm it's specifically referenced
-            const taskPatterns = [
-              `task: ${desc}`, `task "${desc}`, `task: "${desc}`, `"${desc}"`,
-              `task: ${desc.replace(/\s*\?$/, '')}` // without trailing ?
-            ];
-            if (taskPatterns.some(p => answerLower.includes(p))) return true;
-            // Also check description + location as a specific reference (e.g. "Fault (MXY0002A10) @ Mucklagh")
-            if (e.location) {
-              const loc = e.location.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
-              // The description + a location word must appear near each other
-              const locWords = loc.split(/\s+/).filter(w => w.length >= 3);
-              for (const lw of locWords) {
-                const combined = `${desc}.*${lw}|${lw}.*${desc}`;
-                try { if (new RegExp(combined).test(answerLower)) return true; } catch(e) {}
-              }
-            }
-            return false;
-          });
-          timesheetEntries = filtered; // show only matched entries, or none if Gemini didn't reference any
-        }
+        // Timesheet entries are already filtered at source (searchTimesheetEntries requires
+        // keyword hits in description/location, not just work code descriptions)
         state.aiResult = { answer, sources: faultSources.slice(0, 5), noteMatches: noteMatches.slice(0, 10), timesheetEntries: timesheetEntries.slice(0, 10) };
         // Save to recent queries
         state.aiRecentQueries = [query, ...state.aiRecentQueries.filter(q => q !== query)].slice(0, 8);
