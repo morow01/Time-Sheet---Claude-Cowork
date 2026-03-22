@@ -7857,7 +7857,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.17';
+    const VERSION = '4.14.18';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14094,21 +14094,34 @@
       </label>`;
     }
 
-    function exportAllData() {
+    async function exportAllData() {
       if (!state.currentUser) { showToast('Sign in first'); return; }
-      // Build checkbox list with counts
       const uid = state.currentUser.uid;
-      const weekCount = state.weekData ? '' : ''; // counts loaded async
+      // Fetch week count from Firestore
+      let weekCount = 0;
+      try {
+        const weeksSnap = await db_fs.collection(`users/${uid}/weeks`).get();
+        weekCount = weeksSnap?.size || 0;
+      } catch (e) { /* offline — try IndexedDB */ }
+      if (!weekCount) {
+        try {
+          const tx = (await dbOpen()).transaction('weeks', 'readonly');
+          const all = await new Promise((res, rej) => { const r = tx.objectStore('weeks').getAll(); r.onsuccess = () => res(r.result); r.onerror = rej; });
+          weekCount = all.filter(r => r.userId === uid).length;
+        } catch (e) { /* ignore */ }
+      }
       const noteCount = state.notes?.length || 0;
       const remCount = remindersData?.length || 0;
       const coCount = state.callouts?.weeks ? Object.values(state.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
+      const settingsCount = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
+        'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'].filter(k => localStorage.getItem(k) !== null).length;
       const list = document.getElementById('exp-list');
       list.innerHTML =
-        _eiCheckboxRow('exp-weeks', _eiIcons.timesheet, 'Timesheet', '', true, false) +
+        _eiCheckboxRow('exp-weeks', _eiIcons.timesheet, 'Timesheet', weekCount ? weekCount + ' weeks' : '', true, false) +
         _eiCheckboxRow('exp-notes', _eiIcons.notes, 'Field Notes', noteCount ? noteCount + ' notes' : '', true, false) +
         _eiCheckboxRow('exp-reminders', _eiIcons.reminders, 'Reminders', remCount ? remCount + ' reminders' : '', true, false) +
         _eiCheckboxRow('exp-callouts', _eiIcons.callouts, 'Callouts', coCount ? coCount + ' callouts' : '', true, false) +
-        _eiCheckboxRow('exp-settings', _eiIcons.settings, 'Settings', '', true, false);
+        _eiCheckboxRow('exp-settings', _eiIcons.settings, 'Settings', settingsCount ? settingsCount + ' items' : '', true, false);
       document.getElementById('export-modal').classList.remove('hidden');
     }
 
