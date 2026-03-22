@@ -5319,6 +5319,27 @@
     }
     .snap-restore-btn:active { opacity: 0.8; }
 
+    .snap-day-group { margin-bottom: 4px; }
+    .snap-day-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 4px; cursor: pointer; user-select: none;
+    }
+    .snap-day-label {
+      font-size: 12px; font-weight: 800; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .snap-day-count {
+      font-size: 10px; font-weight: 700; color: var(--text-secondary);
+      background: var(--border); border-radius: 8px; padding: 1px 7px;
+      opacity: 0.7;
+    }
+    .snap-day-chevron {
+      margin-left: auto; color: var(--text-secondary); opacity: 0.5;
+      transition: transform 0.2s;
+    }
+    .snap-day-group.collapsed .snap-day-chevron { transform: rotate(-90deg); }
+    .snap-day-group.collapsed .snap-day-items { display: none; }
+
     .snap-empty {
       text-align: center;
       color: var(--text-secondary);
@@ -6796,7 +6817,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.11.3';
+    const VERSION = '4.12.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12435,7 +12456,7 @@
     // ============================================================
     // SNAPSHOTS
     // ============================================================
-    const SNAPSHOT_MAX = 20;          // max snapshots kept per week
+    const SNAPSHOT_MAX = 50;          // max snapshots kept per week (~1 week of auto-saves)
     const SNAPSHOT_THROTTLE_MS = 10 * 60 * 1000; // auto-snapshot at most once per 10 min
     const _lastSnapshotAt = {};       // weekStart → timestamp of last auto-snapshot
 
@@ -12520,11 +12541,37 @@
       await renderSnapshotList(state.weekStart);
     }
 
+    // Get GPS town name via reverse geocoding (non-blocking, best-effort)
+    function _getGpsTown() {
+      return new Promise(resolve => {
+        if (!navigator.geolocation) { resolve(null); return; }
+        navigator.geolocation.getCurrentPosition(
+          async pos => {
+            try {
+              const { latitude: lat, longitude: lon } = pos.coords;
+              const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&addressdetails=1`, {
+                headers: { 'Accept-Language': 'en' }
+              });
+              if (!resp.ok) { resolve(null); return; }
+              const data = await resp.json();
+              const addr = data.address || {};
+              const town = addr.town || addr.city || addr.village || addr.suburb || addr.county || '';
+              resolve(town || null);
+            } catch { resolve(null); }
+          },
+          () => resolve(null),
+          { timeout: 5000, maximumAge: 300000 }
+        );
+      });
+    }
+
     async function _writeSnapshot(weekStart, weekData, label) {
       try {
         const uid = state.currentUser.uid;
         const ts = Date.now();
         const summary = _snapshotSummary(weekData);
+        // Get GPS town (non-blocking, won't delay snapshot if it fails)
+        const geoTown = await Promise.race([_getGpsTown(), new Promise(r => setTimeout(() => r(null), 6000))]);
         const colRef = db_fs.collection(`users/${uid}/weeks/${weekStart}/snapshots`);
         const snapData = {
           weekStart,
@@ -12534,6 +12581,7 @@
           _summary: summary,
           _device: getDeviceName()
         };
+        if (geoTown) snapData._geoTown = geoTown;
         // Include notes backup in every snapshot
         if (state.notes && state.notes.length > 0) {
           snapData._notes = state.notes;
@@ -12585,6 +12633,42 @@
       return { relative, exact };
     }
 
+    function _renderSnapCard(s) {
+      const sum = s._summary || {};
+      const ordH = sum.totalOrd || 0;
+      const otH = sum.totalOt || 0;
+      const ent = sum.entries || 0;
+      // Use GPS town if available, otherwise leave blank (no more entry-based locations)
+      const locStr = s._geoTown || '';
+      const iconClass = s._label === 'manual' ? 'snap-manual'
+        : s._label === 'pre-restore' ? 'snap-pre-restore' : 'snap-auto';
+      const label = s._label === 'manual' ? ' <span class="snap-tag" style="background:rgba(16,185,129,0.12);color:#059669;">manual</span>'
+        : s._label === 'pre-restore' ? ' <span class="snap-tag" style="background:rgba(251,146,60,0.15);color:#f97316;">pre-restore</span>'
+          : '';
+      const d = new Date(s._savedAt);
+      const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const deviceName = s._device ? s._device.replace(/ [a-z0-9]{4}$/, '') : '';
+      const hasFooter = locStr || deviceName;
+      const footer = hasFooter ? `<div class="snap-row-footer">
+        ${locStr ? '<div class="snap-row-footer-loc"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ' + esc(locStr) + '</div>' : ''}
+        ${deviceName ? '<div class="snap-row-footer-device"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> ' + esc(deviceName) + '</div>' : ''}
+      </div>` : '';
+      return `
+        <div class="snap-row">
+          <div class="snap-row-top">
+            <div class="snap-row-icon ${iconClass}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+            </div>
+            <div class="snap-row-body">
+              <div class="snap-row-time">${timeStr}${label}</div>
+              <div class="snap-row-info">${ent} ${ent === 1 ? 'entry' : 'entries'} <span class="snap-dot"></span> ${ordH}h ordinary${otH ? ' <span class="snap-dot"></span> ' + otH + 'h OT' : ''}</div>
+            </div>
+            <button class="snap-restore-btn" onclick="confirmRestoreSnapshot('${s.id}', ${s._savedAt})">Restore</button>
+          </div>
+          ${footer}
+        </div>`;
+    }
+
     async function renderSnapshotList(weekStart) {
       const el = document.getElementById('snapshot-list');
       if (!el) return;
@@ -12594,48 +12678,37 @@
         el.innerHTML = '<div class="snap-empty">No snapshots yet for this week.<br>Snapshots are taken automatically as you save.</div>';
         return;
       }
-      el.innerHTML = snaps.map(s => {
-        const sum = s._summary || {};
-        const ordH = sum.totalOrd || 0;
-        const otH = sum.totalOt || 0;
-        const ent = sum.entries || 0;
-        // Extract locations from the day the snapshot was taken (not the whole week)
-        let locStr = '';
-        if (s.days && s._savedAt) {
-          const snapDate = dateToStr(new Date(s._savedAt));
-          const locSet = new Set();
-          s.days.filter(d => d.date === snapDate).forEach(d => (d.activities || []).forEach(a => {
-            if (a.location) { const t = a.location.replace(/\s*\([^)]+\)$/, '').trim(); if (t) locSet.add(t); }
-          }));
-          locStr = [...locSet].join(', ');
+      // Group snapshots by day
+      const today = dateToStr(new Date());
+      const yesterday = dateToStr(new Date(Date.now() - 86400000));
+      const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const groups = new Map();
+      snaps.forEach(s => {
+        const dayKey = dateToStr(new Date(s._savedAt));
+        if (!groups.has(dayKey)) groups.set(dayKey, []);
+        groups.get(dayKey).push(s);
+      });
+      let html = '';
+      for (const [dayKey, daySnaps] of groups) {
+        let dayLabel;
+        if (dayKey === today) dayLabel = 'Today';
+        else if (dayKey === yesterday) dayLabel = 'Yesterday';
+        else {
+          const d = new Date(dayKey + 'T12:00:00');
+          dayLabel = dayNames[d.getDay()] + ', ' + d.getDate() + ' ' + d.toLocaleString('en', { month: 'short' });
         }
-        const iconClass = s._label === 'manual' ? 'snap-manual'
-          : s._label === 'pre-restore' ? 'snap-pre-restore' : 'snap-auto';
-        const label = s._label === 'manual' ? ' <span class="snap-tag" style="background:rgba(16,185,129,0.12);color:#059669;">manual</span>'
-          : s._label === 'pre-restore' ? ' <span class="snap-tag" style="background:rgba(251,146,60,0.15);color:#f97316;">pre-restore</span>'
-            : '';
-        const { relative, exact } = _formatSnapTime(s._savedAt);
-        const deviceName = s._device ? s._device.replace(/ [a-z0-9]{4}$/, '') : '';
-        const hasFooter = locStr || deviceName;
-        const footer = hasFooter ? `<div class="snap-row-footer">
-          ${locStr ? '<div class="snap-row-footer-loc"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ' + esc(locStr) + '</div>' : ''}
-          ${deviceName ? '<div class="snap-row-footer-device"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> ' + esc(deviceName) + '</div>' : ''}
-        </div>` : '';
-        return `
-          <div class="snap-row">
-            <div class="snap-row-top">
-              <div class="snap-row-icon ${iconClass}">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-              </div>
-              <div class="snap-row-body">
-                <div class="snap-row-time" title="${exact}">${relative}${label}</div>
-                <div class="snap-row-info">${ent} ${ent === 1 ? 'entry' : 'entries'} <span class="snap-dot"></span> ${ordH}h ordinary${otH ? ' <span class="snap-dot"></span> ' + otH + 'h OT' : ''}</div>
-              </div>
-              <button class="snap-restore-btn" onclick="confirmRestoreSnapshot('${s.id}', ${s._savedAt})">Restore</button>
-            </div>
-            ${footer}
-          </div>`;
-      }).join('');
+        html += `<div class="snap-day-group">
+          <div class="snap-day-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <span class="snap-day-label">${dayLabel}</span>
+            <span class="snap-day-count">${daySnaps.length}</span>
+            <svg class="snap-day-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="snap-day-items">
+            ${daySnaps.map(s => _renderSnapCard(s)).join('')}
+          </div>
+        </div>`;
+      }
+      el.innerHTML = html;
     }
 
     function confirmRestoreSnapshot(snapId, savedAt) {
