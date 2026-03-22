@@ -6806,7 +6806,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.10.0';
+    const VERSION = '4.10.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10288,25 +10288,18 @@
 
     function removeNoteReminder(noteId) {
       const reminders = getReminders();
-      const idx = reminders.findIndex(r => r.noteId === noteId && !r.fired);
-      if (idx >= 0) {
-        const oldId = reminders[idx].id;
-        if (typeof reminderTimers !== 'undefined' && reminderTimers[oldId]) {
-          clearTimeout(reminderTimers[oldId]); delete reminderTimers[oldId];
+      // Clear any active timers for this note's reminders
+      reminders.filter(r => r.noteId === noteId).forEach(r => {
+        if (typeof reminderTimers !== 'undefined' && reminderTimers[r.id]) {
+          clearTimeout(reminderTimers[r.id]); delete reminderTimers[r.id];
         }
-        reminders.splice(idx, 1);
-        saveReminders(reminders);
+      });
+      // Remove ALL reminders for this note (active + fired)
+      const filtered = reminders.filter(r => r.noteId !== noteId);
+      if (filtered.length < reminders.length) {
+        saveReminders(filtered);
         render();
         showToast('Reminder removed');
-      } else {
-        // Remove fired reminder
-        const fIdx = reminders.findIndex(r => r.noteId === noteId && r.fired);
-        if (fIdx >= 0) {
-          reminders.splice(fIdx, 1);
-          saveReminders(reminders);
-          render();
-          showToast('Reminder removed');
-        }
       }
     }
 
