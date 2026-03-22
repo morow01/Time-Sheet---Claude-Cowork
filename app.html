@@ -7773,7 +7773,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.42';
+    const VERSION = '4.12.43';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15811,8 +15811,8 @@ When the user searches for a keyword (e.g. "battery"), list EVERY note and task 
 FORMATTING RULES — follow these strictly:
 - Use markdown headings (### Section Title) for section titles. NEVER put * or - before a heading.
 - IMPORTANT: Separate your answer into two sections when reporting both query-specific results AND general timesheet issues:
-  1. First section: entries that DIRECTLY answer the user's question. Use "- **Task:**" prefix.
-  2. Second section (### Timesheet Issues): general issues like missing codes/hours that are NOT directly related to the query. Use "- **Other:**" prefix instead of "- **Task:**".
+  1. First section: entries TOPICALLY related to the user's question. Use "- **Task:**" prefix. Be GENEROUS — if the entry's work description relates to the query topic (e.g. rectifier work, battery measurement, and fault repairs are ALL related to "power issues"), classify it as **Task:** even if it also has timesheet issues like missing codes.
+  2. Second section (### Timesheet Issues): entries whose work description is UNRELATED to the query topic (e.g. training, routines, meetings unrelated to the query). Use "- **Other:**" prefix instead of "- **Task:**".
   If ALL entries are directly relevant to the query, use "- **Task:**" for all of them.
 - Format each entry with bold labels on separate lines:
   - **Task:** description here (or **Other:** for general issues)
