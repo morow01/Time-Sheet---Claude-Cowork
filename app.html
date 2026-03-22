@@ -7786,7 +7786,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.6';
+    const VERSION = '4.14.7';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14931,6 +14931,14 @@
       _coSaveTimer = setTimeout(() => _coDoSave(), 800);
     }
     function _coDoSave() {
+      // Guard: nothing to save if no card is expanded
+      if (!state.calloutsExpandedId) return;
+
+      // Guard: verify the DOM form actually belongs to the expanded card
+      const expandedCard = document.querySelector(`[data-co-id="${state.calloutsExpandedId}"]`);
+      const formField = document.getElementById('co-fault-input');
+      if (formField && expandedCard && !expandedCard.contains(formField)) return;
+
       const weekStart = state.calloutsSelectedWeek || dateToStr(getCurrentFriday());
       if (!state.callouts) return;
       if (!state.callouts.weeks[weekStart]) {
