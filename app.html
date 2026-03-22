@@ -665,52 +665,166 @@
       opacity: 0.85;
     }
 
-    .act-actions-row { display: flex; gap: 8px; margin-top: 8px; }
-    .act-action-btn {
-      flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
-      padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700;
-      cursor: pointer; border: none; font-family: inherit;
+    .act-actions-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
     }
-    .act-action-copy { background: var(--btn-primary-bg, #eff6ff); color: var(--btn-primary-text, #1e3a8a); }
-    .act-action-note { background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0; }
-    .act-action-delete { background: var(--btn-danger-bg); color: var(--btn-danger-color); }
+
+    .act-action-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .act-action-copy {
+      background: var(--btn-primary-bg, #eff6ff);
+      color: var(--btn-primary-text, #1e3a8a);
+    }
+
+    .act-action-note {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1.5px solid #bbf7d0;
+    }
+
+    .act-action-delete {
+      background: var(--btn-danger-bg);
+      color: var(--btn-danger-color);
+    }
 
     /* Add-to-notes confirmation modal */
     .note-confirm-overlay {
-      position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4);
-      display: flex; align-items: center; justify-content: center; padding: 16px;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
       animation: fadeIn 0.15s ease;
     }
+
     .note-confirm-sheet {
-      background: #fff; border-radius: 16px; width: 100%; max-width: 380px;
-      padding: 20px; animation: fadeIn 0.15s ease;
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 380px;
+      padding: 20px;
+      animation: fadeIn 0.15s ease;
     }
-    .note-confirm-title { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
-    .note-confirm-sub { font-size: 12px; color: #64748b; margin-bottom: 14px; }
+
+    .note-confirm-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .note-confirm-sub {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 14px;
+    }
+
     .note-confirm-preview {
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
-      padding: 12px; margin-bottom: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
     }
-    .note-confirm-preview-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-    .note-confirm-preview-title { font-size: 14px; font-weight: 700; color: #1e293b; }
-    .note-confirm-preview-meta { font-size: 12px; color: #64748b; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
-    .note-confirm-field { margin-bottom: 14px; }
-    .note-confirm-field label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px; }
+
+    .note-confirm-preview-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .note-confirm-preview-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .note-confirm-preview-meta {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .note-confirm-field {
+      margin-bottom: 14px;
+    }
+
+    .note-confirm-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
     .note-confirm-field select {
-      width: 100%; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
-      font-size: 13px; font-family: inherit; color: #1e293b; background: #fff;
+      width: 100%;
+      padding: 8px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #1e293b;
+      background: #fff;
     }
-    .note-confirm-actions { display: flex; gap: 8px; }
+
+    .note-confirm-actions {
+      display: flex;
+      gap: 8px;
+    }
+
     .note-confirm-actions .btn-cancel {
-      flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0;
-      background: #fff; font-size: 13px; font-weight: 700; color: #64748b;
-      cursor: pointer; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
     }
+
     .note-confirm-actions .btn-add {
-      flex: 1; padding: 12px; border-radius: 10px; border: none;
-      background: #15803d; font-size: 13px; font-weight: 700; color: #fff;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      gap: 6px; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #15803d;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
     }
 
     .act-delete-btn {
@@ -731,63 +845,214 @@
 
     /* Copy-task day picker modal */
     .copy-picker-overlay {
-      position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4);
-      display: flex; align-items: flex-end; justify-content: center;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
       animation: fadeIn 0.15s ease;
     }
+
     .copy-picker-sheet {
-      background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
-      max-height: 80vh; display: flex; flex-direction: column;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
       animation: slideUp 0.2s ease;
     }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .copy-picker-handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 10px auto 0; }
-    .copy-picker-title { font-size: 15px; font-weight: 800; color: #1e293b; padding: 14px 16px 2px; }
-    .copy-picker-sub { font-size: 12px; color: #64748b; padding: 0 16px 8px; }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .copy-picker-handle {
+      width: 36px;
+      height: 4px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      margin: 10px auto 0;
+    }
+
+    .copy-picker-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e293b;
+      padding: 14px 16px 2px;
+    }
+
+    .copy-picker-sub {
+      font-size: 12px;
+      color: #64748b;
+      padding: 0 16px 8px;
+    }
+
     .copy-picker-weeknav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 12px; margin: 0 12px 6px; background: #f1f5f9; border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      margin: 0 12px 6px;
+      background: #f1f5f9;
+      border-radius: 10px;
     }
+
     .copy-picker-weeknav button {
-      width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e2e8f0;
-      background: #fff; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: #475569; font-family: inherit;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #475569;
+      font-family: inherit;
     }
-    .copy-picker-weeknav button:hover { background: #eff6ff; border-color: #93c5fd; }
-    .copy-picker-weeknav-label { font-size: 13px; font-weight: 700; color: #1e293b; }
-    .copy-picker-weeknav-badge { font-size: 10px; font-weight: 600; color: #3b82f6; background: #dbeafe; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
-    .copy-picker-days { overflow-y: auto; padding: 0 12px 8px; flex: 1; }
+
+    .copy-picker-weeknav button:hover {
+      background: #eff6ff;
+      border-color: #93c5fd;
+    }
+
+    .copy-picker-weeknav-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .copy-picker-weeknav-badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: #3b82f6;
+      background: #dbeafe;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    .copy-picker-days {
+      overflow-y: auto;
+      padding: 0 12px 8px;
+      flex: 1;
+    }
+
     .copy-picker-day {
-      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-      border-radius: 10px; border: 1px solid #e8eef5; margin-bottom: 6px;
-      cursor: pointer; transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e8eef5;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
     }
-    .copy-picker-day:hover { background: #eff6ff; border-color: #93c5fd; }
-    .copy-picker-day.selected { background: #dbeafe; border-color: #3b82f6; }
-    .copy-picker-day.disabled { opacity: 0.4; pointer-events: none; }
+
+    .copy-picker-day:hover {
+      background: #eff6ff;
+      border-color: #93c5fd;
+    }
+
+    .copy-picker-day.selected {
+      background: #dbeafe;
+      border-color: #3b82f6;
+    }
+
+    .copy-picker-day.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
     .copy-picker-day-check {
-      width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    .copy-picker-day-check.checked { background: #3b82f6; border-color: #3b82f6; }
-    .copy-picker-day-name { font-size: 13px; font-weight: 700; color: #1e293b; flex: 1; }
-    .copy-picker-day-date { font-size: 11px; color: #94a3b8; }
-    .copy-picker-actions { display: flex; gap: 8px; padding: 8px 12px 14px; }
+
+    .copy-picker-day-check.checked {
+      background: #3b82f6;
+      border-color: #3b82f6;
+    }
+
+    .copy-picker-day-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      flex: 1;
+    }
+
+    .copy-picker-day-date {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .copy-picker-actions {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px 14px;
+    }
+
     .copy-picker-actions .btn-cancel {
-      flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0;
-      background: #fff; font-size: 13px; font-weight: 700; color: #64748b;
-      cursor: pointer; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
     }
+
     .copy-picker-actions .btn-copy {
-      flex: 1; padding: 12px; border-radius: 10px; border: none;
-      background: #1e3a8a; font-size: 13px; font-weight: 700; color: #fff;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      gap: 6px; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #1e3a8a;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
     }
-    .copy-picker-actions .btn-copy:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .copy-picker-actions .btn-copy:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
     @media (min-width: 640px) {
-      .copy-picker-overlay { align-items: center; }
-      .copy-picker-sheet { border-radius: 20px; max-height: 70vh; }
+      .copy-picker-overlay {
+        align-items: center;
+      }
+
+      .copy-picker-sheet {
+        border-radius: 20px;
+        max-height: 70vh;
+      }
     }
 
     .dot-flash {
@@ -3708,7 +3973,10 @@
     /* Fullscreen overlay for AI answer */
     .ai-fullscreen-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: var(--bg-page);
       z-index: 10000;
       display: flex;
@@ -3811,7 +4079,7 @@
 
     .ai-answer-text hr {
       border: none;
-      border-top: 1px dashed var(--border);
+      border-top: 1px dashed var(--text-muted);
       margin: 10px 0 6px;
       opacity: 0.6;
     }
@@ -4623,121 +4891,328 @@
 
     /* ===== Mockup J: Toolbar row (priority dots | task + calendar) ===== */
     .note-toolbar-row {
-      display: flex; align-items: center;
-      padding: 6px 0 8px; margin-top: 4px;
+      display: flex;
+      align-items: center;
+      padding: 6px 0 8px;
+      margin-top: 4px;
     }
+
     .note-pri-dots {
-      display: flex; align-items: center; gap: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       flex: 1;
     }
+
     .note-pri-dots-label {
-      font-size: 10px; font-weight: 800; color: #94a3b8;
-      text-transform: uppercase; letter-spacing: 0.6px; margin-right: 2px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-right: 2px;
     }
+
     .note-pri-dot {
-      width: 20px; height: 20px; border-radius: 50%;
-      border: none; cursor: pointer; padding: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      padding: 0;
       transition: all 0.15s;
     }
-    .note-pri-dot:active { transform: scale(0.9); }
-    .note-pri-dot.pd-high { background: #e8453c; }
-    .note-pri-dot.pd-medium { background: #F5A623; }
-    .note-pri-dot.pd-low { background: #34a853; }
-    .note-pri-dot:not(.pd-active) { opacity: 0.25; }
-    .note-pri-dot.pd-active { opacity: 1; box-shadow: 0 0 0 2.5px var(--bg-card), 0 0 0 4px currentColor; }
-    .note-pri-dot.pd-high.pd-active { color: #e8453c; }
-    .note-pri-dot.pd-medium.pd-active { color: #F5A623; }
-    .note-pri-dot.pd-low.pd-active { color: #34a853; }
+
+    .note-pri-dot:active {
+      transform: scale(0.9);
+    }
+
+    .note-pri-dot.pd-high {
+      background: #e8453c;
+    }
+
+    .note-pri-dot.pd-medium {
+      background: #F5A623;
+    }
+
+    .note-pri-dot.pd-low {
+      background: #34a853;
+    }
+
+    .note-pri-dot:not(.pd-active) {
+      opacity: 0.25;
+    }
+
+    .note-pri-dot.pd-active {
+      opacity: 1;
+      box-shadow: 0 0 0 2.5px var(--bg-card), 0 0 0 4px currentColor;
+    }
+
+    .note-pri-dot.pd-high.pd-active {
+      color: #e8453c;
+    }
+
+    .note-pri-dot.pd-medium.pd-active {
+      color: #F5A623;
+    }
+
+    .note-pri-dot.pd-low.pd-active {
+      color: #34a853;
+    }
 
     .note-toolbar-sep {
-      width: 1px; height: 24px; background: var(--border);
+      width: 1px;
+      height: 24px;
+      background: var(--border);
       margin: 0 14px;
     }
+
     .note-toolbar-actions {
-      display: flex; align-items: center; gap: 2px;
-      flex: 1; justify-content: flex-end;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+      justify-content: flex-end;
     }
+
     .note-tool-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 1px;
-      background: none; border: none; cursor: pointer;
-      padding: 4px 10px; border-radius: 8px;
-      transition: background 0.15s; color: #6b7689;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 8px;
+      transition: background 0.15s;
+      color: #6b7689;
       font-family: inherit;
     }
-    .note-tool-btn:hover { background: var(--bg-input); }
-    .note-tool-btn:active { transform: scale(0.95); }
-    .note-tool-btn svg { width: 20px; height: 20px; }
-    .note-tool-btn span { font-size: 9px; font-weight: 600; letter-spacing: 0.3px; }
+
+    .note-tool-btn:hover {
+      background: var(--bg-input);
+    }
+
+    .note-tool-btn:active {
+      transform: scale(0.95);
+    }
+
+    .note-tool-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .note-tool-btn span {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
 
     /* ===== Mockup J: Reminder field inline ===== */
-    .note-reminder-field { margin-bottom: 10px; }
-    .note-reminder-unset {
-      display: flex; align-items: center; gap: 8px;
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
-      padding: 10px 12px; font-size: 13px; color: #94a3b8;
-      cursor: pointer; transition: background 0.15s;
+    .note-reminder-field {
+      margin-bottom: 10px;
     }
-    .note-reminder-unset:active { background: #eef0f3; }
-    .note-reminder-unset svg { width: 18px; height: 18px; flex-shrink: 0; stroke: #94a3b8; fill: none; }
-    .note-reminder-unset .rem-plus { margin-left: auto; }
-    .note-reminder-unset .rem-plus svg { width: 14px; height: 14px; stroke: #bbb; }
+
+    .note-reminder-unset {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .note-reminder-unset:active {
+      background: #eef0f3;
+    }
+
+    .note-reminder-unset svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: #94a3b8;
+      fill: none;
+    }
+
+    .note-reminder-unset .rem-plus {
+      margin-left: auto;
+    }
+
+    .note-reminder-unset .rem-plus svg {
+      width: 14px;
+      height: 14px;
+      stroke: #bbb;
+    }
 
     .note-reminder-set {
-      display: flex; align-items: center; gap: 10px;
-      background: #fef8ee; border-radius: 12px; padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fef8ee;
+      border-radius: 12px;
+      padding: 10px 12px;
       border: 1.5px solid #F5A623;
     }
+
     .note-rem-bell {
-      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-      background: #fff; display: flex; align-items: center; justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .note-rem-bell svg { width: 16px; height: 16px; stroke: #d4900a; fill: none; }
-    .note-rem-info { flex: 1; }
-    .note-rem-info-label { font-size: 10px; font-weight: 700; color: #d4900a; text-transform: uppercase; letter-spacing: 0.5px; }
-    .note-rem-info-dt { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 1px; }
-    .note-rem-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: #fff; color: #d4900a; }
+
+    .note-rem-bell svg {
+      width: 16px;
+      height: 16px;
+      stroke: #d4900a;
+      fill: none;
+    }
+
+    .note-rem-info {
+      flex: 1;
+    }
+
+    .note-rem-info-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #d4900a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .note-rem-info-dt {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 1px;
+    }
+
+    .note-rem-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: #fff;
+      color: #d4900a;
+    }
+
     .note-rem-x {
-      width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; border: none; background: transparent; cursor: pointer;
-      color: #d4900a; font-size: 14px; font-weight: 700; font-family: inherit;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: #d4900a;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
     }
-    .note-rem-x:hover { background: #fde6c4; }
+
+    .note-rem-x:hover {
+      background: #fde6c4;
+    }
 
     .note-reminder-fired {
-      display: flex; align-items: center; gap: 10px;
-      background: #f8fafc; border-radius: 12px; padding: 10px 12px;
-      border: 1px solid #e2e8f0; opacity: 0.55;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      opacity: 0.55;
     }
-    .note-reminder-fired .note-rem-bell { background: #eef0f3; }
-    .note-reminder-fired .note-rem-bell svg { stroke: #94a3b8; }
-    .note-reminder-fired .note-rem-info-label { color: #94a3b8; }
-    .note-reminder-fired .note-rem-info-dt { color: #94a3b8; }
+
+    .note-reminder-fired .note-rem-bell {
+      background: #eef0f3;
+    }
+
+    .note-reminder-fired .note-rem-bell svg {
+      stroke: #94a3b8;
+    }
+
+    .note-reminder-fired .note-rem-info-label {
+      color: #94a3b8;
+    }
+
+    .note-reminder-fired .note-rem-info-dt {
+      color: #94a3b8;
+    }
 
     /* ===== Mockup J: Done + Delete buttons ===== */
     .note-bottom-actions {
-      display: flex; gap: 8px; margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
     }
+
     .note-btn-done {
-      flex: 1; padding: 11px; border-radius: 12px;
-      background: var(--priority-low-bg); color: var(--priority-low-dark, #34a853);
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      background: var(--priority-low-bg);
+      color: var(--priority-low-dark, #34a853);
       border: 1.5px solid var(--priority-low-border, #d4edda);
-      font-size: 13px; font-weight: 700; font-family: inherit;
-      cursor: pointer; display: flex; align-items: center;
-      justify-content: center; gap: 6px; transition: all 0.15s;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
     }
-    .note-btn-done:active { transform: scale(0.98); }
-    .note-btn-done svg { width: 16px; height: 16px; }
+
+    .note-btn-done:active {
+      transform: scale(0.98);
+    }
+
+    .note-btn-done svg {
+      width: 16px;
+      height: 16px;
+    }
 
     .note-btn-delete {
-      flex: 1; padding: 11px; border-radius: 12px;
-      background: var(--btn-danger-bg, #fef2f1); color: var(--btn-danger-color, #e8453c);
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      background: var(--btn-danger-bg, #fef2f1);
+      color: var(--btn-danger-color, #e8453c);
       border: 1.5px solid var(--btn-danger-border, #f5c6c2);
-      font-size: 13px; font-weight: 700; font-family: inherit;
-      cursor: pointer; display: flex; align-items: center;
-      justify-content: center; gap: 6px; transition: all 0.15s;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
     }
-    .note-btn-delete:active { transform: scale(0.98); }
-    .note-btn-delete svg { width: 16px; height: 16px; }
+
+    .note-btn-delete:active {
+      transform: scale(0.98);
+    }
+
+    .note-btn-delete svg {
+      width: 16px;
+      height: 16px;
+    }
 
     .note-actions {
       display: flex;
@@ -4822,140 +5297,454 @@
       border-color: #86efac;
     }
 
-    .note-actions-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .note-actions-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
 
     /* Reminder dialog */
     .remind-overlay {
-      position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4);
-      display: flex; align-items: flex-end; justify-content: center;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
       animation: fadeIn 0.15s ease;
     }
-    .remind-overlay { overflow-y: auto; }
-    .remind-sheet {
-      background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
-      animation: slideUp 0.2s ease; padding: 0;
-      display: flex; flex-direction: column;
-      margin-top: auto; /* push to bottom on mobile */
+
+    .remind-overlay {
+      overflow-y: auto;
     }
-    .remind-sheet-body { padding: 0; }
+
+    .remind-sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 480px;
+      animation: slideUp 0.2s ease;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      margin-top: auto;
+      /* push to bottom on mobile */
+    }
+
+    .remind-sheet-body {
+      padding: 0;
+    }
+
     .remind-actions-sticky {
       background: #fff;
-      padding: 10px 12px; padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+      padding: 10px 12px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
       border-top: 1px solid #f1f5f9;
     }
+
     .remind-existing {
-      background: #fefce8; border: 1px solid #fde68a; border-radius: 10px;
-      padding: 10px 14px; margin: 0 12px 12px; font-size: 12px; color: #854d0e;
-      display: flex; align-items: center; gap: 8px;
+      background: #fefce8;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin: 0 12px 12px;
+      font-size: 12px;
+      color: #854d0e;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .remind-existing-icon { font-size: 16px; flex-shrink: 0; }
-    .remind-existing-text { flex: 1; font-weight: 600; }
+
+    .remind-existing-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .remind-existing-text {
+      flex: 1;
+      font-weight: 600;
+    }
+
     .remind-existing-cancel {
-      padding: 4px 10px; border-radius: 6px; border: 1px solid #f59e0b;
-      background: #fff; font-size: 11px; font-weight: 700; color: #b45309;
-      cursor: pointer; font-family: inherit; flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #f59e0b;
+      background: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      color: #b45309;
+      cursor: pointer;
+      font-family: inherit;
+      flex-shrink: 0;
     }
+
     .note-action-remind.remind-active {
-      background: #fefce8 !important; border-color: #f59e0b !important; color: #854d0e !important;
+      background: #fefce8 !important;
+      border-color: #f59e0b !important;
+      color: #854d0e !important;
     }
-    .remind-handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 10px auto 0; }
-    .remind-title { font-size: 15px; font-weight: 800; color: #1e293b; padding: 14px 16px 2px; }
-    .remind-sub { font-size: 12px; color: #64748b; padding: 0 16px 10px; }
+
+    .remind-handle {
+      width: 36px;
+      height: 4px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      margin: 10px auto 0;
+    }
+
+    .remind-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e293b;
+      padding: 14px 16px 2px;
+    }
+
+    .remind-sub {
+      font-size: 12px;
+      color: #64748b;
+      padding: 0 16px 10px;
+    }
+
     .remind-preview {
-      background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin: 0 12px 12px;
-      border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #1e293b;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 0 12px 12px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
     }
-    .remind-preview-meta { font-size: 11px; color: #64748b; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
-    .remind-presets { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 12px; margin-bottom: 12px; }
+
+    .remind-preview-meta {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .remind-presets {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 0 12px;
+      margin-bottom: 12px;
+    }
+
     .remind-preset {
-      padding: 7px 12px; border-radius: 8px; border: 1px solid #e2e8f0;
-      background: #fff; font-size: 11px; font-weight: 600; color: #64748b;
-      cursor: pointer; font-family: inherit;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
     }
-    .remind-preset:hover { background: #fefce8; border-color: #f59e0b; color: #854d0e; }
-    .remind-preset.active { background: #fefce8; border-color: #f59e0b; color: #854d0e; }
-    .remind-fields { display: flex; gap: 10px; padding: 0 12px; margin-bottom: 14px; }
-    .remind-field { flex: 1; }
-    .remind-field label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
+
+    .remind-preset:hover {
+      background: #fefce8;
+      border-color: #f59e0b;
+      color: #854d0e;
+    }
+
+    .remind-preset.active {
+      background: #fefce8;
+      border-color: #f59e0b;
+      color: #854d0e;
+    }
+
+    .remind-fields {
+      display: flex;
+      gap: 10px;
+      padding: 0 12px;
+      margin-bottom: 14px;
+    }
+
+    .remind-field {
+      flex: 1;
+    }
+
+    .remind-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
     .remind-field input {
-      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e8f0;
-      font-family: inherit; font-size: 14px; color: #1e293b; background: #fff;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      font-family: inherit;
+      font-size: 14px;
+      color: #1e293b;
+      background: #fff;
     }
-    .remind-actions { display: flex; gap: 8px; padding: 0 12px 16px; }
+
+    .remind-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 12px 16px;
+    }
+
     .remind-actions .btn-cancel {
-      flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0;
-      background: #fff; font-size: 13px; font-weight: 700; color: #64748b;
-      cursor: pointer; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
     }
+
     .remind-actions .btn-remind {
-      flex: 1; padding: 12px; border-radius: 10px; border: none;
-      background: #eab308; font-size: 13px; font-weight: 700; color: #fff;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      gap: 6px; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #eab308;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
     }
+
     .remind-badge {
-      position: absolute; top: -3px; right: -3px; width: 8px; height: 8px;
-      border-radius: 50%; background: #eab308; border: 2px solid #fff;
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #eab308;
+      border: 2px solid #fff;
     }
+
     @media (min-width: 640px) {
-      .remind-sheet { border-radius: 20px; margin: auto; }
+      .remind-sheet {
+        border-radius: 20px;
+        margin: auto;
+      }
     }
 
     /* Task picker dialog (Note to Task) */
     .task-picker-overlay {
-      position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.4);
-      display: flex; align-items: flex-end; justify-content: center;
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
       animation: fadeIn 0.15s ease;
     }
+
     .task-picker-sheet {
-      background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
-      max-height: 80vh; display: flex; flex-direction: column;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
       animation: slideUp 0.2s ease;
     }
-    .task-picker-handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 10px auto 0; }
-    .task-picker-title { font-size: 15px; font-weight: 800; color: #1e293b; padding: 14px 16px 2px; }
-    .task-picker-sub { font-size: 12px; color: #64748b; padding: 0 16px 8px; }
+
+    .task-picker-handle {
+      width: 36px;
+      height: 4px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      margin: 10px auto 0;
+    }
+
+    .task-picker-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e293b;
+      padding: 14px 16px 2px;
+    }
+
+    .task-picker-sub {
+      font-size: 12px;
+      color: #64748b;
+      padding: 0 16px 8px;
+    }
+
     .task-picker-preview {
-      background: #f8fafc; border-radius: 12px; padding: 14px 16px; margin: 0 12px 12px;
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 0 12px 12px;
       border: 1px solid #e2e8f0;
     }
-    .task-picker-preview-label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .task-picker-preview-title { font-size: 14px; font-weight: 700; color: #1e293b; }
-    .task-picker-preview-meta { font-size: 11px; color: #64748b; margin-top: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .task-picker-days { overflow-y: auto; padding: 0 12px 8px; flex: 1; }
+
+    .task-picker-preview-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .task-picker-preview-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .task-picker-preview-meta {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .task-picker-days {
+      overflow-y: auto;
+      padding: 0 12px 8px;
+      flex: 1;
+    }
+
     .task-picker-day {
-      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-      border-radius: 10px; border: 1px solid #e8eef5; margin-bottom: 6px;
-      cursor: pointer; transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #e8eef5;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
     }
-    .task-picker-day:hover { background: #fff7ed; border-color: #fdba74; }
-    .task-picker-day.selected { background: #fff7ed; border-color: #f97316; }
-    .task-picker-day.today { border-color: #3b82f6; }
-    .task-picker-day.today.selected { border-color: #f97316; }
+
+    .task-picker-day:hover {
+      background: #fff7ed;
+      border-color: #fdba74;
+    }
+
+    .task-picker-day.selected {
+      background: #fff7ed;
+      border-color: #f97316;
+    }
+
+    .task-picker-day.today {
+      border-color: #3b82f6;
+    }
+
+    .task-picker-day.today.selected {
+      border-color: #f97316;
+    }
+
     .task-picker-day-check {
-      width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
-    .task-picker-day-check.checked { background: #f97316; border-color: #f97316; }
-    .task-picker-day-name { font-size: 13px; font-weight: 700; color: #1e293b; flex: 1; }
-    .task-picker-day-date { font-size: 11px; color: #94a3b8; }
-    .task-picker-day-today { font-size: 9px; font-weight: 800; background: #3b82f6; color: #fff; padding: 2px 6px; border-radius: 4px; margin-left: 4px; text-transform: uppercase; }
-    .task-picker-actions { display: flex; gap: 8px; padding: 8px 12px 14px; }
+
+    .task-picker-day-check.checked {
+      background: #f97316;
+      border-color: #f97316;
+    }
+
+    .task-picker-day-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      flex: 1;
+    }
+
+    .task-picker-day-date {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .task-picker-day-today {
+      font-size: 9px;
+      font-weight: 800;
+      background: #3b82f6;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+      text-transform: uppercase;
+    }
+
+    .task-picker-actions {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px 14px;
+    }
+
     .task-picker-actions .btn-cancel {
-      flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0;
-      background: #fff; font-size: 13px; font-weight: 700; color: #64748b;
-      cursor: pointer; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      font-family: inherit;
     }
+
     .task-picker-actions .btn-add-task {
-      flex: 1; padding: 12px; border-radius: 10px; border: none;
-      background: #f97316; font-size: 13px; font-weight: 700; color: #fff;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      gap: 6px; font-family: inherit;
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #f97316;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
     }
-    .task-picker-actions .btn-add-task:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .task-picker-actions .btn-add-task:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
     @media (min-width: 640px) {
-      .task-picker-overlay { align-items: center; }
-      .task-picker-sheet { border-radius: 20px; max-height: 70vh; }
+      .task-picker-overlay {
+        align-items: center;
+      }
+
+      .task-picker-sheet {
+        border-radius: 20px;
+        max-height: 70vh;
+      }
     }
 
     /* notes town dropdown */
@@ -5382,43 +6171,112 @@
       border: 1px solid var(--border);
       margin-bottom: 8px;
     }
+
     .snap-row-top {
       display: flex;
       align-items: center;
       gap: 10px;
     }
+
     .snap-row-icon {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
     }
-    .snap-row-icon.snap-auto { background: rgba(59,130,246,0.08); color: #3b82f6; }
-    .snap-row-icon.snap-manual { background: rgba(16,185,129,0.08); color: #10b981; }
-    .snap-row-icon.snap-pre-restore { background: rgba(251,146,60,0.1); color: #f97316; }
-    .snap-row-body { flex: 1; min-width: 0; }
+
+    .snap-row-icon.snap-auto {
+      background: rgba(59, 130, 246, 0.08);
+      color: #3b82f6;
+    }
+
+    .snap-row-icon.snap-manual {
+      background: rgba(16, 185, 129, 0.08);
+      color: #10b981;
+    }
+
+    .snap-row-icon.snap-pre-restore {
+      background: rgba(251, 146, 60, 0.1);
+      color: #f97316;
+    }
+
+    .snap-row-body {
+      flex: 1;
+      min-width: 0;
+    }
+
     .snap-row-time {
-      font-size: 13px; font-weight: 700; color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
     }
+
     .snap-row-info {
-      font-size: 11px; color: var(--text-secondary); margin-top: 3px;
-      display: flex; align-items: center; gap: 4px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
-    .snap-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+
+    .snap-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
     .snap-row-footer {
-      display: flex; align-items: center; gap: 6px;
-      margin-top: 8px; padding-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
       border-top: 1px solid var(--border);
-      font-size: 11px; color: var(--text-secondary); opacity: 0.7;
+      font-size: 11px;
+      color: var(--text-secondary);
+      opacity: 0.7;
     }
-    .snap-row-footer svg { flex-shrink: 0; }
-    .snap-row-footer-loc { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; }
-    .snap-row-footer-device { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+    .snap-row-footer svg {
+      flex-shrink: 0;
+    }
+
+    .snap-row-footer-loc {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .snap-row-footer-device {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
     .snap-restore-btn {
-      padding: 6px 14px; border-radius: 10px; border: none;
-      background: #3b82f6; color: #fff; font-size: 12px; font-weight: 600;
-      cursor: pointer; flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 10px;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
     }
-    .snap-restore-btn:active { opacity: 0.8; }
+
+    .snap-restore-btn:active {
+      opacity: 0.8;
+    }
 
     .snap-empty {
       text-align: center;
@@ -6830,12 +7688,21 @@
           Save snapshot now
         </button>
         <div id="snap-day-picker" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-          <button onclick="snapDayNav(-1)" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <button onclick="snapDayNav(-1)"
+            style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)"
+              stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
           </button>
-          <div id="snap-day-label" style="flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--text-primary);"></div>
-          <button onclick="snapDayNav(1)" style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <div id="snap-day-label"
+            style="flex:1;text-align:center;font-size:13px;font-weight:700;color:var(--text-primary);"></div>
+          <button onclick="snapDayNav(1)"
+            style="width:34px;height:34px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)"
+              stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
           </button>
         </div>
         <div id="snapshot-list"></div>
@@ -6906,7 +7773,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.38';
+    const VERSION = '4.12.39';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -7517,7 +8384,7 @@
       if (!ref) return;
       await ref.set({ notes, _updatedAt: Date.now() });
       // Always keep a rolling backup (only if non-empty)
-      fsBackupNotes(notes).catch(() => {});
+      fsBackupNotes(notes).catch(() => { });
     }
 
     async function fsSetReminders(reminders) {
@@ -7546,7 +8413,7 @@
       return `${year}-${month}-${day}`;
     }
 
-    const _aiMonthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const _aiMonthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     function fmtDateAI(isoStr, dayAbbr) {
       // "2026-03-20", "Fri" → "Fri 20. March 2026"
       if (!isoStr) return '';
@@ -10365,7 +11232,7 @@
     function saveReminders(arr) {
       remindersData = arr;
       // Persist to IDB
-      dbPut('notes', { id: 'reminders_all', userId: state.currentUser?.uid || null, data: arr, updatedAt: Date.now() }).catch(() => {});
+      dbPut('notes', { id: 'reminders_all', userId: state.currentUser?.uid || null, data: arr, updatedAt: Date.now() }).catch(() => { });
       // Persist to Firestore
       if (state.currentUser) fsSetReminders(arr).catch(e => console.warn('[Rian] fsSetReminders', e));
     }
@@ -10397,9 +11264,9 @@
         </div>`;
       }
       const d = new Date(rem.remindAt);
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const dateStr = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' · ' +
-        String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+        String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
       if (rem.fired) {
         return `<div class="note-reminder-field">
           <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Reminder</span>
@@ -10667,7 +11534,7 @@
             saveReminders(remindersData);
             localStorage.removeItem('rian_reminders');
           }
-        } catch {}
+        } catch { }
       }
 
       // Clean up old fired reminders (older than 7 days)
@@ -10701,7 +11568,7 @@
             Object.keys(reminderTimers).forEach(id => { clearTimeout(reminderTimers[id]); delete reminderTimers[id]; });
 
             remindersData = remote.reminders;
-            dbPut('notes', { id: 'reminders_all', userId: state.currentUser?.uid || null, data: remindersData, updatedAt: remote._updatedAt || Date.now() }).catch(() => {});
+            dbPut('notes', { id: 'reminders_all', userId: state.currentUser?.uid || null, data: remindersData, updatedAt: remote._updatedAt || Date.now() }).catch(() => { });
 
             // Only schedule/fire reminders once we have confirmed server data
             if (remindersFirestoreSynced) {
@@ -10711,7 +11578,7 @@
 
             // Re-render notes view if visible (to update Reminded badges)
             if (state.view === 'notes') render();
-          }, () => {});
+          }, () => { });
         }
       }
 
@@ -11208,9 +12075,9 @@
               <div class="note-toolbar-row">
                 <div class="note-pri-dots">
                   <span class="note-pri-dots-label">Priority</span>
-                  ${['high','medium','low'].map(p =>
-                    `<button class="note-pri-dot pd-${p}${note.priority === p ? ' pd-active' : ''}" onclick="setNotePriority('${note.id}','${p}')" title="${p[0].toUpperCase()+p.slice(1)}"></button>`
-                  ).join('')}
+                  ${['high', 'medium', 'low'].map(p =>
+              `<button class="note-pri-dot pd-${p}${note.priority === p ? ' pd-active' : ''}" onclick="setNotePriority('${note.id}','${p}')" title="${p[0].toUpperCase() + p.slice(1)}"></button>`
+            ).join('')}
                 </div>
                 <div class="note-toolbar-sep"></div>
                 <div class="note-toolbar-actions">
@@ -11228,8 +12095,8 @@
             <div class="note-bottom-actions">
               <button class="note-btn-done" onclick="markNoteDone('${note.id}')">
                 ${note.status === 'done'
-              ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
-              : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark Done`}
+            ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark Done`}
               </button>
               <button class="note-btn-delete" onclick="deleteNote('${note.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete
@@ -12701,7 +13568,7 @@
             _cachedGpsCoords = { lat, lon };
             _gpsLastFetch = Date.now();
             console.log('[Rian] GPS town:', _cachedGpsTown);
-          } catch(e) { console.warn('[Rian] GPS reverse geocode failed', e); }
+          } catch (e) { console.warn('[Rian] GPS reverse geocode failed', e); }
         },
         err => console.warn('[Rian] Geolocation error:', err.code, err.message),
         { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
@@ -12858,7 +13725,7 @@
       const dayKey = _snapDays[_snapDayIndex];
       const today = dateToStr(new Date());
       const yesterday = dateToStr(new Date(Date.now() - 86400000));
-      const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       let dayLabel;
       if (dayKey === today) dayLabel = 'Today';
       else if (dayKey === yesterday) dayLabel = 'Yesterday';
@@ -14305,7 +15172,7 @@ Rules:
     }
 
     async function init() {
-      try { initTheme(); } catch(e) { console.warn('[Rian] Theme blocked by browser:', e); }
+      try { initTheme(); } catch (e) { console.warn('[Rian] Theme blocked by browser:', e); }
 
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(e => console.warn('[Rian]', e));
@@ -14314,7 +15181,7 @@ Rules:
       try {
         const lastView = localStorage.getItem('lastView');
         if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'ai') state.view = lastView;
-      } catch(e) { console.warn('[Rian] LocalStorage blocked:', e); }
+      } catch (e) { console.warn('[Rian] LocalStorage blocked:', e); }
 
       // Show login immediately while waiting
       renderLogin();
@@ -14322,9 +15189,9 @@ Rules:
       try {
         await Promise.race([
           Promise.all([
-            initDB().catch(e => console.warn('IDB init failed:', e)), 
-            loadCodes(), 
-            loadTowns(), 
+            initDB().catch(e => console.warn('IDB init failed:', e)),
+            loadCodes(),
+            loadTowns(),
             loadCabinets()
           ]),
           new Promise(res => setTimeout(() => {
@@ -14868,10 +15735,10 @@ Work week = Friday to Thursday.
               if (hasHours && !hasCodes) {
                 issues.push(`${fmtDateAI(day.date, dayNames[di])}: Task "${act.description || '(no description)'}" has ${ord}h hours but NO work code assigned`);
               } else if (hasCodes && !hasHours) {
-                issues.push(`${fmtDateAI(day.date, dayNames[di])}: Task "${act.description || '(no description)'}" has work codes (${act.codes.map(c=>c.c).join(', ')}) but 0 hours`);
+                issues.push(`${fmtDateAI(day.date, dayNames[di])}: Task "${act.description || '(no description)'}" has work codes (${act.codes.map(c => c.c).join(', ')}) but 0 hours`);
               }
               if (!hasDesc && (hasHours || hasCodes)) {
-                issues.push(`${fmtDateAI(day.date, dayNames[di])}: Task #${ai+1} has no description`);
+                issues.push(`${fmtDateAI(day.date, dayNames[di])}: Task #${ai + 1} has no description`);
               }
             });
           });
@@ -14892,7 +15759,7 @@ Work week = Friday to Thursday.
             notesForAI = stored.data;
             state.notes = stored.data; // also populate state for searchMatchingNotes
           }
-        } catch(e) { /* ignore */ }
+        } catch (e) { /* ignore */ }
       }
       if (state.aiScope.savedNotes && notesForAI.length) {
         const open = notesForAI.filter(n => n.status !== 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -15031,7 +15898,7 @@ QUESTION: ${query}`;
         // Post-filter: if we fell back to all notes (hitCount 0), narrow to notes Gemini actually mentioned
         if (noteMatches.length > 0 && noteMatches[0].hitCount === 0) {
           const answerLower = answer.toLowerCase();
-          const stopW = new Set(['the','and','for','are','but','not','you','all','can','had','her','was','one','our','out','has','his','how','its','may','new','now','old','see','way','who','did','get','let','say','she','too','use','with','have','from','this','that','been','each','make','like','long','look','many','some','than','them','then','what','when','will','about','could','after','other','which','their','there','these','would','just','also','into','very','need','needs','any','open']);
+          const stopW = new Set(['the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'had', 'her', 'was', 'one', 'our', 'out', 'has', 'his', 'how', 'its', 'may', 'new', 'now', 'old', 'see', 'way', 'who', 'did', 'get', 'let', 'say', 'she', 'too', 'use', 'with', 'have', 'from', 'this', 'that', 'been', 'each', 'make', 'like', 'long', 'look', 'many', 'some', 'than', 'them', 'then', 'what', 'when', 'will', 'about', 'could', 'after', 'other', 'which', 'their', 'there', 'these', 'would', 'just', 'also', 'into', 'very', 'need', 'needs', 'any', 'open']);
           const getWords = text => text.toLowerCase().replace(/<[^>]*>/g, ' ').replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopW.has(w));
           const mentioned = noteMatches.map(n => {
             // Combine description + noteContent for word extraction
@@ -15045,8 +15912,51 @@ QUESTION: ${query}`;
           }).filter(Boolean).sort((a, b) => b.hitCount - a.hitCount);
           if (mentioned.length > 0) noteMatches = mentioned;
         }
-        // Timesheet entries are already filtered at source (searchTimesheetEntries requires
-        // keyword hits in description/location, not just work code descriptions)
+        // If keyword search found few entries, extract entries Gemini referenced from the full timesheet
+        if (timesheetEntries.length < 3) {
+          try {
+            const answerLower = answer.toLowerCase();
+            const allWeeks = await dbGetAll('weeks');
+            const extraEntries = [];
+            const existingIds = new Set(timesheetEntries.map(e => e.date + '_' + e.actId));
+            const scanForMentioned = (days) => {
+              days.forEach(day => {
+                (day.activities || []).forEach(act => {
+                  const desc = (act.description || '').trim();
+                  if (!desc || desc.length < 5) return;
+                  if (existingIds.has(day.date + '_' + act.id)) return;
+                  // Check if Gemini mentioned this task's description (3+ word match)
+                  const descLower = desc.toLowerCase();
+                  const words = descLower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3);
+                  let found = false;
+                  if (answerLower.includes(descLower)) found = true;
+                  if (!found && words.length >= 3) {
+                    for (let i = 0; i <= words.length - 3 && !found; i++) {
+                      if (answerLower.includes(words.slice(i, i + 3).join(' '))) found = true;
+                    }
+                  }
+                  if (found) {
+                    const cats = [...new Set((act.codes || []).map(c => {
+                      const wc = (window.WORK_CODES || []).find(w => w.c === c.c);
+                      return wc ? wc.a : null;
+                    }).filter(Boolean))];
+                    extraEntries.push({
+                      date: day.date, actId: act.id, description: desc,
+                      location: act.location || '', ordinary: parseFloat(act.ordinary) || 0,
+                      overtime: parseFloat(act.overtime) || 0, categories: cats, hitCount: 1
+                    });
+                  }
+                });
+              });
+            };
+            allWeeks.forEach(r => { if (r.data?.days) scanForMentioned(r.data.days); });
+            if (state.weekData?.days) scanForMentioned(state.weekData.days);
+            if (extraEntries.length > 0) {
+              timesheetEntries = [...timesheetEntries, ...extraEntries]
+                .sort((a, b) => b.date.localeCompare(a.date));
+            }
+          } catch(e) { /* ignore scan errors */ }
+        }
         state.aiResult = { answer, sources: faultSources.slice(0, 5), noteMatches: noteMatches.slice(0, 10), timesheetEntries: timesheetEntries.slice(0, 10) };
         // Save to recent queries
         state.aiRecentQueries = [query, ...state.aiRecentQueries.filter(q => q !== query)].slice(0, 8);
