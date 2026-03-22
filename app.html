@@ -1314,8 +1314,12 @@
       padding: 0;
       -moz-appearance: textfield;
     }
+
     .hrs-stepper .val::-webkit-inner-spin-button,
-    .hrs-stepper .val::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .hrs-stepper .val::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
 
     .ot-box .hrs-stepper .val {
       color: #C27A00;
@@ -6816,8 +6820,16 @@
     }
 
     /* ===== CALLOUTS (minimal — reuses existing card/form classes) ===== */
-    .co-page { padding: 0 0 80px; background: var(--bg-page); min-height: calc(100vh - 56px); }
-    .co-card::before, .co-card::after { display: none !important; }
+    .co-page {
+      padding: 0 0 80px;
+      background: var(--bg-page);
+      min-height: calc(100vh - 56px);
+    }
+
+    .co-card::before,
+    .co-card::after {
+      display: none !important;
+    }
 
     /* ===== AUTO WORK CODE SUGGESTER ===== */
     .act-suggest-btn {
@@ -7765,6 +7777,38 @@
     </div>
   </div>
 
+  <!-- Export options modal -->
+  <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+    style="background:var(--overlay)">
+    <div class="rounded-2xl p-6 w-full max-w-sm shadow-2xl" style="background:var(--bg-modal)">
+      <h2 class="text-lg font-bold mb-1" style="color:var(--text-primary)">Export Data</h2>
+      <p class="mb-4 text-sm" style="color:var(--text-secondary)">Choose what to include in your export file.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);color:var(--text-primary);font-size:14px;font-weight:500">
+          <input type="checkbox" id="exp-weeks" checked style="width:18px;height:18px;accent-color:#F5A623"> Timesheet (weeks)
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);color:var(--text-primary);font-size:14px;font-weight:500">
+          <input type="checkbox" id="exp-notes" checked style="width:18px;height:18px;accent-color:#F5A623"> Field Notes
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);color:var(--text-primary);font-size:14px;font-weight:500">
+          <input type="checkbox" id="exp-reminders" checked style="width:18px;height:18px;accent-color:#F5A623"> Reminders
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);color:var(--text-primary);font-size:14px;font-weight:500">
+          <input type="checkbox" id="exp-callouts" checked style="width:18px;height:18px;accent-color:#F5A623"> Callouts
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);color:var(--text-primary);font-size:14px;font-weight:500">
+          <input type="checkbox" id="exp-settings" checked style="width:18px;height:18px;accent-color:#F5A623"> Settings
+        </label>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="document.getElementById('export-modal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-medium"
+          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+        <button onclick="doExportWithOptions()" class="flex-1 py-3 rounded-xl font-bold text-white"
+          style="background:#F5A623">Export</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Copy task day picker -->
   <div id="copy-picker-modal" class="hidden"></div>
   <!-- Add task to notes confirmation -->
@@ -7786,7 +7830,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.15';
+    const VERSION = '4.14.16';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14003,38 +14047,64 @@
     // ============================================================
     // EXPORT / IMPORT — full account data transfer
     // ============================================================
-    async function exportAllData() {
+    function exportAllData() {
       if (!state.currentUser) { showToast('Sign in first'); return; }
+      // Reset checkboxes to all checked
+      ['exp-weeks','exp-notes','exp-reminders','exp-callouts','exp-settings'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.checked = true;
+      });
+      document.getElementById('export-modal').classList.remove('hidden');
+    }
+
+    async function doExportWithOptions() {
+      document.getElementById('export-modal').classList.add('hidden');
       const uid = state.currentUser.uid;
+      const incWeeks = document.getElementById('exp-weeks')?.checked;
+      const incNotes = document.getElementById('exp-notes')?.checked;
+      const incReminders = document.getElementById('exp-reminders')?.checked;
+      const incCallouts = document.getElementById('exp-callouts')?.checked;
+      const incSettings = document.getElementById('exp-settings')?.checked;
+
+      if (!incWeeks && !incNotes && !incReminders && !incCallouts && !incSettings) {
+        showToast('Nothing selected to export'); return;
+      }
       showToast('Exporting data…');
       try {
-        // 1. Weeks from Firestore
-        const weeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
-        const weeks = {};
-        if (weeksSnap) weeksSnap.docs.forEach(d => { weeks[d.id] = d.data(); });
-        // 2. Notes from Firestore
-        const notesDoc = await userDoc('data/notes')?.get().catch(() => null);
-        const notes = notesDoc?.exists ? notesDoc.data() : null;
-        // 3. Reminders from Firestore
-        const remDoc = await userDoc('data/reminders')?.get().catch(() => null);
-        const reminders = remDoc?.exists ? remDoc.data() : null;
-        // 4. Callouts from Firestore
-        const calloutsDoc = await userDoc('data/callouts')?.get().catch(() => null);
-        const callouts = calloutsDoc?.exists ? calloutsDoc.data() : null;
-        // 5. Settings from localStorage
-        const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
-          'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'];
-        const settings = {};
-        lsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
-        // Build export object
         const exp = {
           _format: 'rian-export-v1',
           _exportedAt: new Date().toISOString(),
           _sourceUid: uid,
           _sourceEmail: state.currentUser.email || '',
-          _version: VERSION,
-          weeks, notes, reminders, callouts, settings
+          _version: VERSION
         };
+        // 1. Weeks
+        if (incWeeks) {
+          const weeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
+          exp.weeks = {};
+          if (weeksSnap) weeksSnap.docs.forEach(d => { exp.weeks[d.id] = d.data(); });
+        }
+        // 2. Notes
+        if (incNotes) {
+          const notesDoc = await userDoc('data/notes')?.get().catch(() => null);
+          exp.notes = notesDoc?.exists ? notesDoc.data() : null;
+        }
+        // 3. Reminders
+        if (incReminders) {
+          const remDoc = await userDoc('data/reminders')?.get().catch(() => null);
+          exp.reminders = remDoc?.exists ? remDoc.data() : null;
+        }
+        // 4. Callouts
+        if (incCallouts) {
+          const calloutsDoc = await userDoc('data/callouts')?.get().catch(() => null);
+          exp.callouts = calloutsDoc?.exists ? calloutsDoc.data() : null;
+        }
+        // 5. Settings
+        if (incSettings) {
+          const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
+            'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'];
+          exp.settings = {};
+          lsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) exp.settings[k] = v; });
+        }
         const blob = new Blob([JSON.stringify(exp, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -14089,8 +14159,8 @@
           existingWeeks.docs.forEach(d => delBatch.delete(d.ref));
           await delBatch.commit();
         }
-        await userDoc('data/notes')?.delete().catch(() => {});
-        await userDoc('data/reminders')?.delete().catch(() => {});
+        await userDoc('data/notes')?.delete().catch(() => { });
+        await userDoc('data/reminders')?.delete().catch(() => { });
         await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
         showToast('Importing data…');
         // 1. Import weeks — batch write to Firestore
@@ -14757,7 +14827,7 @@
           // Subtle day label
           html += `<div style="display:flex;align-items:center;gap:8px;padding:10px 2px 6px">
             <span style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">${dayName} ${dayNum} ${monthShort}</span>
-            <span style="font-size:11px;color:var(--border);font-weight:600">${items.length} callout${items.length !== 1 ? 's' : ''}</span>
+            <span style="font-size:11px;color:var(--text-muted);font-weight:100">${items.length} callout${items.length !== 1 ? 's' : ''}</span>
           </div>`;
           items.forEach(co => {
             globalIdx++;
@@ -14867,8 +14937,8 @@
               <div class="notes-ta-wrap" onclick="event.stopPropagation(); openCoNoteFullscreen()">
                 <div class="act-notes-rich-preview" data-co-notes-preview>
                   ${notes && notes.trim()
-                    ? (notes.trim().startsWith('<') ? notes : esc(notes).replace(/\n/g, '<br>'))
-                    : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
+          ? (notes.trim().startsWith('<') ? notes : esc(notes).replace(/\n/g, '<br>'))
+          : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
                 </div>
                 <textarea class="act-notes-area" id="co-notes-ta"
                   oninput="coAutoSave()">${esc(notes)}</textarea>
