@@ -6821,7 +6821,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.16';
+    const VERSION = '4.12.17';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14758,7 +14758,8 @@ You have their full work history. Answer their question directly and confidently
 Use the DATE REFERENCES section to resolve any time words like "last week", "this month", "yesterday".
 Be specific — include actual numbers, dates, and site names. Do not hedge or say the data is unclear when it is present.
 
-When the user asks about "issues" or "problems", check BOTH the TIMESHEET ISSUES section (tasks with missing codes/hours) AND the SAVED NOTES section (open faults/issues). Report ALL matching items from both categories — never omit a match.
+When the user asks about "issues", "problems", or anything general about their notes, list ALL open SAVED NOTES — every single one, not just ones that literally contain the word "issue". Open notes ARE issues/tasks by definition.
+Also check the TIMESHEET ISSUES section for tasks with missing codes/hours and report those too.
 When the user searches for a keyword (e.g. "battery"), list EVERY note and task entry that contains that keyword. Do not skip any matches — completeness matters.
 
 DATA DICTIONARY — two distinct note types exist in this app:
