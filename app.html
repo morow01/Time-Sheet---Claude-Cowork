@@ -6904,7 +6904,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.30';
+    const VERSION = '4.12.31';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12565,9 +12565,24 @@
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       try {
-        await auth_fb.signInWithRedirect(provider);
+        // Use popup (works on all browsers, avoids Firefox third-party cookie issue)
+        // Fall back to redirect on mobile PWA standalone mode where popups may be blocked
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        if (isStandalone) {
+          await auth_fb.signInWithRedirect(provider);
+        } else {
+          await auth_fb.signInWithPopup(provider);
+        }
       } catch (e) {
-        showToast('Sign-in redirect failed: ' + (e.message || 'Unknown error'));
+        // If popup blocked or failed, fall back to redirect
+        if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
+          try {
+            await auth_fb.signInWithRedirect(provider);
+            return;
+          } catch (e2) { /* fall through */ }
+        }
+        showToast('Sign-in failed: ' + (e.message || 'Unknown error'));
+      } finally {
         _signingIn = false;
       }
     }
