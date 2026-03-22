@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snapshot Card — Design C2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f1f5f9;
+    padding: 20px 16px;
+    color: #1e293b;
+  }
+  h2 {
+    font-size: 15px; color: #94a3b8; text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 14px; font-weight: 800;
+  }
+  .section { margin-bottom: 32px; }
+
+  /* ===== Design C2: Minimal with location on second line ===== */
+  .snap-card {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 8px;
+  }
+  .snap-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .snap-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .snap-icon.auto { background: rgba(59,130,246,0.08); color: #3b82f6; }
+  .snap-icon.manual { background: rgba(16,185,129,0.08); color: #10b981; }
+  .snap-icon.pre-restore { background: rgba(251,146,60,0.1); color: #f97316; }
+  .snap-body { flex: 1; min-width: 0; }
+
+  .snap-top-line {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .snap-time { font-size: 13px; font-weight: 700; }
+  .snap-tag {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 4px;
+  }
+  .snap-tag.manual { background: rgba(16,185,129,0.12); color: #059669; }
+  .snap-tag.pre-restore { background: rgba(251,146,60,0.15); color: #f97316; }
+
+  .snap-info-line {
+    font-size: 11px; color: #94a3b8; margin-top: 3px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .snap-dot { width: 3px; height: 3px; border-radius: 50%; background: #cbd5e1; }
+
+  .snap-loc-line {
+    font-size: 11px; color: #b0b8c4; margin-top: 3px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .snap-loc-line svg { flex-shrink: 0; }
+
+  .snap-restore {
+    padding: 6px 14px; border-radius: 10px; border: none;
+    background: #3b82f6; color: #fff; font-size: 12px; font-weight: 600;
+    cursor: pointer; flex-shrink: 0; align-self: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="section">
+  <h2>Design C2 — Location on new line</h2>
+
+  <!-- Auto snapshot -->
+  <div class="snap-card">
+    <div class="snap-row">
+      <div class="snap-icon auto">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-body">
+        <div class="snap-top-line">
+          <span class="snap-time">24 minutes ago</span>
+        </div>
+        <div class="snap-info-line">
+          8 entries
+          <span class="snap-dot"></span>
+          8h ordinary · 1h OT
+        </div>
+        <div class="snap-loc-line">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#b0b8c4"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+          Sallins, Mucklagh, Kildare
+          <span class="snap-dot"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b0b8c4" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          S23
+        </div>
+      </div>
+      <button class="snap-restore">Restore</button>
+    </div>
+  </div>
+
+  <!-- Manual snapshot -->
+  <div class="snap-card">
+    <div class="snap-row">
+      <div class="snap-icon manual">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-body">
+        <div class="snap-top-line">
+          <span class="snap-time">2 hours ago</span>
+          <span class="snap-tag manual">manual</span>
+        </div>
+        <div class="snap-info-line">
+          6 entries
+          <span class="snap-dot"></span>
+          7h ordinary
+        </div>
+        <div class="snap-loc-line">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#b0b8c4"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+          Mucklagh, Kildare
+          <span class="snap-dot"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b0b8c4" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          Fold
+        </div>
+      </div>
+      <button class="snap-restore">Restore</button>
+    </div>
+  </div>
+
+  <!-- Pre-restore snapshot -->
+  <div class="snap-card">
+    <div class="snap-row">
+      <div class="snap-icon pre-restore">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-body">
+        <div class="snap-top-line">
+          <span class="snap-time">Yesterday, 17:42</span>
+          <span class="snap-tag pre-restore">pre-restore</span>
+        </div>
+        <div class="snap-info-line">
+          5 entries
+          <span class="snap-dot"></span>
+          6h ordinary · 2h OT
+        </div>
+        <div class="snap-loc-line">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#b0b8c4"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+          Sallins
+          <span class="snap-dot"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b0b8c4" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          S23
+        </div>
+      </div>
+      <button class="snap-restore">Restore</button>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

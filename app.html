@@ -5275,60 +5275,45 @@
     }
 
     .snap-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
       padding: 12px 14px;
       border-radius: 14px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       margin-bottom: 8px;
     }
-
-    .snap-row-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: rgba(59, 130, 246, 0.1);
-      color: #3b82f6;
+    .snap-row-inner {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      align-items: flex-start;
+      gap: 10px;
     }
-
-    .snap-row-body {
-      flex: 1;
-      min-width: 0;
+    .snap-row-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
     }
-
+    .snap-row-icon.snap-auto { background: rgba(59,130,246,0.08); color: #3b82f6; }
+    .snap-row-icon.snap-manual { background: rgba(16,185,129,0.08); color: #10b981; }
+    .snap-row-icon.snap-pre-restore { background: rgba(251,146,60,0.1); color: #f97316; }
+    .snap-row-body { flex: 1; min-width: 0; }
     .snap-row-time {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-primary);
+      font-size: 13px; font-weight: 700; color: var(--text-primary);
     }
-
-    .snap-row-summary {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 2px;
+    .snap-row-info {
+      font-size: 11px; color: var(--text-secondary); margin-top: 3px;
+      display: flex; align-items: center; gap: 4px;
     }
-
+    .snap-row-loc {
+      font-size: 11px; color: var(--text-secondary); margin-top: 3px;
+      display: flex; align-items: center; gap: 4px; opacity: 0.7;
+    }
+    .snap-row-loc svg { flex-shrink: 0; }
+    .snap-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
     .snap-restore-btn {
-      padding: 6px 14px;
-      border-radius: 10px;
-      border: none;
-      background: #3b82f6;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      flex-shrink: 0;
+      padding: 6px 14px; border-radius: 10px; border: none;
+      background: #3b82f6; color: #fff; font-size: 12px; font-weight: 600;
+      cursor: pointer; flex-shrink: 0; align-self: center;
     }
-
-    .snap-restore-btn:active {
-      opacity: 0.8;
-    }
+    .snap-restore-btn:active { opacity: 0.8; }
 
     .snap-empty {
       text-align: center;
@@ -6807,7 +6792,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.11.0';
+    const VERSION = '4.11.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12487,16 +12472,22 @@
     }
 
     function _snapshotSummary(weekData) {
-      if (!weekData || !weekData.days) return { totalOrd: 0, totalOt: 0, entries: 0 };
+      if (!weekData || !weekData.days) return { totalOrd: 0, totalOt: 0, entries: 0, locations: [] };
       let totalOrd = 0, totalOt = 0, entries = 0;
+      const locSet = new Set();
       weekData.days.forEach(d => {
         (d.activities || []).forEach(a => {
           totalOrd += parseFloat(a.ordinary) || 0;
           totalOt += parseFloat(a.overtime) || 0;
           if (a.description || a.ordinary || a.overtime) entries++;
+          if (a.location) {
+            // Extract town name without code e.g. "Sallins (SLS)" → "Sallins"
+            const town = a.location.replace(/\s*\([^)]+\)$/, '').trim();
+            if (town) locSet.add(town);
+          }
         });
       });
-      return { totalOrd, totalOt, entries };
+      return { totalOrd, totalOt, entries, locations: [...locSet] };
     }
 
     async function maybeTakeAutoSnapshot(weekStart, weekData) {
@@ -12601,21 +12592,43 @@
         const ordH = sum.totalOrd || 0;
         const otH = sum.totalOt || 0;
         const ent = sum.entries || 0;
-        const label = s._label === 'manual' ? '<span class="snap-tag">manual</span>'
-          : s._label === 'pre-restore' ? '<span class="snap-tag" style="background:rgba(251,146,60,0.15);color:#f97316;">pre-restore</span>'
+        const locs = (sum.locations || []);
+        // Also extract locations from snapshot days if summary doesn't have them (older snapshots)
+        let locStr = '';
+        if (locs.length > 0) {
+          locStr = locs.join(', ');
+        } else if (s.days) {
+          const locSet = new Set();
+          s.days.forEach(d => (d.activities || []).forEach(a => {
+            if (a.location) { const t = a.location.replace(/\s*\([^)]+\)$/, '').trim(); if (t) locSet.add(t); }
+          }));
+          locStr = [...locSet].join(', ');
+        }
+        const iconClass = s._label === 'manual' ? 'snap-manual'
+          : s._label === 'pre-restore' ? 'snap-pre-restore' : 'snap-auto';
+        const label = s._label === 'manual' ? ' <span class="snap-tag" style="background:rgba(16,185,129,0.12);color:#059669;">manual</span>'
+          : s._label === 'pre-restore' ? ' <span class="snap-tag" style="background:rgba(251,146,60,0.15);color:#f97316;">pre-restore</span>'
             : '';
         const { relative, exact } = _formatSnapTime(s._savedAt);
-        const device = s._device ? `<span style="opacity:0.7">· ${esc(s._device)}</span>` : '';
+        const deviceName = s._device ? s._device.replace(/ [a-z0-9]{4}$/, '') : '';
+        const locLine = (locStr || deviceName) ? `<div class="snap-row-loc">
+          ${locStr ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ' + esc(locStr) : ''}
+          ${locStr && deviceName ? '<span class="snap-dot"></span>' : ''}
+          ${deviceName ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> ' + esc(deviceName) : ''}
+        </div>` : '';
         return `
           <div class="snap-row">
-            <div class="snap-row-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+            <div class="snap-row-inner">
+              <div class="snap-row-icon ${iconClass}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+              </div>
+              <div class="snap-row-body">
+                <div class="snap-row-time" title="${exact}">${relative}${label}</div>
+                <div class="snap-row-info">${ent} ${ent === 1 ? 'entry' : 'entries'} <span class="snap-dot"></span> ${ordH}h ordinary${otH ? ' <span class="snap-dot"></span> ' + otH + 'h OT' : ''}</div>
+                ${locLine}
+              </div>
+              <button class="snap-restore-btn" onclick="confirmRestoreSnapshot('${s.id}', ${s._savedAt})">Restore</button>
             </div>
-            <div class="snap-row-body">
-              <div class="snap-row-time" title="${exact}">${relative}${label}</div>
-              <div class="snap-row-summary">${ent} ${ent === 1 ? 'entry' : 'entries'} · ${ordH}h ordinary${otH ? ' · ' + otH + 'h OT' : ''} ${device}</div>
-            </div>
-            <button class="snap-restore-btn" onclick="confirmRestoreSnapshot('${s.id}', ${s._savedAt})">Restore</button>
           </div>`;
       }).join('');
     }

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snapshot Card Redesign</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f1f5f9;
+    padding: 20px 16px;
+    color: #1e293b;
+  }
+  h2 {
+    font-size: 15px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 14px;
+    font-weight: 800;
+  }
+  .section { margin-bottom: 32px; }
+
+  /* ===== CURRENT DESIGN ===== */
+  .snap-row-old {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 8px;
+  }
+  .snap-row-icon-old {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(59,130,246,0.1); color: #3b82f6;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .snap-row-body-old { flex: 1; min-width: 0; }
+  .snap-row-time-old { font-size: 13px; font-weight: 600; }
+  .snap-row-summary-old { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .snap-restore-btn-old {
+    padding: 6px 14px; border-radius: 10px; border: none;
+    background: #3b82f6; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ===== NEW DESIGN A: Enhanced info rows ===== */
+  .snap-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 10px;
+  }
+  .snap-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .snap-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .snap-icon.auto { background: rgba(59,130,246,0.1); color: #3b82f6; }
+  .snap-icon.manual { background: rgba(16,185,129,0.1); color: #10b981; }
+  .snap-icon.pre-restore { background: rgba(251,146,60,0.15); color: #f97316; }
+  .snap-time { font-size: 14px; font-weight: 700; flex: 1; }
+  .snap-tag {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 6px; letter-spacing: 0.3px;
+  }
+  .snap-tag.manual { background: rgba(16,185,129,0.12); color: #059669; }
+  .snap-tag.pre-restore { background: rgba(251,146,60,0.15); color: #f97316; }
+
+  .snap-stats {
+    display: flex;
+    gap: 0;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+  }
+  .snap-stat {
+    flex: 1;
+    padding: 8px 10px;
+    background: #f8fafc;
+    text-align: center;
+    border-right: 1px solid #f1f5f9;
+  }
+  .snap-stat:last-child { border-right: none; }
+  .snap-stat-val {
+    font-size: 16px; font-weight: 800; color: #1e293b;
+  }
+  .snap-stat-label {
+    font-size: 10px; color: #94a3b8; text-transform: uppercase;
+    font-weight: 700; letter-spacing: 0.3px; margin-top: 1px;
+  }
+
+  .snap-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+  .snap-meta svg { flex-shrink: 0; }
+  .snap-meta-sep { color: #cbd5e1; }
+
+  .snap-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .snap-btn-restore {
+    flex: 1;
+    padding: 9px 14px;
+    border-radius: 10px; border: none;
+    background: #3b82f6; color: #fff;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .snap-btn-details {
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #fff; color: #64748b;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ===== NEW DESIGN B: Compact with progress bar ===== */
+  .snap-card-b {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 10px;
+  }
+  .snap-b-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .snap-b-time { font-size: 13px; font-weight: 700; flex: 1; }
+  .snap-b-hours {
+    font-size: 12px; font-weight: 700;
+    background: rgba(59,130,246,0.08); color: #3b82f6;
+    padding: 3px 8px; border-radius: 6px;
+  }
+  .snap-b-bar-wrap {
+    height: 5px; border-radius: 3px;
+    background: #f1f5f9; margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .snap-b-bar {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  }
+  .snap-b-bar.ot {
+    background: linear-gradient(90deg, #3b82f6 0%, #3b82f6 80%, #f59e0b 80%, #f59e0b 100%);
+  }
+  .snap-b-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #94a3b8;
+    flex-wrap: wrap;
+  }
+  .snap-b-chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px; border-radius: 5px;
+    background: #f8fafc; font-size: 10px; color: #64748b; font-weight: 600;
+  }
+  .snap-b-chip svg { flex-shrink: 0; }
+  .snap-b-sep { color: #cbd5e1; margin: 0 2px; }
+  .snap-b-actions {
+    display: flex; justify-content: flex-end; margin-top: 8px;
+  }
+  .snap-b-restore {
+    padding: 6px 16px; border-radius: 10px; border: none;
+    background: #3b82f6; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ===== NEW DESIGN C: Minimal expandable ===== */
+  .snap-card-c {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 8px;
+  }
+  .snap-c-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .snap-c-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    background: rgba(59,130,246,0.08); color: #3b82f6;
+  }
+  .snap-c-icon.manual { background: rgba(16,185,129,0.08); color: #10b981; }
+  .snap-c-body { flex: 1; min-width: 0; }
+  .snap-c-top-line {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .snap-c-time { font-size: 13px; font-weight: 700; }
+  .snap-c-tag {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 4px;
+    background: rgba(16,185,129,0.12); color: #059669;
+  }
+  .snap-c-info {
+    font-size: 11px; color: #94a3b8; margin-top: 2px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .snap-c-info svg { vertical-align: -1px; }
+  .snap-c-dot { width: 3px; height: 3px; border-radius: 50%; background: #cbd5e1; }
+  .snap-c-restore {
+    padding: 6px 14px; border-radius: 10px; border: none;
+    background: #3b82f6; color: #fff; font-size: 12px; font-weight: 600;
+    cursor: pointer; flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ CURRENT ============ -->
+<div class="section">
+  <h2>Current Design</h2>
+
+  <div class="snap-row-old">
+    <div class="snap-row-icon-old">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+    </div>
+    <div class="snap-row-body-old">
+      <div class="snap-row-time-old">24m ago</div>
+      <div class="snap-row-summary-old">8 entries · 8h ordinary · 1h OT · <span style="opacity:0.7">S23 8lac</span></div>
+    </div>
+    <button class="snap-restore-btn-old">Restore</button>
+  </div>
+
+  <div class="snap-row-old">
+    <div class="snap-row-icon-old">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+    </div>
+    <div class="snap-row-body-old">
+      <div class="snap-row-time-old">2h ago <span style="font-size:10px;padding:2px 6px;border-radius:5px;background:rgba(16,185,129,0.12);color:#059669;font-weight:700;">manual</span></div>
+      <div class="snap-row-summary-old">6 entries · 7h ordinary · <span style="opacity:0.7">Fold 745p</span></div>
+    </div>
+    <button class="snap-restore-btn-old">Restore</button>
+  </div>
+</div>
+
+<!-- ============ DESIGN A: Enhanced with stats ============ -->
+<div class="section">
+  <h2>Design A — Stats grid + location</h2>
+
+  <div class="snap-card">
+    <div class="snap-header">
+      <div class="snap-icon auto">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-time">24 minutes ago</div>
+    </div>
+    <div class="snap-stats">
+      <div class="snap-stat">
+        <div class="snap-stat-val">8</div>
+        <div class="snap-stat-label">Entries</div>
+      </div>
+      <div class="snap-stat">
+        <div class="snap-stat-val">8h</div>
+        <div class="snap-stat-label">Ordinary</div>
+      </div>
+      <div class="snap-stat">
+        <div class="snap-stat-val">1h</div>
+        <div class="snap-stat-label">Overtime</div>
+      </div>
+      <div class="snap-stat">
+        <div class="snap-stat-val">3</div>
+        <div class="snap-stat-label">Sites</div>
+      </div>
+    </div>
+    <div class="snap-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+      Sallins, Mucklagh, Kildare
+      <span class="snap-meta-sep">·</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      S23
+    </div>
+    <div class="snap-actions">
+      <button class="snap-btn-restore">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Restore
+      </button>
+    </div>
+  </div>
+
+  <div class="snap-card">
+    <div class="snap-header">
+      <div class="snap-icon manual">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-time">2 hours ago</div>
+      <span class="snap-tag manual">manual</span>
+    </div>
+    <div class="snap-stats">
+      <div class="snap-stat">
+        <div class="snap-stat-val">6</div>
+        <div class="snap-stat-label">Entries</div>
+      </div>
+      <div class="snap-stat">
+        <div class="snap-stat-val">7h</div>
+        <div class="snap-stat-label">Ordinary</div>
+      </div>
+      <div class="snap-stat">
+        <div class="snap-stat-val">0</div>
+        <div class="snap-stat-label">Overtime</div>
+      </div>
+      <div class="snap-stat">
+        <div class="snap-stat-val">2</div>
+        <div class="snap-stat-label">Sites</div>
+      </div>
+    </div>
+    <div class="snap-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+      Mucklagh, Kildare
+      <span class="snap-meta-sep">·</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      Fold
+    </div>
+    <div class="snap-actions">
+      <button class="snap-btn-restore">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Restore
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DESIGN B: Compact with progress bar ============ -->
+<div class="section">
+  <h2>Design B — Progress bar + chips</h2>
+
+  <div class="snap-card-b">
+    <div class="snap-b-top">
+      <div class="snap-c-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-b-time">24 minutes ago</div>
+      <div class="snap-b-hours">9h total</div>
+    </div>
+    <div class="snap-b-bar-wrap">
+      <div class="snap-b-bar ot" style="width: 90%"></div>
+    </div>
+    <div class="snap-b-meta">
+      <span class="snap-b-chip">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        8 entries
+      </span>
+      <span class="snap-b-chip">8h ord</span>
+      <span class="snap-b-chip" style="color:#f59e0b">1h OT</span>
+      <span class="snap-b-chip">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        Sallins, Mucklagh
+      </span>
+      <span class="snap-b-chip">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        S23
+      </span>
+    </div>
+    <div class="snap-b-actions">
+      <button class="snap-b-restore">Restore</button>
+    </div>
+  </div>
+
+  <div class="snap-card-b">
+    <div class="snap-b-top">
+      <div class="snap-c-icon manual">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-b-time">2 hours ago <span class="snap-c-tag">manual</span></div>
+      <div class="snap-b-hours">7h total</div>
+    </div>
+    <div class="snap-b-bar-wrap">
+      <div class="snap-b-bar" style="width: 70%"></div>
+    </div>
+    <div class="snap-b-meta">
+      <span class="snap-b-chip">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        6 entries
+      </span>
+      <span class="snap-b-chip">7h ord</span>
+      <span class="snap-b-chip">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        Mucklagh, Kildare
+      </span>
+      <span class="snap-b-chip">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        Fold
+      </span>
+    </div>
+    <div class="snap-b-actions">
+      <button class="snap-b-restore">Restore</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DESIGN C: Minimal clean ============ -->
+<div class="section">
+  <h2>Design C — Minimal with location</h2>
+
+  <div class="snap-card-c">
+    <div class="snap-c-row">
+      <div class="snap-c-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-c-body">
+        <div class="snap-c-top-line">
+          <span class="snap-c-time">24 minutes ago</span>
+        </div>
+        <div class="snap-c-info">
+          8 entries
+          <span class="snap-c-dot"></span>
+          8h ord · 1h OT
+          <span class="snap-c-dot"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+          Sallins, Mucklagh
+          <span class="snap-c-dot"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          S23
+        </div>
+      </div>
+      <button class="snap-c-restore">Restore</button>
+    </div>
+  </div>
+
+  <div class="snap-card-c">
+    <div class="snap-c-row">
+      <div class="snap-c-icon manual">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="snap-c-body">
+        <div class="snap-c-top-line">
+          <span class="snap-c-time">2 hours ago</span>
+          <span class="snap-c-tag">manual</span>
+        </div>
+        <div class="snap-c-info">
+          6 entries
+          <span class="snap-c-dot"></span>
+          7h ord
+          <span class="snap-c-dot"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#94a3b8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+          Mucklagh, Kildare
+          <span class="snap-c-dot"></span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          Fold
+        </div>
+      </div>
+      <button class="snap-c-restore">Restore</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
