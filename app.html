@@ -6805,7 +6805,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.8';
+    const VERSION = '4.12.9';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12655,12 +12655,10 @@
       const hasFooter = locStr || deviceName;
       const footer = hasFooter ? `<div class="snap-row-footer">
         ${locStr ? (() => {
-          let mapsUrl;
-          if (s._geoCoords && s._geoCoords.lat && s._geoCoords.lon) {
-            mapsUrl = 'https://www.google.com/maps?q=' + s._geoCoords.lat + ',' + s._geoCoords.lon;
-          } else {
-            mapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(locStr);
-          }
+          const coords = s._geoCoords || _cachedGpsCoords;
+          const mapsUrl = (coords && coords.lat && coords.lon)
+            ? 'https://www.google.com/maps?q=' + coords.lat + ',' + coords.lon
+            : 'https://www.google.com/maps/search/' + encodeURIComponent(locStr);
           return '<div class="snap-row-footer-loc"><a href="' + mapsUrl + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:4px;color:inherit;text-decoration:none;" onclick="event.stopPropagation();"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg> ' + esc(locStr) + '</a></div>';
         })() : ''}
         ${deviceName ? '<div class="snap-row-footer-device"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> ' + esc(deviceName) + '</div>' : ''}
