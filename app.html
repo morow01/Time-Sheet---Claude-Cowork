@@ -7786,7 +7786,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.11';
+    const VERSION = '4.14.12';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14958,9 +14958,14 @@
         weekData.callouts.push(co);
         state.calloutsExpandedId = id;
         state.calloutsEditId = id;
-        // Update the DOM card's data-co-id so future queries find it
+        // Update the DOM card's data-co-id AND onclick handler so collapse works
         const card = document.querySelector('[data-co-id="__new__"]');
-        if (card) card.setAttribute('data-co-id', id);
+        if (card) {
+          card.setAttribute('data-co-id', id);
+          // Update the onclick on the header row so coToggleCard gets the real id
+          const header = card.querySelector('[onclick*="coToggleCard"]');
+          if (header) header.setAttribute('onclick', `coToggleCard('${id}')`);
+        }
         return co;
       }
 
