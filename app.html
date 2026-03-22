@@ -6821,7 +6821,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.14';
+    const VERSION = '4.12.15';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14684,6 +14684,36 @@ Work week = Friday to Thursday.
         }
       }
 
+      // SECTION 2.5: Validation issues — tasks with missing codes or hours
+      if (state.aiScope.timesheet) {
+        const issues = [];
+        const recentWeeks = Object.keys(weekMap).sort().reverse().slice(0, 4);
+        recentWeeks.forEach(ws => {
+          const weekData = weekMap[ws];
+          weekData.days.forEach((day, di) => {
+            (day.activities || []).forEach((act, ai) => {
+              const ord = parseFloat(act.ordinary) || 0;
+              const ot = parseFloat(act.overtime) || 0;
+              const hasCodes = act.codes && act.codes.length > 0;
+              const hasHours = ord > 0 || ot > 0;
+              const hasDesc = !!act.description?.trim();
+              if (hasHours && !hasCodes) {
+                issues.push(`${day.date} ${dayNames[di]}: Task "${act.description || '(no description)'}" has ${ord}h hours but NO work code assigned`);
+              } else if (hasCodes && !hasHours) {
+                issues.push(`${day.date} ${dayNames[di]}: Task "${act.description || '(no description)'}" has work codes (${act.codes.map(c=>c.c).join(', ')}) but 0 hours`);
+              }
+              if (!hasDesc && (hasHours || hasCodes)) {
+                issues.push(`${day.date} ${dayNames[di]}: Task #${ai+1} has no description`);
+              }
+            });
+          });
+        });
+        if (issues.length) {
+          ctx += `\nTIMESHEET ISSUES (recent 4 weeks — tasks with validation problems):\n`;
+          issues.forEach(iss => { ctx += `  ⚠ ${iss}\n`; });
+        }
+      }
+
       // SECTION 3: Saved Notes (standalone Notes tab — gated by Saved Notes scope toggle)
       if (state.aiScope.savedNotes && state.notes?.length) {
         const open = state.notes.filter(n => n.status !== 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -14724,6 +14754,8 @@ Work week = Friday to Thursday.
 You have their full work history. Answer their question directly and confidently using the data below.
 Use the DATE REFERENCES section to resolve any time words like "last week", "this month", "yesterday".
 Be specific — include actual numbers, dates, and site names. Do not hedge or say the data is unclear when it is present.
+
+When the user asks about "issues" or "problems", check BOTH the TIMESHEET ISSUES section (tasks with missing codes/hours) AND the SAVED NOTES section (open faults/issues). Report both categories.
 
 DATA DICTIONARY — two distinct note types exist in this app:
 - SAVED NOTES (Notes tab): standalone issue/fault/reminder records the user creates independently. When the user says "show my notes" or "recent notes" they almost always mean SAVED NOTES.
