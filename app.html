@@ -7786,7 +7786,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.7';
+    const VERSION = '4.14.8';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14778,14 +14778,14 @@
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Date</span>
             <input type="date" id="co-date-input" value="${date}" class="act-input" style="cursor:pointer"
-              onchange="coAutoSave()">
+              onchange="updateCoField('date', this.value)">
           </div>
           <!-- Ticket -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Ticket Number</span>
             <input type="text" id="co-ticket-input" class="act-input" style="font-family:var(--font-mono)" placeholder="e.g. R23482335" value="${esc(ticket)}"
               autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
-              oninput="coAutoSave()">
+              oninput="updateCoField('ticket', this.value.trim())">
           </div>
           <!-- Site -->
           <div class="flex flex-col gap-1.5">
@@ -14793,20 +14793,20 @@
             <div class="location-wrap">
               <input type="text" id="co-site-display" class="act-input" style="cursor:pointer" readonly
                 placeholder="Tap to select location" value="${esc(site)}"
-                onclick="_coSiteCallback = (name) => { document.getElementById('co-site-display').value = name; coAutoSave(); }; openLocationModal();">
+                onclick="_coSiteCallback = (name) => { document.getElementById('co-site-display').value = name; updateCoField('site', name); }; openLocationModal();">
             </div>
           </div>
           <!-- Fault -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Fault Description</span>
             <textarea id="co-fault-input" class="act-textarea" rows="1" placeholder="e.g. EXTERNAL ALARM: AC MAINS FAIL"
-              oninput="autoGrow(this);coAutoSave()">${esc(fault)}</textarea>
+              oninput="autoGrow(this);updateCoField('fault', this.value.trim())">${esc(fault)}</textarea>
           </div>
           <!-- On-Site Time -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Engineer On Site</span>
             <input type="time" id="co-time-input" class="act-input" value="${timeStr}"
-              onchange="coAutoSave()">
+              onchange="updateCoField('engineerOnSite', this.value)">
           </div>
           <!-- Notes — exact same as task notes panel -->
           <div class="notes-panel">
@@ -14858,11 +14858,9 @@
     }
 
     function coToggleCard(id) {
-      // If collapsing the currently expanded card, auto-save first
+      // If collapsing the currently expanded card, flush any pending save
       if (state.calloutsExpandedId === id) {
-        // Always save current field values before collapsing
-        if (_coSaveTimer) { clearTimeout(_coSaveTimer); _coSaveTimer = null; }
-        _coDoSave();
+        _coFlushSave();
         // Surgical DOM collapse (same as toggleActivityDetails)
         const card = document.querySelector(`[data-co-id="${id}"]`);
         if (card) {
@@ -14884,10 +14882,9 @@
         state.calloutsEditId = null;
         state.calloutsNotesOpen = false;
       } else {
-        // Collapse previous if any — save first
+        // Collapse previous if any — flush pending save first
         if (state.calloutsExpandedId) {
-          if (_coSaveTimer) { clearTimeout(_coSaveTimer); _coSaveTimer = null; }
-          _coDoSave();
+          _coFlushSave();
           const prev = document.querySelector(`[data-co-id="${state.calloutsExpandedId}"]`);
           if (prev) {
             const pd = prev.querySelector('.activity-detail');
@@ -14924,21 +14921,70 @@
       }
     }
 
-    // Auto-save callout fields (debounced)
+    // ── Callout field updates — same pattern as task updateField() ──
+    // Write directly to the data object on every keystroke, debounce only the Firestore persist.
     let _coSaveTimer = null;
-    function coAutoSave() {
+    function _coScheduleSave() {
       if (_coSaveTimer) clearTimeout(_coSaveTimer);
-      _coSaveTimer = setTimeout(() => _coDoSave(), 800);
+      _coSaveTimer = setTimeout(() => { _coSaveTimer = null; saveCallouts(); }, 800);
     }
-    function _coDoSave() {
-      // Guard: nothing to save if no card is expanded
-      if (!state.calloutsExpandedId) return;
+    function _coFlushSave() {
+      if (_coSaveTimer) { clearTimeout(_coSaveTimer); _coSaveTimer = null; saveCallouts(); }
+    }
 
-      // Guard: verify the DOM form actually belongs to the expanded card
-      const expandedCard = document.querySelector(`[data-co-id="${state.calloutsExpandedId}"]`);
-      const formField = document.getElementById('co-fault-input');
-      if (formField && expandedCard && !expandedCard.contains(formField)) return;
+    // Get the currently-expanded callout object (or null)
+    function _coGetExpanded() {
+      const eid = state.calloutsExpandedId;
+      if (!eid || eid === '__new__') return null;
+      const weekStart = state.calloutsSelectedWeek || dateToStr(getCurrentFriday());
+      const wk = state.callouts?.weeks?.[weekStart];
+      if (!wk?.callouts) return null;
+      return wk.callouts.find(c => c.id === eid) || null;
+    }
 
+    // Called from every input/change handler on callout form fields
+    function updateCoField(field, value) {
+      const co = _coGetExpanded();
+      if (!co) return; // new-card path handled separately
+      co[field] = value;
+      // Live-update collapsed header
+      const card = document.querySelector(`[data-co-id="${co.id}"]`);
+      if (card) {
+        if (field === 'fault') {
+          const d = card.querySelector('.act-desc-txt');
+          if (d) d.innerHTML = value ? esc(value.substring(0, 80)) : '<span style="opacity:0.4;font-weight:400;font-style:italic">No description</span>';
+        }
+        if (field === 'site') {
+          const l = card.querySelector('.act-loc-txt');
+          const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
+          if (l) l.innerHTML = value ? `${pinSvg}${esc(value)}` : '<span style="opacity:0.4">No site</span>';
+        }
+        if (field === 'notes') {
+          const h = document.querySelector('[data-co-notes-header]');
+          if (h) { h.textContent = value ? stripHtml(value) : 'Add a note…'; h.classList.toggle('has-note', !!value); }
+        }
+      }
+      _coScheduleSave();
+    }
+
+    // Legacy wrapper — kept so existing oninput="coAutoSave()" on __new__ cards still works
+    function coAutoSave() {
+      const eid = state.calloutsExpandedId;
+      if (!eid) return;
+      if (eid !== '__new__') {
+        // For existing cards the individual updateCoField handlers already saved — but
+        // the notes textarea and site callback still call coAutoSave directly, so handle it:
+        const co = _coGetExpanded();
+        if (co) {
+          const notes = document.getElementById('co-notes-ta')?.value?.trim() || '';
+          co.notes = notes;
+          const h = document.querySelector('[data-co-notes-header]');
+          if (h) { h.textContent = notes ? stripHtml(notes) : 'Add a note…'; h.classList.toggle('has-note', !!notes); }
+          _coScheduleSave();
+        }
+        return;
+      }
+      // __new__ card — create record from DOM fields
       const weekStart = state.calloutsSelectedWeek || dateToStr(getCurrentFriday());
       if (!state.callouts) return;
       if (!state.callouts.weeks[weekStart]) {
@@ -14946,48 +14992,21 @@
       }
       const weekData = state.callouts.weeks[weekStart];
       if (!weekData.callouts) weekData.callouts = [];
-
-      const date = document.getElementById('co-date-input')?.value || weekStart;
-      const ticket = document.getElementById('co-ticket-input')?.value?.trim() || '';
       const site = document.getElementById('co-site-display')?.value?.trim() || '';
-      const fault = document.getElementById('co-fault-input')?.value?.trim() || '';
-      const engineerOnSite = document.getElementById('co-time-input')?.value || '';
-      const notes = document.getElementById('co-notes-ta')?.value?.trim() || '';
-
-      if (!site && !fault && !ticket) return; // don't save empty
-
-      const isNew = state.calloutsExpandedId === '__new__';
-      if (isNew) {
-        if (!site) return; // need at least a site
-        const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-        weekData.callouts.push({ id, date, ticket, site, fault, engineerOnSite, notes });
-        // Switch from __new__ to the real id
-        state.calloutsExpandedId = id;
-        state.calloutsEditId = id;
-      } else {
-        const editId = state.calloutsExpandedId;
-        const idx = weekData.callouts.findIndex(c => c.id === editId);
-        if (idx >= 0) {
-          weekData.callouts[idx] = { id: editId, date, ticket, site, fault, engineerOnSite, notes };
-        }
-      }
-
+      if (!site) return; // need at least a site to create
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      weekData.callouts.push({
+        id,
+        date: document.getElementById('co-date-input')?.value || weekStart,
+        ticket: document.getElementById('co-ticket-input')?.value?.trim() || '',
+        site,
+        fault: document.getElementById('co-fault-input')?.value?.trim() || '',
+        engineerOnSite: document.getElementById('co-time-input')?.value || '',
+        notes: document.getElementById('co-notes-ta')?.value?.trim() || ''
+      });
+      state.calloutsExpandedId = id;
+      state.calloutsEditId = id;
       saveCallouts();
-      // Live-update collapsed header text
-      const card = document.querySelector(`[data-co-id="${state.calloutsExpandedId}"]`);
-      if (card) {
-        const descEl = card.querySelector('.act-desc-txt');
-        const locEl = card.querySelector('.act-loc-txt');
-        const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
-        if (descEl) descEl.innerHTML = fault ? esc(fault.substring(0, 80)) : '<span style="opacity:0.4;font-weight:400;font-style:italic">No description</span>';
-        if (locEl) locEl.innerHTML = site ? `${pinSvg}${esc(site)}` : '<span style="opacity:0.4">No site</span>';
-      }
-      // Update notes preview
-      const notesPrev = document.querySelector('[data-co-notes-header]');
-      if (notesPrev) {
-        notesPrev.textContent = notes ? stripHtml(notes) : 'Add a note…';
-        notesPrev.classList.toggle('has-note', !!notes);
-      }
     }
 
     // Callout note dictation — reuses voice system
