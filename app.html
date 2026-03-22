@@ -7786,7 +7786,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.12';
+    const VERSION = '4.14.13';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14958,13 +14958,22 @@
         weekData.callouts.push(co);
         state.calloutsExpandedId = id;
         state.calloutsEditId = id;
-        // Update the DOM card's data-co-id AND onclick handler so collapse works
+        // Update the DOM card's data-co-id, onclick handler, and inject Delete button
         const card = document.querySelector('[data-co-id="__new__"]');
         if (card) {
           card.setAttribute('data-co-id', id);
-          // Update the onclick on the header row so coToggleCard gets the real id
+          card.style.borderStyle = 'solid'; // remove dashed border
           const header = card.querySelector('[onclick*="coToggleCard"]');
           if (header) header.setAttribute('onclick', `coToggleCard('${id}')`);
+          // Inject Delete button (wasn't rendered for __new__)
+          const detailInner = card.querySelector('.act-detail-inner');
+          if (detailInner && !detailInner.querySelector('.note-btn-delete')) {
+            detailInner.insertAdjacentHTML('beforeend', `<div class="note-bottom-actions">
+              <button class="note-btn-delete" onclick="event.stopPropagation(); coDelete()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete Callout
+              </button>
+            </div>`);
+          }
         }
         return co;
       }
