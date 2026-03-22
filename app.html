@@ -6805,7 +6805,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.2';
+    const VERSION = '4.12.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12540,7 +12540,7 @@
         async pos => {
           try {
             const { latitude: lat, longitude: lon } = pos.coords;
-            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&addressdetails=1`, {
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=16&addressdetails=1`, {
               headers: { 'Accept-Language': 'en' }
             });
             if (!resp.ok) return;
