@@ -6904,7 +6904,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.32';
+    const VERSION = '4.12.33';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14923,6 +14923,18 @@ When the user asks about "issues", "problems", or anything general about their n
 Also check the TIMESHEET ISSUES section for tasks with missing codes/hours and report those too.
 When the user searches for a keyword (e.g. "battery"), list EVERY note and task entry that contains that keyword. Do not skip any matches — completeness matters.
 
+FORMATTING RULES — follow these strictly:
+- Use markdown headings (### ) for section titles
+- When listing notes, tasks, or timesheet entries, format each as a bullet point with key fields on separate lines using bold labels:
+  * **Task:** description here
+  * **Date:** Fri 20. March 2026
+  * **Location:** Site name (CODE)
+  * **Hours:** 2h ord + 1h OT
+  * **Issue:** what's wrong (if applicable)
+- Keep each entry visually distinct — do NOT cram everything into one long line
+- Use ⚠ before timesheet issues (missing codes/hours)
+- Be concise but structured — scannable is better than dense
+
 DATA DICTIONARY — two distinct note types exist in this app:
 - SAVED NOTES (Notes tab): standalone issue/fault/reminder records the user creates independently. When the user says "show my notes" or "recent notes" they almost always mean SAVED NOTES.
 - TASK NOTES (field notes): short notes written inside individual timesheet work entries describing what was done on a job. These are NOT standalone notes.
@@ -15016,17 +15028,18 @@ QUESTION: ${query}`;
           if (mentioned.length > 0) noteMatches = mentioned;
         }
         // Post-filter timesheet entries: narrow to ones Gemini actually referenced
-        if (timesheetEntries.length > 3) {
+        if (timesheetEntries.length > 5) {
           const answerLower = answer.toLowerCase();
-          const stopW2 = new Set(['the','and','for','are','but','not','you','all','can','had','her','was','one','our','out','has','his','how','its','may','new','now','old','see','way','who','did','get','let','say','she','too','use','with','have','from','this','that','been','each','make','like','long','look','many','some','than','them','then','what','when','will','about','could','after','other','which','their','there','these','would','just','also','into','very','need','needs','any','open','ord','hours','hour']);
+          const stopW2 = new Set(['the','and','for','are','but','not','you','all','can','had','her','was','one','our','out','has','his','how','its','may','new','now','old','see','way','who','did','get','let','say','she','too','use','with','have','from','this','that','been','each','make','like','long','look','many','some','than','them','then','what','when','will','about','could','after','other','which','their','there','these','would','just','also','into','very','need','needs','any','open','ord','hours','hour','task','work','code']);
           const getW2 = text => text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !stopW2.has(w));
           const filtered = timesheetEntries.map(e => {
             const entryText = [e.description || '', e.location || '', (e.categories || []).join(' ')].join(' ');
             const words = [...new Set(getW2(entryText))];
             if (words.length === 0) return null;
             const hits = words.filter(w => answerLower.includes(w)).length;
-            const ratio = hits / words.length;
-            return (hits >= 2 && ratio >= 0.3) ? { ...e, aiHits: hits } : null;
+            const ratio = hits / Math.max(words.length, 1);
+            // Need at least 1 word hit AND 25% overlap
+            return (hits >= 1 && ratio >= 0.25) ? { ...e, aiHits: hits } : null;
           }).filter(Boolean).sort((a, b) => b.aiHits - a.aiHits);
           if (filtered.length > 0 && filtered.length < timesheetEntries.length) {
             timesheetEntries = filtered;
