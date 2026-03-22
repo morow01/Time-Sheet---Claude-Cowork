@@ -150,9 +150,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 48px;
-      height: 48px;
-      min-width: 48px;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
       border-radius: 10px;
       background: #95a6c1;
       color: #fff;
@@ -197,7 +197,7 @@
 
     .date-badge .dom {
       font-size: 20px;
-      font-weight: 800;
+
       line-height: 1;
     }
 
@@ -7773,7 +7773,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.13.0';
+    const VERSION = '4.13.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -13898,8 +13898,8 @@
         const remDoc = await userDoc('data/reminders')?.get().catch(() => null);
         const reminders = remDoc?.exists ? remDoc.data() : null;
         // 4. Settings from localStorage
-        const lsKeys = ['geminiKey','geminiModel','theme','layoutMode','headerExpanded',
-                        'rian_ai_scope','rian_ai_recent','exchangeTab','deviceName'];
+        const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
+          'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'];
         const settings = {};
         lsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
         // Build export object
@@ -13944,7 +13944,7 @@
           const remCount = data.reminders?.reminders?.length || 0;
           showConfirm(
             'Import Data?',
-            `This will MERGE ${weekCount} week(s), ${noteCount} note(s), and ${remCount} reminder(s) into your current account (${state.currentUser.email}). Existing entries for the same weeks will be OVERWRITTEN. Continue?`,
+            `This will REPLACE all data in your current account (${state.currentUser.email}) with ${weekCount} week(s), ${noteCount} note(s), and ${remCount} reminder(s) from the export file. Any existing data will be deleted first. Continue?`,
             () => _doImport(data)
           );
         } catch (err) { showToast('Could not read file: ' + err.message); }
@@ -13954,8 +13954,19 @@
 
     async function _doImport(data) {
       const uid = state.currentUser.uid;
-      showToast('Importing data…');
+      showToast('Clearing existing data…');
       try {
+        // 0. Clear ALL existing data first (full replace, not merge)
+        const existingWeeks = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
+        if (existingWeeks) {
+          const delBatch = db_fs.batch();
+          existingWeeks.docs.forEach(d => delBatch.delete(d.ref));
+          await delBatch.commit();
+        }
+        await userDoc('data/notes')?.delete().catch(() => {});
+        await userDoc('data/reminders')?.delete().catch(() => {});
+        await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
+        showToast('Importing data…');
         // 1. Import weeks — batch write to Firestore
         const weekEntries = Object.entries(data.weeks || {});
         if (weekEntries.length > 0) {
@@ -16115,7 +16126,7 @@ QUESTION: ${query}`;
                   .sort((a, b) => b.date.localeCompare(a.date));
               }
             }
-          } catch(e) { /* ignore scan errors */ }
+          } catch (e) { /* ignore scan errors */ }
         }
         state.aiResult = { answer, sources: faultSources.slice(0, 5), noteMatches: noteMatches.slice(0, 10), timesheetEntries: timesheetEntries.slice(0, 10) };
         // Save to recent queries
