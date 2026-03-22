@@ -7786,7 +7786,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.9';
+    const VERSION = '4.14.10';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14785,9 +14785,9 @@
           <!-- Ticket -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Ticket Number</span>
-            <input type="text" id="co-ticket-input" name="co_ticket_ref_number" class="act-input" style="font-family:var(--font-mono)" placeholder="e.g. R23482335" value="${esc(ticket)}"
-              autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" aria-autocomplete="none"
-              oninput="updateCoField('ticket', this.value.trim())">
+            <textarea id="co-ticket-input" class="act-textarea" rows="1" style="font-family:var(--font-mono);resize:none;overflow:hidden" placeholder="e.g. R23482335"
+              oninput="this.value=this.value.replace(/\\n/g,'');updateCoField('ticket', this.value.trim())"
+              onkeydown="if(event.key==='Enter')event.preventDefault()">${esc(ticket)}</textarea>
           </div>
           <!-- Site -->
           <div class="flex flex-col gap-1.5">
