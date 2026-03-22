@@ -7773,7 +7773,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.41';
+    const VERSION = '4.12.42';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15434,8 +15434,8 @@ Rules:
       lines.forEach(rawLine => {
         // Strip leading bullet from lines that are actually headings
         let line = rawLine.replace(/^[\*\-]\s+(?=###?\s)/, '');
-        // Insert separator before **Task:** lines (any format: bullet, indented, or plain)
-        if (/(?:^[\*\-]\s+)?\s*\*\*Task:?\*\*/.test(line)) {
+        // Insert separator before **Task:** or **Other:** lines (any format: bullet, indented, or plain)
+        if (/(?:^[\*\-]\s+)?\s*\*\*(?:Task|Other):?\*\*/.test(line)) {
           _taskCount++;
           if (_taskCount > 1) { closeList(); out.push('<hr>'); }
         }
@@ -15810,13 +15810,17 @@ When the user searches for a keyword (e.g. "battery"), list EVERY note and task 
 
 FORMATTING RULES — follow these strictly:
 - Use markdown headings (### Section Title) for section titles. NEVER put * or - before a heading.
-- When listing notes, tasks, or timesheet entries, format each entry as a bullet list with bold labels on separate lines:
-  - **Task:** description here
+- IMPORTANT: Separate your answer into two sections when reporting both query-specific results AND general timesheet issues:
+  1. First section: entries that DIRECTLY answer the user's question. Use "- **Task:**" prefix.
+  2. Second section (### Timesheet Issues): general issues like missing codes/hours that are NOT directly related to the query. Use "- **Other:**" prefix instead of "- **Task:**".
+  If ALL entries are directly relevant to the query, use "- **Task:**" for all of them.
+- Format each entry with bold labels on separate lines:
+  - **Task:** description here (or **Other:** for general issues)
   - **Date:** Fri 20. March 2026
   - **Location:** Site name (CODE)
   - **Issue:** ⚠ what's wrong (if applicable)
 - Do NOT include hours in the output — the user does not need hours shown.
-- Each entry MUST start with "- **Task:**" so the UI can detect entry boundaries and add visual separators.
+- Each entry MUST start with "- **Task:**" or "- **Other:**" so the UI can detect entry boundaries and add visual separators.
 - Keep each entry visually distinct — do NOT cram everything into one long line.
 - Be concise but structured — scannable is better than dense.
 
@@ -15916,24 +15920,15 @@ QUESTION: ${query}`;
         // and find matching timesheet entries for cards — only from query-relevant sections
         if (timesheetEntries.length < 3) {
           try {
-            // Build query keywords for relevance filtering
-            const qStop = new Set(['any','the','and','for','are','but','not','you','all','can','was','has','how','its','may','did','get','with','have','from','this','that','what','when','will','about','there','these','would','also','into','very','just']);
-            const qWords = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !qStop.has(w));
-            // Extract Task: descriptions only from query-relevant context
-            const answerLines = answer.split('\n');
+            // Extract descriptions ONLY from "Task:" lines (query-relevant).
+            // Gemini uses "Other:" for general timesheet issues — we skip those.
             const taskDescs = [];
-            answerLines.forEach((line, idx) => {
+            answer.split('\n').forEach(line => {
+              // Match "Task:" but NOT "Other:" lines
               const m = line.match(/\*?\*?Task:\*?\*?\s*(.+)/i);
-              if (!m) return;
-              // Check surrounding context (5 lines before/after) for query relevance
-              const ctxStart = Math.max(0, idx - 5);
-              const ctxEnd = Math.min(answerLines.length, idx + 6);
-              const ctx = answerLines.slice(ctxStart, ctxEnd).join(' ').toLowerCase();
-              // Require ALL query words in context (for 1-2 words) or 60%+ (for 3+ words)
-              const ctxHits = qWords.filter(qw => ctx.includes(qw)).length;
-              const minHits = qWords.length <= 2 ? qWords.length : Math.ceil(qWords.length * 0.6);
-              const isRelevant = ctxHits >= minHits;
-              if (isRelevant) taskDescs.push(m[1].trim().toLowerCase());
+              if (m && !/\*?\*?Other:\*?\*?\s/i.test(line)) {
+                taskDescs.push(m[1].trim().toLowerCase());
+              }
             });
             if (taskDescs.length > 0) {
               const allWeeks = await dbGetAll('weeks');
