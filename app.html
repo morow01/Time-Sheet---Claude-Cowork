@@ -6904,7 +6904,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.33';
+    const VERSION = '4.12.34';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14561,10 +14561,14 @@ Rules:
       // Detect Gemini section-like lines
       const isSectionLine = s => /^(Here are|I also found|I found|I checked|Additionally|The following|Below are|No )/i.test(s.trim());
 
-      lines.forEach(line => {
+      lines.forEach(rawLine => {
+        // Strip leading bullet from lines that are actually headings
+        let line = rawLine.replace(/^[\*\-]\s+(?=###?\s)/, '');
         const h3 = line.match(/^###\s+(.+)/);
         const h2 = line.match(/^##\s+(.+)/);
         const h1 = line.match(/^#\s+(.+)/);
+        // Detect bold-only lines as headings (e.g. "**Section Title**" or "**Section Title:**")
+        const boldHeading = !h1 && !h2 && !h3 && line.match(/^\*\*([^*]+)\*\*:?\s*$/);
         const ul = line.match(/^[\*\-]\s+(.+)/);
         const ol = line.match(/^(\d+)\.\s+(.+)/);
         const hr = line.match(/^[-*_]{3,}$/);
@@ -14573,6 +14577,9 @@ Rules:
           closeList();
           const content = inline((h1 || h2 || h3)[1]);
           out.push(`<h3>${content}</h3>`);
+        } else if (boldHeading) {
+          closeList();
+          out.push(`<h3>${boldHeading[1]}</h3>`);
         } else if (ul) {
           if (inOl) { out.push('</ol>'); inOl = false; }
           if (!inUl) { out.push('<ul>'); inUl = true; }
@@ -14924,15 +14931,14 @@ Also check the TIMESHEET ISSUES section for tasks with missing codes/hours and r
 When the user searches for a keyword (e.g. "battery"), list EVERY note and task entry that contains that keyword. Do not skip any matches — completeness matters.
 
 FORMATTING RULES — follow these strictly:
-- Use markdown headings (### ) for section titles
-- When listing notes, tasks, or timesheet entries, format each as a bullet point with key fields on separate lines using bold labels:
-  * **Task:** description here
-  * **Date:** Fri 20. March 2026
-  * **Location:** Site name (CODE)
-  * **Hours:** 2h ord + 1h OT
-  * **Issue:** what's wrong (if applicable)
+- Use markdown headings (### Section Title) for section titles. NEVER put * or - before a heading.
+- When listing notes, tasks, or timesheet entries, format each entry as a bullet list with bold labels on separate lines:
+  - **Task:** description here
+  - **Date:** Fri 20. March 2026
+  - **Location:** Site name (CODE)
+  - **Issue:** ⚠ what's wrong (if applicable)
+- Do NOT include hours in the output — the user does not need hours shown.
 - Keep each entry visually distinct — do NOT cram everything into one long line
-- Use ⚠ before timesheet issues (missing codes/hours)
 - Be concise but structured — scannable is better than dense
 
 DATA DICTIONARY — two distinct note types exist in this app:
