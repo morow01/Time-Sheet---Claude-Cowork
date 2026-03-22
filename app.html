@@ -7857,7 +7857,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.19';
+    const VERSION = '4.14.20';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15045,9 +15045,9 @@
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Site</span>
             <div class="location-wrap">
-              <input type="text" id="co-site-display" class="act-input" style="cursor:pointer" readonly
-                placeholder="Tap to select location" value="${esc(site)}"
-                onclick="_coSiteCallback = (name) => { document.getElementById('co-site-display').value = name; updateCoField('site', name); }; openLocationModal();">
+              <textarea rows="1" id="co-site-display" class="act-input" style="cursor:pointer;resize:none;overflow:hidden" readonly
+                placeholder="Tap to select location"
+                onclick="_coSiteCallback = (name) => { document.getElementById('co-site-display').value = name; updateCoField('site', name); }; openLocationModal();">${esc(site)}</textarea>
             </div>
           </div>
           <!-- Fault -->
