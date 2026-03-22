@@ -7773,7 +7773,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.39';
+    const VERSION = '4.12.40';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15912,48 +15912,67 @@ QUESTION: ${query}`;
           }).filter(Boolean).sort((a, b) => b.hitCount - a.hitCount);
           if (mentioned.length > 0) noteMatches = mentioned;
         }
-        // If keyword search found few entries, extract entries Gemini referenced from the full timesheet
+        // If keyword search found few entries, extract task descriptions from Gemini's "Task:" lines
+        // and find matching timesheet entries for cards — only from query-relevant sections
         if (timesheetEntries.length < 3) {
           try {
-            const answerLower = answer.toLowerCase();
-            const allWeeks = await dbGetAll('weeks');
-            const extraEntries = [];
-            const existingIds = new Set(timesheetEntries.map(e => e.date + '_' + e.actId));
-            const scanForMentioned = (days) => {
-              days.forEach(day => {
-                (day.activities || []).forEach(act => {
-                  const desc = (act.description || '').trim();
-                  if (!desc || desc.length < 5) return;
-                  if (existingIds.has(day.date + '_' + act.id)) return;
-                  // Check if Gemini mentioned this task's description (3+ word match)
-                  const descLower = desc.toLowerCase();
-                  const words = descLower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3);
-                  let found = false;
-                  if (answerLower.includes(descLower)) found = true;
-                  if (!found && words.length >= 3) {
-                    for (let i = 0; i <= words.length - 3 && !found; i++) {
-                      if (answerLower.includes(words.slice(i, i + 3).join(' '))) found = true;
-                    }
-                  }
-                  if (found) {
-                    const cats = [...new Set((act.codes || []).map(c => {
-                      const wc = (window.WORK_CODES || []).find(w => w.c === c.c);
-                      return wc ? wc.a : null;
-                    }).filter(Boolean))];
-                    extraEntries.push({
-                      date: day.date, actId: act.id, description: desc,
-                      location: act.location || '', ordinary: parseFloat(act.ordinary) || 0,
-                      overtime: parseFloat(act.overtime) || 0, categories: cats, hitCount: 1
+            // Build query keywords for relevance filtering
+            const qStop = new Set(['any','the','and','for','are','but','not','you','all','can','was','has','how','its','may','did','get','with','have','from','this','that','what','when','will','about','there','these','would','also','into','very','just']);
+            const qWords = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3 && !qStop.has(w));
+            // Extract Task: descriptions only from query-relevant context
+            const answerLines = answer.split('\n');
+            const taskDescs = [];
+            answerLines.forEach((line, idx) => {
+              const m = line.match(/\*?\*?Task:\*?\*?\s*(.+)/i);
+              if (!m) return;
+              // Check surrounding context (5 lines before/after) for query relevance
+              const ctxStart = Math.max(0, idx - 5);
+              const ctxEnd = Math.min(answerLines.length, idx + 6);
+              const ctx = answerLines.slice(ctxStart, ctxEnd).join(' ').toLowerCase();
+              const isRelevant = qWords.some(qw => ctx.includes(qw));
+              if (isRelevant) taskDescs.push(m[1].trim().toLowerCase());
+            });
+            if (taskDescs.length > 0) {
+              const allWeeks = await dbGetAll('weeks');
+              const extraEntries = [];
+              const seen = new Set(timesheetEntries.map(e => e.date + '|' + (e.description || '').toLowerCase()));
+              const scanForMentioned = (days) => {
+                days.forEach(day => {
+                  (day.activities || []).forEach(act => {
+                    const desc = (act.description || '').trim();
+                    if (!desc || desc.length < 5) return;
+                    const descLower = desc.toLowerCase();
+                    const key = day.date + '|' + descLower;
+                    if (seen.has(key)) return;
+                    const match = taskDescs.some(td => {
+                      if (td.includes(descLower) || descLower.includes(td)) return true;
+                      const descWords = descLower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length >= 3);
+                      if (descWords.length >= 3) {
+                        const phrase = descWords.slice(0, 4).join(' ');
+                        if (td.includes(phrase)) return true;
+                      }
+                      return false;
                     });
-                  }
+                    if (match) {
+                      seen.add(key);
+                      extraEntries.push({
+                        date: day.date, actId: act.id, description: desc,
+                        location: act.location || '', ordinary: parseFloat(act.ordinary) || 0,
+                        overtime: parseFloat(act.overtime) || 0, categories: [], hitCount: 1
+                      });
+                    }
+                  });
                 });
-              });
-            };
-            allWeeks.forEach(r => { if (r.data?.days) scanForMentioned(r.data.days); });
-            if (state.weekData?.days) scanForMentioned(state.weekData.days);
-            if (extraEntries.length > 0) {
-              timesheetEntries = [...timesheetEntries, ...extraEntries]
-                .sort((a, b) => b.date.localeCompare(a.date));
+              };
+              allWeeks.forEach(r => { if (r.data?.days) scanForMentioned(r.data.days); });
+              if (state.weekData?.days) {
+                const inDB = allWeeks.find(w => w.weekStart === state.weekData.weekStart);
+                if (!inDB) scanForMentioned(state.weekData.days);
+              }
+              if (extraEntries.length > 0) {
+                timesheetEntries = [...timesheetEntries, ...extraEntries]
+                  .sort((a, b) => b.date.localeCompare(a.date));
+              }
             }
           } catch(e) { /* ignore scan errors */ }
         }
