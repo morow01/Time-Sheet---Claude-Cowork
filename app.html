@@ -7786,7 +7786,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.14.4';
+    const VERSION = '4.14.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14784,6 +14784,7 @@
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Ticket Number</span>
             <input type="text" id="co-ticket-input" class="act-input" style="font-family:var(--font-mono)" placeholder="e.g. R23482335" value="${esc(ticket)}"
+              autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
               oninput="coAutoSave()">
           </div>
           <!-- Site -->
@@ -14859,11 +14860,9 @@
     function coToggleCard(id) {
       // If collapsing the currently expanded card, auto-save first
       if (state.calloutsExpandedId === id) {
-        if (id === '__new__') {
-          // For new card, do a save if site is filled
-          const site = document.getElementById('co-site-display')?.value?.trim();
-          if (site) coAutoSave();
-        }
+        // Always save current field values before collapsing
+        if (_coSaveTimer) { clearTimeout(_coSaveTimer); _coSaveTimer = null; }
+        _coDoSave();
         // Surgical DOM collapse (same as toggleActivityDetails)
         const card = document.querySelector(`[data-co-id="${id}"]`);
         if (card) {
@@ -14885,9 +14884,10 @@
         state.calloutsEditId = null;
         state.calloutsNotesOpen = false;
       } else {
-        // Collapse previous if any
+        // Collapse previous if any — save first
         if (state.calloutsExpandedId) {
-          if (state.calloutsExpandedId !== '__new__') coAutoSave();
+          if (_coSaveTimer) { clearTimeout(_coSaveTimer); _coSaveTimer = null; }
+          _coDoSave();
           const prev = document.querySelector(`[data-co-id="${state.calloutsExpandedId}"]`);
           if (prev) {
             const pd = prev.querySelector('.activity-detail');
