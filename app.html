@@ -6826,7 +6826,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.17';
+    const VERSION = '4.12.18';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14720,9 +14720,20 @@ Work week = Friday to Thursday.
       }
 
       // SECTION 3: Saved Notes (standalone Notes tab — gated by Saved Notes scope toggle)
-      if (state.aiScope.savedNotes && state.notes?.length) {
-        const open = state.notes.filter(n => n.status !== 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-        const done = state.notes.filter(n => n.status === 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      // If notes haven't loaded yet (e.g. Firestore onSnapshot hasn't fired), load from IndexedDB
+      let notesForAI = state.notes || [];
+      if (notesForAI.length === 0) {
+        try {
+          const stored = await dbGet('notes', 'notes_all');
+          if (stored && stored.data && stored.data.length > 0) {
+            notesForAI = stored.data;
+            state.notes = stored.data; // also populate state for searchMatchingNotes
+          }
+        } catch(e) { /* ignore */ }
+      }
+      if (state.aiScope.savedNotes && notesForAI.length) {
+        const open = notesForAI.filter(n => n.status !== 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        const done = notesForAI.filter(n => n.status === 'done').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
         const noteLine = n => {
           const parts = [n.description || '(no description)'];
           if (n.location) parts.push('@ ' + n.location);
