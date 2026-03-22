@@ -6805,7 +6805,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.3';
+    const VERSION = '4.12.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12546,7 +12546,9 @@
             if (!resp.ok) return;
             const data = await resp.json();
             const addr = data.address || {};
-            _cachedGpsTown = addr.town || addr.city || addr.village || addr.suburb || addr.county || null;
+            // Irish addresses often lack town/city — use city_district (strip " ED"), hamlet, or region
+            const cityDist = addr.city_district ? addr.city_district.replace(/\s+ED$/, '') : '';
+            _cachedGpsTown = addr.town || addr.city || addr.village || addr.suburb || addr.hamlet || cityDist || addr.county || null;
             _gpsLastFetch = Date.now();
             console.log('[Rian] GPS town:', _cachedGpsTown);
           } catch(e) { console.warn('[Rian] GPS reverse geocode failed', e); }
