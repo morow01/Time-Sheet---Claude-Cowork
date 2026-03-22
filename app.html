@@ -6689,7 +6689,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.10';
+    const VERSION = '4.9.11';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10061,12 +10061,9 @@
       });
     }
 
-    // Listen for push messages while app is in foreground
+    // Listen for service worker messages (notification tap, etc.)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data && event.data.type === 'reminder') {
-          showToast('⏰ ' + (event.data.body || 'Reminder'));
-        }
         // Handle notification tap → open specific note
         if (event.data && event.data.type === 'openNote' && event.data.noteId) {
           navigateToNote(event.data.noteId);
@@ -10331,26 +10328,8 @@
         if (r) { r.fired = true; r.firedBy = getDeviceName(); r.firedAt = Date.now(); saveReminders(reminders); }
       }
 
-      // Show notification (prefer service worker for mobile support)
-      if ('Notification' in window && Notification.permission === 'granted') {
-        const body = reminder.description + (reminder.location ? ' — ' + reminder.location : '');
-        const opts = {
-          body,
-          icon: 'https://morow01.github.io/rian/icon-192.png',
-          tag: 'rian-remind-' + reminder.id,
-          vibrate: [200, 100, 200],
-          requireInteraction: true
-        };
-        // Use service worker showNotification (works on mobile PWA)
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.ready.then(reg => reg.showNotification('Rian Reminder', opts)).catch(() => {
-            try { new Notification('Rian Reminder', opts); } catch(e) {}
-          });
-        } else {
-          try { const n = new Notification('Rian Reminder', opts); n.onclick = () => { window.focus(); n.close(); }; } catch(e) {}
-        }
-      }
-      // Also show in-app toast
+      // Show in-app toast only — the server Cloud Function handles the system
+      // push notification. This avoids duplicate alerts (local + server push).
       showToast('⏰ ' + (reminder.description || 'Reminder'));
     }
 
