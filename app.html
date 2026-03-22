@@ -4520,6 +4520,123 @@
       border-color: var(--priority-low);
     }
 
+    /* ===== Mockup J: Toolbar row (priority dots | task + calendar) ===== */
+    .note-toolbar-row {
+      display: flex; align-items: center;
+      padding: 6px 0 8px; margin-top: 4px;
+    }
+    .note-pri-dots {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .note-pri-dots-label {
+      font-size: 10px; font-weight: 800; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.6px; margin-right: 2px;
+    }
+    .note-pri-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: none; cursor: pointer; padding: 0;
+      transition: all 0.15s;
+    }
+    .note-pri-dot:active { transform: scale(0.9); }
+    .note-pri-dot.pd-high { background: #e8453c; }
+    .note-pri-dot.pd-medium { background: #F5A623; }
+    .note-pri-dot.pd-low { background: #34a853; }
+    .note-pri-dot:not(.pd-active) { opacity: 0.25; }
+    .note-pri-dot.pd-active { opacity: 1; box-shadow: 0 0 0 2.5px var(--bg-card), 0 0 0 4px currentColor; }
+    .note-pri-dot.pd-high.pd-active { color: #e8453c; }
+    .note-pri-dot.pd-medium.pd-active { color: #F5A623; }
+    .note-pri-dot.pd-low.pd-active { color: #34a853; }
+
+    .note-toolbar-sep {
+      width: 1px; height: 24px; background: var(--border);
+      margin: 0 14px;
+    }
+    .note-toolbar-actions {
+      display: flex; align-items: center; gap: 2px;
+      margin-left: auto;
+    }
+    .note-tool-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      background: none; border: none; cursor: pointer;
+      padding: 4px 10px; border-radius: 8px;
+      transition: background 0.15s; color: #6b7689;
+      font-family: inherit;
+    }
+    .note-tool-btn:hover { background: var(--bg-input); }
+    .note-tool-btn:active { transform: scale(0.95); }
+    .note-tool-btn svg { width: 20px; height: 20px; }
+    .note-tool-btn span { font-size: 9px; font-weight: 600; letter-spacing: 0.3px; }
+
+    /* ===== Mockup J: Reminder field inline ===== */
+    .note-reminder-field { margin-bottom: 10px; }
+    .note-reminder-unset {
+      display: flex; align-items: center; gap: 8px;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 10px 12px; font-size: 13px; color: #94a3b8;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .note-reminder-unset:active { background: #eef0f3; }
+    .note-reminder-unset svg { width: 18px; height: 18px; flex-shrink: 0; stroke: #94a3b8; fill: none; }
+    .note-reminder-unset .rem-plus { margin-left: auto; }
+    .note-reminder-unset .rem-plus svg { width: 14px; height: 14px; stroke: #bbb; }
+
+    .note-reminder-set {
+      display: flex; align-items: center; gap: 10px;
+      background: #fef8ee; border-radius: 12px; padding: 10px 12px;
+      border: 1.5px solid #F5A623;
+    }
+    .note-rem-bell {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+    }
+    .note-rem-bell svg { width: 16px; height: 16px; stroke: #d4900a; fill: none; }
+    .note-rem-info { flex: 1; }
+    .note-rem-info-label { font-size: 10px; font-weight: 700; color: #d4900a; text-transform: uppercase; letter-spacing: 0.5px; }
+    .note-rem-info-dt { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 1px; }
+    .note-rem-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; background: #fff; color: #d4900a; }
+    .note-rem-x {
+      width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; border: none; background: transparent; cursor: pointer;
+      color: #d4900a; font-size: 14px; font-weight: 700; font-family: inherit;
+    }
+    .note-rem-x:hover { background: #fde6c4; }
+
+    .note-reminder-fired {
+      display: flex; align-items: center; gap: 10px;
+      background: #f8fafc; border-radius: 12px; padding: 10px 12px;
+      border: 1px solid #e2e8f0; opacity: 0.55;
+    }
+    .note-reminder-fired .note-rem-bell { background: #eef0f3; }
+    .note-reminder-fired .note-rem-bell svg { stroke: #94a3b8; }
+    .note-reminder-fired .note-rem-info-label { color: #94a3b8; }
+    .note-reminder-fired .note-rem-info-dt { color: #94a3b8; }
+
+    /* ===== Mockup J: Done + Delete buttons ===== */
+    .note-bottom-actions {
+      display: flex; gap: 8px; margin-top: 6px;
+    }
+    .note-btn-done {
+      flex: 1; padding: 11px; border-radius: 12px;
+      background: var(--priority-low-bg); color: var(--priority-low-dark, #34a853);
+      border: 1.5px solid var(--priority-low-border, #d4edda);
+      font-size: 13px; font-weight: 700; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 6px; transition: all 0.15s;
+    }
+    .note-btn-done:active { transform: scale(0.98); }
+    .note-btn-done svg { width: 16px; height: 16px; }
+
+    .note-btn-delete {
+      flex: 1; padding: 11px; border-radius: 12px;
+      background: var(--btn-danger-bg, #fef2f1); color: var(--btn-danger-color, #e8453c);
+      border: 1.5px solid var(--btn-danger-border, #f5c6c2);
+      font-size: 13px; font-weight: 700; font-family: inherit;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 6px; transition: all 0.15s;
+    }
+    .note-btn-delete:active { transform: scale(0.98); }
+    .note-btn-delete svg { width: 16px; height: 16px; }
+
     .note-actions {
       display: flex;
       gap: 6px;
@@ -6689,7 +6806,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.9.11';
+    const VERSION = '4.10.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10121,6 +10238,78 @@
       return getReminders().some(r => r.noteId === noteId && !r.fired);
     }
 
+    function getReminderForNote(noteId) {
+      // Return the most relevant reminder: active (unfired) first, then most recent fired
+      const all = getReminders().filter(r => r.noteId === noteId);
+      const active = all.find(r => !r.fired);
+      if (active) return active;
+      // Return most recently fired
+      const fired = all.filter(r => r.fired).sort((a, b) => (b.firedAt || b.remindAt) - (a.firedAt || a.remindAt));
+      return fired[0] || null;
+    }
+
+    function renderNoteReminderField(noteId) {
+      const rem = getReminderForNote(noteId);
+      if (!rem) {
+        return `<div class="note-reminder-field">
+          <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Reminder</span>
+          <div class="note-reminder-unset" onclick="openNoteReminder('${noteId}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span style="flex:1">Add reminder...</span>
+            <span class="rem-plus"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+          </div>
+        </div>`;
+      }
+      const d = new Date(rem.remindAt);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const dateStr = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' · ' +
+        String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+      if (rem.fired) {
+        return `<div class="note-reminder-field">
+          <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Reminder</span>
+          <div class="note-reminder-fired">
+            <div class="note-rem-bell"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+            <div class="note-rem-info"><div class="note-rem-info-label">Reminded</div><div class="note-rem-info-dt">${dateStr}</div></div>
+            <span class="note-rem-badge" style="background:#f0f2f5;color:#94a3b8;">Reminded</span>
+            <button class="note-rem-x" onclick="event.stopPropagation();removeNoteReminder('${noteId}')" title="Remove">✕</button>
+          </div>
+        </div>`;
+      }
+      return `<div class="note-reminder-field">
+        <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Reminder</span>
+        <div class="note-reminder-set" onclick="openNoteReminder('${noteId}')" style="cursor:pointer">
+          <div class="note-rem-bell"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="note-rem-info"><div class="note-rem-info-label">Triggers</div><div class="note-rem-info-dt">${dateStr}</div></div>
+          <span class="note-rem-badge">Pending</span>
+          <button class="note-rem-x" onclick="event.stopPropagation();removeNoteReminder('${noteId}')" title="Remove">✕</button>
+        </div>
+      </div>`;
+    }
+
+    function removeNoteReminder(noteId) {
+      const reminders = getReminders();
+      const idx = reminders.findIndex(r => r.noteId === noteId && !r.fired);
+      if (idx >= 0) {
+        const oldId = reminders[idx].id;
+        if (typeof reminderTimers !== 'undefined' && reminderTimers[oldId]) {
+          clearTimeout(reminderTimers[oldId]); delete reminderTimers[oldId];
+        }
+        reminders.splice(idx, 1);
+        saveReminders(reminders);
+        render();
+        showToast('Reminder removed');
+      } else {
+        // Remove fired reminder
+        const fIdx = reminders.findIndex(r => r.noteId === noteId && r.fired);
+        if (fIdx >= 0) {
+          reminders.splice(fIdx, 1);
+          saveReminders(reminders);
+          render();
+          showToast('Reminder removed');
+        }
+      }
+    }
+
     function openNoteReminder(noteId) {
       const note = state.notes.find(n => n.id === noteId);
       if (!note) return;
@@ -10837,35 +11026,37 @@
                   value="${note.date || ''}" oninput="updateNoteField(this)" />
               </div>
             </div>
+            ${renderNoteReminderField(note.id)}
             <div class="note-detail-row">
-              <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Priority</span>
-              <div class="note-priority-row">${priChips}</div>
+              <div class="note-toolbar-row">
+                <div class="note-pri-dots">
+                  <span class="note-pri-dots-label">Priority</span>
+                  ${['high','medium','low'].map(p =>
+                    `<button class="note-pri-dot pd-${p}${note.priority === p ? ' pd-active' : ''}" onclick="setNotePriority('${note.id}','${p}')" title="${p[0].toUpperCase()+p.slice(1)}"></button>`
+                  ).join('')}
+                </div>
+                <div class="note-toolbar-sep"></div>
+                <div class="note-toolbar-actions">
+                  <button class="note-tool-btn" onclick="openNoteToTask('${note.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Task</span>
+                  </button>
+                  <button class="note-tool-btn" onclick="addNoteToGCal('${note.id}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+                    <span>Calendar</span>
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="note-actions-wrap">
-              <div class="note-footer" style="gap:6px;">
-                <button class="note-action-btn note-action-task" style="padding:9px 6px;font-size:10.5px;" onclick="openNoteToTask('${note.id}')">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  → Task
-                </button>
-                <button class="note-action-btn note-action-remind${hasActiveReminder(note.id) ? ' remind-active' : ''}" style="padding:9px 6px;font-size:10.5px;" onclick="openNoteReminder('${note.id}')">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                  ${hasActiveReminder(note.id) ? 'Reminded' : 'Remind'}
-                </button>
-                <button class="note-action-btn note-action-gcal" style="padding:9px 6px;font-size:10.5px;" onclick="addNoteToGCal('${note.id}')">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
-                  Calendar
-                </button>
-              </div>
-              <div class="note-footer" style="gap:6px;">
-                <button class="note-action-btn note-action-done" style="padding:9px 6px;font-size:10.5px;" onclick="markNoteDone('${note.id}')">
-                  ${note.status === 'done'
-              ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
-              : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark Done`}
-                </button>
-                <button class="note-action-btn note-action-delete" style="padding:9px 6px;font-size:10.5px;" onclick="deleteNote('${note.id}')">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete
-                </button>
-              </div>
+            <div class="note-bottom-actions">
+              <button class="note-btn-done" onclick="markNoteDone('${note.id}')">
+                ${note.status === 'done'
+              ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
+              : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark Done`}
+              </button>
+              <button class="note-btn-delete" onclick="deleteNote('${note.id}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete
+              </button>
             </div>
           </div>`;
 
@@ -11235,9 +11426,19 @@
       if (card) {
         const dotEl = card.querySelector('.note-dot');
         if (dotEl) { dotEl.className = 'note-dot ' + ({ high: 'note-dot-high', medium: 'note-dot-medium', low: 'note-dot-low' }[priority] || 'note-dot-none'); }
+        // Update old-style chips if present
         card.querySelectorAll('.note-pri-chip').forEach((el, i) => {
           const p = ['high', 'medium', 'low'][i];
           el.className = 'note-pri-chip' + (p === priority ? ' sel-' + p : '');
+        });
+        // Update new-style priority dots
+        card.querySelectorAll('.note-pri-dot').forEach(el => {
+          const isHigh = el.classList.contains('pd-high');
+          const isMed = el.classList.contains('pd-medium');
+          const isLow = el.classList.contains('pd-low');
+          const p = isHigh ? 'high' : isMed ? 'medium' : isLow ? 'low' : '';
+          if (p === priority) el.classList.add('pd-active');
+          else el.classList.remove('pd-active');
         });
       }
     }

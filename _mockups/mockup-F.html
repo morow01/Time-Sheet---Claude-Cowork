@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup F — Icon Bar + Reminder Field + Grouped Done/Delete</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; padding: 16px; color: #1a2332; }
+  h2 { text-align: center; margin-bottom: 12px; font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+  .label-tag { display: inline-block; font-size: 10px; font-weight: 700; color: #fff; background: #1e3a8a; padding: 2px 8px; border-radius: 6px; margin-bottom: 10px; }
+  .card-wrap { max-width: 420px; margin: 0 auto 28px; }
+
+  .note-card {
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden;
+  }
+
+  /* Header */
+  .note-header { display: flex; align-items: center; gap: 8px; padding: 14px 16px 10px; }
+  .note-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .note-dot.high { background: #e8453c; }
+  .note-dot.med  { background: #F5A623; }
+  .note-dot.low  { background: #34a853; }
+  .note-title { font-weight: 700; font-size: 15px; flex: 1; }
+  .note-meta { font-size: 11.5px; color: #8a94a6; padding: 0 16px 8px; }
+  .note-meta svg { vertical-align: -2px; margin-right: 2px; }
+  .divider { height: 1px; background: #eef0f3; margin: 0 16px; }
+
+  /* Fields */
+  .note-field-label { font-size: 10px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .note-field { padding: 12px 16px; }
+  .note-input {
+    width: 100%; border: none; background: #f7f8fa; border-radius: 10px;
+    padding: 10px 12px; font-size: 14px; color: #1a2332; font-family: inherit;
+    resize: none; outline: none;
+  }
+  .note-content-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #f7f8fa; border-radius: 10px; padding: 10px 12px;
+    font-size: 13.5px; color: #555; cursor: pointer;
+  }
+  .note-content-row svg { flex-shrink: 0; opacity: 0.5; }
+
+  /* Priority chips */
+  .priority-row { display: flex; align-items: center; gap: 6px; padding: 8px 16px; }
+  .priority-label { font-size: 10px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: 0.8px; margin-right: 4px; }
+  .pri-chip {
+    padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    border: 1.5px solid #ddd; background: #fff; color: #888; cursor: pointer;
+    transition: all 0.15s; user-select: none;
+  }
+  .pri-chip:active { transform: scale(0.95); }
+  .pri-chip.active-high { border-color: #e8453c; background: #fef2f1; color: #e8453c; }
+  .pri-chip.active-med  { border-color: #F5A623; background: #fef8ee; color: #d4900a; }
+  .pri-chip.active-low  { border-color: #34a853; background: #eef8f0; color: #2d8f47; }
+
+  /* ===== REMINDER FIELD ===== */
+  .reminder-field { padding: 4px 16px 8px; }
+
+  /* Unset */
+  .reminder-unset {
+    display: flex; align-items: center; gap: 8px;
+    background: #f7f8fa; border-radius: 10px; padding: 10px 12px;
+    font-size: 13px; color: #8a94a6; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .reminder-unset:active { background: #eef0f3; }
+  .reminder-unset svg { width: 18px; height: 18px; flex-shrink: 0; stroke: #8a94a6; fill: none; }
+  .reminder-unset .plus { margin-left: auto; }
+  .reminder-unset .plus svg { width: 14px; height: 14px; stroke: #bbb; }
+
+  /* Set */
+  .reminder-set {
+    display: flex; align-items: center; gap: 10px;
+    background: #fef8ee; border-radius: 10px; padding: 10px 12px;
+    border: 1.5px solid #F5A623;
+  }
+  .rem-bell {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+  }
+  .rem-bell svg { width: 16px; height: 16px; stroke: #d4900a; fill: none; }
+  .rem-info { flex: 1; }
+  .rem-info-label { font-size: 10px; font-weight: 700; color: #d4900a; text-transform: uppercase; letter-spacing: 0.5px; }
+  .rem-info-dt { font-size: 13px; font-weight: 600; color: #1a2332; margin-top: 1px; }
+  .rem-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
+  .rem-badge.pending { background: #fff; color: #d4900a; }
+  .rem-badge.fired  { background: #f0f2f5; color: #8a94a6; }
+  .rem-x {
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: none; background: transparent; cursor: pointer;
+    color: #d4900a; font-size: 14px; font-weight: 700;
+  }
+  .rem-x:hover { background: #fde6c4; }
+
+  /* Fired */
+  .reminder-fired {
+    display: flex; align-items: center; gap: 10px;
+    background: #f7f8fa; border-radius: 10px; padding: 10px 12px;
+    opacity: 0.55;
+  }
+  .reminder-fired .rem-bell { background: #eef0f3; }
+  .reminder-fired .rem-bell svg { stroke: #8a94a6; }
+  .reminder-fired .rem-info-label { color: #8a94a6; }
+  .reminder-fired .rem-info-dt { color: #8a94a6; }
+
+  /* ===== ACTION BAR: Task + Calendar left, Done + Delete right ===== */
+  .action-bar {
+    display: flex; align-items: center;
+    padding: 8px 12px 12px;
+    border-top: 1px solid #eef0f3;
+    gap: 4px;
+  }
+  .action-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: none; border: none; cursor: pointer;
+    padding: 6px 10px; border-radius: 10px;
+    transition: background 0.15s; color: #6b7689;
+  }
+  .action-btn:hover { background: #f0f2f5; }
+  .action-btn:active { transform: scale(0.95); }
+  .action-btn svg { width: 20px; height: 20px; }
+  .action-btn span { font-size: 9.5px; font-weight: 600; letter-spacing: 0.3px; }
+
+  .action-spacer { flex: 1; }
+
+  /* Grouped Done + Delete */
+  .action-group {
+    display: flex; align-items: center; gap: 2px;
+    background: #f7f8fa; border-radius: 12px;
+    padding: 2px;
+  }
+  .action-group .action-btn { border-radius: 10px; }
+  .action-group .done-btn { color: #34a853; }
+  .action-group .done-btn:hover { background: #eef8f0; }
+  .action-group .delete-btn { color: #ccc; }
+  .action-group .delete-btn:hover { color: #e8453c; background: #fef2f1; }
+</style>
+</head>
+<body>
+
+<h2>Mockup F — Icon Bar + Reminder Field</h2>
+
+<!-- ========== CARD 1: Reminder SET ========== -->
+<div class="card-wrap">
+  <div class="label-tag">REMINDER SET</div>
+  <div class="note-card">
+    <div class="note-header">
+      <div class="note-dot med"></div>
+      <div class="note-title">Test note v.35</div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="note-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+      Sallins (SLS) &nbsp;·&nbsp; Sat 21. Mar '26
+    </div>
+    <div class="divider"></div>
+
+    <div class="note-field">
+      <div class="note-field-label">Description</div>
+      <input class="note-input" value="Test note v.35">
+    </div>
+
+    <div style="padding: 0 16px 8px;">
+      <div class="note-content-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Test the reminder
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <!-- Reminder SET -->
+    <div class="reminder-field">
+      <div class="note-field-label">Reminder</div>
+      <div class="reminder-set">
+        <div class="rem-bell">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="rem-info">
+          <div class="rem-info-label">Triggers</div>
+          <div class="rem-info-dt">22 Mar 2026 · 09:30</div>
+        </div>
+        <span class="rem-badge pending">Pending</span>
+        <button class="rem-x" title="Remove">✕</button>
+      </div>
+    </div>
+
+    <div class="note-field" style="padding-top:4px">
+      <div class="note-field-label">Location</div>
+      <input class="note-input" value="Sallins (SLS)">
+    </div>
+    <div class="note-field" style="padding-top:0">
+      <div class="note-field-label">Date</div>
+      <input class="note-input" type="text" value="21 / 03 / 2026">
+    </div>
+
+    <div class="priority-row">
+      <span class="priority-label">Priority</span>
+      <span class="pri-chip">High</span>
+      <span class="pri-chip active-med">Medium</span>
+      <span class="pri-chip">Low</span>
+    </div>
+
+    <!-- Action bar: Task + Calendar left · Done + Delete grouped right -->
+    <div class="action-bar">
+      <button class="action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Task</span>
+      </button>
+      <button class="action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+        <span>Calendar</span>
+      </button>
+      <div class="action-spacer"></div>
+      <div class="action-group">
+        <button class="action-btn done-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Done</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CARD 2: NO REMINDER ========== -->
+<div class="card-wrap">
+  <div class="label-tag">NO REMINDER</div>
+  <div class="note-card">
+    <div class="note-header">
+      <div class="note-dot high"></div>
+      <div class="note-title">Call electrician</div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="note-meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+      Home &nbsp;·&nbsp; Sun 22. Mar '26
+    </div>
+    <div class="divider"></div>
+
+    <div class="note-field">
+      <div class="note-field-label">Description</div>
+      <input class="note-input" value="Call electrician about kitchen lights">
+    </div>
+
+    <div style="padding: 0 16px 8px;">
+      <div class="note-content-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Need quote for recessed lights in kitchen
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:auto"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+
+    <!-- Reminder UNSET -->
+    <div class="reminder-field">
+      <div class="note-field-label">Reminder</div>
+      <div class="reminder-unset">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span style="flex:1">Add reminder...</span>
+        <span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      </div>
+    </div>
+
+    <div class="note-field" style="padding-top:4px">
+      <div class="note-field-label">Location</div>
+      <input class="note-input" value="Home">
+    </div>
+    <div class="note-field" style="padding-top:0">
+      <div class="note-field-label">Date</div>
+      <input class="note-input" type="text" value="22 / 03 / 2026">
+    </div>
+
+    <div class="priority-row">
+      <span class="priority-label">Priority</span>
+      <span class="pri-chip active-high">High</span>
+      <span class="pri-chip">Medium</span>
+      <span class="pri-chip">Low</span>
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Task</span>
+      </button>
+      <button class="action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+        <span>Calendar</span>
+      </button>
+      <div class="action-spacer"></div>
+      <div class="action-group">
+        <button class="action-btn done-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Done</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CARD 3: REMINDED ========== -->
+<div class="card-wrap">
+  <div class="label-tag">REMINDED</div>
+  <div class="note-card">
+    <div class="note-header">
+      <div class="note-dot low"></div>
+      <div class="note-title">Pick up dry cleaning</div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="divider" style="margin-top:-2px"></div>
+
+    <div class="note-field">
+      <div class="note-field-label">Description</div>
+      <input class="note-input" value="Pick up dry cleaning">
+    </div>
+
+    <!-- Reminder FIRED -->
+    <div class="reminder-field">
+      <div class="note-field-label">Reminder</div>
+      <div class="reminder-fired">
+        <div class="rem-bell">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="rem-info">
+          <div class="rem-info-label">Reminded</div>
+          <div class="rem-info-dt">21 Mar 2026 · 14:00</div>
+        </div>
+        <span class="rem-badge fired">Reminded</span>
+        <button class="rem-x" title="Remove" style="color:#8a94a6">✕</button>
+      </div>
+    </div>
+
+    <div class="note-field" style="padding-top:0">
+      <div class="note-field-label">Date</div>
+      <input class="note-input" type="text" value="21 / 03 / 2026">
+    </div>
+
+    <div class="priority-row">
+      <span class="priority-label">Priority</span>
+      <span class="pri-chip">High</span>
+      <span class="pri-chip">Medium</span>
+      <span class="pri-chip active-low">Low</span>
+    </div>
+
+    <div class="action-bar">
+      <button class="action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Task</span>
+      </button>
+      <button class="action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+        <span>Calendar</span>
+      </button>
+      <div class="action-spacer"></div>
+      <div class="action-group">
+        <button class="action-btn done-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Done</span>
+        </button>
+        <button class="action-btn delete-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <span>Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Note Card - Option E: Compact Rows + Reminder Field</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; padding: 16px; color: #1a2332; }
+  h2 { text-align: center; margin-bottom: 12px; font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+  .label-tag { display: inline-block; font-size: 10px; font-weight: 700; color: #fff; background: #1e3a8a; padding: 2px 8px; border-radius: 6px; margin-bottom: 10px; text-align: center; }
+  .card-wrap { max-width: 420px; margin: 0 auto 28px; }
+
+  .note-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+
+  /* Header */
+  .note-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 14px 16px 10px;
+  }
+  .note-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .note-dot.high { background: #e8453c; }
+  .note-dot.med  { background: #F5A623; }
+  .note-dot.low  { background: #34a853; }
+  .note-title { font-weight: 700; font-size: 15px; flex: 1; }
+
+  /* Compact list rows */
+  .field-list { padding: 4px 0; }
+  .field-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-row svg { width: 16px; height: 16px; flex-shrink: 0; color: #8a94a6; }
+  .field-label { font-size: 11px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: 0.6px; width: 72px; flex-shrink: 0; }
+  .field-value { flex: 1; color: #1a2332; font-size: 13.5px; }
+  .field-value input {
+    width: 100%; border: none; background: transparent;
+    font-size: 13.5px; color: #1a2332; font-family: inherit; outline: none; padding: 0;
+  }
+
+  /* Priority row */
+  .field-row.priority-row { cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .field-row.priority-row:active { background: #fafbfc; }
+  .pri-indicator {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 12px;
+    font-size: 12px; font-weight: 700;
+  }
+  .pri-indicator.high { background: #fef2f1; color: #e8453c; }
+  .pri-indicator.med  { background: #fef8ee; color: #d4900a; }
+  .pri-indicator.low  { background: #eef8f0; color: #2d8f47; }
+  .cycle-hint { font-size: 10px; color: #bbb; margin-left: auto; }
+
+  /* Content row */
+  .content-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-bottom: 1px solid #f3f4f6;
+    font-size: 13.5px; color: #555; cursor: pointer;
+  }
+  .content-row svg { flex-shrink: 0; color: #8a94a6; }
+  .content-row .chevron { margin-left: auto; }
+
+  /* Reminder row — integrated into the field list */
+  .reminder-row-unset {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer; color: #8a94a6;
+  }
+  .reminder-row-unset:active { background: #fafbfc; }
+  .reminder-row-unset svg { width: 16px; height: 16px; flex-shrink: 0; stroke: #8a94a6; fill: none; }
+  .reminder-row-unset .add-icon { margin-left: auto; }
+  .reminder-row-unset .add-icon svg { width: 14px; height: 14px; stroke: #bbb; }
+
+  .reminder-row-set {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .reminder-row-set svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .rem-icon-set {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #fef8ee; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rem-icon-set svg { width: 14px; height: 14px; stroke: #d4900a; fill: none; }
+  .rem-details { flex: 1; }
+  .rem-details .rem-label { font-size: 10px; font-weight: 700; color: #8a94a6; text-transform: uppercase; letter-spacing: 0.5px; }
+  .rem-details .rem-datetime { font-size: 13px; font-weight: 600; color: #1a2332; margin-top: 1px; }
+  .rem-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 8px;
+  }
+  .rem-badge.pending { background: #fef8ee; color: #d4900a; }
+  .rem-badge.fired { background: #f0f2f5; color: #8a94a6; }
+  .rem-clear {
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: none; background: transparent; cursor: pointer;
+    color: #bbb; font-size: 14px;
+  }
+  .rem-clear:hover { background: #fef2f1; color: #e8453c; }
+
+  /* Bottom action strip */
+  .action-strip {
+    padding: 10px 16px 6px;
+    border-top: 1px solid #eef0f3;
+  }
+  .icon-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .icon-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 10px;
+    font-size: 12px; font-weight: 600;
+    border: 1.5px solid #e4e7ec; background: #fff; color: #4a5568;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .icon-btn:hover { background: #f7f8fa; border-color: #cdd2da; }
+  .icon-btn:active { transform: scale(0.96); }
+  .icon-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .icon-btn.del { border-color: transparent; color: #ccc; }
+  .icon-btn.del:hover { color: #e8453c; background: #fef2f1; }
+
+  /* Full-width Done */
+  .done-strip { padding: 0 16px 14px; }
+  .done-btn {
+    width: 100%; padding: 12px; border-radius: 12px;
+    background: #34a853; color: #fff; border: none;
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+    transition: background 0.15s;
+  }
+  .done-btn:hover { background: #2d8f47; }
+  .done-btn:active { transform: scale(0.98); }
+  .done-btn svg { width: 18px; height: 18px; }
+</style>
+</head>
+<body>
+
+<h2>Option E — Compact Rows + Reminder Field</h2>
+
+<!-- ========== CARD 1: Reminder IS SET ========== -->
+<div class="card-wrap">
+  <div class="label-tag">REMINDER SET</div>
+  <div class="note-card">
+    <div class="note-header">
+      <div class="note-dot med"></div>
+      <div class="note-title">Test note v.35</div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+
+    <div class="field-list">
+      <div class="field-row">
+        <div class="field-label">Desc</div>
+        <div class="field-value"><input value="Test note v.35"></div>
+      </div>
+
+      <div class="content-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Test the reminder
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <!-- REMINDER — SET -->
+      <div class="reminder-row-set">
+        <div class="rem-icon-set">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="rem-details">
+          <div class="rem-label">Reminder</div>
+          <div class="rem-datetime">22 Mar 2026 · 09:30</div>
+        </div>
+        <span class="rem-badge pending">Pending</span>
+        <button class="rem-clear" title="Remove">✕</button>
+      </div>
+
+      <div class="field-row">
+        <svg viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        <div class="field-label">Location</div>
+        <div class="field-value"><input value="Sallins (SLS)"></div>
+      </div>
+
+      <div class="field-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div class="field-label">Date</div>
+        <div class="field-value"><input type="text" value="21/03/2026"></div>
+      </div>
+
+      <div class="field-row priority-row" onclick="cyclePriority(1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+        <div class="field-label">Priority</div>
+        <div class="field-value">
+          <span class="pri-indicator med" id="priInd1">Medium</span>
+        </div>
+        <span class="cycle-hint">tap to change</span>
+      </div>
+    </div>
+
+    <div class="action-strip">
+      <div class="icon-row">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Task
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+          Calendar
+        </button>
+        <button class="icon-btn del">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="done-strip">
+      <button class="done-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark as Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CARD 2: NO REMINDER ========== -->
+<div class="card-wrap">
+  <div class="label-tag">NO REMINDER</div>
+  <div class="note-card">
+    <div class="note-header">
+      <div class="note-dot high"></div>
+      <div class="note-title">Call electrician</div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+
+    <div class="field-list">
+      <div class="field-row">
+        <div class="field-label">Desc</div>
+        <div class="field-value"><input value="Call electrician about kitchen lights"></div>
+      </div>
+
+      <div class="content-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Need to get quote for recessed lights
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+
+      <!-- REMINDER — UNSET -->
+      <div class="reminder-row-unset">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="field-label">Reminder</div>
+        <span style="flex:1; font-size:13px; color:#aaa;">Add reminder...</span>
+        <div class="add-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <svg viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        <div class="field-label">Location</div>
+        <div class="field-value"><input value="Home"></div>
+      </div>
+
+      <div class="field-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div class="field-label">Date</div>
+        <div class="field-value"><input type="text" value="22/03/2026"></div>
+      </div>
+
+      <div class="field-row priority-row" onclick="cyclePriority(2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+        <div class="field-label">Priority</div>
+        <div class="field-value">
+          <span class="pri-indicator high" id="priInd2">High</span>
+        </div>
+        <span class="cycle-hint">tap to change</span>
+      </div>
+    </div>
+
+    <div class="action-strip">
+      <div class="icon-row">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Task
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+          Calendar
+        </button>
+        <button class="icon-btn del">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="done-strip">
+      <button class="done-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark as Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CARD 3: REMINDER FIRED ========== -->
+<div class="card-wrap">
+  <div class="label-tag">REMINDER FIRED</div>
+  <div class="note-card">
+    <div class="note-header">
+      <div class="note-dot low"></div>
+      <div class="note-title">Pick up dry cleaning</div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+
+    <div class="field-list">
+      <div class="field-row">
+        <div class="field-label">Desc</div>
+        <div class="field-value"><input value="Pick up dry cleaning"></div>
+      </div>
+
+      <!-- REMINDER — FIRED -->
+      <div class="reminder-row-set" style="opacity: 0.6;">
+        <div class="rem-icon-set" style="background:#f0f2f5;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div class="rem-details">
+          <div class="rem-label">Reminded</div>
+          <div class="rem-datetime" style="color:#8a94a6;">21 Mar 2026 · 14:00</div>
+        </div>
+        <span class="rem-badge fired">Reminded</span>
+        <button class="rem-clear" title="Remove">✕</button>
+      </div>
+
+      <div class="field-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div class="field-label">Date</div>
+        <div class="field-value"><input type="text" value="21/03/2026"></div>
+      </div>
+
+      <div class="field-row priority-row" onclick="cyclePriority(3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8a94a6" stroke-width="2.5"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+        <div class="field-label">Priority</div>
+        <div class="field-value">
+          <span class="pri-indicator low" id="priInd3">Low</span>
+        </div>
+        <span class="cycle-hint">tap to change</span>
+      </div>
+    </div>
+
+    <div class="action-strip">
+      <div class="icon-row">
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Task
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+          Calendar
+        </button>
+        <button class="icon-btn del">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="done-strip">
+      <button class="done-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark as Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const levels = ['high', 'med', 'low'];
+  const labels = { high: 'High', med: 'Medium', low: 'Low' };
+  const state = { 1: 1, 2: 0, 3: 2 };
+  function cyclePriority(n) {
+    state[n] = (state[n] + 1) % 3;
+    const lvl = levels[state[n]];
+    document.getElementById('priInd' + n).className = 'pri-indicator ' + lvl;
+    document.getElementById('priInd' + n).textContent = labels[lvl];
+  }
+</script>
+</body>
+</html>
