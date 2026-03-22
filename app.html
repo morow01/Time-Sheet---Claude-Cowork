@@ -6805,7 +6805,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.12.4';
+    const VERSION = '4.12.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12540,15 +12540,13 @@
         async pos => {
           try {
             const { latitude: lat, longitude: lon } = pos.coords;
-            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=16&addressdetails=1`, {
+            // zoom=12 returns the nearest town/village name for Irish locations
+            const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=12`, {
               headers: { 'Accept-Language': 'en' }
             });
             if (!resp.ok) return;
             const data = await resp.json();
-            const addr = data.address || {};
-            // Irish addresses often lack town/city — use city_district (strip " ED"), hamlet, or region
-            const cityDist = addr.city_district ? addr.city_district.replace(/\s+ED$/, '') : '';
-            _cachedGpsTown = addr.town || addr.city || addr.village || addr.suburb || addr.hamlet || cityDist || addr.county || null;
+            _cachedGpsTown = (data.type === 'town' || data.type === 'village' || data.type === 'city') ? data.name : (data.address?.town || data.address?.city || data.address?.village || data.name || null);
             _gpsLastFetch = Date.now();
             console.log('[Rian] GPS town:', _cachedGpsTown);
           } catch(e) { console.warn('[Rian] GPS reverse geocode failed', e); }
