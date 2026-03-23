@@ -415,6 +415,16 @@
       animation: voiceFabPulse 1s ease-in-out infinite;
     }
 
+    /* Fullscreen Quill mic button listening state */
+    #fs-mic-btn.fs-mic-listening {
+      background: rgba(229, 57, 53, 0.2);
+      border-radius: 8px;
+    }
+    #fs-mic-btn.fs-mic-listening svg {
+      stroke: #e53935;
+      animation: voiceFabPulse 1s ease-in-out infinite;
+    }
+
     .act-codes-wrap {
       background: #fff;
       border: 1.5px solid var(--border);
@@ -7924,7 +7934,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.16.0';
+    const VERSION = '4.16.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -17709,6 +17719,10 @@ QUESTION: ${query}`;
       }, 80);
     }
     function closeNoteFullscreen() {
+      // Stop any active dictation
+      if (_fsDictRecognition) { _fsDictRecognition.stop(); _fsDictRecognition = null; }
+      const micBtn = document.getElementById('fs-mic-btn');
+      if (micBtn) micBtn.classList.remove('fs-mic-listening');
       if (_quillInstance) _quillInstance.off('text-change');
       document.getElementById('note-fs-modal').classList.add('hidden');
       // If we were editing a callout note, update preview
@@ -17729,6 +17743,69 @@ QUESTION: ${query}`;
         render();
       }
       _noteFsActId = null; _noteFsDi = null;
+    }
+
+    // Dictate into fullscreen Quill editor
+    let _fsDictRecognition = null;
+
+    function startFsDictation() {
+      if (!_quillInstance) return;
+
+      // If already listening, stop
+      if (_fsDictRecognition) {
+        _fsDictRecognition.stop();
+        _fsDictRecognition = null;
+        return;
+      }
+
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showToast('Speech recognition not supported');
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-IE';
+      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+      _fsDictRecognition = recognition;
+
+      const btn = document.getElementById('fs-mic-btn');
+      if (btn) btn.classList.add('fs-mic-listening');
+
+      recognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            transcript += e.results[i][0].transcript;
+          }
+        }
+        if (transcript && _quillInstance) {
+          const len = _quillInstance.getLength();
+          const sel = _quillInstance.getSelection();
+          const insertAt = sel ? sel.index : len - 1;
+          // Add space before if not at start and previous char isn't whitespace
+          const prevText = _quillInstance.getText(Math.max(0, insertAt - 1), 1);
+          const prefix = (insertAt > 0 && prevText && !/\s/.test(prevText)) ? ' ' : '';
+          _quillInstance.insertText(insertAt, prefix + transcript, 'user');
+          _quillInstance.setSelection(insertAt + prefix.length + transcript.length, 0);
+        }
+      };
+
+      recognition.onend = () => {
+        if (btn) btn.classList.remove('fs-mic-listening');
+        _fsDictRecognition = null;
+      };
+
+      recognition.onerror = (e) => {
+        if (btn) btn.classList.remove('fs-mic-listening');
+        _fsDictRecognition = null;
+        if (e.error !== 'aborted') showToast('Dictation error: ' + e.error);
+      };
+
+      recognition.start();
+      if (navigator.vibrate) navigator.vibrate(30);
     }
 
     // Open the Fault Assistant as a full-screen overlay
@@ -18141,6 +18218,9 @@ QUESTION: ${query}`;
             style="font-size:11px;opacity:0.7;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;">
           </div>
         </div>
+        <button id="fs-mic-btn" onclick="startFsDictation()" class="text-white p-1 flex items-center justify-center" style="flex-shrink:0;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;" title="Dictate">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </button>
         <button onclick="closeNoteFullscreen()"
           style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:#F5A623;border:none;cursor:pointer;font-weight:700;flex-shrink:0;">Done</button>
       </div>
