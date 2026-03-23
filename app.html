@@ -8232,7 +8232,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.25';
+    const VERSION = '4.18.26';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9680,7 +9680,7 @@
           const _ticket = co.ticket || '—';
           const _loc = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '—';
           return `<tr>
-            <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:500;color:${C.txt};vertical-align:middle;">${_dateLabel}</td>
+            <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:500;color:${C.txt};vertical-align:middle;">${cpSpan(_dateLabel, `font-family:monospace;font-weight:500;`)}</td>
             <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:500;color:${C.txt};vertical-align:middle;">${co.ticket ? cpSpan(_ticket, `font-family:monospace;font-weight:500;`) : '—'}</td>
             <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-size:13px;color:${C.txtSec};vertical-align:middle;">${co.site ? cpSpan(_loc) : '—'}</td>
           </tr>`;
