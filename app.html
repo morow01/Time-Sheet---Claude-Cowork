@@ -8227,7 +8227,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.5';
+    const VERSION = '4.18.6';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15327,11 +15327,6 @@
       </div>`;
 
       // Summary pills
-      html += `<div class="oc-summary-bar">
-        <div class="oc-summary-pill"><span style="color:var(--accent);font-weight:700">${totalOnCall}</span> On-Call</div>
-        <div class="oc-summary-pill"><span style="color:#F59E0B;font-weight:700">${totalExtra}</span> Extra</div>
-        <div class="oc-summary-pill"><span style="color:#EF4444;font-weight:700">${totalIncidents}</span> Incidents</div>
-      </div>`;
 
       // Legend
       html += `<div class="oc-legend" style="justify-content:center;padding:0 20px 12px;font-size:12px">
@@ -15353,7 +15348,7 @@
       const activeMonths = Object.keys(byMonth).map(Number).sort((a,b) => a - b);
       activeMonths.forEach((m, idx) => {
         const isLast = idx === activeMonths.length - 1;
-        html += `<div class="oc-grid-row" style="padding:10px 12px;margin-bottom:0;${!isLast ? 'border-bottom:1px solid var(--border)' : ''}">`;
+        html += `<div class="oc-grid-row" style="padding:10px 12px;margin-bottom:0;${!isLast ? 'border-bottom:1px dashed var(--border)' : ''}">`;
         html += `<div class="oc-month-label">${monthNames[m]}</div><div style="display:flex;gap:4px;flex-wrap:wrap">`;
         byMonth[m].forEach(f => {
           const dayNum = strToDate(f).getDate();
