@@ -8067,7 +8067,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.17.4';
+    const VERSION = '4.17.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15139,7 +15139,7 @@
 
       html += `<div style="margin:0 14px 10px;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);overflow:hidden">`;
       // Schedule header (collapsible)
-      html += `<div onclick="state.coScheduleOpen=!state.coScheduleOpen;render()" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer">
+      html += `<div onclick="ocToggleSchedule()" style="padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer">
         <div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);display:flex;align-items:center;justify-content:center">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
@@ -15147,10 +15147,10 @@
           <div style="font-size:14px;font-weight:700;color:var(--text-primary)">On-Call Schedule ${year}</div>
           <div style="font-size:11px;color:var(--text-muted);margin-top:1px">${totalOnCall + totalExtra} week${(totalOnCall + totalExtra) !== 1 ? 's' : ''} · ${totalIncidents} incident${totalIncidents !== 1 ? 's' : ''}${totalExtra > 0 ? ` · <span style="color:#F59E0B;font-weight:600">${totalExtra} extra</span>` : ''}</div>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" style="transition:transform 0.2s;transform:${state.coScheduleOpen ? 'rotate(90deg)' : 'rotate(0deg)'}"><polyline points="9 18 15 12 9 6"/></svg>
+        <svg id="oc-sched-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" style="transition:transform 0.25s;transform:${state.coScheduleOpen ? 'rotate(90deg)' : 'rotate(0deg)'}"><polyline points="9 18 15 12 9 6"/></svg>
       </div>`;
 
-      html += `<div style="overflow:hidden;max-height:${state.coScheduleOpen ? '2000px' : '0'};opacity:${state.coScheduleOpen ? '1' : '0'};transition:max-height 0.35s ease,opacity 0.25s ease">`;
+      html += `<div id="oc-sched-body" style="overflow:hidden;max-height:${state.coScheduleOpen ? '2000px' : '0'};opacity:${state.coScheduleOpen ? '1' : '0'};transition:max-height 0.35s ease,opacity 0.25s ease">`;
       {
         html += `<div style="border-top:1px solid var(--border);padding:10px 12px 14px">`;
         // Legend
@@ -15194,31 +15194,28 @@
       html += `</div>`;
       html += `</div>`;
 
-      // ── Currently On-Call banner ──
-      if (isCurrentOnCall && activeWeek) {
+      // ── Current Week card (same style as Previous Weeks) ──
+      if (activeWeek) {
         const [wk, wd] = activeWeek;
         const cnt = (wd.callouts || []).length;
         const isExtra = onCall[curWeekStart] === 'extra';
-        html += `<div onclick="coSelectWeek('${wk}')" style="margin:0 14px 10px;padding:10px 14px;border-radius:10px;background:var(--accent-light);border:1.5px solid var(--accent);display:flex;align-items:center;gap:10px;cursor:pointer">
-          <div style="width:8px;height:8px;border-radius:50%;background:var(--priority-low);box-shadow:0 0 6px var(--priority-low)"></div>
-          <div style="flex:1">
-            <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px">Currently On-Call${isExtra ? ' <span style="color:#F59E0B">(Extra)</span>' : ''}</div>
-            <div style="font-size:13px;font-weight:600;color:var(--text-primary)">${formatWeekRange(wk)}</div>
+        const ocType = onCall[curWeekStart];
+        const badgeBg = isExtra ? '#FEF3C7' : 'var(--accent-light)';
+        const badgeColor = isExtra ? '#F59E0B' : 'var(--accent)';
+        const badgeHtml = ocType === 'oncall'
+          ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:var(--accent-light);color:var(--accent);margin-left:6px">ON-CALL</span>`
+          : ocType === 'extra'
+          ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
+          : '';
+        html += `<div style="margin:0 14px 10px;background:var(--bg-card);border-radius:14px;border:1.5px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
+            <div class="task-num" style="background:${badgeBg};color:${badgeColor}">${cnt}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:600;color:var(--text-primary)">${formatWeekRange(wk)}${badgeHtml}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${cnt} incident${cnt !== 1 ? 's' : ''} · <span style="color:var(--priority-low);font-weight:600">Current week</span></div>
+            </div>
+            <span style="font-size:14px;color:var(--text-muted)">›</span>
           </div>
-          <div style="font-size:18px;font-weight:800;color:var(--accent)">${cnt}</div>
-          <div style="font-size:10px;color:var(--text-muted);margin-left:-6px">incidents</div>
-        </div>`;
-      } else if (activeWeek) {
-        // Current week exists but not marked on-call
-        const [wk, wd] = activeWeek;
-        const cnt = (wd.callouts || []).length;
-        html += `<div onclick="coSelectWeek('${wk}')" style="margin:0 14px 10px;padding:14px 16px;background:var(--accent-light);border-radius:12px;border:1.5px solid var(--accent);cursor:pointer">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="width:8px;height:8px;border-radius:50%;background:var(--priority-low);display:inline-block;box-shadow:0 0 6px var(--priority-low)"></span>
-            <span class="act-field-label" style="color:var(--accent);margin:0">Current Week</span>
-          </div>
-          <div style="font-size:15px;font-weight:600;color:var(--text-primary)">${formatWeekRange(wk)}</div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">${cnt} incident${cnt !== 1 ? 's' : ''}</div>
         </div>`;
       }
 
@@ -15301,14 +15298,9 @@
           <div style="font-size:15px;font-weight:700;color:var(--text-primary)">${esc(rangeStr)}</div>
           <div style="font-size:12px;color:var(--text-muted)">${allCallouts.length} callout${allCallouts.length !== 1 ? 's' : ''}</div>
         </div>
-        <div style="display:flex;gap:6px">
-          <button onclick="openPasteTicket()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:var(--bg-card);color:var(--accent);border:1.5px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" title="Paste ticket email">
+        <button onclick="openPasteTicket()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:var(--bg-card);color:var(--accent);border:1.5px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" title="Paste ticket email">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg> Paste
           </button>
-          <button onclick="coOpenAdd()" style="display:flex;align-items:center;gap:4px;padding:7px 12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add
-          </button>
-        </div>
       </div>`;
 
       // Selection banner (replaces normal view controls when in selection mode)
@@ -15865,6 +15857,18 @@
           }
         }
       );
+    }
+
+    // ---- On-Call schedule toggle/animate ----
+    function ocToggleSchedule() {
+      state.coScheduleOpen = !state.coScheduleOpen;
+      const body = document.getElementById('oc-sched-body');
+      const chevron = document.getElementById('oc-sched-chevron');
+      if (body) {
+        body.style.maxHeight = state.coScheduleOpen ? '2000px' : '0';
+        body.style.opacity = state.coScheduleOpen ? '1' : '0';
+      }
+      if (chevron) chevron.style.transform = state.coScheduleOpen ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 
     // ---- On-Call schedule toggle handlers ----
