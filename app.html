@@ -8232,7 +8232,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.26';
+    const VERSION = '4.18.27';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -9457,7 +9457,7 @@
       let calloutsEmailHtml = '';
       if (_coEntries.length > 0) {
         const _coRows = _coEntries.map(co => {
-          const _dateLabel = co.date ? (()=>{ const p=co.date.split('-'); return p[2].replace(/^0/,'')+'.'+p[1].replace(/^0/,''); })() : '—';
+          const _dateLabel = co.date ? (()=>{ const _mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const p=co.date.split('-'); return p[2].replace(/^0/,'')+'. '+_mn[parseInt(p[1],10)-1]; })() : '—';
           const _ticket = esc(co.ticket || '—');
           const _loc = esc(co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '—');
           return `<tr>
@@ -9676,7 +9676,7 @@
       let calloutsPreviewHtml = '';
       if (_pCoEntries.length > 0) {
         const _pCoRows = _pCoEntries.map(co => {
-          const _dateLabel = co.date ? (()=>{ const p=co.date.split('-'); return p[2].replace(/^0/,'')+'.'+p[1].replace(/^0/,''); })() : '—';
+          const _dateLabel = co.date ? (()=>{ const _mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const p=co.date.split('-'); return p[2].replace(/^0/,'')+'. '+_mn[parseInt(p[1],10)-1]; })() : '—';
           const _ticket = co.ticket || '—';
           const _loc = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '—';
           return `<tr>
