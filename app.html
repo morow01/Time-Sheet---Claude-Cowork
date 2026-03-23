@@ -8140,7 +8140,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.3';
+    const VERSION = '4.18.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14378,7 +14378,8 @@
       notes: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
       reminders: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
       callouts: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
-      settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+      settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+      routines: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>'
     };
 
     function _eiCheckboxRow(id, icon, label, count, checked, disabled) {
@@ -14396,13 +14397,14 @@
       if (!state.currentUser) { showToast('Sign in first'); return; }
       const uid = state.currentUser.uid;
       // Fetch all counts from Firestore (fall back to IndexedDB/state)
-      let weekCount = 0, noteCount = 0, remCount = 0, coCount = 0;
+      let weekCount = 0, noteCount = 0, remCount = 0, coCount = 0, rtnCount = 0;
       try {
-        const [weeksSnap, notesDoc, remDoc, coDoc] = await Promise.all([
+        const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc] = await Promise.all([
           db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
           userDoc('data/notes')?.get().catch(() => null),
           userDoc('data/reminders')?.get().catch(() => null),
-          userDoc('data/callouts')?.get().catch(() => null)
+          userDoc('data/callouts')?.get().catch(() => null),
+          userDoc('data/routines')?.get({ source: 'server' }).catch(() => null)
         ]);
         weekCount = weeksSnap?.size || 0;
         noteCount = notesDoc?.exists ? (notesDoc.data()?.notes?.length || 0) : 0;
@@ -14411,6 +14413,7 @@
           const weeks = coDoc.data()?.weeks || {};
           coCount = Object.values(weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
         }
+        if (rtnDoc?.exists) rtnCount = rtnDoc.data()?.selectedSites?.length || 0;
       } catch (e) { /* offline — use in-memory state */ }
       // Fall back to in-memory state if Firestore returned 0
       if (!noteCount) noteCount = state.notes?.length || 0;
@@ -14418,6 +14421,7 @@
       if (!coCount && state.callouts?.weeks) {
         coCount = Object.values(state.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
       }
+      if (!rtnCount) rtnCount = state.routines?.selectedSites?.length || 0;
       const settingsCount = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
         'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'].filter(k => localStorage.getItem(k) !== null).length;
       const list = document.getElementById('exp-list');
@@ -14426,6 +14430,7 @@
         _eiCheckboxRow('exp-notes', _eiIcons.notes, 'Field Notes', noteCount ? noteCount + ' notes' : '', true, false) +
         _eiCheckboxRow('exp-reminders', _eiIcons.reminders, 'Reminders', remCount ? remCount + ' reminders' : '', true, false) +
         _eiCheckboxRow('exp-callouts', _eiIcons.callouts, 'Callouts', coCount ? coCount + ' callouts' : '', true, false) +
+        _eiCheckboxRow('exp-routines', _eiIcons.routines, 'Routines', rtnCount ? rtnCount + ' sites' : '', true, false) +
         _eiCheckboxRow('exp-settings', _eiIcons.settings, 'Settings', settingsCount ? settingsCount + ' items' : '', true, false);
       document.getElementById('export-modal').classList.remove('hidden');
     }
@@ -14437,9 +14442,10 @@
       const incNotes = document.getElementById('exp-notes')?.checked;
       const incReminders = document.getElementById('exp-reminders')?.checked;
       const incCallouts = document.getElementById('exp-callouts')?.checked;
+      const incRoutines = document.getElementById('exp-routines')?.checked;
       const incSettings = document.getElementById('exp-settings')?.checked;
 
-      if (!incWeeks && !incNotes && !incReminders && !incCallouts && !incSettings) {
+      if (!incWeeks && !incNotes && !incReminders && !incCallouts && !incRoutines && !incSettings) {
         showToast('Nothing selected to export'); return;
       }
       showToast('Exporting data…');
@@ -14467,6 +14473,10 @@
         if (incCallouts) {
           const calloutsDoc = await userDoc('data/callouts')?.get().catch(() => null);
           exp.callouts = calloutsDoc?.exists ? calloutsDoc.data() : null;
+        }
+        if (incRoutines) {
+          const rtnDoc = await userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null));
+          exp.routines = rtnDoc?.exists ? rtnDoc.data() : null;
         }
         if (incSettings) {
           const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
@@ -14543,6 +14553,8 @@
       const hasCallouts = data.callouts?.weeks && Object.keys(data.callouts.weeks).length > 0;
       const coTotal = hasCallouts ? Object.values(data.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
       const coCount = hasCallouts ? coTotal + ' callouts' : '';
+      const hasRoutines = data.routines?.selectedSites?.length > 0;
+      const rtnCount = hasRoutines ? data.routines.selectedSites.length + ' sites' : '';
       const hasSettings = data.settings && Object.keys(data.settings).length > 0;
 
       const list = document.getElementById('imp-list');
@@ -14551,6 +14563,7 @@
         _eiCheckboxRow('imp-notes', _eiIcons.notes, 'Field Notes', hasNotes ? noteCount : 'Not in file', hasNotes, !hasNotes) +
         _eiCheckboxRow('imp-reminders', _eiIcons.reminders, 'Reminders', hasReminders ? remCount : 'Not in file', hasReminders, !hasReminders) +
         _eiCheckboxRow('imp-callouts', _eiIcons.callouts, 'Callouts', hasCallouts ? coCount : 'Not in file', hasCallouts, !hasCallouts) +
+        _eiCheckboxRow('imp-routines', _eiIcons.routines, 'Routines', hasRoutines ? rtnCount : 'Not in file', hasRoutines, !hasRoutines) +
         _eiCheckboxRow('imp-settings', _eiIcons.settings, 'Settings', hasSettings ? '' : 'Not in file', hasSettings, !hasSettings);
 
       // Switch to preview step
@@ -14565,8 +14578,9 @@
       const incNotes = document.getElementById('imp-notes')?.checked;
       const incReminders = document.getElementById('imp-reminders')?.checked;
       const incCallouts = document.getElementById('imp-callouts')?.checked;
+      const incRoutines = document.getElementById('imp-routines')?.checked;
       const incSettings = document.getElementById('imp-settings')?.checked;
-      if (!incWeeks && !incNotes && !incReminders && !incCallouts && !incSettings) {
+      if (!incWeeks && !incNotes && !incReminders && !incCallouts && !incRoutines && !incSettings) {
         showToast('Nothing selected to import'); return;
       }
       document.getElementById('import-modal').classList.add('hidden');
@@ -14577,6 +14591,7 @@
         notes: incNotes ? data.notes : null,
         reminders: incReminders ? data.reminders : null,
         callouts: incCallouts ? data.callouts : null,
+        routines: incRoutines ? data.routines : null,
         settings: incSettings ? data.settings : null
       };
       showConfirm(
@@ -14640,7 +14655,15 @@
           const coTotal = Object.values(data.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
           parts.push(coTotal + ' callouts');
         }
-        // 5. Import settings
+        // 5. Import routines
+        if (data.routines?.selectedSites) {
+          const ref = userDoc('data/routines');
+          if (ref) await ref.set({ ...data.routines, _updatedAt: Date.now() });
+          state.routines = { ...data.routines };
+          parts.push(data.routines.selectedSites.length + ' routine sites');
+          render();
+        }
+        // 6. Import settings
         if (data.settings) {
           Object.entries(data.settings).forEach(([k, v]) => localStorage.setItem(k, v));
           if (data.settings.theme) document.documentElement.setAttribute('data-theme', data.settings.theme);
@@ -14829,43 +14852,6 @@
       loadRoutines(true);
     }
 
-    function exportRoutineSites() {
-      const sites = (state.routines && state.routines.selectedSites) || [];
-      if (!sites.length) { showToast('No sites to export'); return; }
-      const blob = new Blob([JSON.stringify(sites, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'rian-sites.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast('Sites exported');
-    }
-
-    function importRoutineSites() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json,application/json';
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        try {
-          const text = await file.text();
-          const sites = JSON.parse(text);
-          if (!Array.isArray(sites)) throw new Error('Invalid format');
-          if (!state.routines) state.routines = { selectedSites: [], visits: {} };
-          state.routines.selectedSites = sites;
-          await fsSetRoutines();
-          render();
-          showToast(`${sites.length} sites imported`);
-        } catch (err) {
-          showToast('Import failed: invalid file');
-        }
-      };
-      input.click();
-    }
 
     async function fsSetRoutines() {
       if (!state.currentUser || !state.routines) return;
@@ -14980,8 +14966,6 @@
             </div>
             <div style="display:flex;gap:6px;align-items:center">
               <button class="rtn-edit-btn" onclick="refreshRoutines()" title="Refresh data" style="padding:7px 10px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
-              <button class="rtn-edit-btn" onclick="exportRoutineSites()" title="Export sites">Export</button>
-              <button class="rtn-edit-btn" onclick="importRoutineSites()" title="Import sites">Import</button>
               <button class="rtn-edit-btn" onclick="openRoutinesSitePicker()">Edit Sites</button>
             </div>
           </div>
