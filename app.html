@@ -8232,7 +8232,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.14';
+    const VERSION = '4.18.15';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14489,7 +14489,7 @@
       if (!state.currentUser) { showToast('Sign in first'); return; }
       const uid = state.currentUser.uid;
       // Fetch all counts from Firestore (fall back to IndexedDB/state)
-      let weekCount = 0, noteCount = 0, remCount = 0, coCount = 0, rtnCount = 0;
+      let weekCount = 0, noteCount = 0, remCount = 0, coFaultCount = 0, coScheduleCount = 0, rtnCount = 0;
       try {
         const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc] = await Promise.all([
           db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
@@ -14503,16 +14503,17 @@
         remCount = remDoc?.exists ? (remDoc.data()?.reminders?.length || 0) : 0;
         if (coDoc?.exists) {
           const weeks = coDoc.data()?.weeks || {};
-          coCount = Object.values(weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
+          coFaultCount = Object.values(weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
+          coScheduleCount = Object.keys(coDoc.data()?.onCall || {}).length;
         }
         if (rtnDoc?.exists) rtnCount = rtnDoc.data()?.selectedSites?.length || 0;
       } catch (e) { /* offline — use in-memory state */ }
-      // Fall back to in-memory state if Firestore returned 0
       if (!noteCount) noteCount = state.notes?.length || 0;
       if (!remCount) remCount = remindersData?.length || 0;
-      if (!coCount && state.callouts?.weeks) {
-        coCount = Object.values(state.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
-      }
+      if (!coFaultCount && state.callouts?.weeks)
+        coFaultCount = Object.values(state.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
+      if (!coScheduleCount && state.callouts?.onCall)
+        coScheduleCount = Object.keys(state.callouts.onCall).length;
       if (!rtnCount) rtnCount = state.routines?.selectedSites?.length || 0;
       const settingsCount = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
         'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'].filter(k => localStorage.getItem(k) !== null).length;
@@ -14521,7 +14522,8 @@
         _eiCheckboxRow('exp-weeks', _eiIcons.timesheet, 'Timesheet', weekCount ? weekCount + ' weeks' : '', true, false) +
         _eiCheckboxRow('exp-notes', _eiIcons.notes, 'Field Notes', noteCount ? noteCount + ' notes' : '', true, false) +
         _eiCheckboxRow('exp-reminders', _eiIcons.reminders, 'Reminders', remCount ? remCount + ' reminders' : '', true, false) +
-        _eiCheckboxRow('exp-callouts', _eiIcons.callouts, 'Callouts', coCount ? coCount + ' callouts' : '', true, false) +
+        _eiCheckboxRow('exp-co-faults', _eiIcons.callouts, 'Callouts (Faults)', coFaultCount ? coFaultCount + ' incidents' : '', true, false) +
+        _eiCheckboxRow('exp-co-schedule', _eiIcons.routines, 'Callouts (On-Call Schedule)', coScheduleCount ? coScheduleCount + ' weeks' : '', true, false) +
         _eiCheckboxRow('exp-routines', _eiIcons.routines, 'Routines', rtnCount ? rtnCount + ' sites' : '', true, false) +
         _eiCheckboxRow('exp-settings', _eiIcons.settings, 'Settings', settingsCount ? settingsCount + ' items' : '', true, false);
       document.getElementById('export-modal').classList.remove('hidden');
@@ -14533,11 +14535,12 @@
       const incWeeks = document.getElementById('exp-weeks')?.checked;
       const incNotes = document.getElementById('exp-notes')?.checked;
       const incReminders = document.getElementById('exp-reminders')?.checked;
-      const incCallouts = document.getElementById('exp-callouts')?.checked;
+      const incCoFaults = document.getElementById('exp-co-faults')?.checked;
+      const incCoSchedule = document.getElementById('exp-co-schedule')?.checked;
       const incRoutines = document.getElementById('exp-routines')?.checked;
       const incSettings = document.getElementById('exp-settings')?.checked;
 
-      if (!incWeeks && !incNotes && !incReminders && !incCallouts && !incRoutines && !incSettings) {
+      if (!incWeeks && !incNotes && !incReminders && !incCoFaults && !incCoSchedule && !incRoutines && !incSettings) {
         showToast('Nothing selected to export'); return;
       }
       showToast('Exporting data…');
@@ -14562,9 +14565,13 @@
           const remDoc = await userDoc('data/reminders')?.get().catch(() => null);
           exp.reminders = remDoc?.exists ? remDoc.data() : null;
         }
-        if (incCallouts) {
+        if (incCoFaults || incCoSchedule) {
           const calloutsDoc = await userDoc('data/callouts')?.get().catch(() => null);
-          exp.callouts = calloutsDoc?.exists ? calloutsDoc.data() : null;
+          const coData = calloutsDoc?.exists ? calloutsDoc.data() : {};
+          exp.callouts = {
+            weeks: incCoFaults ? (coData.weeks || {}) : {},
+            onCall: incCoSchedule ? (coData.onCall || {}) : {}
+          };
         }
         if (incRoutines) {
           const rtnDoc = await userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null));
@@ -14642,12 +14649,10 @@
       const noteCount = hasNotes ? data.notes.notes.length + ' notes' : '';
       const hasReminders = data.reminders?.reminders?.length > 0;
       const remCount = hasReminders ? data.reminders.reminders.length + ' reminders' : '';
-      const hasCallouts = (data.callouts?.weeks && Object.keys(data.callouts.weeks).length > 0) ||
-                          (data.callouts?.onCall && Object.keys(data.callouts.onCall).length > 0);
-      const coWeeks = hasCallouts && data.callouts.weeks ? Object.keys(data.callouts.weeks).length : 0;
-      const coOnCall = hasCallouts && data.callouts.onCall ? Object.keys(data.callouts.onCall).length : 0;
-      const coTotal = hasCallouts ? Object.values(data.callouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
-      const coCount = hasCallouts ? [coOnCall ? coOnCall + ' on-call weeks' : '', coTotal ? coTotal + ' incidents' : ''].filter(Boolean).join(', ') : '';
+      const hasCoFaults = data.callouts?.weeks && Object.keys(data.callouts.weeks).length > 0;
+      const hasCoSchedule = data.callouts?.onCall && Object.keys(data.callouts.onCall).length > 0;
+      const coFaultTotal = hasCoFaults ? Object.values(data.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
+      const coScheduleTotal = hasCoSchedule ? Object.keys(data.callouts.onCall).length : 0;
       const hasRoutines = data.routines?.selectedSites?.length > 0;
       const rtnCount = hasRoutines ? data.routines.selectedSites.length + ' sites' : '';
       const hasSettings = data.settings && Object.keys(data.settings).length > 0;
@@ -14657,7 +14662,8 @@
         _eiCheckboxRow('imp-weeks', _eiIcons.timesheet, 'Timesheet', hasWeeks ? weekCount : 'Not in file', hasWeeks, !hasWeeks) +
         _eiCheckboxRow('imp-notes', _eiIcons.notes, 'Field Notes', hasNotes ? noteCount : 'Not in file', hasNotes, !hasNotes) +
         _eiCheckboxRow('imp-reminders', _eiIcons.reminders, 'Reminders', hasReminders ? remCount : 'Not in file', hasReminders, !hasReminders) +
-        _eiCheckboxRow('imp-callouts', _eiIcons.callouts, 'Callouts', hasCallouts ? coCount : 'Not in file', hasCallouts, !hasCallouts) +
+        _eiCheckboxRow('imp-co-faults', _eiIcons.callouts, 'Callouts (Faults)', hasCoFaults ? coFaultTotal + ' incidents' : 'Not in file', hasCoFaults, !hasCoFaults) +
+        _eiCheckboxRow('imp-co-schedule', _eiIcons.routines, 'Callouts (On-Call Schedule)', hasCoSchedule ? coScheduleTotal + ' weeks' : 'Not in file', hasCoSchedule, !hasCoSchedule) +
         _eiCheckboxRow('imp-routines', _eiIcons.routines, 'Routines', hasRoutines ? rtnCount : 'Not in file', hasRoutines, !hasRoutines) +
         _eiCheckboxRow('imp-settings', _eiIcons.settings, 'Settings', hasSettings ? '' : 'Not in file', hasSettings, !hasSettings);
 
@@ -14672,10 +14678,11 @@
       const incWeeks = document.getElementById('imp-weeks')?.checked;
       const incNotes = document.getElementById('imp-notes')?.checked;
       const incReminders = document.getElementById('imp-reminders')?.checked;
-      const incCallouts = document.getElementById('imp-callouts')?.checked;
+      const incCoFaults = document.getElementById('imp-co-faults')?.checked;
+      const incCoSchedule = document.getElementById('imp-co-schedule')?.checked;
       const incRoutines = document.getElementById('imp-routines')?.checked;
       const incSettings = document.getElementById('imp-settings')?.checked;
-      if (!incWeeks && !incNotes && !incReminders && !incCallouts && !incRoutines && !incSettings) {
+      if (!incWeeks && !incNotes && !incReminders && !incCoFaults && !incCoSchedule && !incRoutines && !incSettings) {
         showToast('Nothing selected to import'); return;
       }
       document.getElementById('import-modal').classList.add('hidden');
@@ -14685,7 +14692,10 @@
         weeks: incWeeks ? data.weeks : null,
         notes: incNotes ? data.notes : null,
         reminders: incReminders ? data.reminders : null,
-        callouts: incCallouts ? data.callouts : null,
+        callouts: (incCoFaults || incCoSchedule) ? {
+          weeks: incCoFaults ? (data.callouts?.weeks || {}) : null,
+          onCall: incCoSchedule ? (data.callouts?.onCall || {}) : null
+        } : null,
         routines: incRoutines ? data.routines : null,
         settings: incSettings ? data.settings : null
       };
@@ -14741,15 +14751,12 @@
           await dbPut('notes', { id: 'reminders_all', userId: uid, data: remindersData, updatedAt: Date.now() });
           parts.push(data.reminders.reminders.length + ' reminders');
         }
-        // 4. Import callouts
-        // If imported weeks is empty {}, preserve existing fault entries — only replace onCall schedule
+        // 4. Import callouts — weeks and onCall handled independently
         if (data.callouts) {
-          const importedWeeks = data.callouts.weeks || {};
-          const hasImportedWeeks = Object.keys(importedWeeks).length > 0;
-          const existingWeeks = hasImportedWeeks ? importedWeeks : (state.callouts?.weeks || {});
+          if (!state.callouts) state.callouts = { weeks: {}, onCall: {} };
           const newCallouts = {
-            weeks: existingWeeks,
-            onCall: data.callouts.onCall || {}
+            weeks: data.callouts.weeks !== null ? data.callouts.weeks : (state.callouts.weeks || {}),
+            onCall: data.callouts.onCall !== null ? data.callouts.onCall : (state.callouts.onCall || {})
           };
           const ref = userDoc('data/callouts');
           if (ref) await ref.set({ ...newCallouts, _updatedAt: Date.now() });
@@ -14757,7 +14764,8 @@
           await dbPut('notes', { id: 'callouts_all', userId: uid, data: state.callouts, updatedAt: Date.now() });
           const coOnCallCount = Object.keys(newCallouts.onCall).length;
           const coTotal = Object.values(newCallouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
-          const summary = [coOnCallCount ? coOnCallCount + ' on-call weeks' : '', coTotal ? coTotal + ' incidents' : ''].filter(Boolean).join(', ');
+          const summary = [data.callouts.onCall !== null && coOnCallCount ? coOnCallCount + ' on-call weeks' : '',
+                           data.callouts.weeks !== null && coTotal ? coTotal + ' incidents' : ''].filter(Boolean).join(', ');
           parts.push(summary || 'callouts updated');
         }
         // 5. Import routines
