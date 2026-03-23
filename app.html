@@ -8140,7 +8140,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.1';
+    const VERSION = '4.18.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14789,13 +14789,12 @@
     }
 
     // Load routines from Firestore and scan timesheet for auto-visits
-    async function loadRoutines() {
+    async function loadRoutines(forceServer) {
       if (!state.currentUser) { render(); return; }
       const ref = userDoc('data/routines');
       try {
-        // Prefer server data when online to avoid stale offline cache
-        const opts = navigator.onLine ? { source: 'server' } : {};
-        const snap = await ref.get(opts);
+        // Always try server first when online to avoid stale offline cache
+        const snap = await ref.get({ source: 'server' });
         if (snap.exists) {
           state.routines = snap.data();
           if (!state.routines.selectedSites) state.routines.selectedSites = [];
@@ -14804,7 +14803,8 @@
           state.routines = { selectedSites: [], visits: {} };
         }
       } catch (e) {
-        // Fallback: try cache if server fetch failed
+        console.warn('[Rian] loadRoutines server fetch failed, trying cache:', e.message);
+        // Fallback: try cache if server fetch failed (offline)
         try {
           const snap = await ref.get({ source: 'cache' });
           if (snap.exists) {
@@ -14819,8 +14819,14 @@
         }
       }
       render();
+      if (forceServer) showToast('Data refreshed');
       // Scan timesheet weeks in background for auto-visits
       scanWeeksForRoutines().catch(e => console.warn('[Rian]', e));
+    }
+
+    function refreshRoutines() {
+      showToast('Refreshing…');
+      loadRoutines(true);
     }
 
     async function fsSetRoutines() {
@@ -14934,7 +14940,10 @@
               <span class="rtn-year-label">${year}</span>
               <button class="rtn-year-btn" onclick="routinesChangeYear(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
             </div>
-            <button class="rtn-edit-btn" onclick="openRoutinesSitePicker()">Edit Sites</button>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button class="rtn-edit-btn" onclick="refreshRoutines()" title="Refresh data" style="padding:7px 10px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+              <button class="rtn-edit-btn" onclick="openRoutinesSitePicker()">Edit Sites</button>
+            </div>
           </div>
           <!-- Header lives outside the overflow-x wrapper so it can be position:sticky -->
           <div class="rtn-sticky-hdr" id="rtn-sticky-hdr">
