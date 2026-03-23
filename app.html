@@ -7893,7 +7893,7 @@
   </div>
 
   <!-- ===== LOCATION SEARCH MODAL ===== -->
-  <div id="location-modal" class="hidden fixed inset-0 z-50 flex flex-col" style="background:var(--bg-modal)">
+  <div id="location-modal" class="hidden fixed inset-0 flex flex-col" style="background:var(--bg-modal);z-index:9999">
     <div id="location-modal-inner" class="flex flex-col flex-1 overflow-hidden">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
         <button onclick="closeLocationModal()" class="text-white p-1 text-xl leading-none">✕</button>
@@ -8232,7 +8232,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.20';
+    const VERSION = '4.18.21';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
