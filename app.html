@@ -8067,7 +8067,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.17.3';
+    const VERSION = '4.17.4';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -8769,7 +8769,8 @@
 
         dbPut('notes', { id: 'callouts_all', userId: uid, data: state.callouts, updatedAt: remote._updatedAt || Date.now() });
 
-        if (state.view === 'callouts') render();
+        // Don't re-render while user is actively editing a callout — would kill focus
+        if (state.view === 'callouts' && !state.calloutsExpandedId) render();
       }, () => {
         console.warn('[Rian] callouts onSnapshot error');
       });
@@ -15149,7 +15150,8 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" style="transition:transform 0.2s;transform:${state.coScheduleOpen ? 'rotate(90deg)' : 'rotate(0deg)'}"><polyline points="9 18 15 12 9 6"/></svg>
       </div>`;
 
-      if (state.coScheduleOpen) {
+      html += `<div style="overflow:hidden;max-height:${state.coScheduleOpen ? '2000px' : '0'};opacity:${state.coScheduleOpen ? '1' : '0'};transition:max-height 0.35s ease,opacity 0.25s ease">`;
+      {
         html += `<div style="border-top:1px solid var(--border);padding:10px 12px 14px">`;
         // Legend
         html += `<div class="oc-legend">
@@ -15189,6 +15191,7 @@
         html += `<div style="margin-top:8px;font-size:10px;color:var(--text-muted);font-style:italic">Tap = on-call · Long-press = extra shift</div>`;
         html += `</div>`;
       }
+      html += `</div>`;
       html += `</div>`;
 
       // ── Currently On-Call banner ──
@@ -15255,11 +15258,14 @@
             : ocType === 'extra'
             ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
             : '';
-          html += `<div class="activity-card" style="margin:0 14px 8px;cursor:pointer" onclick="coSelectWeek('${weekKey}')">
+          const badgeBg = ocType === 'extra' ? '#FEF3C7' : 'var(--accent-light)';
+          const badgeColor = ocType === 'extra' ? '#F59E0B' : 'var(--accent)';
+          html += `<div style="margin:0 14px 8px;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);cursor:pointer" onclick="coSelectWeek('${weekKey}')">
             <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
+              <div class="task-num" style="background:${badgeBg};color:${badgeColor}">${calloutCount}</div>
               <div style="flex:1;min-width:0">
                 <div style="font-size:14px;font-weight:600;color:var(--text-primary)">${formatWeekRange(weekKey)}${badgeHtml}</div>
-                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${calloutCount} incident${calloutCount !== 1 ? 's' : ''}${ocType === 'extra' ? '<span style="color:#F59E0B;font-weight:600;margin-left:6px">Extra shift</span>' : ''}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${calloutCount} incident${calloutCount !== 1 ? 's' : ''}</div>
               </div>
               <span style="font-size:14px;color:var(--text-muted)">›</span>
             </div>
@@ -15422,7 +15428,7 @@
           <!-- Ticket -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Ticket Number</span>
-            <textarea id="co-ticket-input" class="act-textarea" rows="1" style="font-family:var(--font-mono);resize:none;overflow:hidden" placeholder="e.g. R23482335"
+            <textarea id="co-ticket-input" class="act-textarea" rows="1" style="resize:none;overflow:hidden" placeholder="e.g. R23482335"
               oninput="this.value=this.value.replace(/\\n/g,'');updateCoField('ticket', this.value.trim())"
               onkeydown="if(event.key==='Enter')event.preventDefault()">${esc(ticket)}</textarea>
           </div>
