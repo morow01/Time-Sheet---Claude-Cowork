@@ -420,6 +420,7 @@
       background: rgba(229, 57, 53, 0.2);
       border-radius: 8px;
     }
+
     #fs-mic-btn.fs-mic-listening svg {
       stroke: #e53935;
       animation: voiceFabPulse 1s ease-in-out infinite;
@@ -4600,10 +4601,12 @@
       padding-left: 44px;
       position: relative;
     }
+
     .co-card.co-selected {
       border-color: var(--accent) !important;
       box-shadow: 0 0 0 2px var(--accent);
     }
+
     .co-selection-check {
       position: absolute;
       left: 14px;
@@ -4620,14 +4623,17 @@
       transition: all 0.2s;
       z-index: 2;
     }
+
     .co-card.co-selected .co-selection-check {
       background: var(--accent);
       border-color: var(--accent);
     }
+
     .co-card.co-selected .co-selection-check svg {
       opacity: 1;
       transform: scale(1);
     }
+
     .co-selection-check svg {
       opacity: 0;
       transform: scale(0.5);
@@ -6891,9 +6897,11 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
+
     .oc-overlay.open {
       transform: translateY(0);
     }
+
     .oc-overlay-header {
       display: flex;
       align-items: center;
@@ -6905,6 +6913,7 @@
       z-index: 2;
       border-bottom: 1px solid var(--border);
     }
+
     .oc-overlay-header h2 {
       flex: 1;
       font-size: 17px;
@@ -6912,45 +6921,91 @@
       color: var(--text-primary);
       margin: 0;
     }
+
     .oc-close-btn {
-      width: 30px; height: 30px; border-radius: 50%;
-      background: rgba(128,128,128,0.12); border: none;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-muted);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(128, 128, 128, 0.12);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
     }
+
     .oc-year-nav {
-      display: flex; align-items: center; justify-content: center; gap: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
       padding: 14px 16px 8px;
     }
+
     .oc-year-nav button {
-      width: 32px; height: 32px; border-radius: 8px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
     }
+
     .oc-year-nav .oc-year-label {
-      font-size: 20px; font-weight: 700; color: var(--text-primary);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
     }
+
     .oc-summary-bar {
-      display: flex; gap: 8px; padding: 6px 16px 12px; justify-content: center;
+      display: flex;
+      gap: 8px;
+      padding: 6px 16px 12px;
+      justify-content: center;
     }
+
     .oc-summary-pill {
-      padding: 6px 14px; border-radius: 20px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      font-size: 12px; font-weight: 600; color: var(--text-primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
     }
+
     .oc-cal-btn {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: var(--accent-light); border: none;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
       transition: transform 0.15s;
     }
-    .oc-cal-btn:active { transform: scale(0.92); }
+
+    .oc-cal-btn:active {
+      transform: scale(0.92);
+    }
+
     .oc-cal-btn .oc-dot {
-      position: absolute; top: 5px; right: 5px;
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--accent); border: 1.5px solid var(--bg-page);
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 1.5px solid var(--bg-page);
     }
 
     /* ===== ON-CALL SCHEDULE GRID ===== */
@@ -6958,8 +7013,8 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      margin-bottom: 6px;
     }
+
     .oc-month-label {
       width: 38px;
       font-size: 12px;
@@ -6968,6 +7023,7 @@
       letter-spacing: 0.3px;
       flex-shrink: 0;
     }
+
     .oc-cell {
       width: 38px;
       height: 38px;
@@ -6991,11 +7047,13 @@
       user-select: none;
       touch-action: manipulation;
     }
+
     .oc-cell.oc-past {
       color: var(--text-muted);
       opacity: 0.5;
       border-color: var(--border);
     }
+
     .oc-cell.oc-oncall {
       background: var(--accent);
       color: #fff;
@@ -7003,6 +7061,7 @@
       font-weight: 700;
       opacity: 1;
     }
+
     .oc-cell.oc-extra {
       background: #F59E0B;
       color: #fff;
@@ -7010,24 +7069,29 @@
       font-weight: 700;
       opacity: 1;
     }
+
     .oc-cell.oc-current {
       border-color: var(--priority-low);
       border-width: 2.5px;
       font-weight: 700;
       opacity: 1;
     }
+
     .oc-cell.oc-current:not(.oc-oncall):not(.oc-extra) {
       background: var(--priority-low-bg);
       color: var(--priority-low);
     }
+
     .oc-cell:active {
       transform: scale(0.92);
     }
+
     .oc-stats {
       display: flex;
       gap: 6px;
       margin-bottom: 10px;
     }
+
     .oc-stat {
       flex: 1;
       background: var(--bg-card);
@@ -7036,10 +7100,12 @@
       text-align: center;
       border: 1px solid var(--border);
     }
+
     .oc-stat-val {
       font-size: 18px;
       font-weight: 800;
     }
+
     .oc-stat-label {
       font-size: 9px;
       color: var(--text-muted);
@@ -7047,6 +7113,7 @@
       margin-top: 2px;
       line-height: 1.2;
     }
+
     .oc-legend {
       display: flex;
       gap: 12px;
@@ -7055,6 +7122,7 @@
       color: var(--text-muted);
       font-weight: 600;
     }
+
     .oc-legend-dot {
       width: 9px;
       height: 9px;
@@ -7063,6 +7131,7 @@
       margin-right: 4px;
       vertical-align: middle;
     }
+
     .oc-history-row {
       background: var(--bg-card);
       border-radius: 10px;
@@ -7074,6 +7143,7 @@
       border: 1px solid var(--border);
       cursor: pointer;
     }
+
     .oc-history-badge {
       width: 36px;
       height: 36px;
@@ -8018,7 +8088,7 @@
   </div>
 
   <!-- ===== CONFIRM MODAL ===== -->
-  <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+  <div id="confirm-modal" class="hidden fixed inset-0 flex items-center justify-center p-4" style="z-index:9999"
     style="background:var(--overlay)">
     <div class="rounded-2xl p-6 w-full max-w-sm shadow-2xl" style="background:var(--bg-modal)">
       <h2 id="confirm-title" class="text-lg font-bold mb-2" style="color:var(--text-primary)"></h2>
@@ -8034,12 +8104,15 @@
   <!-- Export options modal -->
   <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
     style="background:var(--overlay)">
-    <div class="w-full max-w-md shadow-2xl" style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
+    <div class="w-full max-w-md shadow-2xl"
+      style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
       <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Export Data</h2>
-      <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Choose what to include in your backup file.</p>
+      <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Choose what to include in your backup file.
+      </p>
       <div id="exp-list" style="border-top:1px solid var(--border)"></div>
       <div class="flex gap-3" style="margin-top:16px">
-        <button onclick="document.getElementById('export-modal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-medium"
+        <button onclick="document.getElementById('export-modal').classList.add('hidden')"
+          class="flex-1 py-3 rounded-xl font-medium"
           style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
         <button onclick="doExportWithOptions()" id="exp-btn" class="flex-1 py-3 rounded-xl font-bold text-white"
           style="background:#F5A623">Export</button>
@@ -8050,38 +8123,50 @@
   <!-- Import modal -->
   <div id="import-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
     style="background:var(--overlay)">
-    <div class="w-full max-w-md shadow-2xl" style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
+    <div class="w-full max-w-md shadow-2xl"
+      style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
       <div id="import-step-file">
         <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Import Data</h2>
-        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 16px">Select a previously exported JSON backup file.</p>
-        <button onclick="importPickFile()" style="width:100%;padding:28px 20px;border-radius:12px;border:2px dashed var(--border);background:var(--bg-card);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px">
+        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 16px">Select a previously exported JSON backup
+          file.</p>
+        <button onclick="importPickFile()"
+          style="width:100%;padding:28px 20px;border-radius:12px;border:2px dashed var(--border);background:var(--bg-card);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px">
           <span style="font-size:24px">📁</span>
           <span style="font-weight:600;font-size:14px;color:var(--text-primary)">Choose File</span>
           <span style="font-size:12px;color:var(--text-secondary)">JSON backup files only</span>
         </button>
         <div class="flex gap-3" style="margin-top:16px">
-          <button onclick="document.getElementById('import-modal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-medium"
+          <button onclick="document.getElementById('import-modal').classList.add('hidden')"
+            class="flex-1 py-3 rounded-xl font-medium"
             style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
         </div>
       </div>
       <div id="import-step-preview" style="display:none">
         <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 8px">Import Data</h2>
-        <div id="import-file-chip" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);margin-bottom:12px">
+        <div id="import-file-chip"
+          style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:var(--bg-card);border:1px solid var(--border);margin-bottom:12px">
           <span style="font-size:15px">📄</span>
           <div style="flex:1;min-width:0">
-            <div id="import-file-name" style="font-size:13px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+            <div id="import-file-name"
+              style="font-size:13px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            </div>
             <div id="import-file-size" style="font-size:11px;color:var(--text-secondary)"></div>
           </div>
-          <button onclick="importChangeFile()" style="background:none;border:none;color:#2563eb;font-size:13px;font-weight:600;cursor:pointer">Change</button>
+          <button onclick="importChangeFile()"
+            style="background:none;border:none;color:#2563eb;font-size:13px;font-weight:600;cursor:pointer">Change</button>
         </div>
-        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 8px">Select what to import from the backup file.</p>
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:#fefce8;border:1px solid #fde68a;margin-bottom:8px">
+        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 8px">Select what to import from the backup
+          file.</p>
+        <div
+          style="display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:#fefce8;border:1px solid #fde68a;margin-bottom:8px">
           <span style="font-size:14px;line-height:1.4">⚠️</span>
-          <span style="color:#92400e;font-size:12px;line-height:1.4">Importing will replace your existing data for each selected type.</span>
+          <span style="color:#92400e;font-size:12px;line-height:1.4">Importing will replace your existing data for each
+            selected type.</span>
         </div>
         <div id="imp-list" style="border-top:1px solid var(--border)"></div>
         <div class="flex gap-3" style="margin-top:16px">
-          <button onclick="document.getElementById('import-modal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-medium"
+          <button onclick="document.getElementById('import-modal').classList.add('hidden')"
+            class="flex-1 py-3 rounded-xl font-medium"
             style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
           <button onclick="doImportWithOptions()" id="imp-btn" class="flex-1 py-3 rounded-xl font-bold text-white"
             style="background:#16a34a">Import</button>
@@ -8093,10 +8178,12 @@
   <!-- Paste Ticket modal -->
   <div id="paste-ticket-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
     style="background:var(--overlay)">
-    <div class="w-full max-w-md shadow-2xl" style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
+    <div class="w-full max-w-md shadow-2xl"
+      style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
       <div id="paste-ticket-step1">
         <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Paste Ticket Email</h2>
-        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Copy the email body from Gmail and paste it below.</p>
+        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Copy the email body from Gmail and paste
+          it below.</p>
         <textarea id="paste-ticket-input" rows="6" placeholder="Paste email text here…"
           style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:vertical;background:var(--bg-card);color:var(--text-primary);font-family:inherit"></textarea>
         <div class="flex gap-3" style="margin-top:16px">
@@ -8140,7 +8227,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.4';
+    const VERSION = '4.18.5';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15253,18 +15340,21 @@
         <span><span class="oc-legend-dot" style="border:2px solid var(--priority-low);width:8px;height:8px;border-radius:3px"></span>Now</span>
       </div>`;
 
-      // Month grid — larger cells
+      // Month grid — white card with month rows separated by lines
       html += `<div style="padding:0 14px 20px">`;
-      const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+      html += `<div style="background:var(--bg-card);border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);border:1px solid var(--border)">`;
+      const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
       const byMonth = {};
       fridays.forEach(f => {
         const m = strToDate(f).getMonth();
         if (!byMonth[m]) byMonth[m] = [];
         byMonth[m].push(f);
       });
-      for (let m = 0; m < 12; m++) {
-        if (!byMonth[m]) continue;
-        html += `<div class="oc-grid-row"><div class="oc-month-label">${monthNames[m]}</div><div style="display:flex;gap:4px;flex-wrap:wrap">`;
+      const activeMonths = Object.keys(byMonth).map(Number).sort((a,b) => a - b);
+      activeMonths.forEach((m, idx) => {
+        const isLast = idx === activeMonths.length - 1;
+        html += `<div class="oc-grid-row" style="padding:10px 12px;margin-bottom:0;${!isLast ? 'border-bottom:1px solid var(--border)' : ''}">`;
+        html += `<div class="oc-month-label">${monthNames[m]}</div><div style="display:flex;gap:4px;flex-wrap:wrap">`;
         byMonth[m].forEach(f => {
           const dayNum = strToDate(f).getDate();
           const type = onCall[f];
@@ -15282,7 +15372,8 @@
             title="${formatWeekRange(f)}">${dayNum}</button>`;
         });
         html += `</div></div>`;
-      }
+      });
+      html += `</div>`;
       html += `<div style="margin-top:10px;font-size:11px;color:var(--text-muted);font-style:italic;text-align:center">Tap = on-call · Long-press = extra shift</div>`;
       html += `</div>`;
 
@@ -15350,8 +15441,8 @@
         const badgeHtml = ocType === 'oncall'
           ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:var(--accent-light);color:var(--accent);margin-left:6px">ON-CALL</span>`
           : ocType === 'extra'
-          ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
-          : '';
+            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
+            : '';
         html += `<div style="margin:0 14px 10px;background:var(--bg-card);border-radius:14px;border:1.5px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
           <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
             <div class="task-num" style="background:${badgeBg};color:${badgeColor}">${cnt}</div>
@@ -15398,8 +15489,8 @@
           const badgeHtml = ocType === 'oncall'
             ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:var(--accent-light);color:var(--accent);margin-left:6px">ON-CALL</span>`
             : ocType === 'extra'
-            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
-            : '';
+              ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
+              : '';
           const badgeBg = ocType === 'extra' ? '#FEF3C7' : 'var(--accent-light)';
           const badgeColor = ocType === 'extra' ? '#F59E0B' : 'var(--accent)';
           html += `<div style="margin:0 14px 8px;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);cursor:pointer" onclick="coSelectWeek('${weekKey}')">
@@ -15444,7 +15535,7 @@
           <div style="font-size:12px;color:var(--text-muted)">${allCallouts.length} callout${allCallouts.length !== 1 ? 's' : ''}</div>
         </div>
         <button onclick="openPasteTicket()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:var(--bg-card);color:var(--accent);border:1.5px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" title="Paste ticket email">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg> Paste
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg> Paste Fault
           </button>
       </div>`;
 
@@ -15554,7 +15645,7 @@
 
       // Expanded detail — only render when expanded to avoid duplicate IDs
       if (isExpanded) {
-      cardHtml += `<div class="activity-detail open">
+        cardHtml += `<div class="activity-detail open">
         <div class="act-detail-inner" style="display:flex;flex-direction:column;gap:14px">
           <!-- Date -->
           <div class="flex flex-col gap-1.5">
@@ -15607,8 +15698,8 @@
               <div class="notes-ta-wrap" onclick="event.stopPropagation(); openCoNoteFullscreen()">
                 <div class="act-notes-rich-preview" data-co-notes-preview>
                   ${notes && notes.trim()
-          ? (notes.trim().startsWith('<') ? notes : esc(notes).replace(/\n/g, '<br>'))
-          : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
+            ? (notes.trim().startsWith('<') ? notes : esc(notes).replace(/\n/g, '<br>'))
+            : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
                 </div>
                 <textarea class="act-notes-area" id="co-notes-ta"
                   oninput="coAutoSave()">${esc(notes)}</textarea>
@@ -18765,8 +18856,16 @@ QUESTION: ${query}`;
             style="font-size:11px;opacity:0.7;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;">
           </div>
         </div>
-        <button id="fs-mic-btn" onclick="startFsDictation()" class="text-white p-1 flex items-center justify-center" style="flex-shrink:0;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;" title="Dictate">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        <button id="fs-mic-btn" onclick="startFsDictation()" class="text-white p-1 flex items-center justify-center"
+          style="flex-shrink:0;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;"
+          title="Dictate">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3" />
+            <path d="M5 10a7 7 0 0 0 14 0" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="8" y1="22" x2="16" y2="22" />
+          </svg>
         </button>
         <button onclick="closeNoteFullscreen()"
           style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:#F5A623;border:none;cursor:pointer;font-weight:700;flex-shrink:0;">Done</button>
