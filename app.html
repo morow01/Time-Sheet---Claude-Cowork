@@ -6902,6 +6902,30 @@
       transform: translateY(0);
     }
 
+    /* ── Desktop: constrain full-screen overlays to app width ── */
+    @media (min-width: 768px) {
+      .ai-fullscreen-overlay,
+      #rtn-picker-modal {
+        left: 50%;
+        right: auto;
+        width: 672px;
+        transform: translateX(-50%);
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+      .oc-overlay {
+        left: 50%;
+        right: auto;
+        width: 672px;
+        transform: translateX(-50%) translateY(100%);
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+      .oc-overlay.open {
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
     .oc-overlay-header {
       display: flex;
       align-items: center;
@@ -8232,7 +8256,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.28';
+    const VERSION = '4.18.29';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
