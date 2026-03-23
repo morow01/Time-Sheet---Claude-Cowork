@@ -8232,7 +8232,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.12';
+    const VERSION = '4.18.13';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14642,9 +14642,12 @@
       const noteCount = hasNotes ? data.notes.notes.length + ' notes' : '';
       const hasReminders = data.reminders?.reminders?.length > 0;
       const remCount = hasReminders ? data.reminders.reminders.length + ' reminders' : '';
-      const hasCallouts = data.callouts?.weeks && Object.keys(data.callouts.weeks).length > 0;
-      const coTotal = hasCallouts ? Object.values(data.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
-      const coCount = hasCallouts ? coTotal + ' callouts' : '';
+      const hasCallouts = (data.callouts?.weeks && Object.keys(data.callouts.weeks).length > 0) ||
+                          (data.callouts?.onCall && Object.keys(data.callouts.onCall).length > 0);
+      const coWeeks = hasCallouts && data.callouts.weeks ? Object.keys(data.callouts.weeks).length : 0;
+      const coOnCall = hasCallouts && data.callouts.onCall ? Object.keys(data.callouts.onCall).length : 0;
+      const coTotal = hasCallouts ? Object.values(data.callouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
+      const coCount = hasCallouts ? [coOnCall ? coOnCall + ' on-call weeks' : '', coTotal ? coTotal + ' incidents' : ''].filter(Boolean).join(', ') : '';
       const hasRoutines = data.routines?.selectedSites?.length > 0;
       const rtnCount = hasRoutines ? data.routines.selectedSites.length + ' sites' : '';
       const hasSettings = data.settings && Object.keys(data.settings).length > 0;
@@ -14739,13 +14742,19 @@
           parts.push(data.reminders.reminders.length + ' reminders');
         }
         // 4. Import callouts
-        if (data.callouts?.weeks) {
+        if (data.callouts) {
+          const newCallouts = {
+            weeks: data.callouts.weeks || {},
+            onCall: data.callouts.onCall || {}
+          };
           const ref = userDoc('data/callouts');
-          if (ref) await ref.set({ weeks: data.callouts.weeks, _updatedAt: Date.now() });
-          state.callouts = { weeks: data.callouts.weeks };
+          if (ref) await ref.set({ ...newCallouts, _updatedAt: Date.now() });
+          state.callouts = newCallouts;
           await dbPut('notes', { id: 'callouts_all', userId: uid, data: state.callouts, updatedAt: Date.now() });
-          const coTotal = Object.values(data.callouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
-          parts.push(coTotal + ' callouts');
+          const coOnCallCount = Object.keys(newCallouts.onCall).length;
+          const coTotal = Object.values(newCallouts.weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
+          const summary = [coOnCallCount ? coOnCallCount + ' on-call weeks' : '', coTotal ? coTotal + ' incidents' : ''].filter(Boolean).join(', ');
+          parts.push(summary || 'callouts cleared');
         }
         // 5. Import routines
         if (data.routines?.selectedSites) {
