@@ -7934,7 +7934,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.16.1';
+    const VERSION = '4.16.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -15138,8 +15138,9 @@
           <span class="chevron" style="font-size:14px;color:var(--text-muted);transform:${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'};transition:transform 0.2s;flex-shrink:0;">›</span>
         </div>`;
 
-      // Expanded detail — same as activity-detail
-      cardHtml += `<div class="activity-detail ${isExpanded ? 'open' : ''}" style="${isExpanded ? '' : 'display:none'}">
+      // Expanded detail — only render when expanded to avoid duplicate IDs
+      if (isExpanded) {
+      cardHtml += `<div class="activity-detail open">
         <div class="act-detail-inner" style="display:flex;flex-direction:column;gap:14px">
           <!-- Date -->
           <div class="flex flex-col gap-1.5">
@@ -15220,6 +15221,7 @@
           </div>
         </div>
       </div>`;
+      } // end if (isExpanded)
       cardHtml += `</div>`;
       return cardHtml;
     }
