@@ -8067,7 +8067,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.17.1';
+    const VERSION = '4.17.2';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -13754,6 +13754,13 @@
       flushPendingSaves();
     });
 
+    // Browser / phone back button — navigate within app instead of closing
+    window.addEventListener('popstate', (e) => {
+      if (state.view === 'callouts' && state.calloutsView === 'week') {
+        coBack();
+      }
+    });
+
     // Online / offline handling — Firestore reconnects automatically
     window.addEventListener('online', () => {
       // Retry any failed save when connectivity is restored
@@ -15777,9 +15784,16 @@
     }
 
     function coSelectWeek(weekStart) {
+      // Auto-create week entry if it doesn't exist (e.g. from On-Call History)
+      if (!state.callouts.weeks[weekStart]) {
+        state.callouts.weeks[weekStart] = { startDate: weekStart, callouts: [] };
+        saveCallouts();
+      }
       state.calloutsSelectedWeek = weekStart;
       state.calloutsView = 'week';
       state.calloutsEditId = null;
+      // Push history state so phone back button returns to list
+      history.pushState({ coWeek: weekStart }, '');
       render();
     }
 
@@ -15869,6 +15883,11 @@
     let _ocCellTimer = null;
     let _ocCellLocked = false;
 
+    function _ocSave() {
+      // Debounced save — prevents race conditions when toggling quickly
+      _coScheduleSave();
+    }
+
     function ocToggle(weekKey) {
       if (_ocCellLocked) { _ocCellLocked = false; return; }
       if (!state.callouts) return;
@@ -15878,13 +15897,13 @@
       if (cur === 'oncall' || cur === 'extra') {
         showConfirm('Remove on-call?', `Remove on-call${cur === 'extra' ? ' (extra)' : ''} for ${range}?`, () => {
           delete state.callouts.onCall[weekKey];
-          saveCallouts();
+          _ocSave();
           render();
         });
       } else {
         showConfirm('Mark as on-call?', `Mark ${range} as on-call week?`, () => {
           state.callouts.onCall[weekKey] = 'oncall';
-          saveCallouts();
+          _ocSave();
           render();
         });
       }
@@ -15898,13 +15917,13 @@
       if (cur === 'extra') {
         showConfirm('Remove extra shift?', `Remove extra shift for ${range}?`, () => {
           delete state.callouts.onCall[weekKey];
-          saveCallouts();
+          _ocSave();
           render();
         });
       } else {
         showConfirm('Mark as extra shift?', `Mark ${range} as extra shift?`, () => {
           state.callouts.onCall[weekKey] = 'extra';
-          saveCallouts();
+          _ocSave();
           render();
         });
       }
