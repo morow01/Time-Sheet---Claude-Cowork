@@ -8339,7 +8339,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.21.9';
+    const VERSION = '4.22.0';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -15916,8 +15916,8 @@
 
       // Legend inside card
       html += `<div class="oc-legend" style="justify-content:center;padding:8px 20px 10px;font-size:12px;border-bottom:1px dashed var(--border)">
-        <span><span class="oc-legend-dot" style="background:var(--accent)"></span>On-Call</span>
-        <span><span class="oc-legend-dot" style="background:#F59E0B"></span>Extra</span>
+        <span><span class="oc-legend-dot" style="background:var(--accent)"></span><strong style="color:var(--accent);margin-right:3px">${yearOnCall}</strong>On-Call</span>
+        <span><span class="oc-legend-dot" style="background:#F59E0B"></span><strong style="color:#F59E0B;margin-right:3px">${yearExtra}</strong>Extra</span>
         <span><span class="oc-legend-dot" style="border:2px solid var(--priority-low);width:8px;height:8px;border-radius:3px"></span>Now</span>
       </div>`;
       const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
