@@ -8369,7 +8369,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.20.7';
+    const VERSION = '4.20.8';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -9208,7 +9208,8 @@
       localStorage.setItem('ui_' + state.weekStart, JSON.stringify({
         expanded: [...state.expandedDays],
         notes: Object.fromEntries(state.notesOpen),
-        activitiesExpanded: [...state.activitiesExpanded], // Save expanded activities
+        activitiesExpanded: [...state.activitiesExpanded],
+        expandedNotes: [...state.expandedNotes], // expanded note cards in Notes section
       }));
     }
 
@@ -9220,7 +9221,8 @@
         if (saved) {
           state.expandedDays = new Set(saved.expanded || []);
           state.notesOpen = new Map(Object.entries(saved.notes || {}));
-          state.activitiesExpanded = new Set(saved.activitiesExpanded || []); // Load expanded activities
+          state.activitiesExpanded = new Set(saved.activitiesExpanded || []);
+          state.expandedNotes = new Set(saved.expandedNotes || []); // restore expanded note cards
           return true;
         }
       } catch (e) { /* expected: localStorage unavailable or corrupt */ }
@@ -13376,8 +13378,8 @@
         state.notesOpen.delete(id); // reset so panel reopens next time card is opened
       } else {
         state.expandedNotes.add(id);
-        // panel defaults to open (notesOpen has no entry = open)
       }
+      saveUiState(); // persist so refresh remembers which notes are expanded
 
       // Update DOM directly for smooth transition
       const card = document.querySelector(`.note-card[data-note-id="${id}"]`);
