@@ -8293,7 +8293,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.19.7';
+    const VERSION = '4.19.8';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -17362,7 +17362,16 @@
       const heardText = (document.getElementById('vc-heard-text').textContent || '').trim();
       if (heardText) act.notes = '🎙 ' + heardText;
 
-      state.weekData.days[di].activities.push(act);
+      // If the day has only one activity and it's completely empty (the placeholder),
+      // replace it instead of pushing alongside it — avoids leaving a blank task behind
+      const dayActivities = state.weekData.days[di].activities;
+      const isPlaceholder = a => !a.description && !a.location && !a.ordinary && !a.overtime && !a.notes && (!a.codes || a.codes.length === 0);
+      if (dayActivities.length === 1 && isPlaceholder(dayActivities[0])) {
+        state.activitiesExpanded.delete(dayActivities[0].id);
+        dayActivities[0] = act;
+      } else {
+        dayActivities.push(act);
+      }
       state.activitiesExpanded.add(act.id);
       state.expandedDays.add(di);
 
