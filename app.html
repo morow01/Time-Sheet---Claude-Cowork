@@ -4841,7 +4841,7 @@
     .note-row-meta {
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 10px;
       margin-top: 6px;
       font-size: 12px;
@@ -4854,6 +4854,7 @@
       align-items: center;
       gap: 4px;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .note-meta-icon {
@@ -8338,7 +8339,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.21.5';
+    const VERSION = '4.21.6';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
