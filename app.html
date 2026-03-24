@@ -8343,7 +8343,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.22.8';
+    const VERSION = '4.22.9';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -15912,11 +15912,11 @@
           <div style="display:flex;gap:12px;align-items:center;font-size:13px;margin-top:3px">
             <span style="display:flex;align-items:center;gap:4px">
               <span style="width:9px;height:9px;border-radius:27%;background:var(--accent);display:inline-block"></span>
-              <strong style="color:var(--accent)">${yearOnCall} Weeks</strong>
+              <strong style="color:var(--accent)">${yearOnCall} On-Call Weeks</strong>
             </span>
             <span style="display:flex;align-items:center;gap:4px">
               <span style="width:9px;height:9px;border-radius:27%;background:#F59E0B;display:inline-block"></span>
-              <strong style="color:#F59E0B">${yearExtra} Extra</strong>
+              <strong style="color:#F59E0B">${yearExtra} Extra Shifts</strong>
             </span>
           </div>
         </div>
@@ -16025,10 +16025,8 @@
         const ocType = onCall[curWeekStart];
         const badgeBg = isExtra ? '#FEF3C7' : 'var(--accent-light)';
         const badgeColor = isExtra ? '#F59E0B' : 'var(--accent)';
-        const badgeHtml = ocType === 'oncall'
-          ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:var(--accent-light);color:var(--accent);margin-left:6px">ON-CALL</span>`
-          : ocType === 'extra'
-            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
+        const badgeHtml = ocType === 'extra'
+            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
             : '';
         html += `<div style="margin:0 14px 10px;background:var(--bg-card);border-radius:14px;border:1.5px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
           <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
@@ -16062,10 +16060,10 @@
         // Stats bar
         html += `<div style="margin:6px 14px 8px">`;
         html += `<div class="oc-stats">
-          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--accent)">${totalOnCall + totalExtra}</div><div class="oc-stat-label">On-Call Weeks</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:#F59E0B">${totalExtra}</div><div class="oc-stat-label">Extra Shifts</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:#EF4444">${totalIncidents}</div><div class="oc-stat-label">Total Incidents</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:#8B5CF6">${avgPerWeek}</div><div class="oc-stat-label">Avg / Week</div></div>
+          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--accent)">${totalOnCall + totalExtra}</div><div class="oc-stat-label">On-Call<br>Weeks</div></div>
+          <div class="oc-stat"><div class="oc-stat-val" style="color:#F59E0B">${totalExtra}</div><div class="oc-stat-label">Extra<br>Shifts</div></div>
+          <div class="oc-stat"><div class="oc-stat-val" style="color:#EF4444">${totalIncidents}</div><div class="oc-stat-label">Total<br>Incidents</div></div>
+          <div class="oc-stat"><div class="oc-stat-val" style="color:#8B5CF6">${avgPerWeek}</div><div class="oc-stat-label">Avg /<br>Week</div></div>
         </div>`;
         html += `</div>`;
 
@@ -16074,10 +16072,8 @@
           const wd = state.callouts.weeks?.[weekKey];
           const calloutCount = wd ? (wd.callouts || []).length : 0;
           const ocType = onCall[weekKey];
-          const badgeHtml = ocType === 'oncall'
-            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:var(--accent-light);color:var(--accent);margin-left:6px">ON-CALL</span>`
-            : ocType === 'extra'
-              ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA</span>`
+          const badgeHtml = ocType === 'extra'
+              ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
               : '';
           const badgeBg = ocType === 'extra' ? '#FEF3C7' : 'var(--accent-light)';
           const badgeColor = ocType === 'extra' ? '#F59E0B' : 'var(--accent)';
