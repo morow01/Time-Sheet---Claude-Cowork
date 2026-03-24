@@ -7050,7 +7050,6 @@
     }
 
     .oc-cal-btn {
-      width: 36px;
       height: 36px;
       border-radius: 10px;
       background: var(--accent);
@@ -7058,9 +7057,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
+      padding: 0 12px 0 10px;
       cursor: pointer;
       position: relative;
       transition: transform 0.15s;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
     }
 
     .oc-cal-btn:active {
@@ -8339,7 +8343,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.22.7';
+    const VERSION = '4.22.8';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -16009,7 +16013,7 @@
       html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;">
         <span style="font-size:17px;font-weight:700;color:var(--text-primary)">Callouts</span>
         <button class="oc-cal-btn" onclick="ocOpenSchedule()" title="On-Call Schedule">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>On-Call Schedule
         </button>
       </div>`;
 
