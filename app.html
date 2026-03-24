@@ -4484,6 +4484,9 @@
     }
 
     .notes-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       padding: 4px 12px;
       border-radius: 999px;
       font-size: 11px;
@@ -4495,6 +4498,7 @@
       background: var(--bg-card);
       color: var(--text-secondary);
       transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .notes-chip.select-mode-toggle {
@@ -4740,6 +4744,77 @@
       border-color: var(--border);
     }
 
+    /* ── Category chip – active state uses the category's colour ── */
+    .notes-chip.cat-active {
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* ── Divider between category and priority chip groups ── */
+    .notes-chips-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    /* ── Left accent bar on note card ── */
+    .note-accent-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 16px 0 0 16px;
+    }
+
+    /* ── Category badge (top-right of card header) ── */
+    .note-cat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px 2px 5px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: #fff;
+      line-height: 1.4;
+    }
+
+    /* ── Category selector grid (inside note form) ── */
+    .note-cat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .note-cat-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 10px 4px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg-card);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .note-cat-btn.selected {
+      color: #fff;
+      border-color: transparent;
+    }
+
     .notes-section-label {
       font-size: 11px;
       padding: 16px 16px 8px;
@@ -4757,6 +4832,7 @@
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
       transition: box-shadow 0.3s ease;
+      position: relative;
     }
 
     .note-card.expanded {
@@ -8293,7 +8369,23 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.19.10';
+    const VERSION = '4.20.0';
+
+    // ── Notes categories ──
+    const NOTE_CATEGORIES = [
+      { key: 'job',      label: 'Job',       color: '#3b82f6',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>` },
+      { key: 'fault',    label: 'Fault',     color: '#ef4444',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>` },
+      { key: 'followup', label: 'Follow-up', color: '#f59e0b',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>` },
+      { key: 'meeting',  label: 'Meeting',   color: '#8b5cf6',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+      { key: 'personal', label: 'Personal',  color: '#10b981',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` },
+      { key: 'idea',     label: 'Idea',      color: '#f97316',
+        icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>` },
+    ];
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -8784,8 +8876,9 @@
       weekData: null,       // { weekStart, days: [...] }
       currentUser: null,    // Firebase Auth user
       notes: [],            // all field notes
-      notesFilter: 'all',   // 'all' | 'high' | 'medium' | 'low' | 'done'
-      notesSearch: '',      // live search query
+      notesFilter: 'all',         // 'all' | 'high' | 'medium' | 'low' | 'done'
+      notesCategoryFilter: '',    // '' = all categories, or one of NOTE_CATEGORIES keys
+      notesSearch: '',            // live search query
       expandedNotes: new Set(), // note IDs that are expanded
       activitiesExpanded: new Set(), // activity IDs that are expanded for details
       notesSyncStatus: 'idle',  // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
@@ -9156,7 +9249,7 @@
 
     function createNote() {
       const now = Date.now();
-      return { id: uid(), description: '', noteContent: '', location: '', date: dateToStr(new Date()), priority: 'medium', status: 'open', createdAt: now, updatedAt: now };
+      return { id: uid(), description: '', noteContent: '', location: '', date: dateToStr(new Date()), priority: 'medium', status: 'open', category: '', createdAt: now, updatedAt: now };
     }
 
     function calcSummary(weekData) {
@@ -12707,15 +12800,25 @@
     // ---- Notes filter helper ----
     function getFilteredNotes() {
       const f = state.notesFilter;
+      const cf = state.notesCategoryFilter || '';
       const q = (state.notesSearch || '').trim().toLowerCase();
       return state.notes.filter(n => {
+        // Priority / status filter
         if (f === 'done') { if (n.status !== 'done') return false; }
         else if (f === 'all') { if (n.status === 'done') return false; }
         else { if (n.status === 'done' || n.priority !== f) return false; }
+        // Category filter
+        if (cf) { if ((n.category || '') !== cf) return false; }
+        // Search query
         if (!q) return true;
-        const haystack = [n.description || '', n.location || '', n.noteContent || ''].join(' ').toLowerCase();
+        const haystack = [n.description || '', n.location || '', n.noteContent || '', n.category || ''].join(' ').toLowerCase();
         return haystack.includes(q);
       }).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    }
+
+    function setNotesCategoryFilter(cat) {
+      state.notesCategoryFilter = (state.notesCategoryFilter === cat) ? '' : cat;
+      render();
     }
 
     // ---- Notes render ----
@@ -12729,18 +12832,34 @@
       const doneNotes = state.notes.filter(n => n.status === 'done');
       const counts = { high: openNotes.filter(n => n.priority === 'high').length, medium: openNotes.filter(n => n.priority === 'medium').length, low: openNotes.filter(n => n.priority === 'low').length };
 
-      const chips = [
+      const cf = state.notesCategoryFilter || '';
+
+      // Category chips
+      const catChips = NOTE_CATEGORIES.map(cat => {
+        const isActive = cf === cat.key;
+        const activeStyle = isActive ? `background:${cat.color};border-color:${cat.color};` : '';
+        return `<div class="notes-chip${isActive ? ' cat-active' : ''}" style="${activeStyle}" onclick="setNotesCategoryFilter('${cat.key}')">${cat.icon.replace('width="18" height="18"','width="13" height="13"')} ${cat.label}</div>`;
+      }).join('');
+
+      // Priority / status chips
+      const priChipDefs = [
         { key: 'all', label: `All (${openNotes.length})` },
         { key: 'high', label: `High (${counts.high})`, cls: 'high' },
         { key: 'medium', label: `Med (${counts.medium})`, cls: 'medium' },
         { key: 'low', label: `Low (${counts.low})`, cls: 'low' },
         { key: 'done', label: `Done (${doneNotes.length})`, cls: 'done' },
-      ].map(c => `<div class="notes-chip ${c.key === f ? 'active' : (c.cls || '')}" onclick="setNotesFilter('${c.key}')">${c.label}</div>`).join('');
+      ];
+      const priChips = priChipDefs.map(c => `<div class="notes-chip ${c.key === f ? 'active' : (c.cls || '')}" onclick="setNotesFilter('${c.key}')">${c.label}</div>`).join('');
+
+      const chips = catChips + `<div class="notes-chips-divider"></div>` + priChips;
 
       const renderNote = (note) => {
         const isExpanded = state.expandedNotes.has(note.id);
         const isNew = !note.description && !note.location;
         const dotCls = { high: 'note-dot-high', medium: 'note-dot-medium', low: 'note-dot-low' }[note.priority] || 'note-dot-none';
+        const noteCat = NOTE_CATEGORIES.find(c => c.key === (note.category || ''));
+        const accentBar = noteCat ? `<div class="note-accent-bar" style="background:${noteCat.color}"></div>` : '';
+        const catBadge = noteCat ? `<span class="note-cat-badge" style="background:${noteCat.color}">${noteCat.icon.replace('width="18" height="18"','width="11" height="11"')} ${noteCat.label}</span>` : '';
         const rawDesc = note.description || '';
         let cleanDesc = rawDesc.includes('<') ? rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : rawDesc;
         if (cleanDesc.includes('&')) cleanDesc = decodeEntities(cleanDesc);
@@ -12763,13 +12882,14 @@
         ).join('');
 
         const header = `
+          ${accentBar}
           <div class="note-row ${state.selectionMode ? 'selectable' : ''}"
             onpointerdown="notePressStart(event,'${note.id}')"
             onpointerup="notePressEnd(event)"
             onpointercancel="notePressEnd(event)"
             oncontextmenu="event.preventDefault()"
             onclick="notePressClick(event,'${note.id}')"
-            style="${isExpanded ? 'background:transparent' : ''}">
+            style="${isExpanded ? 'background:transparent' : ''}${noteCat ? 'padding-left:18px;' : ''}">
             ${state.selectionMode ? `
               <div class="note-selection-check">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -12780,6 +12900,7 @@
               <div class="note-row-title" style="${note.status === 'done' ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${esc(titleText)}</div>
               ${metaHtml}
             </div>
+            ${catBadge}
             <span class="note-expand-arrow ${isExpanded ? 'open' : ''}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
           </div>`;
 
@@ -12850,6 +12971,18 @@
             </div>
             ${renderNoteReminderField(note.id)}
             <div class="note-detail-row">
+              <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Category</span>
+              <div class="note-cat-grid">
+                ${NOTE_CATEGORIES.map(cat => {
+                  const isSel = (note.category || '') === cat.key;
+                  return `<button class="note-cat-btn${isSel ? ' selected' : ''}" style="${isSel ? `background:${cat.color};` : ''}" onclick="setNoteCategory('${note.id}','${isSel ? '' : cat.key}')">
+                    ${cat.icon}
+                    <span>${cat.label}</span>
+                  </button>`;
+                }).join('')}
+              </div>
+            </div>
+            <div class="note-detail-row">
               <div class="note-toolbar-row">
                 <div class="note-pri-dots">
                   <span class="note-pri-dots-label">Priority</span>
@@ -12886,7 +13019,8 @@
       };
 
       const visibleOpen = f === 'done' ? [] : filtered;
-      const visibleDone = (f === 'done' || f === 'all') ? doneNotes : [];
+      const filteredDone = cf ? doneNotes.filter(n => (n.category || '') === cf) : doneNotes;
+      const visibleDone = (f === 'done' || f === 'all') ? filteredDone : [];
 
       const allIds = [...visibleOpen, ...visibleDone].map(n => n.id);
       const isAllSelected = allIds.length > 0 && allIds.every(id => state.selectedNotes.has(id));
@@ -13030,8 +13164,10 @@
     function toggleSelectAll() {
       // Build visible sets matching exactly what renderNotesView shows
       const f = state.notesFilter;
-      const allOpen = state.notes.filter(n => n.status !== 'done');
-      const allDone = state.notes.filter(n => n.status === 'done');
+      const cf = state.notesCategoryFilter || '';
+      const catMatch = n => !cf || (n.category || '') === cf;
+      const allOpen = state.notes.filter(n => n.status !== 'done' && catMatch(n));
+      const allDone = state.notes.filter(n => n.status === 'done' && catMatch(n));
       // Open: filtered by priority if needed, excluded on 'done' tab
       const visibleOpen = f === 'done' ? [] :
         f === 'all' ? allOpen : allOpen.filter(n => n.priority === f);
@@ -13097,6 +13233,8 @@
 
     function addNote() {
       const note = createNote();
+      // Pre-assign active category filter so new note appears in current view
+      if (state.notesCategoryFilter) note.category = state.notesCategoryFilter;
       state.notes.unshift(note);
       state.expandedNotes.add(note.id);
       state.notesFilter = 'all';
@@ -13299,6 +13437,16 @@
           else el.classList.remove('pd-active');
         });
       }
+    }
+
+    function setNoteCategory(id, category) {
+      const note = state.notes.find(n => n.id === id);
+      if (!note) return;
+      note.category = category;
+      note.updatedAt = Date.now();
+      scheduleNotesSave();
+      // Re-render the card to update accent bar + badge + category grid
+      render();
     }
 
     function setNoteToday(id) {
