@@ -8293,7 +8293,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.19.6';
+    const VERSION = '4.19.7';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -11842,17 +11842,21 @@
         const keyArr = new Uint8Array(raw.length);
         for (let i = 0; i < raw.length; i++) keyArr[i] = raw.charCodeAt(i);
 
-        // Always create fresh subscription to ensure endpoint is valid
-        // (FieldPath atomic write prevents race condition between devices)
-        const oldSub = await swReg.pushManager.getSubscription();
-        if (oldSub) {
-          await oldSub.unsubscribe();
+        // Reuse existing subscription if still valid — avoids the race condition where
+        // unsubscribing + re-subscribing leaves a window with no valid endpoint in Firestore.
+        // Only create a fresh one if none exists yet.
+        let sub = await swReg.pushManager.getSubscription();
+        let isNew = false;
+        if (!sub) {
+          sub = await swReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: keyArr
+          });
+          isNew = true;
+          console.log('[Rian Push] New push subscription created');
+        } else {
+          console.log('[Rian Push] Reusing existing push subscription');
         }
-        const sub = await swReg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: keyArr
-        });
-        console.log('[Rian Push] Fresh push subscription created');
 
         // Extract subscription data for server-side sending
         const subJson = sub.toJSON();
@@ -11875,7 +11879,7 @@
         const fp = new firebase.firestore.FieldPath('subs', deviceKey);
         try {
           await ref.update(fp, pushData, '_updatedAt', Date.now());
-          console.log('[Rian Push] Updated existing doc for', deviceKey);
+          console.log('[Rian Push]', isNew ? 'Saved new' : 'Refreshed', 'subscription for', deviceKey);
         } catch (updateErr) {
           // Document doesn't exist yet — create it
           const subsObj = {};
