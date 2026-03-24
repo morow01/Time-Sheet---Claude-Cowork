@@ -8204,6 +8204,43 @@
     </div>
   </div>
 
+  <!-- Cloud Backups modal -->
+  <div id="backup-modal" class="hidden fixed inset-0 flex flex-col" style="background:rgba(0,0,0,0.6);z-index:900;overflow-y:auto">
+    <div style="margin:auto;width:100%;max-width:600px;padding:16px 12px 32px">
+      <div style="background:var(--bg-card);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.35)">
+        <div style="padding:16px 16px 14px;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);display:flex;align-items:center;gap:8px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+              Cloud Backups
+            </div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">Automatic daily snapshots — notes, callouts, timesheets, routines</div>
+          </div>
+          <button onclick="document.getElementById('backup-modal').classList.add('hidden')" style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;padding:0 0 0 12px;line-height:1">✕</button>
+        </div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div style="font-size:0.8rem;color:var(--text-muted)">Up to 30 days kept · auto-runs on first open each day</div>
+          <button onclick="backupNow(this)" style="background:var(--accent);color:#fff;border:none;border-radius:9px;padding:8px 16px;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">Backup Now</button>
+        </div>
+        <div id="backup-list" style="min-height:120px">
+          <div style="padding:32px 24px;text-align:center;color:var(--text-muted);font-size:0.9rem">Loading backups…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restore confirm modal -->
+  <div id="restore-confirm-modal" class="hidden fixed inset-0 flex items-center justify-center" style="background:rgba(0,0,0,0.6);z-index:910">
+    <div style="background:var(--bg-card);border-radius:16px;padding:24px;max-width:360px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,0.35)">
+      <div style="font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:8px">Restore from backup?</div>
+      <div id="restore-confirm-msg" style="font-size:0.88rem;color:var(--text-muted);line-height:1.5;margin-bottom:20px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="document.getElementById('restore-confirm-modal').classList.add('hidden')" style="flex:1;background:var(--bg-elevated);color:var(--text-primary);border:1px solid var(--border);border-radius:10px;padding:11px;font-size:0.9rem;font-weight:600;cursor:pointer">Cancel</button>
+        <button id="restore-confirm-btn" style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:10px;padding:11px;font-size:0.9rem;font-weight:600;cursor:pointer">Restore</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Paste Ticket modal -->
   <div id="paste-ticket-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
     style="background:var(--overlay)">
@@ -8256,7 +8293,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.18.33';
+    const VERSION = '4.19.0';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10031,6 +10068,11 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Data Management</div>
                 <div class="menu-card">
+                  <button class="menu-row" onclick="openBackupsModal();closeThemeMenu()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Cloud Backups</span><span class="menu-row-sub">View &amp; restore daily snapshots</span></span>
+                    ${chev}
+                  </button>
                   <button class="menu-row" onclick="exportAllData();closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Export All Data</span><span class="menu-row-sub">Download as JSON</span></span>
@@ -14732,6 +14774,205 @@
       } catch (e) { showToast('Export failed: ' + e.message); }
     }
 
+    // ══════════════════════════════════════════════════════════
+    // CLOUD BACKUP SYSTEM
+    // Stores a full daily snapshot in Firestore at:
+    //   users/{uid}/backups/{YYYY-MM-DD}
+    // Runs automatically once per day on app open. Keeps 30 days.
+    // ══════════════════════════════════════════════════════════
+
+    function _backupThrottleKey(uid) { return 'lastDailyBackup_v1_' + uid; }
+
+    // Called at startup after sign-in — silently runs once per day
+    function checkAndRunDailyBackup(uid) {
+      if (!uid) return;
+      const today = dateToStr(new Date());
+      if (localStorage.getItem(_backupThrottleKey(uid)) === today) return;
+      // Delay 8 seconds so the main app load completes first
+      setTimeout(async () => {
+        try {
+          await _runBackupWrite(uid, today, false);
+          localStorage.setItem(_backupThrottleKey(uid), today);
+          console.log('[Rian Backup] Auto daily backup complete for', today);
+        } catch (e) {
+          console.warn('[Rian Backup] Auto daily backup failed:', e.message || e);
+        }
+      }, 8000);
+    }
+
+    // Core function — collects all Firestore data and writes a backup doc
+    async function _runBackupWrite(uid, dateKey, forceOverwrite) {
+      const backupRef = db_fs.doc(`users/${uid}/backups/${dateKey}`);
+      if (!forceOverwrite) {
+        const existing = await backupRef.get().catch(() => null);
+        if (existing?.exists) return; // already have one for this key
+      }
+      const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc] = await Promise.all([
+        db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
+        userDoc('data/notes')?.get().catch(() => null),
+        userDoc('data/reminders')?.get().catch(() => null),
+        userDoc('data/callouts')?.get().catch(() => null),
+        userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null))
+      ]);
+      const weeks = {};
+      if (weeksSnap) weeksSnap.docs.forEach(d => { weeks[d.id] = d.data(); });
+      const notes     = notesDoc?.exists ? notesDoc.data() : null;
+      const reminders = remDoc?.exists    ? remDoc.data()   : null;
+      const callouts  = coDoc?.exists     ? coDoc.data()    : null;
+      const routines  = rtnDoc?.exists    ? rtnDoc.data()   : null;
+      const noteCount     = notes?.notes?.length || 0;
+      const weekCount     = Object.keys(weeks).length;
+      const calloutCount  = callouts ? Object.values(callouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
+      await backupRef.set({
+        _format: 'rian-backup-v1',
+        _date: dateKey,
+        _backedUpAt: Date.now(),
+        _version: VERSION,
+        _noteCount: noteCount,
+        _weekCount: weekCount,
+        _calloutCount: calloutCount,
+        weeks,
+        notes,
+        reminders,
+        callouts,
+        routines
+      });
+      // Prune: keep only the 30 most recent backups
+      try {
+        const allSnap = await db_fs.collection(`users/${uid}/backups`).orderBy('_backedUpAt', 'asc').get();
+        if (allSnap.size > 30) {
+          const toDelete = allSnap.docs.slice(0, allSnap.size - 30);
+          const batch = db_fs.batch();
+          toDelete.forEach(d => batch.delete(d.ref));
+          await batch.commit();
+        }
+      } catch (e) { /* pruning is non-critical */ }
+    }
+
+    // Opens the Cloud Backups modal and loads the list
+    async function openBackupsModal() {
+      if (!state.currentUser) { showToast('Sign in first'); return; }
+      document.getElementById('backup-modal').classList.remove('hidden');
+      await refreshBackupList();
+    }
+
+    // Renders the list of available backups
+    async function refreshBackupList() {
+      const uid = state.currentUser?.uid;
+      if (!uid) return;
+      const listEl = document.getElementById('backup-list');
+      if (!listEl) return;
+      listEl.innerHTML = '<div style="padding:32px 24px;text-align:center;color:var(--text-muted);font-size:0.9rem">Loading…</div>';
+      try {
+        const snap = await db_fs.collection(`users/${uid}/backups`).orderBy('_backedUpAt', 'desc').limit(30).get();
+        if (snap.empty) {
+          listEl.innerHTML = '<div style="padding:32px 24px;text-align:center;color:var(--text-muted);font-size:0.9rem">No backups yet.<br><span style="font-size:0.78rem">The first backup will run automatically the next time you open the app.</span></div>';
+          return;
+        }
+        const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const rows = snap.docs.map((d, i) => {
+          const b = d.data();
+          const p = (b._date || d.id).split('-');
+          const dateLabel = p.length === 3
+            ? p[2].replace(/^0/, '') + ' ' + (MN[parseInt(p[1], 10) - 1] || '') + ' ' + p[0]
+            : (b._date || d.id);
+          const timeLabel = b._backedUpAt
+            ? new Date(b._backedUpAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '';
+          const meta = [
+            b._noteCount  != null ? `${b._noteCount} notes`    : '',
+            b._weekCount  != null ? `${b._weekCount} weeks`     : '',
+            b._calloutCount != null && b._calloutCount > 0 ? `${b._calloutCount} callouts` : ''
+          ].filter(Boolean).join(' · ');
+          const isLast = i === snap.docs.length - 1;
+          return `<div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
+            <div style="min-width:0">
+              <div style="font-weight:600;color:var(--text-primary);font-size:0.92rem">${dateLabel}</div>
+              <div style="font-size:0.76rem;color:var(--text-muted);margin-top:2px">${timeLabel ? timeLabel + ' · ' : ''}${meta || '—'}</div>
+            </div>
+            <button onclick="confirmRestoreBackup('${d.id}')" style="background:var(--bg-elevated);color:var(--accent);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">Restore</button>
+          </div>`;
+        }).join('');
+        listEl.innerHTML = rows;
+      } catch (e) {
+        listEl.innerHTML = `<div style="padding:32px 24px;text-align:center;color:var(--text-muted);font-size:0.9rem">Failed to load backups.<br><span style="font-size:0.78rem">${e.message || e}</span></div>`;
+      }
+    }
+
+    // Manual "Backup Now" — forces today's backup even if already exists
+    async function backupNow(btn) {
+      const uid = state.currentUser?.uid;
+      if (!uid) { showToast('Sign in first'); return; }
+      const origText = btn ? btn.textContent : '';
+      if (btn) { btn.textContent = 'Backing up…'; btn.disabled = true; }
+      try {
+        const today = dateToStr(new Date());
+        await _runBackupWrite(uid, today, true);
+        localStorage.setItem(_backupThrottleKey(uid), today);
+        showToast('✓ Backup saved');
+        await refreshBackupList();
+      } catch (e) {
+        showToast('Backup failed: ' + (e.message || e));
+      } finally {
+        if (btn) { btn.textContent = origText; btn.disabled = false; }
+      }
+    }
+
+    // Shows confirmation dialog before restoring
+    function confirmRestoreBackup(dateKey) {
+      const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const p = dateKey.split('-');
+      const label = p.length === 3
+        ? p[2].replace(/^0/, '') + ' ' + (MN[parseInt(p[1], 10) - 1] || '') + ' ' + p[0]
+        : dateKey;
+      const msgEl = document.getElementById('restore-confirm-msg');
+      if (msgEl) msgEl.innerHTML = `This will replace your current <strong>notes, callouts, timesheets, routines and reminders</strong> with the snapshot from <strong>${label}</strong>.<br><br>Your current data will be saved as a safety backup first.`;
+      const btn = document.getElementById('restore-confirm-btn');
+      if (btn) { btn.onclick = () => { document.getElementById('restore-confirm-modal').classList.add('hidden'); restoreFromBackup(dateKey); }; }
+      document.getElementById('restore-confirm-modal').classList.remove('hidden');
+    }
+
+    // Performs the actual restore
+    async function restoreFromBackup(dateKey) {
+      const uid = state.currentUser?.uid;
+      if (!uid) { showToast('Not signed in'); return; }
+      showToast('Restoring…');
+      try {
+        // Safety: save current state as a pre-restore backup
+        const safetyKey = dateToStr(new Date()) + '-pre-restore';
+        await _runBackupWrite(uid, safetyKey, true).catch(() => {});
+
+        // Fetch the chosen backup
+        const backupSnap = await db_fs.doc(`users/${uid}/backups/${dateKey}`).get();
+        if (!backupSnap.exists) { showToast('Backup not found'); return; }
+        const b = backupSnap.data();
+
+        // Restore each data type
+        if (b.notes)     { await userDoc('data/notes')?.set(b.notes); state.notes = b.notes.notes || []; }
+        if (b.reminders) { await userDoc('data/reminders')?.set(b.reminders); }
+        if (b.callouts)  { await userDoc('data/callouts')?.set(b.callouts); state.callouts = b.callouts; }
+        if (b.routines)  { await userDoc('data/routines')?.set(b.routines); state.routines = b.routines; }
+
+        // Restore weeks (may be many docs — batch in groups of 400)
+        if (b.weeks && Object.keys(b.weeks).length > 0) {
+          const entries = Object.entries(b.weeks);
+          for (let i = 0; i < entries.length; i += 400) {
+            const chunk = entries.slice(i, i + 400);
+            const batch = db_fs.batch();
+            chunk.forEach(([ws, data]) => batch.set(db_fs.doc(`users/${uid}/weeks/${ws}`), data));
+            await batch.commit();
+          }
+        }
+
+        document.getElementById('backup-modal').classList.add('hidden');
+        showToast('✓ Restore complete — reloading…');
+        setTimeout(() => location.reload(), 1800);
+      } catch (e) {
+        showToast('Restore failed: ' + (e.message || e));
+        console.error('[Rian Backup] Restore error:', e);
+      }
+    }
+
     // ── Import with selection dialog ──
     let _importParsedData = null;
 
@@ -17639,6 +17880,9 @@ Rules:
 
         // Seed local history cache for Suggest feature (runs silently in background)
         syncHistoryCache(user.uid).catch(e => console.warn('[Rian]', e));
+
+        // Run daily cloud backup (silently, once per day, 8s after app load)
+        checkAndRunDailyBackup(user.uid);
       });
     }
 
