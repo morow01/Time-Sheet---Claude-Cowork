@@ -8293,7 +8293,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.19.2';
+    const VERSION = '4.19.3';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14825,21 +14825,33 @@
       const calloutCount  = callouts ? Object.values(callouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
       const reminderCount = reminders?.reminders?.length || 0;
       const routineCount  = routines?.selectedSites?.length || 0;
+      // Collect settings from localStorage (same as Export All Data)
+      const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
+        'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'];
+      const settings = {};
+      lsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
+      const now = Date.now();
       await backupRef.set({
-        _format: 'rian-backup-v1',
-        _date: dateKey,
-        _backedUpAt: Date.now(),
+        // Identical format to Export All Data so files are interchangeable
+        _format: 'rian-export-v1',
+        _exportedAt: new Date(now).toISOString(),
+        _sourceUid: uid,
+        _sourceEmail: state.currentUser?.email || '',
         _version: VERSION,
+        // Extra backup metadata (display use only)
+        _backedUpAt: now,
         _noteCount: noteCount,
         _weekCount: weekCount,
         _calloutCount: calloutCount,
         _reminderCount: reminderCount,
         _routineCount: routineCount,
+        // Data — same fields as export
         weeks,
         notes,
         reminders,
         callouts,
-        routines
+        routines,
+        settings
       });
       // Prune: keep only the 30 most recent backups
       try {
@@ -15001,8 +15013,8 @@
         try {
           const text = await file.text();
           const data = JSON.parse(text);
-          if (data._format !== 'rian-export-v1') {
-            showToast('Invalid export file — not a Rian export.');
+          if (data._format !== 'rian-export-v1' && data._format !== 'rian-backup-v1') {
+            showToast('Invalid file — not a Rian export or backup.');
             return;
           }
           _importParsedData = data;
