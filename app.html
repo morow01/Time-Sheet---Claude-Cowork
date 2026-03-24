@@ -8369,7 +8369,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.20.6';
+    const VERSION = '4.20.7';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -13266,6 +13266,7 @@
         if (chevron) chevron.style.transform = 'rotate(90deg)';
         state.notesOpen.set(noteId, true); // user explicitly opened
       }
+      saveUiState(); // persist so refresh remembers the panel state
     }
 
     function openFieldNoteFullscreen(noteId) {
