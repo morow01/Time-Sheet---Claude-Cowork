@@ -8293,7 +8293,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.19.5';
+    const VERSION = '4.19.6';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -12303,6 +12303,30 @@
 
             // Clear all existing timers
             Object.keys(reminderTimers).forEach(id => { clearTimeout(reminderTimers[id]); delete reminderTimers[id]; });
+
+            // Cross-device notification: detect reminders that just fired on another device
+            // Compare previous state before overwriting remindersData
+            if (isFromServer) {
+              const myDevice = getDeviceName();
+              const prevPending = new Set(remindersData.filter(r => !r.fired).map(r => r.id));
+              remote.reminders.forEach(r => {
+                if (r.fired && prevPending.has(r.id) && r.firedBy && r.firedBy !== myDevice) {
+                  // This reminder just fired on another device — notify this device too
+                  console.log('[Rian] Cross-device reminder fired by', r.firedBy, '— showing local notification');
+                  if ('Notification' in window && Notification.permission === 'granted') {
+                    try {
+                      new Notification('Rian Reminder', {
+                        body: r.description || 'Reminder',
+                        icon: location.pathname.replace(/app\.html$/, '') + 'icon-192.png',
+                        tag: 'rian-xdevice-' + r.id,
+                        requireInteraction: true
+                      });
+                    } catch (e) { console.warn('[Rian] Cross-device notification failed:', e); }
+                  }
+                  showToast('⏰ ' + (r.description || 'Reminder'));
+                }
+              });
+            }
 
             remindersData = remote.reminders;
             dbPut('notes', { id: 'reminders_all', userId: state.currentUser?.uid || null, data: remindersData, updatedAt: remote._updatedAt || Date.now() }).catch(() => { });
