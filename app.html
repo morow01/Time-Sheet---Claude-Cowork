@@ -8293,7 +8293,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.19.0';
+    const VERSION = '4.19.1';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -14823,6 +14823,8 @@
       const noteCount     = notes?.notes?.length || 0;
       const weekCount     = Object.keys(weeks).length;
       const calloutCount  = callouts ? Object.values(callouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
+      const reminderCount = reminders?.reminders?.length || 0;
+      const routineCount  = routines?.selectedSites?.length || 0;
       await backupRef.set({
         _format: 'rian-backup-v1',
         _date: dateKey,
@@ -14831,6 +14833,8 @@
         _noteCount: noteCount,
         _weekCount: weekCount,
         _calloutCount: calloutCount,
+        _reminderCount: reminderCount,
+        _routineCount: routineCount,
         weeks,
         notes,
         reminders,
@@ -14880,9 +14884,11 @@
             ? new Date(b._backedUpAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             : '';
           const meta = [
-            b._noteCount  != null ? `${b._noteCount} notes`    : '',
-            b._weekCount  != null ? `${b._weekCount} weeks`     : '',
-            b._calloutCount != null && b._calloutCount > 0 ? `${b._calloutCount} callouts` : ''
+            b._noteCount     != null ? `${b._noteCount} notes`         : '',
+            b._weekCount     != null ? `${b._weekCount} weeks`          : '',
+            b._calloutCount  != null && b._calloutCount > 0 ? `${b._calloutCount} callouts` : '',
+            b._reminderCount != null && b._reminderCount > 0 ? `${b._reminderCount} reminders` : '',
+            b._routineCount  != null && b._routineCount  > 0 ? `${b._routineCount} routines`  : ''
           ].filter(Boolean).join(' · ');
           const isLast = i === snap.docs.length - 1;
           return `<div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
