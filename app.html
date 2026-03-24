@@ -8339,7 +8339,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.21.7';
+    const VERSION = '4.21.8';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -15882,18 +15882,21 @@
       const year = state.coScheduleYear;
       const fridays = _ocGetFridays(year);
       const curWeekStart = dateToStr(getCurrentFriday());
-      const totalOnCall = Object.values(onCall).filter(v => v === 'oncall').length;
-      const totalExtra = Object.values(onCall).filter(v => v === 'extra').length;
-      let totalIncidents = 0;
-      Object.entries(onCall).forEach(([wk]) => {
-        const wd = state.callouts.weeks?.[wk];
-        totalIncidents += wd ? (wd.callouts || []).length : 0;
-      });
+      const fridaySet = new Set(fridays);
+      const yearOnCall = Object.entries(onCall).filter(([wk, v]) => fridaySet.has(wk) && v === 'oncall').length;
+      const yearExtra = Object.entries(onCall).filter(([wk, v]) => fridaySet.has(wk) && v === 'extra').length;
+
+      const weeksStr = yearOnCall === 1 ? '1 week' : `${yearOnCall} weeks`;
+      const extraStr = yearExtra > 0 ? ` · <span style="color:#F59E0B;font-weight:600">${yearExtra} extra</span>` : '';
+      const subtitleStr = yearOnCall === 0 && yearExtra === 0 ? 'No weeks scheduled' : `${weeksStr}${extraStr}`;
 
       let html = `<div class="oc-overlay${state.coScheduleOpen ? ' open' : ''}" id="oc-schedule-overlay">`;
       // Header
       html += `<div class="oc-overlay-header">
-        <h2>On-Call Schedule</h2>
+        <div>
+          <h2 style="margin:0;line-height:1.2">On-Call Schedule ${year}</h2>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${subtitleStr}</div>
+        </div>
         <button class="oc-close-btn" onclick="ocCloseSchedule()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
