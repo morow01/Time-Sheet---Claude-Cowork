@@ -8293,7 +8293,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.19.9';
+    const VERSION = '4.19.10';
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
       authDomain: "eir-fieldlog.firebaseapp.com",
@@ -10539,6 +10539,7 @@
       <td>
         <div class="location-wrap">
           <input type="text" class="tbl-act-input" placeholder="Location…" value="${esc(act.location)}"
+            autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
             data-field="location" data-act="${act.id}" data-day="${di}"
             readonly style="cursor:pointer"
             onclick="openLocationModal(${di}, '${act.id}')">
@@ -11098,6 +11099,7 @@
               <div class="location-wrap">
                 <input type="text" placeholder="Town name or code…" value="${esc(act.location)}"
                   class="act-input"
+                  autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
                   data-field="location" data-act="${act.id}" data-day="${di}"
                   readonly style="cursor:pointer"
                   onclick="openLocationModal(${di}, '${act.id}')">
@@ -11137,7 +11139,7 @@
                 <div class="act-field-label" style="margin-bottom: 8px;">Ordinary HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
-                  <input type="number" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" min="0" step="1" inputmode="decimal" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="number" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" min="0" step="1" inputmode="decimal" autocomplete="one-time-code" data-lpignore="true" data-form-type="other" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
@@ -11145,7 +11147,7 @@
                 <div class="act-field-label act-field-label-ot" style="margin-bottom: 8px;">Overtime HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
-                  <input type="number" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" min="0" step="1" inputmode="decimal" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="number" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" min="0" step="1" inputmode="decimal" autocomplete="one-time-code" data-lpignore="true" data-form-type="other" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-const CACHE = 'timesheet-v4371';
+const CACHE = 'timesheet-v4372';
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
 const ASSETS = [
   BASE,
