@@ -8339,7 +8339,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.22.1';
+    const VERSION = '4.22.2';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -15949,9 +15949,10 @@
         });
         html += `</div></div>`;
       });
-      html += `<div style="padding:10px 12px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center;border-top:1px dashed var(--border)">Tap = on-call · Long-press = extra shift</div>`;
       html += `</div>`; // close white card inner
       html += `</div>`; // close padding wrapper
+
+      html += `<div style="margin-top:4px;margin-bottom:8px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap = on-call · Long-press = extra shift</div>`;
 
       html += `</div>`; // close overlay
       return html;
