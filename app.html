@@ -4506,6 +4506,13 @@
       color: var(--text-secondary);
     }
 
+    .nf-summary-pills-wrap {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     .nf-summary-pill {
       display: inline-flex;
       align-items: center;
@@ -8481,7 +8488,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.6';
+    const VERSION = '4.25.7';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -9003,7 +9010,7 @@
       notesFilter: 'all',         // 'all' | 'high' | 'medium' | 'low' | 'done'
       notesCategoryFilter: '',    // '' = all categories, or one of NOTE_CATEGORIES keys
       notesSearch: '',            // live search query
-      notesFiltersOpen: false,    // collapsible filter bar expanded state
+      notesFiltersOpen: localStorage.getItem('rian_notesFiltersOpen') === 'true',    // collapsible filter bar expanded state
       expandedNotes: new Set(), // note IDs that are expanded
       activitiesExpanded: new Set(), // activity IDs that are expanded for details
       notesSyncStatus: 'idle',  // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
@@ -13005,6 +13012,7 @@
 
     function toggleNotesFilters() {
       state.notesFiltersOpen = !state.notesFiltersOpen;
+      localStorage.setItem('rian_notesFiltersOpen', state.notesFiltersOpen);
       // Update DOM in-place so CSS transitions can play
       const panel   = document.querySelector('.nf-panel');
       const chevron = document.querySelector('.nf-chevron');
