@@ -8169,7 +8169,7 @@
           style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:0 2px;">✕</button>
       </div>
       <div id="notes-modal-body">
-        <textarea id="notes-modal-ta" placeholder="Type your note here…" oninput="notesModalInput()"></textarea>
+        <textarea id="notes-modal-ta" placeholder="Type your note here…" autocomplete="off" data-lpignore="true" data-form-type="other" oninput="notesModalInput()"></textarea>
       </div>
       <div id="notes-modal-footer">
         <button onclick="closeNotesModal()"
@@ -8488,7 +8488,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.10';
+    const VERSION = '4.25.11';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -13155,6 +13155,7 @@
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Description</span>
               <textarea data-note-id="${note.id}" data-note-field="description" rows="1"
                 style="resize:none;overflow:hidden"
+                autocomplete="off" data-lpignore="true" data-form-type="other"
                 oninput="updateNoteField(this);autoGrow(this)">${esc(note.description)}</textarea>
             </div>
             <div class="note-detail-row">
