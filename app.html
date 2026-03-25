@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.38';
+    const VERSION = '4.25.39';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -12976,7 +12976,8 @@
         if (rf === 'active') { if (!hasActiveReminder(n.id)) return false; }
         else if (rf === 'passed') { if (!hasPastReminder(n.id)) return false; }
         // Category filter
-        if (cf) { if ((n.category || '') !== cf) return false; }
+        if (cf === 'untagged') { if (n.category) return false; }
+        else if (cf) { if ((n.category || '') !== cf) return false; }
         // Search query
         if (!q) return true;
         const haystack = [n.description || '', n.location || '', n.noteContent || '', n.category || ''].join(' ').toLowerCase();
@@ -12993,11 +12994,12 @@
       const cf = state.notesCategoryFilter || '';
       const f  = state.notesFilter;
       const rf = state.notesRemindersFilter || '';
-      // Category chips
+      // Category chips (including untagged)
       document.querySelectorAll('[data-cat-key]').forEach(el => {
-        const cat = NOTE_CATEGORIES.find(c => c.key === el.dataset.catKey);
+        const key = el.dataset.catKey;
+        const cat = key === 'untagged' ? { color: '#64748b' } : NOTE_CATEGORIES.find(c => c.key === key);
         if (!cat) return;
-        const isActive = cf === cat.key;
+        const isActive = cf === key;
         const rgb = hexToRgb(cat.color);
         el.classList.toggle('cat-active', isActive);
         el.style.cssText = isActive
@@ -13046,7 +13048,7 @@
       const cf = state.notesCategoryFilter || '';
       const f  = state.notesFilter;
       const rf = state.notesRemindersFilter || '';
-      const activeCat = NOTE_CATEGORIES.find(c => c.key === cf);
+      const activeCat = cf === 'untagged' ? { color: '#64748b', key: 'untagged', label: 'Untagged', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg>' } : NOTE_CATEGORIES.find(c => c.key === cf);
       const priLabels = { high: 'High', medium: 'Med', low: 'Low', done: 'Done' };
       const activePriLabel = (f !== 'all') ? (priLabels[f] || '') : '';
       const BELL_FLAT = `<svg width="11" height="11" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
@@ -13106,6 +13108,7 @@
       // Expanded panel
       const catCounts = {};
       NOTE_CATEGORIES.forEach(cat => { catCounts[cat.key] = state.notes.filter(n => n.category === cat.key).length; });
+      const untaggedCount = state.notes.filter(n => !n.category).length;
       const catChips = NOTE_CATEGORIES.map(cat => {
         const isActive = cf === cat.key;
         const rgb = hexToRgb(cat.color);
@@ -13114,6 +13117,8 @@
           : `background:rgba(${rgb},0.10);border-color:rgba(${rgb},0.40);color:${cat.color};`;
         return `<div class="notes-chip${isActive ? ' cat-active' : ''}" data-cat-key="${cat.key}" style="${chipStyle}" onclick="setNotesCategoryFilter('${cat.key}')">${cat.icon.replace('width="18" height="18"', 'width="13" height="13"')} ${cat.label} (${catCounts[cat.key]})</div>`;
       }).join('');
+      const untaggedActive = cf === 'untagged';
+      const untaggedChip = `<div class="notes-chip${untaggedActive ? ' cat-active' : ''}" data-cat-key="untagged" style="${untaggedActive ? 'background:#64748b;border-color:#64748b;color:#fff;' : 'background:rgba(100,116,139,0.10);border-color:rgba(100,116,139,0.40);color:#64748b;'}" onclick="setNotesCategoryFilter('untagged')"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg> Untagged (${untaggedCount})</div>`;
 
       const priChipDefs = [
         { key: 'all',    label: `All (${openNotes.length})`,  solidColor: null,      rgb: null },
@@ -13143,7 +13148,7 @@
       const filterPanel = `
         <div class="nf-panel${state.notesFiltersOpen ? ' open' : ''}">
           <div class="nf-group-label">Category</div>
-          <div class="notes-chips">${catChips}</div>
+          <div class="notes-chips">${catChips}${untaggedChip}</div>
           <div style="border-top:1px solid var(--border);margin:12px 0 10px"></div>
           <div class="nf-group-label">Priority</div>
           <div class="notes-chips">${priChips}</div>
