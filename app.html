@@ -8472,7 +8472,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.24.7';
+    const VERSION = '4.24.8';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -9325,6 +9325,7 @@
         expanded: [...state.expandedDays],
         notes: Object.fromEntries(state.notesOpen),
         activitiesExpanded: [...state.activitiesExpanded],
+        expandedNotes: [...state.expandedNotes],
       }));
     }
 
@@ -9337,6 +9338,7 @@
           state.expandedDays = new Set(saved.expanded || []);
           state.notesOpen = new Map(Object.entries(saved.notes || {}));
           state.activitiesExpanded = new Set(saved.activitiesExpanded || []);
+          state.expandedNotes = new Set(saved.expandedNotes || []);
           return true;
         }
       } catch (e) { /* expected: localStorage unavailable or corrupt */ }
