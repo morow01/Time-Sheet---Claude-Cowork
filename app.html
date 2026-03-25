@@ -8119,8 +8119,8 @@
       <div class="p-3 sticky top-0 z-10"
         style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
         <div class="finder-search-wrap">
-          <input id="location-search" type="text" placeholder="Town name or code…" class="finder-search-input"
-            autocomplete="off" data-lpignore="true" data-form-type="other"
+          <input id="location-search" type="search" placeholder="Town name or code…" class="finder-search-input"
+            autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
             oninput="filterLocations(this.value)">
           <div class="finder-v-separator"></div>
           <div class="finder-mic-btn-inline" id="location-mic-btn" onclick="startLocationVoice()" title="Voice search">
@@ -8505,7 +8505,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.20';
+    const VERSION = '4.25.21';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -13217,11 +13217,11 @@
             </div>
             <div class="note-detail-row">
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Location</span>
-              <input type="text" data-note-id="${note.id}" data-note-field="location"
+              <input type="search" data-note-id="${note.id}" data-note-field="location"
                 value="${esc(note.location)}"
                 placeholder="Town name or code…"
                 readonly style="cursor:pointer;width:100%"
-                autocomplete="off" data-lpignore="true" data-form-type="other"
+                autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
                 onclick="openLocationModal(null, null, '${note.id}')" />
             </div>
             ${renderNoteReminderField(note.id)}
