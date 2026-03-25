@@ -7762,6 +7762,22 @@
       color: var(--priority-low);
     }
 
+    .nvc-cat-btn {
+      padding: 7px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .nvc-cat-btn.nvc-cat-sel {
+      border-color: currentColor;
+    }
+
     @keyframes voiceFabPulse {
 
       0%,
@@ -8488,7 +8504,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.18';
+    const VERSION = '4.25.19';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -17411,6 +17427,8 @@
     let voiceConfirmCodes = []; // array of {a,d,c} objects currently selected in confirm sheet
     let voiceMode = 'timesheet'; // 'timesheet' | 'note'
     let nvcPriority = 'medium'; // selected priority in note voice confirm
+    let nvcCategory = '';       // selected category in note voice confirm
+    let nvcReminder = null;     // { date, time } parsed from voice
 
     function voiceSupported() {
       return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -17830,7 +17848,7 @@
     }
 
     function parseNoteVoiceText(text) {
-      const result = { description: '', location: '', priority: 'medium' };
+      const result = { description: '', location: '', priority: 'medium', category: '', reminder: null };
 
       // ── Priority ─────────────────────────────────
       if (/\b(urgent|critical|important|high priority|asap)\b/i.test(text)) {
@@ -17840,6 +17858,23 @@
       } else if (/\b(medium|normal|moderate)\b/i.test(text)) {
         result.priority = 'medium';
       }
+
+      // ── Category ─────────────────────────────────
+      const catKeywords = {
+        fault:    /\b(fault|faults)\b/i,
+        job:      /\b(job)\b/i,
+        followup: /\b(follow[\s-]?up)\b/i,
+        meeting:  /\b(meeting)\b/i,
+        personal: /\b(personal)\b/i,
+        idea:     /\b(idea)\b/i,
+      };
+      for (const [key, re] of Object.entries(catKeywords)) {
+        if (re.test(text)) { result.category = key; break; }
+      }
+
+      // ── Reminder ─────────────────────────────────
+      const reminderParsed = parseReminderFromText(text);
+      if (reminderParsed) result.reminder = reminderParsed;
 
       // ── Location ─────────────────────────────────
       const wbRe = n => new RegExp('\\b' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
@@ -17854,18 +17889,68 @@
       if (locTown) result.location = `${locTown.name} (${locTown.code})`;
 
       // ── Description ──────────────────────────────
-      // Strip out priority and location words, clean up what remains
+      // Strip out priority, location, category, and reminder words
       let desc = text;
       if (locTown) {
         desc = desc.replace(wbRe(locTown.code), '').replace(wbRe(locTown.name), '');
       }
       desc = desc
         .replace(/\b(urgent|critical|important|high priority|asap|low priority|minor|whenever|not urgent|medium|normal|moderate)\b/gi, '')
+        .replace(/\b(put\s+(it\s+)?(in|into)\s+)?\b(fault|faults|job|follow[\s-]?up|meeting|personal|idea)\b(\s+category)?\b/gi, '')
+        .replace(/\b(also\s+)?remind\s+me\s+.*/gi, '')
         .replace(/\b(in|at|near|for|the|a|an)\b/gi, ' ')
         .replace(/\s+/g, ' ').trim();
       result.description = desc.replace(/\b\w/g, c => c.toUpperCase());
 
       return result;
+    }
+
+    function parseReminderFromText(text) {
+      const now = new Date();
+      let date = null, time = '09:00';
+
+      // "tomorrow"
+      if (/\btomorrow\b/i.test(text)) {
+        const d = new Date(now); d.setDate(d.getDate() + 1);
+        date = dateToStr(d);
+      }
+      // "next monday/tuesday/..."
+      const dayMatch = text.match(/\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
+      if (dayMatch) {
+        const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+        const target = dayNames.indexOf(dayMatch[1].toLowerCase());
+        const d = new Date(now);
+        const curr = d.getDay();
+        const diff = ((target - curr + 7) % 7) || 7;
+        d.setDate(d.getDate() + diff);
+        date = dateToStr(d);
+      }
+      // "in X hours/days"
+      const inMatch = text.match(/\bin\s+(\d+)\s+(hour|hours|day|days)\b/i);
+      if (inMatch) {
+        const n = parseInt(inMatch[1]);
+        const unit = inMatch[2].toLowerCase();
+        const d = new Date(now);
+        if (unit.startsWith('hour')) {
+          d.setTime(d.getTime() + n * 60 * 60 * 1000);
+          time = d.toTimeString().slice(0, 5);
+        } else {
+          d.setDate(d.getDate() + n);
+        }
+        date = dateToStr(d);
+      }
+
+      // Extract time like "at 9:30" or "at 14:00"
+      const timeMatch = text.match(/\bat\s+(\d{1,2})[:\s](\d{2})\b/i);
+      if (timeMatch) {
+        let h = parseInt(timeMatch[1]);
+        const m = timeMatch[2];
+        // If hour < 7 and no explicit 24h, assume PM (e.g. "at 2:30" = 14:30)
+        if (h < 7 && h !== 0) h += 12;
+        time = String(h).padStart(2, '0') + ':' + m;
+      }
+
+      return date ? { date, time } : null;
     }
 
     async function parseNoteWithGemini(text) {
@@ -17881,14 +17966,19 @@
 
       const locationSample = (TOWNS || []).slice(0, 40).map(t => `${t.name} (${t.code})`).join(', ');
 
+      const catKeys = NOTE_CATEGORIES.map(c => c.key).join('|');
       const prompt = `Extract details from this spoken note. Return ONLY valid JSON, no markdown, no extra text.
 Input: "${text.replace(/"/g, "'")}"
 Known locations (name, code): ${locationSample} … (and more)
-Return: { "description": "...", "location": "...", "priority": "high|medium|low" }
+Known categories: ${NOTE_CATEGORIES.map(c => c.label + ' (' + c.key + ')').join(', ')}
+Today's date: ${dateToStr(new Date())}
+Return: { "description": "...", "location": "...", "priority": "high|medium|low", "category": "${catKeys}|", "reminder": { "date": "YYYY-MM-DD", "time": "HH:MM" } | null }
 Rules:
-- description: the main task, reminder, or subject. Be specific. Title-case it.
+- description: the main task or subject. Be specific. Title-case it. Do NOT include category/priority/reminder text.
 - location: if a town/exchange is mentioned by name or code, return "Name (CODE)". Otherwise return "".
-- priority: "high" if urgent/critical/important/asap, "low" if minor/low/whenever, else "medium".`;
+- priority: "high" if urgent/critical/important/asap, "low" if minor/low/whenever, else "medium".
+- category: match to one of the known category keys if mentioned or implied. Use "" if unclear.
+- reminder: if user says "remind me tomorrow at 9:30" return {"date":"YYYY-MM-DD","time":"09:30"}. Parse relative dates (tomorrow, next Monday, in 3 days) relative to today. Return null if no reminder mentioned.`;
 
       try {
         const res = await fetch(
@@ -17905,7 +17995,7 @@ Rules:
         const jsonStr = raw.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
         const p = JSON.parse(jsonStr);
 
-        const result = { description: p.description || '', location: '', priority: 'medium' };
+        const result = { description: p.description || '', location: '', priority: 'medium', category: '', reminder: null };
 
         // Trust JS location scan over Gemini (more reliable with spoken codes)
         const wbRe = n => new RegExp('\\b' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
@@ -17925,6 +18015,18 @@ Rules:
 
         if (['high', 'medium', 'low'].includes(p.priority)) result.priority = p.priority;
 
+        // Category
+        const validCats = NOTE_CATEGORIES.map(c => c.key);
+        if (p.category && validCats.includes(p.category)) result.category = p.category;
+
+        // Reminder — trust Gemini for date parsing, fall back to JS
+        if (p.reminder && p.reminder.date) {
+          result.reminder = { date: p.reminder.date, time: p.reminder.time || '09:00' };
+        } else {
+          const jsParsed = parseReminderFromText(text);
+          if (jsParsed) result.reminder = jsParsed;
+        }
+
         return result;
       } catch (e) {
         return null;
@@ -17933,6 +18035,8 @@ Rules:
 
     function showNoteVoiceConfirm(parsed, transcript) {
       nvcPriority = parsed.priority || 'medium';
+      nvcCategory = parsed.category || '';
+      nvcReminder = parsed.reminder || null;
       const heardEl = document.getElementById('nvc-heard-text');
       if (heardEl) heardEl.textContent = transcript;
       const descEl = document.getElementById('nvc-desc');
@@ -17940,6 +18044,8 @@ Rules:
       const locEl = document.getElementById('nvc-loc');
       if (locEl) locEl.value = parsed.location || '';
       renderNvcPriorityChips();
+      renderNvcCategoryChips();
+      renderNvcReminderField();
       const modal = document.getElementById('note-voice-confirm-modal');
       if (modal) modal.classList.add('open');
     }
@@ -17956,6 +18062,38 @@ Rules:
       renderNvcPriorityChips();
     }
 
+    function renderNvcCategoryChips() {
+      const wrap = document.getElementById('nvc-category-chips');
+      if (!wrap) return;
+      wrap.innerHTML = NOTE_CATEGORIES.map(c =>
+        `<button type="button" class="nvc-cat-btn${nvcCategory === c.key ? ' nvc-cat-sel' : ''}"
+          data-cat="${c.key}" onclick="setNvcCategory('${c.key}')"
+          style="${nvcCategory === c.key ? 'background:' + c.color + ';color:#fff;border-color:' + c.color : ''}">${c.label}</button>`
+      ).join('');
+    }
+
+    function setNvcCategory(key) {
+      nvcCategory = nvcCategory === key ? '' : key;
+      renderNvcCategoryChips();
+    }
+
+    function renderNvcReminderField() {
+      const wrap = document.getElementById('nvc-reminder-wrap');
+      if (!wrap) return;
+      if (nvcReminder) {
+        const d = new Date(nvcReminder.date + 'T' + nvcReminder.time + ':00');
+        const label = d.toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' });
+        const timeLabel = nvcReminder.time;
+        wrap.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:13px">🔔 ${label} at ${timeLabel}</span>
+          <button type="button" onclick="nvcReminder=null;renderNvcReminderField()"
+            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:2px 6px">✕ Remove</button>
+        </div>`;
+      } else {
+        wrap.innerHTML = `<span style="font-size:13px;color:var(--text-muted)">No reminder detected</span>`;
+      }
+    }
+
     function confirmNoteVoice() {
       const desc = (document.getElementById('nvc-desc').value || '').trim();
       const loc = (document.getElementById('nvc-loc').value || '').trim();
@@ -17965,16 +18103,41 @@ Rules:
       note.description = desc;
       note.location = loc;
       note.priority = nvcPriority;
+      if (nvcCategory) note.category = nvcCategory;
       if (transcript) note.noteContent = '🎙 ' + transcript;
 
       state.notes.unshift(note);
       state.expandedNotes.add(note.id);
       state.notesFilter = 'all';
 
+      // Auto-create reminder if parsed from voice
+      if (nvcReminder) {
+        const remindAt = new Date(nvcReminder.date + 'T' + nvcReminder.time + ':00').getTime();
+        if (remindAt > Date.now()) {
+          const reminder = {
+            id: uid(),
+            noteId: note.id,
+            description: note.description || '',
+            location: note.location || '',
+            remindAt,
+            createdAt: Date.now(),
+            fired: false
+          };
+          const reminders = getReminders();
+          reminders.push(reminder);
+          saveReminders(reminders);
+          scheduleReminderTimer(reminder);
+        }
+      }
+
       cancelVoice();
       scheduleNotesSave();
       render();
-      showToast('Note added ✓');
+
+      let toast = 'Note added ✓';
+      if (nvcCategory) toast += ` · ${NOTE_CATEGORIES.find(c => c.key === nvcCategory)?.label || nvcCategory}`;
+      if (nvcReminder) toast += ' · Reminder set';
+      showToast(toast);
     }
 
     // ── Location modal voice search ───────────────────────────────
@@ -19877,6 +20040,14 @@ QUESTION: ${query}`;
           <button class="nvc-pri-btn sel-medium" data-pri="medium" onclick="setNvcPriority('medium')">Medium</button>
           <button class="nvc-pri-btn" data-pri="low" onclick="setNvcPriority('low')">Low</button>
         </div>
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Category</label>
+        <div id="nvc-category-chips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Reminder</label>
+        <div id="nvc-reminder-wrap"></div>
       </div>
       <div class="vc-btns">
         <button class="vc-btn primary" onclick="confirmNoteVoice()">Add Note</button>
