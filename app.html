@@ -8472,7 +8472,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.24.6';
+    const VERSION = '4.24.7';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -13153,7 +13153,7 @@
             </div>
           </div>`;
 
-        return header + detail;
+        return header + (isExpanded ? detail : '');
       };
 
       const visibleOpen = f === 'done' ? [] : filtered;
@@ -13516,24 +13516,7 @@
       }
       saveUiState(); // persist so refresh remembers which notes are expanded
 
-      // Update DOM directly for smooth transition
-      const card = document.querySelector(`.note-card[data-note-id="${id}"]`);
-      if (card) {
-        const row = card.querySelector('.note-row');
-        const arrow = card.querySelector('.note-expand-arrow');
-
-        if (isExpanded) {
-          card.classList.remove('expanded');
-          row.style.background = 'transparent';
-          arrow.classList.remove('open');
-        } else {
-          card.classList.add('expanded');
-          row.style.background = 'var(--bg-day-header)';
-          arrow.classList.add('open');
-        }
-      } else {
-        render();
-      }
+      render();
     }
 
     function updateNoteField(input) {
