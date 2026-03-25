@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.36';
+    const VERSION = '4.25.37';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -9032,8 +9032,9 @@
       weekData: null,       // { weekStart, days: [...] }
       currentUser: null,    // Firebase Auth user
       notes: [],            // all field notes
-      notesFilter: 'all',         // 'all' | 'high' | 'medium' | 'low' | 'done' | 'reminders' | 'past-reminders'
-      notesCategoryFilter: '',    // '' = all categories, or one of NOTE_CATEGORIES keys
+      notesFilter: 'all',           // 'all' | 'high' | 'medium' | 'low' | 'done'
+      notesCategoryFilter: '',      // '' = all categories, or one of NOTE_CATEGORIES keys
+      notesRemindersFilter: '',     // '' = off | 'active' | 'passed'
       notesSearch: '',            // live search query
       notesFiltersOpen: localStorage.getItem('rian_notesFiltersOpen') === 'true',    // collapsible filter bar expanded state
       expandedNotes: new Set(), // note IDs that are expanded
@@ -12964,14 +12965,16 @@
     function getFilteredNotes() {
       const f = state.notesFilter;
       const cf = state.notesCategoryFilter || '';
+      const rf = state.notesRemindersFilter || '';
       const q = (state.notesSearch || '').trim().toLowerCase();
       return state.notes.filter(n => {
-        // Priority / status / reminders filter
+        // Priority / status filter
         if (f === 'done') { if (n.status !== 'done') return false; }
-        else if (f === 'reminders') { if (!hasActiveReminder(n.id)) return false; }
-        else if (f === 'past-reminders') { if (n.status === 'done' || !hasPastReminder(n.id)) return false; }
         else if (f === 'all') { if (n.status === 'done') return false; }
         else { if (n.status === 'done' || n.priority !== f) return false; }
+        // Reminders filter (independent, AND'd with priority)
+        if (rf === 'active') { if (!hasActiveReminder(n.id)) return false; }
+        else if (rf === 'passed') { if (!hasPastReminder(n.id)) return false; }
         // Category filter
         if (cf) { if ((n.category || '') !== cf) return false; }
         // Search query
@@ -12989,6 +12992,7 @@
     function updateNotesChipsInPlace() {
       const cf = state.notesCategoryFilter || '';
       const f  = state.notesFilter;
+      const rf = state.notesRemindersFilter || '';
       // Category chips
       document.querySelectorAll('[data-cat-key]').forEach(el => {
         const cat = NOTE_CATEGORIES.find(c => c.key === el.dataset.catKey);
@@ -13017,6 +13021,16 @@
             : `background:rgba(${rgb},0.10);border-color:rgba(${rgb},0.40);color:${solid};`;
         }
       });
+      // Reminders chips
+      const remColors = { active: { solid:'#F5A623', rgb:'245,166,35' }, passed: { solid:'#94a3b8', rgb:'148,163,184' } };
+      document.querySelectorAll('[data-rem-key]').forEach(el => {
+        const key = el.dataset.remKey;
+        const isActive = key === rf;
+        const c = remColors[key];
+        el.style.cssText = isActive
+          ? `background:${c.solid};border-color:${c.solid};color:#fff;`
+          : `background:rgba(${c.rgb},0.10);border-color:rgba(${c.rgb},0.40);color:${c.solid};`;
+      });
     }
 
     let _filterRenderTimer = null;
@@ -13031,13 +13045,17 @@
     function buildNfSummaryPillsHtml() {
       const cf = state.notesCategoryFilter || '';
       const f  = state.notesFilter;
+      const rf = state.notesRemindersFilter || '';
       const activeCat = NOTE_CATEGORIES.find(c => c.key === cf);
       const priLabels = { high: 'High', medium: 'Med', low: 'Low', done: 'Done' };
       const activePriLabel = (f !== 'all') ? (priLabels[f] || '') : '';
+      const remLabels = { active: '🔔 Active', passed: '🔔 Passed' };
+      const activeRemLabel = rf ? (remLabels[rf] || '') : '';
       const X = `<svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
       return [
         activeCat ? `<span class="nf-summary-pill" style="background:${activeCat.color}" onclick="event.stopPropagation();setNotesCategoryFilter('${activeCat.key}')">${activeCat.icon.replace('width="18" height="18"','width="11" height="11"')} ${activeCat.label}<span class="nf-pill-x">${X}</span></span>` : '',
         activePriLabel ? `<span class="nf-summary-pill nf-pri-${f}" onclick="event.stopPropagation();setNotesFilter('all')">${activePriLabel}<span class="nf-pill-x">${X}</span></span>` : '',
+        activeRemLabel ? `<span class="nf-summary-pill" style="background:${rf === 'active' ? '#F5A623' : '#94a3b8'}" onclick="event.stopPropagation();setNotesRemindersFilter('${rf}')">${activeRemLabel}<span class="nf-pill-x">${X}</span></span>` : '',
       ].filter(Boolean).join('');
     }
 
@@ -13066,14 +13084,8 @@
 
       const cf = state.notesCategoryFilter || '';
 
-      // Active filter summary pills shown in collapsed header
-      const activeCat = NOTE_CATEGORIES.find(c => c.key === cf);
-      const priLabels = { all: 'All', high: 'High', medium: 'Med', low: 'Low', done: 'Done', reminders: 'Reminders', 'past-reminders': 'Past Reminders' };
-      const activePriLabel = f !== 'all' ? priLabels[f] : '';
-      const summaryPills = [
-        activeCat ? `<span class="nf-summary-pill" style="background:${activeCat.color}" onclick="event.stopPropagation();setNotesCategoryFilter('${activeCat.key}')">${activeCat.icon.replace('width="18" height="18"', 'width="11" height="11"')} ${activeCat.label}<span class="nf-pill-x"><svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg></span></span>` : '',
-        activePriLabel ? `<span class="nf-summary-pill nf-pri-${f}" onclick="event.stopPropagation();setNotesFilter('all')">${activePriLabel}<span class="nf-pill-x"><svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg></span></span>` : '',
-      ].filter(Boolean).join('');
+      // Active filter summary pills shown in collapsed header — delegate to shared builder
+      const summaryPills = buildNfSummaryPillsHtml();
 
       // Collapsed header row
       const filterHeader = `
@@ -13122,10 +13134,9 @@
         return `<div class="notes-chip ${chipCls}" data-pri-key="${c.key}" style="${chipStyle}" onclick="setNotesFilter('${c.key}')">${c.label}</div>`;
       }).join('');
 
-      const remActive = f === 'reminders';
-      const remPastActive = f === 'past-reminders';
-      const remChip = `<div class="notes-chip" data-pri-key="reminders" style="${remActive ? 'background:#F5A623;border-color:#F5A623;color:#fff;' : 'background:rgba(245,166,35,0.10);border-color:rgba(245,166,35,0.40);color:#F5A623;'}" onclick="setNotesFilter('reminders')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Active (${counts.reminders})</div>`;
-      const remPastChip = `<div class="notes-chip" data-pri-key="past-reminders" style="${remPastActive ? 'background:#94a3b8;border-color:#94a3b8;color:#fff;' : 'background:rgba(148,163,184,0.10);border-color:rgba(148,163,184,0.40);color:#94a3b8;'}" onclick="setNotesFilter('past-reminders')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Passed (${counts.pastReminders})</div>`;
+      const rf = state.notesRemindersFilter || '';
+      const remChip = `<div class="notes-chip" data-rem-key="active" style="${rf === 'active' ? 'background:#F5A623;border-color:#F5A623;color:#fff;' : 'background:rgba(245,166,35,0.10);border-color:rgba(245,166,35,0.40);color:#F5A623;'}" onclick="setNotesRemindersFilter('active')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Active (${counts.reminders})</div>`;
+      const remPastChip = `<div class="notes-chip" data-rem-key="passed" style="${rf === 'passed' ? 'background:#94a3b8;border-color:#94a3b8;color:#fff;' : 'background:rgba(148,163,184,0.10);border-color:rgba(148,163,184,0.40);color:#94a3b8;'}" onclick="setNotesRemindersFilter('passed')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg> Passed (${counts.pastReminders})</div>`;
 
       const filterPanel = `
         <div class="nf-panel${state.notesFiltersOpen ? ' open' : ''}">
@@ -13817,9 +13828,16 @@
 
     function setNotesFilter(f) {
       state.notesFilter = (state.notesFilter === f && f !== 'all') ? 'all' : f;
-      updateNotesChipsInPlace();          // immediate — CSS transition plays
+      updateNotesChipsInPlace();
       clearTimeout(_filterRenderTimer);
-      _filterRenderTimer = setTimeout(() => render(), 200); // re-render notes list after transition
+      _filterRenderTimer = setTimeout(() => render(), 200);
+    }
+
+    function setNotesRemindersFilter(rf) {
+      state.notesRemindersFilter = (state.notesRemindersFilter === rf) ? '' : rf;
+      updateNotesChipsInPlace();
+      clearTimeout(_filterRenderTimer);
+      _filterRenderTimer = setTimeout(() => render(), 200);
     }
 
     // Notes location search — reuses towns list, parallel to townSearch
