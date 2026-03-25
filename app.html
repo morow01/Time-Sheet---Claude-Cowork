@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.35';
+    const VERSION = '4.25.36';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -12969,7 +12969,7 @@
         // Priority / status / reminders filter
         if (f === 'done') { if (n.status !== 'done') return false; }
         else if (f === 'reminders') { if (!hasActiveReminder(n.id)) return false; }
-        else if (f === 'past-reminders') { if (!hasPastReminder(n.id)) return false; }
+        else if (f === 'past-reminders') { if (n.status === 'done' || !hasPastReminder(n.id)) return false; }
         else if (f === 'all') { if (n.status === 'done') return false; }
         else { if (n.status === 'done' || n.priority !== f) return false; }
         // Category filter
