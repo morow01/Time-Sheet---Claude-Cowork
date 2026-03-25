@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.41';
+    const VERSION = '4.25.42';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -13008,7 +13008,7 @@
         // For untagged chip, explicitly update SVG fill since currentColor may not propagate
         if (key === 'untagged') {
           const svg = el.querySelector('svg');
-          if (svg) svg.setAttribute('fill', isActive ? '#fff' : cat.color);
+          if (svg) svg.style.fill = isActive ? '#fff' : cat.color;
         }
       });
       // Priority chips
@@ -13124,7 +13124,7 @@
       }).join('');
       const untaggedActive = cf === 'untagged';
       const untaggedIconFill = untaggedActive ? '#fff' : '#64748b';
-      const untaggedChip = `<div class="notes-chip${untaggedActive ? ' cat-active' : ''}" data-cat-key="untagged" style="${untaggedActive ? 'background:#64748b;border-color:#64748b;color:#fff;' : 'background:rgba(100,116,139,0.10);border-color:rgba(100,116,139,0.40);color:#64748b;'}" onclick="setNotesCategoryFilter('untagged')"><svg width="13" height="13" viewBox="0 0 24 24" fill="${untaggedIconFill}" stroke="none"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg> Untagged (${untaggedCount})</div>`;
+      const untaggedChip = `<div class="notes-chip${untaggedActive ? ' cat-active' : ''}" data-cat-key="untagged" style="${untaggedActive ? 'background:#64748b;border-color:#64748b;color:#fff;' : 'background:rgba(100,116,139,0.10);border-color:rgba(100,116,139,0.40);color:#64748b;'}" onclick="setNotesCategoryFilter('untagged')"><svg width="13" height="13" viewBox="0 0 24 24" style="fill:${untaggedIconFill};flex-shrink:0" stroke="none"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg> Untagged (${untaggedCount})</div>`;
 
       const priChipDefs = [
         { key: 'all',    label: `All (${openNotes.length})`,  solidColor: null,      rgb: null },
