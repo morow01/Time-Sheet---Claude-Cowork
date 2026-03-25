@@ -8472,7 +8472,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.0';
+    const VERSION = '4.25.1';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -12993,13 +12993,18 @@
       }).join('');
 
       const priChipDefs = [
-        { key: 'all', label: `All (${openNotes.length})` },
-        { key: 'high', label: `High (${counts.high})`, cls: 'high' },
-        { key: 'medium', label: `Med (${counts.medium})`, cls: 'medium' },
-        { key: 'low', label: `Low (${counts.low})`, cls: 'low' },
-        { key: 'done', label: `Done (${doneNotes.length})`, cls: 'done' },
+        { key: 'all',    label: `All (${openNotes.length})`,   cls: '',     solidColor: null },
+        { key: 'high',   label: `High (${counts.high})`,       cls: 'high',   solidColor: '#ef4444' },
+        { key: 'medium', label: `Med (${counts.medium})`,      cls: 'medium', solidColor: '#f97316' },
+        { key: 'low',    label: `Low (${counts.low})`,         cls: 'low',    solidColor: '#22c55e' },
+        { key: 'done',   label: `Done (${doneNotes.length})`,  cls: 'done',   solidColor: '#64748b' },
       ];
-      const priChips = priChipDefs.map(c => `<div class="notes-chip ${c.key === f ? 'active' : (c.cls || '')}" onclick="setNotesFilter('${c.key}')">${c.label}</div>`).join('');
+      const priChips = priChipDefs.map(c => {
+        const isActive = c.key === f;
+        const chipStyle = isActive && c.solidColor ? `background:${c.solidColor};border-color:${c.solidColor};color:#fff;` : '';
+        const chipCls = isActive ? (c.solidColor ? '' : 'active') : (c.cls || '');
+        return `<div class="notes-chip ${chipCls}" style="${chipStyle}" onclick="setNotesFilter('${c.key}')">${c.label}</div>`;
+      }).join('');
 
       const filterPanel = state.notesFiltersOpen ? `
         <div class="nf-panel">
