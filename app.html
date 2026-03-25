@@ -8488,7 +8488,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.12';
+    const VERSION = '4.25.13';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -13594,6 +13594,9 @@
           const existing = note.noteContent || '';
           note.noteContent = existing ? existing + '\n' + transcript : transcript;
           note.updatedAt = Date.now();
+          // Expand the note so the transcribed text is visible
+          state.expandedNotes.add(noteId);
+          saveUiState();
           scheduleNotesSave();
           render();
         }
