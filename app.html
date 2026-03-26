@@ -8128,7 +8128,7 @@
         style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
         <div class="finder-search-wrap">
           <input id="location-search" type="search" placeholder="Town name or code…" class="finder-search-input"
-            autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
             oninput="filterLocations(this.value)">
           <div class="finder-v-separator"></div>
           <div class="finder-mic-btn-inline" id="location-mic-btn" onclick="startLocationVoice()" title="Voice search">
@@ -8156,7 +8156,8 @@
       <div class="p-3 sticky top-0 z-10"
         style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
         <div class="finder-search-wrap">
-          <input id="finder-modal-search" type="text" placeholder="Name or Code…" class="finder-search-input"
+          <input id="finder-modal-search" type="search" placeholder="Name or Code…" class="finder-search-input"
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
             oninput="filterFinderModal(this.value)">
           <div class="finder-v-separator"></div>
           <div class="finder-mic-btn-inline" id="finder-mic-btn" onclick="startFinderVoice()" title="Voice search">
@@ -8513,7 +8514,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.44';
+    const VERSION = '4.25.45';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -10787,12 +10788,12 @@
 
       return `
       <td><input type="text" class="tbl-act-input" placeholder="Description…" value="${esc(act.description)}"
-        autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+        autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
         data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this)"></td>
       <td>
         <div class="location-wrap">
           <input type="text" class="tbl-act-input" placeholder="Location…" value="${esc(act.location)}"
-            autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
             data-field="location" data-act="${act.id}" data-day="${di}"
             readonly style="cursor:pointer"
             onclick="openLocationModal(${di}, '${act.id}')">
@@ -10801,12 +10802,12 @@
       <td class="tbl-codes-cell">${codesHtml}</td>
       <td style="text-align:center">
         <input type="number" step="1" min="0" class="tbl-num-input" value="${act.ordinary || ''}" placeholder="0"
-          autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
           data-field="ordinary" data-act="${act.id}" data-day="${di}" oninput="updateField(this)" onchange="updateField(this)" onblur="updateField(this)">
       </td>
       <td style="text-align:center">
         <input type="number" step="1" min="0" class="tbl-num-input tbl-ot-input" value="${act.overtime || ''}" placeholder="0"
-          autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
           data-field="overtime" data-act="${act.id}" data-day="${di}" oninput="updateField(this)" onchange="updateField(this)" onblur="updateField(this)">
       </td>
       <td class="tbl-calc">${numTasks}</td>
@@ -11343,7 +11344,7 @@
               <span class="act-field-label">Description</span>
               <textarea placeholder="Description of work" rows="1"
                 class="act-textarea"
-                autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
                 data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
             </div>
 
@@ -11352,7 +11353,7 @@
               <div class="location-wrap">
                 <input type="text" placeholder="Town name or code…" value="${esc(act.location)}"
                   class="act-input"
-                  autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+                  autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
                   data-field="location" data-act="${act.id}" data-day="${di}"
                   readonly style="cursor:pointer"
                   onclick="openLocationModal(${di}, '${act.id}')">
@@ -11392,7 +11393,7 @@
                 <div class="act-field-label" style="margin-bottom: 8px;">Ordinary HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
-                  <input type="number" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" min="0" step="1" inputmode="decimal" autocomplete="one-time-code" data-lpignore="true" data-form-type="other" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="number" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" min="0" step="1" inputmode="decimal" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
@@ -11400,7 +11401,7 @@
                 <div class="act-field-label act-field-label-ot" style="margin-bottom: 8px;">Overtime HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
-                  <input type="number" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" min="0" step="1" inputmode="decimal" autocomplete="one-time-code" data-lpignore="true" data-form-type="other" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="number" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" min="0" step="1" inputmode="decimal" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onfocus="this.select()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
@@ -13271,7 +13272,7 @@
                 value="${esc(note.location)}"
                 placeholder="Town name or code…"
                 readonly style="cursor:pointer;width:100%"
-                autocomplete="one-time-code" data-lpignore="true" data-form-type="other"
+                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
                 onclick="openLocationModal(null, null, '${note.id}')" />
             </div>
             ${renderNoteReminderField(note.id)}
@@ -15499,13 +15500,36 @@
         const b = backupSnap.data();
 
         // Restore each data type
+        // Notes
         if (b.notes) { await userDoc('data/notes')?.set(b.notes); state.notes = b.notes.notes || []; }
-        if (b.reminders) { await userDoc('data/reminders')?.set(b.reminders); }
-        if (b.callouts) { await userDoc('data/callouts')?.set(b.callouts); state.callouts = b.callouts; }
-        if (b.routines) { await userDoc('data/routines')?.set(b.routines); state.routines = b.routines; }
+        else { await userDoc('data/notes')?.delete().catch(() => {}); state.notes = []; }
 
-        // Restore weeks (may be many docs — batch in groups of 400)
-        if (b.weeks && Object.keys(b.weeks).length > 0) {
+        // Reminders
+        if (b.reminders) { await userDoc('data/reminders')?.set(b.reminders); }
+        else { await userDoc('data/reminders')?.delete().catch(() => {}); }
+
+        // Callouts — clear if backup has none (e.g. pre-dates callout feature)
+        if (b.callouts) { await userDoc('data/callouts')?.set(b.callouts); state.callouts = b.callouts; }
+        else { await userDoc('data/callouts')?.set({ weeks: {}, onCall: {} }); state.callouts = { weeks: {}, onCall: {} }; }
+
+        // Routines
+        if (b.routines) { await userDoc('data/routines')?.set(b.routines); state.routines = b.routines; }
+        else { await userDoc('data/routines')?.delete().catch(() => {}); state.routines = null; }
+
+        // Restore weeks — overwrite backup weeks, delete any extras not in backup
+        const backupWeekKeys = new Set(b.weeks ? Object.keys(b.weeks) : []);
+        // First: delete weeks that exist in Firestore but not in the backup
+        const currentWeeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
+        if (currentWeeksSnap) {
+          const toDelete = currentWeeksSnap.docs.filter(d => !backupWeekKeys.has(d.id));
+          for (let i = 0; i < toDelete.length; i += 400) {
+            const batch = db_fs.batch();
+            toDelete.slice(i, i + 400).forEach(d => batch.delete(d.ref));
+            await batch.commit();
+          }
+        }
+        // Then: write backup weeks
+        if (b.weeks && backupWeekKeys.size > 0) {
           const entries = Object.entries(b.weeks);
           for (let i = 0; i < entries.length; i += 400) {
             const chunk = entries.slice(i, i + 400);
@@ -16611,7 +16635,7 @@
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Ticket Number</span>
             <textarea id="co-ticket-input" class="act-textarea" rows="1" style="resize:none;overflow:hidden" placeholder="e.g. R23482335"
-              autocomplete="off" data-lpignore="true" data-form-type="other"
+              autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
               oninput="this.value=this.value.replace(/\\n/g,'');updateCoField('ticket', this.value.trim())"
               onkeydown="if(event.key==='Enter')event.preventDefault()">${esc(ticket)}</textarea>
           </div>
