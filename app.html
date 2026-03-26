@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.57';
+    const VERSION = '4.25.58';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -15496,6 +15496,12 @@
         if (!backupSnap.exists) { showToast('Backup not found'); return; }
         const b = backupSnap.data();
         const now = Date.now();
+
+        // DEBUG — alert showing exactly what callouts the BACKUP contains
+        const _dbgBackupCallouts = b.callouts ? Object.entries(b.callouts.weeks || {}).flatMap(([wk, w]) =>
+          (w.callouts || []).map(c => `${c.date || '?'}: ${(c.description || c.fault || '').substring(0, 40)}`)
+        ) : [];
+        alert(`BACKUP "${dateKey}" contains ${_dbgBackupCallouts.length} callout(s):\n\n${_dbgBackupCallouts.join('\n') || '(none)'}`);
 
         // ── Use the EXACT same pattern as the weekly snapshot restore ──
         // dbPut → fsSetXxx → state = deepCopy → render(). NO reload.
