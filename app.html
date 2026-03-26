@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.56';
+    const VERSION = '4.25.57';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -15539,13 +15539,15 @@
         const restoredReminders = b.reminders?.reminders ? deepCopy(b.reminders.reminders) : [];
         saveReminders(restoredReminders);
 
-        // 5. Callouts — same pattern: dbPut → fsSetCallouts → state
+        // 5. Callouts — KILL the onSnapshot listener first so it can't
+        //    re-apply stale data while we write the restored callouts
+        if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
         const restoredCallouts = b.callouts
           ? deepCopy({ weeks: b.callouts.weeks || {}, onCall: b.callouts.onCall || {} })
           : { weeks: {}, onCall: {} };
+        state.callouts = restoredCallouts;  // set state FIRST
         await dbPut('notes', { id: 'callouts_all', userId: uid, data: restoredCallouts, updatedAt: now });
         await fsSetCallouts(restoredCallouts);
-        state.callouts = restoredCallouts;
 
         // 6. Routines
         if (b.routines) {
@@ -15558,10 +15560,15 @@
 
         document.getElementById('backup-modal').classList.add('hidden');
         render();
-        // Debug: show what the backup actually contained
+        // Re-subscribe to callouts onSnapshot now that restore is done
+        loadCallouts();
+        // Debug: show what the backup actually contained — with callout dates
         const _dbgCoCount = Object.values(restoredCallouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0);
         const _dbgNoteCount = restoredNotes.length;
-        showToast(`✓ Restored: ${_dbgNoteCount} notes, ${_dbgCoCount} callouts`);
+        const _dbgCoDates = Object.entries(restoredCallouts.weeks || {}).flatMap(([wk, w]) =>
+          (w.callouts || []).map(c => c.date || wk)
+        ).join(', ');
+        showToast(`✓ Restored: ${_dbgNoteCount} notes, ${_dbgCoCount} callouts${_dbgCoDates ? ' (' + _dbgCoDates + ')' : ''}`);
       } catch (e) {
         showToast('Restore failed: ' + (e.message || e));
         console.error('[Rian Backup] Restore error:', e);
