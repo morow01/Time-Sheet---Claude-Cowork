@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.53';
+    const VERSION = '4.25.54';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -9204,14 +9204,9 @@
       // Unsubscribe from previous listener
       if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
 
-      // After a restore, skip IndexedDB — it may have stale data
-      const postRestore = sessionStorage.getItem('_rianRestoreActive');
-
-      if (!postRestore) {
-        // Try IndexedDB first for instant display (skipped after restore)
-        const stored = await dbGet('notes', 'callouts_all').catch(() => null);
-        if (stored?.data && !state.callouts) state.callouts = stored.data;
-      }
+      // Try IndexedDB first for instant display
+      const stored = await dbGet('notes', 'callouts_all').catch(() => null);
+      if (stored?.data && !state.callouts) state.callouts = stored.data;
       if (!state.callouts) state.callouts = { weeks: {}, onCall: {} };
       if (!state.callouts.onCall) state.callouts.onCall = {};
       render();
@@ -9230,8 +9225,7 @@
 
         if (!snap.exists) {
           // No callouts on server yet — push local if we have data
-          // But NEVER after a restore — the empty doc IS the intended state
-          if (!postRestore && state.callouts && Object.keys(state.callouts.weeks).length > 0) {
+          if (state.callouts && Object.keys(state.callouts.weeks).length > 0) {
             fsSetCallouts(state.callouts).catch(e => console.warn('[Rian]', e));
           }
           return;
@@ -12892,13 +12886,9 @@
       // Unsubscribe from previous listener
       if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
 
-      const _notesPostRestore = sessionStorage.getItem('_rianRestoreActive');
-
-      if (!_notesPostRestore) {
-        const stored = await dbGet('notes', 'notes_all');
-        if (state.notes.length === 0 && stored && stored.data.length > 0) {
-          state.notes = stored.data;
-        }
+      const stored = await dbGet('notes', 'notes_all');
+      if (state.notes.length === 0 && stored && stored.data.length > 0) {
+        state.notes = stored.data;
       }
       // Migrate notes: strip HTML from descriptions, split long ones into desc + noteContent
       migrateNotesHTML(state.notes);
@@ -12922,8 +12912,7 @@
 
         if (!snap.exists) {
           // No notes on server yet — push local only if we actually have data
-          // But NEVER after a restore — the empty state IS the intended state
-          if (!_notesPostRestore && state.notes.length > 0) {
+          if (state.notes.length > 0) {
             fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
           }
           state.notesSyncStatus = 'synced';
@@ -12934,8 +12923,8 @@
         const remote = snap.data();
         if (!Array.isArray(remote.notes)) return;
 
-        // CRITICAL SAFETY: never overwrite local notes with empty remote (except after restore)
-        if (!_notesPostRestore && remote.notes.length === 0 && state.notes.length > 0) {
+        // CRITICAL SAFETY: never overwrite local notes with empty remote
+        if (remote.notes.length === 0 && state.notes.length > 0) {
           console.warn('[Rian] BLOCKED: remote has 0 notes but local has', state.notes.length, '— keeping local and pushing to server');
           fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
           return;
@@ -15510,50 +15499,20 @@
         const backupSnap = await db_fs.doc(`users/${uid}/backups/${dateKey}`).get();
         if (!backupSnap.exists) { showToast('Backup not found'); return; }
         const b = backupSnap.data();
-
-        // Kill ALL real-time listeners and pending saves BEFORE writing
-        // — prevents onSnapshot from re-pushing stale in-memory state
-        if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
-        if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
-        if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
-        if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
-        if (_coSaveTimer) { clearTimeout(_coSaveTimer); _coSaveTimer = null; }
-        _coSavePending = false;
-
-        // ── Restore uses the SAME save pattern as normal edits ──
-        // IndexedDB first → proper Firestore save function (fresh _updatedAt) → set state
-        // This matches how week data is saved, which restores correctly.
         const now = Date.now();
 
-        // Notes
-        const restoredNotes = b.notes?.notes ? deepCopy(b.notes.notes) : [];
-        state.notes = restoredNotes;
-        await dbPut('notes', { id: 'notes_all', userId: uid, data: restoredNotes, updatedAt: now }).catch(() => {});
-        await userDoc('data/notes')?.set({ notes: restoredNotes, _updatedAt: now });
+        // ── Use the EXACT same pattern as the weekly snapshot restore ──
+        // dbPut → fsSetXxx → state = deepCopy → render(). NO reload.
 
-        // Reminders
-        const restoredReminders = b.reminders?.reminders ? deepCopy(b.reminders.reminders) : [];
-        await dbPut('notes', { id: 'reminders_all', userId: uid, data: { reminders: restoredReminders, _updatedAt: now }, updatedAt: now }).catch(() => {});
-        await userDoc('data/reminders')?.set({ reminders: restoredReminders, _updatedAt: now });
-
-        // Callouts — same pattern: IndexedDB first, then fsSetCallouts (adds _updatedAt)
-        const restoredCallouts = b.callouts
-          ? deepCopy({ weeks: b.callouts.weeks || {}, onCall: b.callouts.onCall || {} })
-          : { weeks: {}, onCall: {} };
-        state.callouts = restoredCallouts;
-        await dbPut('notes', { id: 'callouts_all', userId: uid, data: restoredCallouts, updatedAt: now }).catch(() => {});
-        await fsSetCallouts(restoredCallouts);
-
-        // Routines
-        if (b.routines) {
-          state.routines = deepCopy(b.routines);
-          await userDoc('data/routines')?.set({ ...state.routines, _updatedAt: now });
-        } else {
-          state.routines = null;
-          await userDoc('data/routines')?.delete().catch(() => {});
+        // 1. Current week — same as confirmRestoreSnapshot
+        if (state.weekStart && b.weeks?.[state.weekStart]) {
+          const restored = { weekStart: state.weekStart, days: b.weeks[state.weekStart].days, _updatedAt: now };
+          await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: restored, updatedAt: now });
+          await fsSetWeek(state.weekStart, restored);
+          state.weekData = deepCopy(restored);
         }
 
-        // Weeks — delete extras not in backup, then write backup weeks with fresh _updatedAt
+        // 2. Other weeks — batch write to Firestore (picked up when user navigates)
         const backupWeekKeys = new Set(b.weeks ? Object.keys(b.weeks) : []);
         const currentWeeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
         if (currentWeeksSnap) {
@@ -15564,39 +15523,46 @@
             await batch.commit();
           }
         }
-        if (b.weeks && backupWeekKeys.size > 0) {
-          const entries = Object.entries(b.weeks);
-          for (let i = 0; i < entries.length; i += 400) {
-            const chunk = entries.slice(i, i + 400);
+        if (b.weeks) {
+          const otherEntries = Object.entries(b.weeks).filter(([ws]) => ws !== state.weekStart);
+          for (let i = 0; i < otherEntries.length; i += 400) {
+            const chunk = otherEntries.slice(i, i + 400);
             const batch = db_fs.batch();
-            chunk.forEach(([ws, data]) => {
-              const weekData = { ...data, _updatedAt: now };
-              batch.set(db_fs.doc(`users/${uid}/weeks/${ws}`), weekData);
-            });
+            chunk.forEach(([ws, data]) => batch.set(db_fs.doc(`users/${uid}/weeks/${ws}`), { ...data, _updatedAt: now }));
             await batch.commit();
-          }
-          // Also update current week in IndexedDB so loadWeek gets it instantly
-          if (state.weekStart && b.weeks[state.weekStart]) {
-            const wd = { ...b.weeks[state.weekStart], _updatedAt: now };
-            await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: wd, updatedAt: now }).catch(() => {});
-            state.weekData = deepCopy(wd);
           }
         }
 
+        // 3. Notes — same as confirmRestoreSnapshot
+        const restoredNotes = b.notes?.notes ? deepCopy(b.notes.notes) : [];
+        state.notes = restoredNotes;
+        await dbPut('notes', { id: 'notes_all', userId: uid, data: state.notes, updatedAt: now });
+        await fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
+
+        // 4. Reminders — same as confirmRestoreSnapshot
+        const restoredReminders = b.reminders?.reminders ? deepCopy(b.reminders.reminders) : [];
+        saveReminders(restoredReminders);
+
+        // 5. Callouts — same pattern: dbPut → fsSetCallouts → state
+        const restoredCallouts = b.callouts
+          ? deepCopy({ weeks: b.callouts.weeks || {}, onCall: b.callouts.onCall || {} })
+          : { weeks: {}, onCall: {} };
+        await dbPut('notes', { id: 'callouts_all', userId: uid, data: restoredCallouts, updatedAt: now });
+        await fsSetCallouts(restoredCallouts);
+        state.callouts = restoredCallouts;
+
+        // 6. Routines
+        if (b.routines) {
+          state.routines = deepCopy(b.routines);
+          await userDoc('data/routines')?.set({ ...state.routines, _updatedAt: now });
+        } else {
+          state.routines = null;
+          await userDoc('data/routines')?.delete().catch(() => {});
+        }
+
         document.getElementById('backup-modal').classList.add('hidden');
-        // Flag so loaders skip stale caches on reload
-        sessionStorage.setItem('_rianRestoreActive', '1');
-        showToast('✓ Restore complete — reloading…');
-
-        // Nuclear: terminate Firestore and wipe its local persistence cache
-        // so reload pulls ONLY from server — no stale cached docs possible
-        try {
-          await db_fs.terminate();
-          await db_fs.clearPersistence();
-          console.log('[Rian] Firestore persistence cleared after restore');
-        } catch (e) { console.warn('[Rian] clearPersistence:', e); }
-
-        setTimeout(() => location.reload(), 1800);
+        render();
+        showToast('✓ Restore complete');
       } catch (e) {
         showToast('Restore failed: ' + (e.message || e));
         console.error('[Rian Backup] Restore error:', e);
@@ -18658,9 +18624,6 @@ Rules:
 
         // Always pre-load callouts in background so email export works even if user never visits callouts tab
         if (state.view !== 'callouts') loadCallouts();
-
-        // Clear restore flag after all loaders have consumed it
-        sessionStorage.removeItem('_rianRestoreActive');
 
         // Init local reminders
         initReminders();
