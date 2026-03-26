@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.55';
+    const VERSION = '4.25.56';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -15558,7 +15558,10 @@
 
         document.getElementById('backup-modal').classList.add('hidden');
         render();
-        showToast('✓ Restore complete');
+        // Debug: show what the backup actually contained
+        const _dbgCoCount = Object.values(restoredCallouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0);
+        const _dbgNoteCount = restoredNotes.length;
+        showToast(`✓ Restored: ${_dbgNoteCount} notes, ${_dbgCoCount} callouts`);
       } catch (e) {
         showToast('Restore failed: ' + (e.message || e));
         console.error('[Rian Backup] Restore error:', e);
