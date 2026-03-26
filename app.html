@@ -4877,13 +4877,17 @@
     .note-cat-menu.ncm-open { display: block; }
     .ncm-item {
       display: flex; align-items: center; gap: 8px; padding: 8px 10px;
-      border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+      border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;
       transition: background 0.1s; user-select: none;
     }
     .ncm-item:hover, .ncm-item:active { background: var(--bg); }
     .ncm-item.ncm-active { background: rgba(59,130,246,0.06); }
     .ncm-item svg, .ncm-item .tag-dot { flex-shrink: 0; }
     .ncm-check { margin-left: auto; opacity: 0; }
+    .ncm-del { margin-left: auto; opacity: 0; color: var(--text-muted); line-height: 0; padding: 2px; border-radius: 4px; }
+    .ncm-del:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+    .ncm-item:hover .ncm-del, .ncm-item:active .ncm-del { opacity: 1; }
+    .ncm-item:hover .ncm-check { display: none; }
     .ncm-active .ncm-check { opacity: 1; }
     .ncm-divider { height: 1px; background: var(--border); margin: 3px 4px; }
     .ncm-section-label {
@@ -13947,9 +13951,18 @@
       const mkItem = c => {
         const iconHtml = getCatIconHtml(c, 14);
         const isActive = c.key === currentCatKey;
+        const coloredIcon = iconHtml
+          ? iconHtml.replace(/stroke="[^"]*"/g, `stroke="${c.color}"`)
+          : `<span class="tag-dot" style="background:${c.color};width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>`;
+        const deleteBtn = c.isDefault === false
+          ? `<span class="ncm-del" title="Delete tag" onclick="event.stopPropagation();deleteCustomCategory('${noteId}','${c.key}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </span>`
+          : '';
         return `<div class="ncm-item${isActive?' ncm-active':''}" onclick="pickNoteCat('${noteId}','${c.key}')">
-          ${iconHtml || `<span class="tag-dot" style="background:${c.color};width:9px;height:9px;border-radius:50%;flex-shrink:0"></span>`}
+          ${coloredIcon}
           <span style="color:${c.color}">${esc(c.label)}</span>
+          ${deleteBtn}
           <svg class="ncm-check" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
         </div>`;
       };
@@ -14035,11 +14048,12 @@
 
     function pickCatFormColor(noteId, color) {
       _catFormColor = color;
-      // Re-render just the form contents in place
+      const prevName = document.getElementById('ncf-name-' + noteId)?.value || '';
       const formEl = document.getElementById('ncf-' + noteId);
       if (formEl) formEl.innerHTML = buildNoteCatFormHtml(noteId);
       const nameEl = document.getElementById('ncf-name-' + noteId);
-      if (nameEl) nameEl.focus();
+      if (nameEl) { nameEl.value = prevName; nameEl.focus(); }
+      updateCatFormPreview(noteId);
     }
 
     function pickCatFormIcon(noteId, iconKey) {
@@ -14084,6 +14098,21 @@
       _catDropdownOpen = null;
       setNoteCategory(noteId, key);  // assign + render
       showToast('✓ Tag "' + name + '" created');
+    }
+
+    async function deleteCustomCategory(noteId, key) {
+      if (!state.customCategories) return;
+      const cat = state.customCategories.find(c => c.key === key);
+      if (!cat) return;
+      state.customCategories = state.customCategories.filter(c => c.key !== key);
+      await saveCustomCategories();
+      // If any notes used this category, clear it
+      if (state.notes) {
+        state.notes.forEach(n => { if (n.category === key) n.category = ''; });
+      }
+      const wrap = document.getElementById('ncw-' + noteId);
+      if (wrap) wrap.outerHTML = renderNoteCatDropdown(noteId, '');
+      showToast('Tag "' + cat.label + '" deleted');
     }
 
     // ── Persist custom categories ──
