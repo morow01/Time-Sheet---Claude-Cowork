@@ -8513,7 +8513,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.59';
+    const VERSION = '4.25.60';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -14917,6 +14917,10 @@
         if (remindersData && remindersData.length > 0) {
           snapData._reminders = remindersData;
         }
+        // Include callouts backup
+        if (state.callouts && Object.keys(state.callouts.weeks || {}).length > 0) {
+          snapData._callouts = state.callouts;
+        }
         await colRef.doc(String(ts)).set(snapData);
         // Prune oldest if over limit
         const all = await colRef.orderBy('_savedAt', 'asc').get();
@@ -15086,8 +15090,18 @@
               remindersData = deepCopy(snapData._reminders);
               saveReminders(remindersData);
             }
+            // Also restore callouts if included
+            if (snapData._callouts) {
+              if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
+              const restoredCo = deepCopy({ weeks: snapData._callouts.weeks || {}, onCall: snapData._callouts.onCall || {} });
+              state.callouts = restoredCo;
+              await dbPut('notes', { id: 'callouts_all', userId: uid, data: restoredCo, updatedAt: Date.now() });
+              await fsSetCallouts(restoredCo);
+              loadCallouts();
+            }
             render();
-            showToast('Week restored.' + (snapData._notes ? ' Notes restored too.' : ''));
+            const _coInfo = snapData._callouts ? ` Callouts restored.` : '';
+            showToast('Week restored.' + (snapData._notes ? ' Notes restored too.' : '') + _coInfo);
           } catch (e) { showToast('Restore failed: ' + (e.message || e)); }
         }
       );
@@ -15496,12 +15510,6 @@
         if (!backupSnap.exists) { showToast('Backup not found'); return; }
         const b = backupSnap.data();
         const now = Date.now();
-
-        // DEBUG — alert showing exactly what callouts the BACKUP contains
-        const _dbgBackupCallouts = b.callouts ? Object.entries(b.callouts.weeks || {}).flatMap(([wk, w]) =>
-          (w.callouts || []).map(c => `${c.date || '?'}: ${(c.description || c.fault || '').substring(0, 40)}`)
-        ) : [];
-        alert(`BACKUP "${dateKey}" contains ${_dbgBackupCallouts.length} callout(s):\n\n${_dbgBackupCallouts.join('\n') || '(none)'}`);
 
         // ── Use the EXACT same pattern as the weekly snapshot restore ──
         // dbPut → fsSetXxx → state = deepCopy → render(). NO reload.
