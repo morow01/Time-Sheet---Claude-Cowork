@@ -8681,7 +8681,7 @@
 
     // Combined default + user-defined categories
     function getCategories() {
-      return [...DEFAULT_getCategories(), ...(state.customCategories || [])];
+      return [...DEFAULT_NOTE_CATEGORIES, ...(state.customCategories || [])];
     }
 
     const firebaseConfig = {
