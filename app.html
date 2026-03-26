@@ -4806,26 +4806,26 @@
     }
 
     .notes-chip.high {
-      background: rgba(239,68,68,0.10);
-      border-color: rgba(239,68,68,0.40);
+      background: rgba(239, 68, 68, 0.10);
+      border-color: rgba(239, 68, 68, 0.40);
       color: var(--priority-high);
     }
 
     .notes-chip.medium {
-      background: rgba(249,115,22,0.10);
-      border-color: rgba(249,115,22,0.40);
+      background: rgba(249, 115, 22, 0.10);
+      border-color: rgba(249, 115, 22, 0.40);
       color: var(--priority-medium);
     }
 
     .notes-chip.low {
-      background: rgba(34,197,94,0.10);
-      border-color: rgba(34,197,94,0.40);
+      background: rgba(34, 197, 94, 0.10);
+      border-color: rgba(34, 197, 94, 0.40);
       color: var(--priority-low);
     }
 
     .notes-chip.done {
-      background: rgba(100,116,139,0.10);
-      border-color: rgba(100,116,139,0.40);
+      background: rgba(100, 116, 139, 0.10);
+      border-color: rgba(100, 116, 139, 0.40);
       color: #64748b;
     }
 
@@ -4937,6 +4937,7 @@
       user-select: none;
       position: relative;
     }
+
     .note-row-top {
       display: flex;
       align-items: center;
@@ -8194,7 +8195,8 @@
           style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1;padding:0 2px;">✕</button>
       </div>
       <div id="notes-modal-body">
-        <textarea id="notes-modal-ta" placeholder="Type your note here…" autocomplete="nofill" data-lpignore="true" data-form-type="other" data-1p-ignore="true" oninput="notesModalInput()"></textarea>
+        <textarea id="notes-modal-ta" placeholder="Type your note here…" autocomplete="nofill" data-lpignore="true"
+          data-form-type="other" data-1p-ignore="true" oninput="notesModalInput()"></textarea>
       </div>
       <div id="notes-modal-footer">
         <button onclick="closeNotesModal()"
@@ -8513,7 +8515,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.61';
+    const VERSION = '4.25.62';
 
     // ── Notes categories ──
     const NOTE_CATEGORIES = [
@@ -12984,13 +12986,13 @@
     }
 
     function hexToRgb(hex) {
-      return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`;
+      return `${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)}`;
     }
 
     // Update chip styles in-place without replacing DOM (enables CSS transitions)
     function updateNotesChipsInPlace() {
       const cf = state.notesCategoryFilter || '';
-      const f  = state.notesFilter;
+      const f = state.notesFilter;
       const rf = state.notesRemindersFilter || '';
       // Category chips (including untagged)
       document.querySelectorAll('[data-cat-key]').forEach(el => {
@@ -13005,8 +13007,8 @@
           : `background:rgba(${rgb},0.10);border-color:rgba(${rgb},0.40);color:${cat.color};`;
       });
       // Priority chips
-      const priSolid = { high:'#ef4444', medium:'#f97316', low:'#22c55e', done:'#64748b' };
-      const priRgb   = { high:'239,68,68', medium:'249,115,22', low:'34,197,94', done:'100,116,139' };
+      const priSolid = { high: '#ef4444', medium: '#f97316', low: '#22c55e', done: '#64748b' };
+      const priRgb = { high: '239,68,68', medium: '249,115,22', low: '34,197,94', done: '100,116,139' };
       document.querySelectorAll('[data-pri-key]').forEach(el => {
         const key = el.dataset.priKey;
         const isActive = key === f;
@@ -13022,7 +13024,7 @@
         }
       });
       // Reminders chips
-      const remColors = { active: { solid:'#F5A623', rgb:'245,166,35' }, passed: { solid:'#94a3b8', rgb:'148,163,184' } };
+      const remColors = { active: { solid: '#F5A623', rgb: '245,166,35' }, passed: { solid: '#94a3b8', rgb: '148,163,184' } };
       document.querySelectorAll('[data-rem-key]').forEach(el => {
         const key = el.dataset.remKey;
         const isActive = key === rf;
@@ -13044,7 +13046,7 @@
 
     function buildNfSummaryPillsHtml() {
       const cf = state.notesCategoryFilter || '';
-      const f  = state.notesFilter;
+      const f = state.notesFilter;
       const rf = state.notesRemindersFilter || '';
       const activeCat = cf === 'untagged' ? { color: '#64748b', key: 'untagged', label: 'Untagged', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>' } : NOTE_CATEGORIES.find(c => c.key === cf);
       const priLabels = { high: 'High', medium: 'Med', low: 'Low', done: 'Done' };
@@ -13054,7 +13056,7 @@
       const activeRemLabel = rf ? (remLabels[rf] || '') : '';
       const X = `<svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>`;
       return [
-        activeCat ? `<span class="nf-summary-pill" style="background:${activeCat.color}" onclick="event.stopPropagation();setNotesCategoryFilter('${activeCat.key}')">${activeCat.icon.replace('width="18" height="18"','width="11" height="11"')} ${activeCat.label}<span class="nf-pill-x">${X}</span></span>` : '',
+        activeCat ? `<span class="nf-summary-pill" style="background:${activeCat.color}" onclick="event.stopPropagation();setNotesCategoryFilter('${activeCat.key}')">${activeCat.icon.replace('width="18" height="18"', 'width="11" height="11"')} ${activeCat.label}<span class="nf-pill-x">${X}</span></span>` : '',
         activePriLabel ? `<span class="nf-summary-pill nf-pri-${f}" onclick="event.stopPropagation();setNotesFilter('all')">${activePriLabel}<span class="nf-pill-x">${X}</span></span>` : '',
         activeRemLabel ? `<span class="nf-summary-pill" style="background:${rf === 'active' ? '#F5A623' : '#94a3b8'}" onclick="event.stopPropagation();setNotesRemindersFilter('${rf}')">${activeRemLabel}<span class="nf-pill-x">${X}</span></span>` : '',
       ].filter(Boolean).join('');
@@ -13064,12 +13066,12 @@
       state.notesFiltersOpen = !state.notesFiltersOpen;
       localStorage.setItem('rian_notesFiltersOpen', state.notesFiltersOpen);
       // Update DOM in-place so CSS transitions can play
-      const panel   = document.querySelector('.nf-panel');
+      const panel = document.querySelector('.nf-panel');
       const chevron = document.querySelector('.nf-chevron');
-      const pills   = document.querySelector('.nf-summary-pills-wrap');
-      if (panel)   panel.classList.toggle('open', state.notesFiltersOpen);
+      const pills = document.querySelector('.nf-summary-pills-wrap');
+      if (panel) panel.classList.toggle('open', state.notesFiltersOpen);
       if (chevron) chevron.classList.toggle('open', state.notesFiltersOpen);
-      if (pills)   pills.innerHTML = buildNfSummaryPillsHtml();
+      if (pills) pills.innerHTML = buildNfSummaryPillsHtml();
     }
 
     // ---- Notes render ----
@@ -13119,11 +13121,11 @@
       const untaggedChip = `<div class="notes-chip${untaggedActive ? ' cat-active' : ''}" data-cat-key="untagged" style="${untaggedActive ? 'background:#64748b;border-color:#64748b;color:#fff;' : 'background:rgba(100,116,139,0.10);border-color:rgba(100,116,139,0.40);color:#64748b;'}" onclick="setNotesCategoryFilter('untagged')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> Untagged (${untaggedCount})</div>`;
 
       const priChipDefs = [
-        { key: 'all',    label: `All (${openNotes.length})`,  solidColor: null,      rgb: null },
-        { key: 'high',   label: `High (${counts.high})`,      solidColor: '#ef4444', rgb: '239,68,68' },
-        { key: 'medium', label: `Med (${counts.medium})`,     solidColor: '#f97316', rgb: '249,115,22' },
-        { key: 'low',    label: `Low (${counts.low})`,        solidColor: '#22c55e', rgb: '34,197,94' },
-        { key: 'done',   label: `Done (${doneNotes.length})`, solidColor: '#64748b', rgb: '100,116,139' },
+        { key: 'all', label: `All (${openNotes.length})`, solidColor: null, rgb: null },
+        { key: 'high', label: `High (${counts.high})`, solidColor: '#ef4444', rgb: '239,68,68' },
+        { key: 'medium', label: `Med (${counts.medium})`, solidColor: '#f97316', rgb: '249,115,22' },
+        { key: 'low', label: `Low (${counts.low})`, solidColor: '#22c55e', rgb: '34,197,94' },
+        { key: 'done', label: `Done (${doneNotes.length})`, solidColor: '#64748b', rgb: '100,116,139' },
       ];
       const priChips = priChipDefs.map(c => {
         const isActive = c.key === f;
@@ -15571,7 +15573,7 @@
           await userDoc('data/routines')?.set({ ...state.routines, _updatedAt: now });
         } else {
           state.routines = null;
-          await userDoc('data/routines')?.delete().catch(() => {});
+          await userDoc('data/routines')?.delete().catch(() => { });
         }
 
         document.getElementById('backup-modal').classList.add('hidden');
@@ -17986,12 +17988,12 @@
 
       // ── Category ─────────────────────────────────
       const catKeywords = {
-        fault:    /\b(fault|faults)\b/i,
-        job:      /\b(job)\b/i,
+        fault: /\b(fault|faults)\b/i,
+        job: /\b(job)\b/i,
         followup: /\b(follow[\s-]?up)\b/i,
-        meeting:  /\b(meeting)\b/i,
+        meeting: /\b(meeting)\b/i,
         personal: /\b(personal)\b/i,
-        idea:     /\b(idea)\b/i,
+        idea: /\b(idea)\b/i,
       };
       for (const [key, re] of Object.entries(catKeywords)) {
         if (re.test(text)) { result.category = key; break; }
@@ -18042,7 +18044,7 @@
       // "next monday/tuesday/..."
       const dayMatch = text.match(/\bnext\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i);
       if (dayMatch) {
-        const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const target = dayNames.indexOf(dayMatch[1].toLowerCase());
         const d = new Date(now);
         const curr = d.getDay();
@@ -19934,9 +19936,9 @@ QUESTION: ${query}`;
     // Chrome ignores autocomplete="off" and "nofill". The only reliable way
     // is to make inputs temporarily readonly on focus so Chrome's autofill
     // never gets a chance to attach, then remove readonly after a tick.
-    (function() {
-      const SUPPRESS_SELECTOR = 'input.val, input.act-input, textarea.act-textarea, input.tbl-num-input, input.finder-search-input, input.tbl-act-input';
-      document.addEventListener('pointerdown', function(e) {
+    (function () {
+      const SUPPRESS_SELECTOR = 'input.val, input.act-input, input.tbl-num-input, input.finder-search-input, input.tbl-act-input';
+      document.addEventListener('pointerdown', function (e) {
         const el = e.target.closest?.(SUPPRESS_SELECTOR);
         if (!el || el.readOnly) return;
         el.setAttribute('autocomplete', 'off');
@@ -19948,7 +19950,7 @@ QUESTION: ${query}`;
         });
       }, true);
       // Also intercept any Chrome autofill animation (onautocomplete event)
-      document.addEventListener('animationstart', function(e) {
+      document.addEventListener('animationstart', function (e) {
         if (e.animationName === 'onAutoFillStart' || e.animationName === 'onautofillstart') {
           e.target.value = '';
         }
