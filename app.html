@@ -4858,15 +4858,16 @@
     /* ── Note category dropdown ── */
     .note-cat-wrap { position: relative; }
     .note-cat-trigger {
-      display: flex; align-items: center; gap: 7px; padding: 9px 12px;
-      border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer;
-      font-size: 13px; font-weight: 600; background: var(--bg-card);
-      transition: border-color 0.15s; user-select: none; color: var(--text-primary);
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 10px;
+      border: 1.5px solid var(--border); border-radius: 999px; cursor: pointer;
+      font-size: 12px; font-weight: 500; background: var(--bg-card);
+      transition: all 0.15s; user-select: none; color: var(--text-secondary);
+      -webkit-tap-highlight-color: transparent;
     }
-    .note-cat-trigger:active { background: var(--bg); }
-    .note-cat-trigger.nct-open { border-color: var(--accent); }
+    .note-cat-trigger:active { opacity: 0.8; }
+    .note-cat-trigger.nct-has-cat { font-weight: 500; }
     .note-cat-trigger svg { flex-shrink: 0; }
-    .nct-chevron { margin-left: auto; transition: transform 0.2s; flex-shrink: 0; }
+    .nct-chevron { margin-left: 1px; transition: transform 0.2s; flex-shrink: 0; opacity: 0.6; }
     .note-cat-trigger.nct-open .nct-chevron { transform: rotate(180deg); }
     .note-cat-menu {
       margin-top: 4px;
@@ -8639,7 +8640,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.64';
+    const VERSION = '4.25.65';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13949,14 +13950,21 @@
     function renderNoteCatDropdown(noteId, currentCatKey) {
       const cats = getCategories();
       const sel = cats.find(c => c.key === currentCatKey);
-      const iconHtml = sel ? getCatIconHtml(sel, 14) : '';
-      const triggerContent = sel
-        ? `${iconHtml}<span style="color:${sel.color}">${sel.label}</span>`
-        : `<span style="color:var(--text-muted)">No category</span>`;
+      let triggerStyle = '';
+      let triggerContent = '';
+      if (sel) {
+        const rgb = hexToRgb(sel.color);
+        triggerStyle = `background:rgba(${rgb},0.12);border-color:rgba(${rgb},0.4);color:${sel.color};`;
+        const iconHtml = getCatIconHtml(sel, 12);
+        const coloredIcon = iconHtml ? iconHtml.replace(/stroke="[^"]*"/g, `stroke="${sel.color}"`) : '';
+        triggerContent = `${coloredIcon}<span>${esc(sel.label)}</span>`;
+      } else {
+        triggerContent = `<span style="color:var(--text-muted);font-size:12px">No category</span>`;
+      }
       return `<div class="note-cat-wrap" id="ncw-${noteId}">
-        <div class="note-cat-trigger${_catDropdownOpen===noteId?' nct-open':''}" onclick="toggleNoteCatDD('${noteId}')">
+        <div class="note-cat-trigger${sel?' nct-has-cat':''}${_catDropdownOpen===noteId?' nct-open':''}" style="${triggerStyle}" onclick="toggleNoteCatDD('${noteId}')">
           ${triggerContent}
-          <svg class="nct-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          <svg class="nct-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
         <div class="note-cat-menu${_catDropdownOpen===noteId?' ncm-open':''}" id="ncm-${noteId}">
           ${buildNoteCatMenuHtml(noteId, currentCatKey)}
