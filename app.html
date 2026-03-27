@@ -427,7 +427,7 @@
     }
 
     .act-codes-wrap {
-      background: #fff;
+      background: var(--bg-input);
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
@@ -567,7 +567,7 @@
 
     .act-textarea {
       width: 100%;
-      background: #fff;
+      background: var(--bg-input);
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
@@ -580,7 +580,7 @@
 
     .act-input {
       width: 100%;
-      background: #fff;
+      background: var(--bg-input);
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
@@ -696,24 +696,26 @@
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      border: none;
+      border: 1.5px solid transparent;
       font-family: inherit;
     }
 
     .act-action-copy {
       background: var(--btn-primary-bg, #eff6ff);
       color: var(--btn-primary-text, #1e3a8a);
+      border-color: rgba(30,58,138,0.15);
     }
 
     .act-action-note {
       background: #f0fdf4;
       color: #15803d;
-      border: 1.5px solid #bbf7d0;
+      border-color: #bbf7d0;
     }
 
     .act-action-delete {
       background: var(--btn-danger-bg);
       color: var(--btn-danger-color);
+      border-color: var(--btn-danger-border);
     }
 
     /* Add-to-notes confirmation modal */
@@ -1199,7 +1201,7 @@
     /* .day-name and .day-date defined above (no duplicate) */
 
     .activity-detail {
-      background: #FAFCFE;
+      background: var(--bg-card);
       border-top: 1.5px solid var(--border);
       border-bottom-left-radius: 12px;
       border-bottom-right-radius: 12px;
@@ -9201,7 +9203,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.50';
+    const VERSION = '4.26.51';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
