@@ -11055,12 +11055,12 @@
       </td>
       <td class="tbl-codes-cell">${codesHtml}</td>
       <td style="text-align:center">
-        <input type="number" step="1" min="0" class="tbl-num-input" value="${act.ordinary || ''}" placeholder="0"
+        <input type="text" inputmode="decimal" pattern="[0-9]*" class="tbl-num-input" value="${act.ordinary || ''}" placeholder="0"
           autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
           data-field="ordinary" data-act="${act.id}" data-day="${di}" oninput="updateField(this)" onchange="updateField(this)" onblur="updateField(this)">
       </td>
       <td style="text-align:center">
-        <input type="number" step="1" min="0" class="tbl-num-input tbl-ot-input" value="${act.overtime || ''}" placeholder="0"
+        <input type="text" inputmode="decimal" pattern="[0-9]*" class="tbl-num-input tbl-ot-input" value="${act.overtime || ''}" placeholder="0"
           autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
           data-field="overtime" data-act="${act.id}" data-day="${di}" oninput="updateField(this)" onchange="updateField(this)" onblur="updateField(this)">
       </td>
@@ -11646,7 +11646,7 @@
                 <div class="act-field-label" style="margin-bottom: 8px;">Ordinary HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
-                  <input type="number" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" min="0" step="1" inputmode="decimal" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="text" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" inputmode="decimal" pattern="[0-9]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
@@ -11654,7 +11654,7 @@
                 <div class="act-field-label act-field-label-ot" style="margin-bottom: 8px;">Overtime HRS</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
-                  <input type="number" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" min="0" step="1" inputmode="decimal" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="text" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" inputmode="decimal" pattern="[0-9]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
@@ -14260,8 +14260,8 @@
       return `
         <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
           <label class="ncf-label">Tag Name</label>
-          <textarea class="ncf-input" id="ncf-name-${noteId}" placeholder="e.g. Safety Check" rows="1" style="resize:none"
-            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" oninput="updateCatFormPreview('${noteId}');this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <input type="search" class="ncf-input" id="ncf-name-${noteId}" placeholder="e.g. Safety Check"
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" oninput="updateCatFormPreview('${noteId}')" style="padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit">
           <label class="ncf-label">Color</label>
           <div class="ncf-colors">${swatches}</div>
           <label class="ncf-label">Icon (optional)</label>
@@ -20992,11 +20992,11 @@ QUESTION: ${query}`;
       </div>
       <div class="vc-field">
         <label class="vc-label">Ordinary Hours</label>
-        <input id="vc-hrs" class="vc-input" type="number" min="0" max="24" step="0.5" placeholder="e.g. 2">
+        <input id="vc-hrs" class="vc-input" type="text" inputmode="decimal" pattern="[0-9.]*" placeholder="e.g. 2" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">
       </div>
       <div class="vc-field">
         <label class="vc-label">Overtime Hours</label>
-        <input id="vc-ot" class="vc-input" type="number" min="0" max="24" step="0.5" placeholder="e.g. 0">
+        <input id="vc-ot" class="vc-input" type="text" inputmode="decimal" pattern="[0-9.]*" placeholder="e.g. 0" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">
       </div>
       <div class="vc-field">
         <label class="vc-label">Work Codes</label>
@@ -21118,7 +21118,7 @@ QUESTION: ${query}`;
       <div class="vc-heard"><strong>Heard:</strong> <span id="nvc-heard-text"></span></div>
       <div class="vc-field">
         <label class="vc-label">Description</label>
-        <input id="nvc-desc" class="vc-input" type="text" placeholder="e.g. Fix router">
+        <input id="nvc-desc" class="vc-input" type="text" placeholder="e.g. Fix router" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">
       </div>
       <div class="vc-field">
         <label class="vc-label">Location</label>
