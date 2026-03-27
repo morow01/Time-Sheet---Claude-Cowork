@@ -8697,7 +8697,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.96';
+    const VERSION = '4.25.97';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20900,16 +20900,14 @@ QUESTION: ${query}`;
     //   readOnly trick      → desktop Chrome ignores "off" but respects readOnly on focus
     (function () {
       const SUPPRESS_SELECTOR = 'input.val, input.act-input, input.tbl-num-input, input.finder-search-input, input.tbl-act-input, input.ncf-input, textarea.act-notes-area, textarea.act-textarea';
-      // readonly trick for desktop Chrome only (skip on touch devices — causes double-focus)
-      const isTouch = navigator.maxTouchPoints > 0;
-      if (!isTouch) {
-        document.addEventListener('pointerdown', function (e) {
-          const el = e.target.closest?.(SUPPRESS_SELECTOR);
-          if (!el || el.readOnly) return;
-          el.readOnly = true;
-          requestAnimationFrame(() => { el.readOnly = false; el.focus(); });
-        }, true);
-      }
+      // readonly trick for all browsers (prevents Chrome from attaching autofill UI before focus)
+      // Safe on mobile now that onfocus="this.select()" is removed
+      document.addEventListener('pointerdown', function (e) {
+        const el = e.target.closest?.(SUPPRESS_SELECTOR);
+        if (!el || el.readOnly) return;
+        el.readOnly = true;
+        requestAnimationFrame(() => { el.readOnly = false; el.focus(); });
+      }, true);
       // Intercept Chrome autofill animation
       document.addEventListener('animationstart', function (e) {
         if (e.animationName === 'onAutoFillStart' || e.animationName === 'onautofillstart') {
