@@ -8738,7 +8738,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.42';
+    const VERSION = '4.26.43';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13812,8 +13812,8 @@
                     <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}</div>
                     ${ago ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Deleted ${ago}</div>` : ''}
                   </div>
-                  <button onclick="restoreNote('${n.id}')" style="flex-shrink:0;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;color:#22c55e;cursor:pointer;font-family:inherit;">Restore</button>
-                  <button onclick="permanentDeleteNote('${n.id}')" style="flex-shrink:0;background:none;border:none;padding:6px;cursor:pointer;color:var(--text-muted);" title="Delete forever"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+                  <button onclick="restoreNote('${n.id}')" title="Restore" style="flex-shrink:0;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:7px;cursor:pointer;color:#22c55e;display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+                  <button onclick="permanentDeleteNote('${n.id}')" title="Delete forever" style="flex-shrink:0;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:7px;cursor:pointer;color:#ef4444;display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
                 </div>`;
               }).join('')
           }
@@ -14844,11 +14844,14 @@
     function restoreNote(id) {
       const note = state.notes.find(n => n.id === id);
       if (!note) return;
-      note.deleted = false;
-      delete note.deletedAt;
-      scheduleNotesSave();
-      render();
-      showToast('Note restored');
+      const desc = (note.description || 'Untitled note').replace(/<[^>]*>/g, '').trim();
+      showConfirm('Restore note?', desc, () => {
+        note.deleted = false;
+        delete note.deletedAt;
+        scheduleNotesSave();
+        render();
+        showToast('Note restored');
+      }, '#22c55e');
     }
 
     function permanentDeleteNote(id) {
@@ -15672,9 +15675,11 @@
     // ============================================================
     let confirmCallback = null;
 
-    function showConfirm(title, msg, onOk) {
+    function showConfirm(title, msg, onOk, okColor) {
       document.querySelectorAll('#confirm-title').forEach(el => el.textContent = title);
       document.querySelectorAll('#confirm-msg, #confirm-message').forEach(el => el.textContent = msg);
+      const okBtn = document.getElementById('confirm-ok');
+      if (okBtn) okBtn.style.background = okColor || '#dc2626';
       confirmCallback = onOk;
       document.getElementById('confirm-modal').classList.remove('hidden');
     }
