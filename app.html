@@ -8738,7 +8738,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.36';
+    const VERSION = '4.26.37';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13694,8 +13694,18 @@
       };
 
       const visibleOpen = f === 'done' ? [] : filtered;
-      const filteredDone = cf ? doneNotes.filter(n => (n.category || '') === cf) : doneNotes;
-      const visibleDone = (f === 'done' || f === 'all') ? filteredDone : [];
+      const filteredDone = (() => {
+        let d = doneNotes;
+        if (cf === 'untagged') d = d.filter(n => !n.category);
+        else if (cf) d = d.filter(n => (n.category || '') === cf);
+        if (f !== 'all' && f !== 'done') d = d.filter(n => n.priority === f);
+        if (state.notesRemindersFilter === 'active') d = d.filter(n => hasActiveReminder(n.id));
+        else if (state.notesRemindersFilter === 'passed') d = d.filter(n => hasPastReminder(n.id));
+        if (state.notesOverdueFilter) d = d.filter(n => isNoteOverdue(n));
+        if (state.notesHasDueDateFilter) d = d.filter(n => !!n.dueDate);
+        return d;
+      })();
+      const visibleDone = f !== 'done' ? filteredDone : filteredDone;
 
       const allIds = [...visibleOpen, ...visibleDone].map(n => n.id);
       const isAllSelected = allIds.length > 0 && allIds.every(id => state.selectedNotes.has(id));
