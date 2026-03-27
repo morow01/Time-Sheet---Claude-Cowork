@@ -8715,7 +8715,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.25';
+    const VERSION = '4.26.26';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14293,10 +14293,9 @@
       const sel = cats.find(c => c.key === currentCatKey);
       let triggerContent = '';
       if (sel) {
-        const rgb = hexToRgb(sel.color);
-        const pillStyle = `background:rgba(${rgb},0.12);border-color:rgba(${rgb},0.4);color:${sel.color};`;
+        const pillStyle = `background:${sel.color};border-color:${sel.color};color:#fff;`;
         const iconHtml = getCatIconHtml(sel, 12);
-        const coloredIcon = iconHtml ? iconHtml.replace(/stroke="[^"]*"/g, `stroke="${sel.color}"`) : '';
+        const coloredIcon = iconHtml ? iconHtml.replace(/stroke="[^"]*"/g, 'stroke="#fff"') : '';
         triggerContent = `<span class="nct-pill" style="${pillStyle}">${coloredIcon}${esc(sel.label)}</span>`;
       } else {
         triggerContent = `<span style="color:var(--text-muted);font-size:12px;font-weight:400">No category</span>`;
