@@ -8738,7 +8738,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.34';
+    const VERSION = '4.26.35';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13589,15 +13589,6 @@
                 oninput="updateNoteField(this);autoGrow(this)">${esc(note.description)}</textarea>
             </div>
             <div class="note-detail-row">
-              <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Location</span>
-              <input type="search" data-note-id="${note.id}" data-note-field="location"
-                value="${esc(note.location)}"
-                placeholder="Town name or code…"
-                readonly style="cursor:pointer;width:100%"
-                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-                onclick="openLocationModal(null, null, '${note.id}')" />
-            </div>
-            <div class="note-detail-row">
               <div class="notes-panel">
                 <div class="notes-panel-header" onclick="event.stopPropagation(); toggleFieldNotePanel('${note.id}')">
                   <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
@@ -13636,6 +13627,15 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="note-detail-row">
+              <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Location</span>
+              <input type="search" data-note-id="${note.id}" data-note-field="location"
+                value="${esc(note.location)}"
+                placeholder="Town name or code…"
+                readonly style="cursor:pointer;width:100%"
+                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+                onclick="openLocationModal(null, null, '${note.id}')" />
             </div>
             <div class="note-detail-row">
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Due Date</span>
