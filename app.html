@@ -9140,7 +9140,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.13';
+    const VERSION = '4.26.14';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14750,7 +14750,7 @@
           <div class="ncf-icons">${icons}</div>
           <div class="ncf-preview-row">
             <span class="ncf-preview-lbl">Preview</span>
-            <span class="ncf-preview-chip" id="ncf-prev-${noteId}" style="background:${_catFormColor}">${previewIconHtml} Tag Name</span>
+            <span class="note-cat-badge" id="ncf-prev-${noteId}" style="background:${_catFormColor}">${previewIconHtml} Tag Name</span>
           </div>
           <div class="ncf-actions">
             <button class="ncf-btn ncf-btn-cancel" onclick="closeNoteCatForm('${noteId}')">Cancel</button>
@@ -14943,7 +14943,7 @@
         <div class="ncf-icons" style="margin-top:6px">${icons}</div>
         <div class="ncf-preview-row" style="margin-top:10px">
           <span class="ncf-preview-lbl">Preview</span>
-          <span class="ncf-preview-chip" id="${idPrefix}Preview" style="background:${color}">${previewIconHtml} Tag Name</span>
+          <span class="note-cat-badge" id="${idPrefix}Preview" style="background:${color}">${previewIconHtml} Tag Name</span>
         </div>
         <div style="display:flex;gap:8px;margin-top:10px">
           <button class="te-add-btn" style="flex:1;justify-content:center;padding:10px;border:1.5px solid var(--border);border-radius:10px;color:var(--text-muted);font-weight:600" onclick="${onCancel}">Cancel</button>
