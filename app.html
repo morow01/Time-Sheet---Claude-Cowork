@@ -8697,7 +8697,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.99';
+    const VERSION = '4.25.100';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14260,8 +14260,8 @@
       return `
         <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
           <label class="ncf-label">Tag Name</label>
-          <input class="ncf-input" id="ncf-name-${noteId}" type="search" placeholder="e.g. Safety Check"
-            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" oninput="updateCatFormPreview('${noteId}')">
+          <textarea class="ncf-input" id="ncf-name-${noteId}" placeholder="e.g. Safety Check" rows="1" style="resize:none;overflow:hidden"
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" oninput="updateCatFormPreview('${noteId}');this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
           <label class="ncf-label">Color</label>
           <div class="ncf-colors">${swatches}</div>
           <label class="ncf-label">Icon (optional)</label>
