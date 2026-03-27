@@ -4904,14 +4904,14 @@
     }
     .ncm-remove:hover, .ncm-remove:active { background: rgba(239,68,68,0.06); }
     .note-ghost-pill {
-      display: none;
+      display: inline-flex; visibility: hidden;
       align-items: center; gap: 5px;
       padding: 4px 12px; border-radius: 999px;
       font-size: 11px; font-weight: 500;
       color: var(--text-muted); border: 1.5px dashed var(--border);
       cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
-    .note-card.expanded .note-ghost-pill { display: inline-flex; }
+    .note-card.expanded .note-ghost-pill { visibility: visible; }
     .note-card:not(.expanded) .note-cat-badge { cursor: default; pointer-events: none; }
     .note-card.expanded .note-cat-badge { cursor: pointer; }
     .note-inline-cat-picker {
@@ -8738,7 +8738,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.35';
+    const VERSION = '4.26.36';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
