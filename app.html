@@ -8695,7 +8695,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.84';
+    const VERSION = '4.25.85';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13784,7 +13784,10 @@
           if (bg) delete bg.dataset.dir;
           return;
         }
-        // Keep row displaced so swipe-bg + icon stay visible during pulse
+        // Slide row fully off screen so entire swipe-bg is visible
+        const slideDir = dx > 0 ? '110%' : '-110%';
+        rowEl.style.transition = 'transform 0.18s ease-out';
+        rowEl.style.transform = `translateX(${slideDir})`;
         const iconSel = dx > 0 ? '.note-swipe-icon-done' : '.note-swipe-icon-del';
         const icon = bg ? bg.querySelector(iconSel) : null;
         const fireAction = () => {
@@ -13792,12 +13795,15 @@
           else noteSwipeDelete(noteId);
         };
         if (icon) {
-          icon.classList.remove('swipe-icon-pulse');
-          void icon.offsetWidth;
-          icon.classList.add('swipe-icon-pulse');
-          setTimeout(fireAction, 400); // fire after 350ms pulse + 50ms buffer
+          // Pulse after slide reveals the bg fully (180ms), then fire action after pulse (350ms)
+          setTimeout(() => {
+            icon.classList.remove('swipe-icon-pulse');
+            void icon.offsetWidth;
+            icon.classList.add('swipe-icon-pulse');
+            setTimeout(fireAction, 380);
+          }, 180);
         } else {
-          setTimeout(fireAction, 50);
+          setTimeout(fireAction, 200);
         }
       }, { passive: true });
     }
