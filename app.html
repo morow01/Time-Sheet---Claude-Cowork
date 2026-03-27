@@ -8688,7 +8688,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.76';
+    const VERSION = '4.25.77';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -9254,6 +9254,7 @@
       customCategories: [],  // user-defined note categories
       disabledCats: [],      // keys of tags hidden from dropdown (default or custom)
       notesFilter: 'all',           // 'all' | 'high' | 'medium' | 'low' | 'done'
+      notesBinOpen: false,          // true = showing bin (deleted notes)
       notesCategoryFilter: '',      // '' = all categories, or one of getCategories() keys
       notesRemindersFilter: '',     // '' = off | 'active' | 'passed'
       notesSearch: '',            // live search query
@@ -13213,6 +13214,7 @@
       const rf = state.notesRemindersFilter || '';
       const q = (state.notesSearch || '').trim().toLowerCase();
       return state.notes.filter(n => {
+        if (n.deleted) return false; // never show bin notes in main view
         // Priority / status filter
         if (f === 'done') { if (n.status !== 'done') return false; }
         else if (f === 'all') { if (n.status === 'done') return false; }
@@ -13330,9 +13332,10 @@
       const filtered = getFilteredNotes();
       const f = state.notesFilter;
 
-      const openNotes = state.notes.filter(n => n.status !== 'done');
-      const doneNotes = state.notes.filter(n => n.status === 'done');
-      const counts = { high: openNotes.filter(n => n.priority === 'high').length, medium: openNotes.filter(n => n.priority === 'medium').length, low: openNotes.filter(n => n.priority === 'low').length, reminders: state.notes.filter(n => hasActiveReminder(n.id)).length, pastReminders: state.notes.filter(n => hasPastReminder(n.id)).length };
+      const openNotes = state.notes.filter(n => n.status !== 'done' && !n.deleted);
+      const doneNotes = state.notes.filter(n => n.status === 'done' && !n.deleted);
+      const binNotes = state.notes.filter(n => n.deleted).sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+      const counts = { high: openNotes.filter(n => n.priority === 'high').length, medium: openNotes.filter(n => n.priority === 'medium').length, low: openNotes.filter(n => n.priority === 'low').length, reminders: state.notes.filter(n => !n.deleted && hasActiveReminder(n.id)).length, pastReminders: state.notes.filter(n => !n.deleted && hasPastReminder(n.id)).length };
 
       const cf = state.notesCategoryFilter || '';
 
@@ -13577,6 +13580,7 @@
       const isAllSelected = allIds.length > 0 && allIds.every(id => state.selectedNotes.has(id));
 
 
+      const binCount = binNotes.length;
       const searchBar = `
         <div style="padding:10px 16px 10px;position:relative;display:flex;align-items:center;gap:8px;">
           <div style="flex:1;position:relative;">
@@ -13592,6 +13596,10 @@
                 background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;">
             ${state.notesSearch ? `<button onclick="notesSearchInput('');document.getElementById('notes-search-input').value=''" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px;line-height:1">×</button>` : ''}
           </div>
+          <button onclick="toggleNotesBin()" title="Bin" style="position:relative;flex-shrink:0;background:${state.notesBinOpen ? 'rgba(239,68,68,0.12)' : 'var(--bg-card)'};border:1.5px solid ${state.notesBinOpen ? 'rgba(239,68,68,0.4)' : 'var(--border)'};border-radius:12px;padding:8px 10px;cursor:pointer;color:${state.notesBinOpen ? '#ef4444' : 'var(--text-muted)'};display:flex;align-items:center;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            ${binCount > 0 ? `<span style="position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;border-radius:99px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;">${binCount}</span>` : ''}
+          </button>
         </div>`;
       const headerRow = `<div style="margin-top:4px"></div>`;
 
@@ -13654,7 +13662,27 @@
 
       const notesHint = !state.selectionMode ? `<div style="margin-top:12px;margin-bottom:4px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap = open · Long-press = select · Swipe ✓/🗑</div>` : '';
 
-      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:120px' : ''}">${headerRow}${searchBar}<div class="nf-wrap">${chips}</div>${addCard}${searchEmpty}${openSection}${doneSection}${notesHint}${bulkBar}</div>`;
+      const binView = state.notesBinOpen ? `
+        <div style="padding:0 16px 24px;">
+          ${binNotes.length === 0
+            ? `<div class="notes-empty" style="margin-top:32px;">Bin is empty</div>`
+            : binNotes.map(n => {
+                const title = (n.description || 'Untitled note').replace(/<[^>]*>/g, '').trim();
+                const ago = n.deletedAt ? formatTimeAgo(n.deletedAt) : '';
+                return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}</div>
+                    ${ago ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Deleted ${ago}</div>` : ''}
+                  </div>
+                  <button onclick="restoreNote('${n.id}')" style="flex-shrink:0;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;color:#22c55e;cursor:pointer;font-family:inherit;">Restore</button>
+                  <button onclick="permanentDeleteNote('${n.id}')" style="flex-shrink:0;background:none;border:none;padding:6px;cursor:pointer;color:var(--text-muted);" title="Delete forever"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+                </div>`;
+              }).join('')
+          }
+          ${binNotes.length > 1 ? `<button onclick="emptyBin()" style="width:100%;margin-top:8px;background:none;border:1.5px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px;font-size:13px;font-weight:700;color:#ef4444;cursor:pointer;font-family:inherit;">Empty Bin</button>` : ''}
+        </div>` : '';
+
+      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:120px' : ''}">${headerRow}${searchBar}${state.notesBinOpen ? binView : `<div class="nf-wrap">${chips}</div>${addCard}${searchEmpty}${openSection}${doneSection}${notesHint}${bulkBar}`}</div>`;
     }
 
     // ---- Notes search ----
@@ -13745,14 +13773,14 @@
     function noteSwipeDelete(id) {
       const note = state.notes.find(n => n.id === id);
       if (!note) return;
-      const deleted = deepCopy(note);
-      state.notes = state.notes.filter(n => n.id !== id);
+      note.deleted = true;
+      note.deletedAt = Date.now();
       state.expandedNotes.delete(id);
       scheduleNotesSave();
       render();
-      showActionToast('Note deleted', 'Undo', () => {
-        state.notes.push(deleted);
-        state.notes.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      showActionToast('Moved to bin', 'Undo', () => {
+        note.deleted = false;
+        delete note.deletedAt;
         scheduleNotesSave();
         render();
       }, 4000);
@@ -14624,13 +14652,61 @@
 
     function deleteNote(id) {
       const note = state.notes.find(n => n.id === id);
-      const title = note?.description?.trim() || 'Untitled note';
-      showConfirm('Delete note?', title, () => {
-        state.notes = state.notes.filter(n => n.id !== id);
-        state.expandedNotes.delete(id);
+      if (!note) return;
+      note.deleted = true;
+      note.deletedAt = Date.now();
+      state.expandedNotes.delete(id);
+      scheduleNotesSave();
+      render();
+      showActionToast('Moved to bin', 'Undo', () => {
+        note.deleted = false;
+        delete note.deletedAt;
         scheduleNotesSave();
         render();
       });
+    }
+
+    function toggleNotesBin() {
+      state.notesBinOpen = !state.notesBinOpen;
+      render();
+    }
+
+    function restoreNote(id) {
+      const note = state.notes.find(n => n.id === id);
+      if (!note) return;
+      note.deleted = false;
+      delete note.deletedAt;
+      scheduleNotesSave();
+      render();
+      showToast('Note restored');
+    }
+
+    function permanentDeleteNote(id) {
+      showConfirm('Delete forever?', 'This cannot be undone.', () => {
+        state.notes = state.notes.filter(n => n.id !== id);
+        scheduleNotesSave();
+        render();
+      });
+    }
+
+    function emptyBin() {
+      showConfirm('Empty bin?', 'All deleted notes will be permanently removed.', () => {
+        state.notes = state.notes.filter(n => !n.deleted);
+        scheduleNotesSave();
+        render();
+      });
+    }
+
+    function formatTimeAgo(ts) {
+      const diff = Date.now() - ts;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 30) return `${days}d ago`;
+      return `${Math.floor(days / 30)}mo ago`;
     }
 
     function saveNewNote(id) {
