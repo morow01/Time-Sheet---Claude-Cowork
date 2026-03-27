@@ -8738,7 +8738,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.41';
+    const VERSION = '4.26.42';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15673,8 +15673,8 @@
     let confirmCallback = null;
 
     function showConfirm(title, msg, onOk) {
-      document.getElementById('confirm-title').textContent = title;
-      document.getElementById('confirm-msg').textContent = msg;
+      document.querySelectorAll('#confirm-title').forEach(el => el.textContent = title);
+      document.querySelectorAll('#confirm-msg, #confirm-message').forEach(el => el.textContent = msg);
       confirmCallback = onOk;
       document.getElementById('confirm-modal').classList.remove('hidden');
     }
