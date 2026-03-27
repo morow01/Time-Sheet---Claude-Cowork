@@ -4986,12 +4986,10 @@
     .te-edit-form { background: var(--bg); border-radius: 10px; padding: 12px; margin-bottom: 6px; border: 1.5px solid var(--accent); }
 
     /* Pill-style tags */
-    .te-builtin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
     .te-pill-row { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
     .te-pill-row:last-child { border-bottom: none; }
     .te-pill-icons { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
     .te-pill-row.te-disabled { opacity: 0.45; }
-    .te-builtin-grid .te-pill-row { border-bottom: none; padding: 4px 0; }
 
     .note-cat-badge {
       display: inline-flex;
@@ -8717,7 +8715,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.15';
+    const VERSION = '4.26.16';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14541,9 +14539,8 @@
           <span class="te-toggle-track"></span>
         </label>`;
 
-      // Built-in tags - 2 column grid
+      // Built-in tags - single column
       html += `<div class="te-section-label">Built-in Tags</div>`;
-      html += `<div class="te-builtin-grid">`;
       DEFAULT_NOTE_CATEGORIES.forEach(c => {
         const enabled = !disabled.includes(c.key);
         html += `<div class="te-pill-row${enabled?'':' te-disabled'}">
@@ -14551,7 +14548,6 @@
           <span class="note-cat-badge" style="background:${c.color}">${getCatIconHtml(c, 11)} ${esc(c.label)}</span>
         </div>`;
       });
-      html += `</div>`;
 
       // Custom tags - one pill per row
       if (customs.length) {
