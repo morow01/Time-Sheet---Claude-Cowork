@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes — Compact View Mockup</title>
+<style>
+  :root {
+    --bg-page: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --accent: #3b82f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* ── Search + toggle row ── */
+  .search-row {
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .search-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .search-wrap input {
+    width: 100%;
+    padding: 9px 14px 9px 34px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  /* ── View toggle (matches app style) ── */
+  .view-toggle {
+    display: flex;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .view-toggle button {
+    padding: 7px 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    transition: all 0.15s;
+  }
+
+  .view-toggle button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ── Section labels ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 16px 6px;
+  }
+
+  /* ── Compact note row ── */
+  .compact-list {
+    padding: 0 16px;
+  }
+
+  .compact-note {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .compact-note:active {
+    transform: scale(0.98);
+    background: #f8fafc;
+  }
+
+  .compact-note.done {
+    opacity: 0.5;
+  }
+
+  /* Priority dot */
+  .cn-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .cn-dot.high { background: #ff0000; }
+  .cn-dot.medium { background: #f5a623; }
+  .cn-dot.low { background: #10b981; }
+  .cn-dot.none { background: var(--border); }
+
+  /* Main content area */
+  .cn-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cn-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cn-title.done-text {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .cn-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .cn-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+  }
+
+  .cn-meta-sep { color: var(--border); }
+
+  /* Right side: category + reminder */
+  .cn-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .cn-cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px 2px 5px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: #fff;
+    line-height: 1.4;
+  }
+
+  .cn-reminder {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .cn-done-check {
+    color: #22c55e;
+  }
+
+  /* ── Chevron ── */
+  .cn-chevron {
+    color: var(--text-muted);
+    flex-shrink: 0;
+    opacity: 0.4;
+  }
+
+  /* ── Add note ── */
+  .add-note-dashed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    margin: 0 16px 8px;
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .add-note-dashed:active {
+    background: rgba(59,130,246,0.05);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── Hint ── */
+  .hint {
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Search + View Toggle -->
+  <div class="search-row">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Search notes…">
+    </div>
+    <div class="view-toggle">
+      <button title="Expanded view">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="7" rx="2"/>
+          <rect x="3" y="14" width="18" height="7" rx="2"/>
+        </svg>
+      </button>
+      <button class="active" title="Compact view">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/>
+          <line x1="3" y1="12" x2="3.01" y2="12"/>
+          <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Note -->
+  <div class="add-note-dashed">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add Note
+  </div>
+
+  <!-- Open Section -->
+  <div class="section-label">Open</div>
+  <div class="compact-list">
+
+    <!-- 1: Fault, High, with reminder -->
+    <div class="compact-note">
+      <div class="cn-dot high"></div>
+      <div class="cn-content">
+        <div class="cn-title">Fix Battery Issues</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="color:#e8453c">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+            </svg>
+            Tullamore (TLM)
+          </span>
+          <span class="cn-meta-sep">·</span>
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            25 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#ef4444">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Fault
+        </span>
+        <span class="cn-reminder">🔔 Today 14:00</span>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+    <!-- 2: Job, Medium -->
+    <div class="compact-note">
+      <div class="cn-dot medium"></div>
+      <div class="cn-content">
+        <div class="cn-title">Router Swap FTTH</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="color:#e8453c">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+            </svg>
+            Nangor Road (CLD)
+          </span>
+          <span class="cn-meta-sep">·</span>
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            24 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#3b82f6">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          Job
+        </span>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+    <!-- 3: Follow-up, Medium, with reminder -->
+    <div class="compact-note">
+      <div class="cn-dot medium"></div>
+      <div class="cn-content">
+        <div class="cn-title">Chase Parts Order</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="color:#e8453c">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+            </svg>
+            Athlone (ATE)
+          </span>
+          <span class="cn-meta-sep">·</span>
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            22 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#f59e0b">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Follow-up
+        </span>
+        <span class="cn-reminder">🔔 Mon 09:00</span>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+    <!-- 4: Meeting, Low, no location -->
+    <div class="compact-note">
+      <div class="cn-dot low"></div>
+      <div class="cn-content">
+        <div class="cn-title">Safety Briefing Q2</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            21 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#8b5cf6">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Meeting
+        </span>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+    <!-- 5: Fault, High -->
+    <div class="compact-note">
+      <div class="cn-dot high"></div>
+      <div class="cn-content">
+        <div class="cn-title">No Dial Tone — Copper Fault</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="color:#e8453c">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+            </svg>
+            Birr (BIR)
+          </span>
+          <span class="cn-meta-sep">·</span>
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            20 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#ef4444">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Fault
+        </span>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+    <!-- 6: No category, Low -->
+    <div class="compact-note">
+      <div class="cn-dot low"></div>
+      <div class="cn-content">
+        <div class="cn-title">Pick Up Safety Boots</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            19 Mar
+          </span>
+        </div>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+    <!-- 7: Idea, Low -->
+    <div class="compact-note">
+      <div class="cn-dot low"></div>
+      <div class="cn-content">
+        <div class="cn-title">Log Mileage Per Job</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            17 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#f97316">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+          Idea
+        </span>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+  </div>
+
+  <!-- Done Section -->
+  <div class="section-label">Done</div>
+  <div class="compact-list">
+
+    <!-- Done 1 -->
+    <div class="compact-note done">
+      <div class="cn-dot none"></div>
+      <div class="cn-content">
+        <div class="cn-title done-text">Replace ONT Unit</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="color:#e8453c">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+            </svg>
+            Moate (MOA)
+          </span>
+          <span class="cn-meta-sep">·</span>
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            18 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#94a3b8">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          Job
+        </span>
+        <svg class="cn-done-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+    <!-- Done 2 -->
+    <div class="compact-note done">
+      <div class="cn-dot none"></div>
+      <div class="cn-content">
+        <div class="cn-title done-text">Replace Damaged DP</div>
+        <div class="cn-meta">
+          <span class="cn-meta-item">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="color:#e8453c">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+            </svg>
+            Kilbeggan (KBN)
+          </span>
+          <span class="cn-meta-sep">·</span>
+          <span class="cn-meta-item">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            15 Mar
+          </span>
+        </div>
+      </div>
+      <div class="cn-right">
+        <span class="cn-cat-badge" style="background:#94a3b8">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Fault
+        </span>
+        <svg class="cn-done-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <svg class="cn-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+
+  </div>
+
+  <div class="hint">Tap = open · Long-press = select</div>
+
+</body>
+</html>

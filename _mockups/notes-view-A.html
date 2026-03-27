@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes View A — Card Grid</title>
+<style>
+  :root {
+    --bg-page: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --accent: #3b82f6;
+    --priority-high: #ef4444;
+    --priority-medium: #f59e0b;
+    --priority-low: #22c55e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 12px;
+    position: sticky;
+    top: 0;
+    background: var(--bg-page);
+    z-index: 10;
+  }
+
+  .view-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .view-toggle {
+    display: flex;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .view-toggle-btn {
+    padding: 7px 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.15s;
+  }
+
+  .view-toggle-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ── Search ── */
+  .search-bar {
+    margin: 0 16px 12px;
+    position: relative;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-card);
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+  }
+
+  .search-bar svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+
+  /* ── Filter chips ── */
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    padding: 0 16px 14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filter-row::-webkit-scrollbar { display: none; }
+
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* ── Card Grid ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 16px 100px;
+  }
+
+  .note-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    padding: 14px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+
+  .note-card:active {
+    transform: scale(0.97);
+  }
+
+  .note-card .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  .note-card .card-meta svg {
+    flex-shrink: 0;
+    color: #e8453c;
+  }
+
+  .note-card .card-meta .meta-sep {
+    color: var(--border);
+  }
+
+  .note-card .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .note-card .card-title.done {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+
+  .note-card .card-location {
+    display: none;
+  }
+
+  .note-card .card-body {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .note-card .card-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 4px;
+  }
+
+  .note-card .card-footer .footer-spacer {
+    flex: 1;
+  }
+
+  .note-card .card-cat {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .note-card .card-date {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .pri-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pri-dot.high { background: var(--priority-high); }
+  .pri-dot.medium { background: var(--priority-medium); }
+  .pri-dot.low { background: var(--priority-low); }
+
+  .reminder-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── FAB ── */
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+  }
+
+  /* ── Summary row ── */
+  .summary-row {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 14px;
+    overflow-x: auto;
+  }
+
+  .summary-row::-webkit-scrollbar { display: none; }
+
+  .summary-stat {
+    flex-shrink: 0;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    text-align: center;
+    min-width: 70px;
+  }
+
+  .summary-stat .stat-num {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .summary-stat .stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+  <div class="view-header">
+    <div class="view-title">Notes</div>
+    <div class="view-toggle">
+      <button class="view-toggle-btn active" title="Grid view">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+      </button>
+      <button class="view-toggle-btn" title="List view">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" placeholder="Search notes…">
+  </div>
+
+  <div class="summary-row">
+    <div class="summary-stat">
+      <div class="stat-num">12</div>
+      <div class="stat-label">Open</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-num" style="color:var(--priority-high)">3</div>
+      <div class="stat-label">High</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-num" style="color:#ef4444">4</div>
+      <div class="stat-label">Faults</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-num" style="color:var(--accent)">2</div>
+      <div class="stat-label">Reminders</div>
+    </div>
+    <div class="summary-stat">
+      <div class="stat-num" style="color:#64748b">8</div>
+      <div class="stat-label">Done</div>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <div class="filter-chip active">All (20)</div>
+    <div class="filter-chip" style="border-color:#ef4444;color:#ef4444">Fault (4)</div>
+    <div class="filter-chip" style="border-color:#3b82f6;color:#3b82f6">Job (5)</div>
+    <div class="filter-chip" style="border-color:#f59e0b;color:#f59e0b">Follow-up (3)</div>
+    <div class="filter-chip" style="border-color:#8b5cf6;color:#8b5cf6">Meeting (2)</div>
+    <div class="filter-chip" style="border-color:#10b981;color:#10b981">Personal (1)</div>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- Card 1: Fault, High -->
+    <div class="note-card">
+      <div class="card-meta">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        <span>Tullamore (TLM)</span>
+        <span class="meta-sep">·</span>
+        <span>25 Mar</span>
+      </div>
+      <div class="card-title">Fix Battery Issues</div>
+      <div class="card-body">Customer reporting intermittent power loss on main unit</div>
+      <div class="card-footer">
+        <div class="pri-dot high"></div>
+        <span class="card-cat" style="background:#ef4444">Fault</span>
+        <span class="footer-spacer"></span>
+        <span class="reminder-badge">🔔 Today 14:00</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Job, Medium -->
+    <div class="note-card">
+      <div class="card-meta">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        <span>Nangor Road (CLD)</span>
+        <span class="meta-sep">·</span>
+        <span>24 Mar</span>
+      </div>
+      <div class="card-title">Router Swap FTTH</div>
+      <div class="card-footer">
+        <div class="pri-dot medium"></div>
+        <span class="card-cat" style="background:#3b82f6">Job</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Follow-up, Medium -->
+    <div class="note-card">
+      <div class="card-meta">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        <span>Athlone (ATE)</span>
+        <span class="meta-sep">·</span>
+        <span>22 Mar</span>
+      </div>
+      <div class="card-title">Chase Parts Order</div>
+      <div class="card-body">Waiting on fibre splice tray from stores</div>
+      <div class="card-footer">
+        <div class="pri-dot medium"></div>
+        <span class="card-cat" style="background:#f59e0b">Follow-up</span>
+        <span class="footer-spacer"></span>
+        <span class="reminder-badge">🔔 Mon 09:00</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Meeting, Low -->
+    <div class="note-card">
+      <div class="card-meta">
+        <span>21 Mar</span>
+      </div>
+      <div class="card-title">Safety Briefing Q2</div>
+      <div class="card-body">Review updated PPE checklist with team lead</div>
+      <div class="card-footer">
+        <div class="pri-dot low"></div>
+        <span class="card-cat" style="background:#8b5cf6">Meeting</span>
+      </div>
+    </div>
+
+    <!-- Card 5: Fault, High -->
+    <div class="note-card">
+      <div class="card-meta">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        <span>Birr (BIR)</span>
+        <span class="meta-sep">·</span>
+        <span>20 Mar</span>
+      </div>
+      <div class="card-title">No Dial Tone — Copper Fault</div>
+      <div class="card-footer">
+        <div class="pri-dot high"></div>
+        <span class="card-cat" style="background:#ef4444">Fault</span>
+      </div>
+    </div>
+
+    <!-- Card 6: Personal, Low -->
+    <div class="note-card">
+      <div class="card-meta">
+        <span>19 Mar</span>
+      </div>
+      <div class="card-title">Pick Up Safety Boots</div>
+      <div class="card-body">New boots from stores, size 10</div>
+      <div class="card-footer">
+        <div class="pri-dot low"></div>
+        <span class="card-cat" style="background:#10b981">Personal</span>
+      </div>
+    </div>
+
+    <!-- Card 7: Done -->
+    <div class="note-card" style="opacity:0.55">
+      <div class="card-meta">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+        <span>Moate (MOA)</span>
+        <span class="meta-sep">·</span>
+        <span>18 Mar</span>
+      </div>
+      <div class="card-title done">Replace ONT Unit</div>
+      <div class="card-footer">
+        <div class="pri-dot" style="background:#94a3b8"></div>
+        <span class="card-cat" style="background:#94a3b8">Job</span>
+        <span class="footer-spacer"></span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+
+    <!-- Card 8: Idea -->
+    <div class="note-card">
+      <div class="card-meta">
+        <span>17 Mar</span>
+      </div>
+      <div class="card-title">Log Mileage Per Job</div>
+      <div class="card-body">Would be useful to track km per site visit for expenses</div>
+      <div class="card-footer">
+        <div class="pri-dot low"></div>
+        <span class="card-cat" style="background:#f97316">Idea</span>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="fab">+</button>
+
+</body>
+</html>

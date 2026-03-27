@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom Tags - Mockup Options</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --bg-card: #fff;
+    --text: #1e293b;
+    --text-muted: #94a3b8;
+    --border: #e2e8f0;
+    --accent: #3b82f6;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 16px; max-width: 420px; margin: 0 auto; }
+
+  .mockup-label {
+    font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); margin: 24px 0 10px; padding: 6px 12px;
+    background: rgba(59,130,246,0.08); border-radius: 8px; display: inline-block;
+  }
+  .mockup-label:first-child { margin-top: 8px; }
+  .desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
+
+  /* ── Option A: Inline tag picker (bottom sheet style) ── */
+  .tag-picker {
+    background: var(--bg-card); border-radius: var(--radius); padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid var(--border);
+  }
+  .tag-picker-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .tag-picker-title { font-size: 15px; font-weight: 700; }
+  .tag-grid {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+  }
+  .tag-chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px;
+    border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1.5px solid transparent; transition: all 0.15s ease;
+  }
+  .tag-chip:hover { transform: scale(1.03); }
+  .tag-chip.selected { box-shadow: 0 0 0 2px rgba(59,130,246,0.4); }
+  .tag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Add new tag button */
+  .add-tag-btn {
+    display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px;
+    border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer;
+    border: 1.5px dashed var(--border); color: var(--text-muted);
+    background: transparent; transition: all 0.15s ease;
+  }
+  .add-tag-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Create tag inline form ── */
+  .create-tag-form {
+    background: var(--bg); border-radius: 12px; padding: 14px; margin-top: 12px;
+    border: 1px solid var(--border);
+  }
+  .create-tag-form label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    color: var(--text-muted); letter-spacing: 0.5px; display: block; margin-bottom: 6px;
+  }
+  .create-tag-input {
+    width: 100%; padding: 8px 12px; border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: 13px; font-weight: 500; outline: none;
+    background: var(--bg-card); color: var(--text); transition: border-color 0.15s;
+  }
+  .create-tag-input:focus { border-color: var(--accent); }
+
+  /* Color palette */
+  .color-palette {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+  }
+  .color-swatch {
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    border: 2.5px solid transparent; transition: all 0.15s ease;
+    position: relative;
+  }
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.selected {
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--text);
+  }
+  .color-swatch.selected::after {
+    content: '✓'; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 13px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  /* Icon picker mini */
+  .icon-row {
+    display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;
+  }
+  .icon-option {
+    width: 34px; height: 34px; border-radius: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-card); border: 1.5px solid var(--border);
+    transition: all 0.15s ease; font-size: 16px;
+  }
+  .icon-option:hover { border-color: var(--accent); background: rgba(59,130,246,0.05); }
+  .icon-option.selected { border-color: var(--accent); background: rgba(59,130,246,0.1); }
+
+  /* Preview tag */
+  .preview-section { margin-top: 12px; }
+  .preview-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 6px; }
+  .preview-tag {
+    display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px;
+    border-radius: 999px; font-size: 11px; font-weight: 600; color: #fff;
+  }
+
+  /* Action buttons */
+  .form-actions {
+    display: flex; gap: 8px; margin-top: 14px;
+  }
+  .btn-save {
+    flex: 1; padding: 10px; border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    background: var(--accent); color: #fff; transition: opacity 0.15s;
+  }
+  .btn-save:hover { opacity: 0.9; }
+  .btn-cancel {
+    padding: 10px 16px; border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    background: transparent; color: var(--text-muted); transition: all 0.15s;
+  }
+  .btn-cancel:hover { border-color: var(--text-muted); }
+
+  /* ── Option B: Settings-style tag manager ── */
+  .tag-manager {
+    background: var(--bg-card); border-radius: var(--radius); padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid var(--border);
+  }
+  .tag-manager-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .tag-manager-title { font-size: 15px; font-weight: 700; }
+  .tag-list { display: flex; flex-direction: column; gap: 6px; }
+  .tag-list-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: 10px; background: var(--bg); border: 1px solid var(--border);
+    transition: all 0.15s ease;
+  }
+  .tag-list-item:hover { border-color: var(--accent); }
+  .tag-list-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .tag-list-icon { font-size: 14px; flex-shrink: 0; }
+  .tag-list-name { font-size: 13px; font-weight: 600; flex: 1; }
+  .tag-list-count { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .tag-list-badge { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: rgba(59,130,246,0.1); color: var(--accent); font-weight: 700; text-transform: uppercase; }
+  .tag-list-actions {
+    display: flex; gap: 4px; opacity: 0.4; transition: opacity 0.15s;
+  }
+  .tag-list-item:hover .tag-list-actions { opacity: 1; }
+  .tag-action-btn {
+    width: 28px; height: 28px; border: none; background: transparent;
+    border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--text-muted); transition: all 0.15s;
+  }
+  .tag-action-btn:hover { background: var(--bg-card); color: var(--text); }
+  .tag-action-btn.delete:hover { color: #ef4444; }
+
+  /* Drag handle */
+  .drag-handle {
+    color: var(--text-muted); opacity: 0.3; cursor: grab; display: flex;
+    align-items: center; flex-shrink: 0;
+  }
+  .tag-list-item:hover .drag-handle { opacity: 0.7; }
+
+  .divider {
+    height: 1px; background: var(--border); margin: 20px 0;
+  }
+
+  /* Section C: Combined flow */
+  .note-card-mock {
+    background: var(--bg-card); border-radius: var(--radius); padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08); border: 1px solid var(--border);
+  }
+  .note-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .note-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; }
+
+  /* Category dropdown */
+  .cat-dropdown {
+    position: relative; margin-top: 12px;
+  }
+  .cat-dropdown-trigger {
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-size: 12px; font-weight: 600; cursor: pointer; background: var(--bg-card);
+    transition: border-color 0.15s; color: var(--text);
+  }
+  .cat-dropdown-trigger:hover { border-color: var(--accent); }
+  .cat-dropdown-menu {
+    position: relative; margin-top: 6px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+  .cat-menu-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: background 0.1s;
+  }
+  .cat-menu-item:hover { background: var(--bg); }
+  .cat-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+  .cat-menu-create {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+    color: var(--accent); transition: background 0.1s;
+  }
+  .cat-menu-create:hover { background: rgba(59,130,246,0.05); }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════ -->
+<div class="mockup-label">Option A — Inline Tag Picker</div>
+<p class="desc">When assigning a category on a note, the picker shows all tags with a "+ New Tag" button that expands an inline creation form.</p>
+
+<div class="tag-picker">
+  <div class="tag-picker-header">
+    <span class="tag-picker-title">Category</span>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </div>
+
+  <div class="tag-grid">
+    <div class="tag-chip" style="background:rgba(59,130,246,0.12);color:#3b82f6;">
+      <span class="tag-dot" style="background:#3b82f6"></span> Job
+    </div>
+    <div class="tag-chip selected" style="background:#ef4444;color:#fff;">
+      <span class="tag-dot" style="background:#fff"></span> Fault
+    </div>
+    <div class="tag-chip" style="background:rgba(245,158,11,0.12);color:#f59e0b;">
+      <span class="tag-dot" style="background:#f59e0b"></span> Follow-up
+    </div>
+    <div class="tag-chip" style="background:rgba(139,92,246,0.12);color:#8b5cf6;">
+      <span class="tag-dot" style="background:#8b5cf6"></span> Meeting
+    </div>
+    <div class="tag-chip" style="background:rgba(236,72,153,0.12);color:#ec4899;">
+      <span class="tag-dot" style="background:#ec4899"></span> Urgent
+    </div>
+    <button class="add-tag-btn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Tag
+    </button>
+  </div>
+
+  <!-- Inline create form (expanded state) -->
+  <div class="create-tag-form">
+    <label>Tag Name</label>
+    <input class="create-tag-input" type="text" placeholder="e.g. Safety Check" value="Safety Check">
+
+    <label style="margin-top:12px">Color</label>
+    <div class="color-palette">
+      <div class="color-swatch" style="background:#ef4444"></div>
+      <div class="color-swatch" style="background:#f97316"></div>
+      <div class="color-swatch" style="background:#f59e0b"></div>
+      <div class="color-swatch selected" style="background:#22c55e"></div>
+      <div class="color-swatch" style="background:#06b6d4"></div>
+      <div class="color-swatch" style="background:#3b82f6"></div>
+      <div class="color-swatch" style="background:#8b5cf6"></div>
+      <div class="color-swatch" style="background:#ec4899"></div>
+      <div class="color-swatch" style="background:#64748b"></div>
+      <div class="color-swatch" style="background:#78716c"></div>
+    </div>
+
+    <label style="margin-top:12px">Icon (optional)</label>
+    <div class="icon-row">
+      <div class="icon-option selected">🔧</div>
+      <div class="icon-option">⚡</div>
+      <div class="icon-option">🔒</div>
+      <div class="icon-option">📋</div>
+      <div class="icon-option">🏗️</div>
+      <div class="icon-option">🚧</div>
+      <div class="icon-option">✅</div>
+      <div class="icon-option">📌</div>
+      <div class="icon-option">🔔</div>
+      <div class="icon-option">⚠️</div>
+    </div>
+
+    <div class="preview-section">
+      <div class="preview-label">Preview</div>
+      <span class="preview-tag" style="background:#22c55e">🔧 Safety Check</span>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-cancel">Cancel</button>
+      <button class="btn-save">Create Tag</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════ -->
+<div class="divider"></div>
+<div class="mockup-label">Option B — Settings Tag Manager</div>
+<p class="desc">A dedicated "Manage Tags" panel (accessible from the ☰ menu or note settings). Drag to reorder, edit, or delete. Defaults marked as "default" can't be deleted but can be hidden.</p>
+
+<div class="tag-manager">
+  <div class="tag-manager-header">
+    <span class="tag-manager-title">Manage Tags</span>
+    <button class="add-tag-btn" style="padding:5px 12px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add
+    </button>
+  </div>
+
+  <div class="tag-list">
+    <div class="tag-list-item">
+      <div class="drag-handle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+      </div>
+      <div class="tag-list-dot" style="background:#3b82f6"></div>
+      <span class="tag-list-icon">📦</span>
+      <span class="tag-list-name">Job</span>
+      <span class="tag-list-count">2 notes</span>
+      <span class="tag-list-badge">default</span>
+      <div class="tag-list-actions">
+        <button class="tag-action-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      </div>
+    </div>
+
+    <div class="tag-list-item">
+      <div class="drag-handle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+      </div>
+      <div class="tag-list-dot" style="background:#ef4444"></div>
+      <span class="tag-list-icon">⚠️</span>
+      <span class="tag-list-name">Fault</span>
+      <span class="tag-list-count">3 notes</span>
+      <span class="tag-list-badge">default</span>
+      <div class="tag-list-actions">
+        <button class="tag-action-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      </div>
+    </div>
+
+    <div class="tag-list-item">
+      <div class="drag-handle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+      </div>
+      <div class="tag-list-dot" style="background:#22c55e"></div>
+      <span class="tag-list-icon">🔧</span>
+      <span class="tag-list-name">Safety Check</span>
+      <span class="tag-list-count">0 notes</span>
+      <div class="tag-list-actions">
+        <button class="tag-action-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="tag-action-btn delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+      </div>
+    </div>
+
+    <div class="tag-list-item">
+      <div class="drag-handle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+      </div>
+      <div class="tag-list-dot" style="background:#ec4899"></div>
+      <span class="tag-list-icon">⚡</span>
+      <span class="tag-list-name">Urgent</span>
+      <span class="tag-list-count">1 note</span>
+      <div class="tag-list-actions">
+        <button class="tag-action-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="tag-action-btn delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════ -->
+<div class="divider"></div>
+<div class="mockup-label">Option C — Combined (Recommended)</div>
+<p class="desc">The category dropdown on each note has a "+ Create Tag" at the bottom. Tapping it expands the inline form. Full management via ☰ → Manage Tags.</p>
+
+<div class="note-card-mock">
+  <div class="note-title">● Check battery voltage levels</div>
+  <div class="note-meta">
+    <span>📍 Mucklagh</span>
+    <span>📅 Thu 19. Mar '26</span>
+  </div>
+
+  <div class="cat-dropdown">
+    <div class="cat-dropdown-trigger">
+      <span class="tag-dot" style="background:#ef4444"></span>
+      Fault
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+
+    <div class="cat-dropdown-menu">
+      <div class="cat-menu-item">
+        <span class="tag-dot" style="background:#3b82f6"></span> Job
+      </div>
+      <div class="cat-menu-item" style="background:var(--bg);">
+        <span class="tag-dot" style="background:#ef4444"></span> Fault
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="margin-left:auto"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="cat-menu-item">
+        <span class="tag-dot" style="background:#f59e0b"></span> Follow-up
+      </div>
+      <div class="cat-menu-item">
+        <span class="tag-dot" style="background:#8b5cf6"></span> Meeting
+      </div>
+      <div class="cat-menu-item">
+        <span class="tag-dot" style="background:#10b981"></span> Personal
+      </div>
+      <div class="cat-menu-item">
+        <span class="tag-dot" style="background:#6366f1"></span> Idea
+      </div>
+      <div style="height:1px;background:var(--border);margin:4px;opacity:0.6"></div>
+      <div class="cat-menu-item" style="color:var(--text-muted);">
+        <span class="tag-dot" style="background:#ec4899"></span>
+        <span style="color:var(--text);">Urgent</span>
+        <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(236,72,153,0.1);color:#ec4899;font-weight:700;margin-left:4px;">CUSTOM</span>
+      </div>
+      <div class="cat-menu-item" style="color:var(--text-muted);">
+        <span class="tag-dot" style="background:#22c55e"></span>
+        <span style="color:var(--text);">Safety Check</span>
+        <span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(34,197,94,0.1);color:#22c55e;font-weight:700;margin-left:4px;">CUSTOM</span>
+      </div>
+      <div class="cat-menu-divider"></div>
+      <div class="cat-menu-create">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create New Tag
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="height: 40px"></div>
+
+</body>
+</html>
