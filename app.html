@@ -8846,7 +8846,9 @@
       const searchEl = document.getElementById('location-search');
       searchEl.value = current;
       filterLocations(current);
-      setTimeout(() => searchEl.focus(), 100);
+      searchEl.setAttribute('autocomplete', 'off');
+      searchEl.readOnly = true;
+      setTimeout(() => { searchEl.readOnly = false; searchEl.focus(); }, 100);
     }
 
     function filterLocations(q) {
