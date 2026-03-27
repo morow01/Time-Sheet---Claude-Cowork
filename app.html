@@ -8738,7 +8738,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.43';
+    const VERSION = '4.26.44';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15449,6 +15449,7 @@
     function closeConfirmModal() {
       document.getElementById('confirm-modal').classList.add('hidden');
       _confirmAction = null;
+      confirmCallback = null;
     }
     function executeConfirmAction() {
       if (_confirmAction) _confirmAction();
@@ -15678,9 +15679,10 @@
     function showConfirm(title, msg, onOk, okColor) {
       document.querySelectorAll('#confirm-title').forEach(el => el.textContent = title);
       document.querySelectorAll('#confirm-msg, #confirm-message').forEach(el => el.textContent = msg);
-      const okBtn = document.getElementById('confirm-ok');
-      if (okBtn) okBtn.style.background = okColor || '#dc2626';
+      const color = okColor || '#dc2626';
+      document.querySelectorAll('#confirm-ok, #confirm-btn').forEach(el => el.style.background = color);
       confirmCallback = onOk;
+      _confirmAction = onOk;
       document.getElementById('confirm-modal').classList.remove('hidden');
     }
 
