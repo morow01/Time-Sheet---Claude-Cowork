@@ -8697,7 +8697,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.98';
+    const VERSION = '4.25.99';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14258,21 +14258,23 @@
         ? NOTE_ICON_SVGS[_catFormIconKey].replace(/width="18" height="18"/g,'width="11" height="11"')
         : '';
       return `
-        <label class="ncf-label">Tag Name</label>
-        <input class="ncf-input" id="ncf-name-${noteId}" type="search" placeholder="e.g. Safety Check"
-          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" oninput="updateCatFormPreview('${noteId}')">
-        <label class="ncf-label">Color</label>
-        <div class="ncf-colors">${swatches}</div>
-        <label class="ncf-label">Icon (optional)</label>
-        <div class="ncf-icons">${icons}</div>
-        <div class="ncf-preview-row">
-          <span class="ncf-preview-lbl">Preview</span>
-          <span class="ncf-preview-chip" id="ncf-prev-${noteId}" style="background:${_catFormColor}">${previewIconHtml} Tag Name</span>
-        </div>
-        <div class="ncf-actions">
-          <button class="ncf-btn ncf-btn-cancel" onclick="closeNoteCatForm('${noteId}')">Cancel</button>
-          <button class="ncf-btn ncf-btn-save" id="ncf-save-${noteId}" onclick="saveNewCategory('${noteId}')" disabled>Create Tag</button>
-        </div>`;
+        <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
+          <label class="ncf-label">Tag Name</label>
+          <input class="ncf-input" id="ncf-name-${noteId}" type="search" placeholder="e.g. Safety Check"
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" oninput="updateCatFormPreview('${noteId}')">
+          <label class="ncf-label">Color</label>
+          <div class="ncf-colors">${swatches}</div>
+          <label class="ncf-label">Icon (optional)</label>
+          <div class="ncf-icons">${icons}</div>
+          <div class="ncf-preview-row">
+            <span class="ncf-preview-lbl">Preview</span>
+            <span class="ncf-preview-chip" id="ncf-prev-${noteId}" style="background:${_catFormColor}">${previewIconHtml} Tag Name</span>
+          </div>
+          <div class="ncf-actions">
+            <button class="ncf-btn ncf-btn-cancel" onclick="closeNoteCatForm('${noteId}')">Cancel</button>
+            <button class="ncf-btn ncf-btn-save" id="ncf-save-${noteId}" onclick="saveNewCategory('${noteId}')" disabled>Create Tag</button>
+          </div>
+        </form>`;
     }
 
     function toggleNoteCatDD(noteId) {
