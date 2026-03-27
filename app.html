@@ -8738,7 +8738,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.39';
+    const VERSION = '4.26.40';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14821,7 +14821,7 @@
       const note = state.notes.find(n => n.id === id);
       if (!note) return;
       const desc = (note.description || 'Untitled note').replace(/<[^>]*>/g, '').trim();
-      showConfirm('Move to bin?', desc, () => {
+      showConfirm('Delete note?', desc, () => {
         note.deleted = true;
         note.deletedAt = Date.now();
         state.expandedNotes.delete(id);
