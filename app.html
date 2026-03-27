@@ -8357,6 +8357,18 @@
     </div>
   </div>
 
+  <!-- ===== CONFIRMATION DIALOG MODAL ===== -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div style="background:var(--bg);border-radius:12px;padding:24px;max-width:360px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.2)">
+      <div style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text)" id="confirm-title">Confirm</div>
+      <div style="font-size:14px;color:var(--text-muted);margin-bottom:20px" id="confirm-message">Are you sure?</div>
+      <div style="display:flex;gap:12px;justify-content:flex-end">
+        <button onclick="closeConfirmModal()" style="padding:10px 20px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);font-weight:600;cursor:pointer;font-size:13px">Cancel</button>
+        <button id="confirm-btn" onclick="executeConfirmAction()" style="padding:10px 20px;border-radius:8px;border:none;background:#ef4444;color:#fff;font-weight:600;cursor:pointer;font-size:13px">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== NOTE HOVER TOOLTIP ===== -->
   <div id="note-tooltip" class="tbl-note-tooltip"></div>
 
@@ -8697,7 +8709,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.4';
+    const VERSION = '4.26.5';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14649,18 +14661,19 @@
     }
 
     // ── Delete custom tag ──
-    async function teDeleteTag(key) {
+    function teDeleteTag(key) {
       const cat = (state.customCategories || []).find(c => c.key === key);
       if (!cat) return;
-      if (!confirm(`Delete tag "${cat.label}"? This cannot be undone.`)) return;
-      state.customCategories = (state.customCategories || []).filter(c => c.key !== key);
-      state.disabledCats = (state.disabledCats || []).filter(k => k !== key);
-      await saveCustomCategories();
-      if (state.notes) state.notes.forEach(n => { if (n.category === key) n.category = ''; });
-      _teEditKey = null;
-      renderTagEditor();
-      render();
-      showToast('Tag "' + cat.label + '" deleted');
+      showConfirmDialog('Delete tag?', cat.label, async () => {
+        state.customCategories = (state.customCategories || []).filter(c => c.key !== key);
+        state.disabledCats = (state.disabledCats || []).filter(k => k !== key);
+        await saveCustomCategories();
+        if (state.notes) state.notes.forEach(n => { if (n.category === key) n.category = ''; });
+        _teEditKey = null;
+        renderTagEditor();
+        render();
+        showToast('Tag "' + cat.label + '" deleted');
+      });
     }
 
     function setNoteToday(id) {
@@ -15285,6 +15298,23 @@
 
     function closeCodeModal() {
       document.getElementById('code-modal').classList.add('hidden');
+    }
+
+    // ── Confirmation Dialog ──
+    let _confirmAction = null;
+    function showConfirmDialog(title, message, onConfirm) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      _confirmAction = onConfirm;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      _confirmAction = null;
+    }
+    function executeConfirmAction() {
+      if (_confirmAction) _confirmAction();
+      closeConfirmModal();
     }
 
     // ============================================================
