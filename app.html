@@ -5105,18 +5105,13 @@
       pointer-events: none;
       overflow: hidden;
     }
-    .note-swipe-bg[data-dir="right"] { background: rgba(34,197,94,0.15); }
-    .note-swipe-bg[data-dir="left"]  { background: rgba(239,68,68,0.15); }
+    .note-swipe-bg[data-dir="right"] { background: rgba(34,197,94,0.15); transition: background 0.15s; }
+    .note-swipe-bg[data-dir="left"]  { background: rgba(239,68,68,0.15); transition: background 0.15s; }
+    .note-swipe-bg[data-dir="right"].swipe-confirmed { background: rgba(34,197,94,0.85); }
+    .note-swipe-bg[data-dir="left"].swipe-confirmed  { background: rgba(239,68,68,0.85); }
     .note-swipe-icon { opacity: 0; transition: opacity 0.1s; display:flex; align-items:center; transform-origin: center; }
     .note-swipe-bg[data-dir="right"] .note-swipe-icon-done { opacity: 1; }
     .note-swipe-bg[data-dir="left"]  .note-swipe-icon-del  { opacity: 1; }
-    @keyframes swipeIconPulse {
-      0%   { transform: scale(1); }
-      35%  { transform: scale(1.5); }
-      65%  { transform: scale(0.88); }
-      100% { transform: scale(1); }
-    }
-    .swipe-icon-pulse { animation: swipeIconPulse 0.35s cubic-bezier(0.36,0.07,0.19,0.97) forwards; }
 
     .note-row-top {
       display: flex;
@@ -8695,7 +8690,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.85';
+    const VERSION = '4.25.86';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13759,16 +13754,8 @@
         const threshold = _swipe.cardEl.offsetWidth * 0.38;
         if (!_swipe.triggered && abs >= threshold) {
           _swipe.triggered = true;
-          const iconSel = dx > 0 ? '.note-swipe-icon-done' : '.note-swipe-icon-del';
-          const icon = bg ? bg.querySelector(iconSel) : null;
-          if (icon) {
-            icon.classList.remove('swipe-icon-pulse');
-            void icon.offsetWidth;
-            icon.classList.add('swipe-icon-pulse');
-            icon.addEventListener('animationend', () => icon.classList.remove('swipe-icon-pulse'), { once: true });
-          }
         } else if (_swipe.triggered && abs < threshold * 0.85) {
-          _swipe.triggered = false; // reset if pulled back
+          _swipe.triggered = false;
         }
       }, { passive: false });
 
@@ -13784,27 +13771,16 @@
           if (bg) delete bg.dataset.dir;
           return;
         }
-        // Slide row fully off screen so entire swipe-bg is visible
+        // Flash bg to full color and slide row off, then fire action
+        if (bg) bg.classList.add('swipe-confirmed');
         const slideDir = dx > 0 ? '110%' : '-110%';
-        rowEl.style.transition = 'transform 0.18s ease-out';
+        rowEl.style.transition = 'transform 0.22s ease-in';
         rowEl.style.transform = `translateX(${slideDir})`;
-        const iconSel = dx > 0 ? '.note-swipe-icon-done' : '.note-swipe-icon-del';
-        const icon = bg ? bg.querySelector(iconSel) : null;
         const fireAction = () => {
           if (shouldAct === 'done') noteSwipeDone(noteId);
           else noteSwipeDelete(noteId);
         };
-        if (icon) {
-          // Pulse after slide reveals the bg fully (180ms), then fire action after pulse (350ms)
-          setTimeout(() => {
-            icon.classList.remove('swipe-icon-pulse');
-            void icon.offsetWidth;
-            icon.classList.add('swipe-icon-pulse');
-            setTimeout(fireAction, 380);
-          }, 180);
-        } else {
-          setTimeout(fireAction, 200);
-        }
+        setTimeout(fireAction, 420);
       }, { passive: true });
     }
 
