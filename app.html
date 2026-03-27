@@ -5090,7 +5090,7 @@
       position: relative;
       z-index: 1;
       background: var(--bg-card);
-      border-radius: 16px 16px 0 0;
+      border-radius: 16px;
       will-change: transform;
     }
 
@@ -5107,9 +5107,16 @@
     }
     .note-swipe-bg[data-dir="right"] { background: rgba(34,197,94,0.15); }
     .note-swipe-bg[data-dir="left"]  { background: rgba(239,68,68,0.15); }
-    .note-swipe-icon { opacity: 0; transition: opacity 0.1s; display:flex; align-items:center; }
+    .note-swipe-icon { opacity: 0; transition: opacity 0.1s; display:flex; align-items:center; transform-origin: center; }
     .note-swipe-bg[data-dir="right"] .note-swipe-icon-done { opacity: 1; }
     .note-swipe-bg[data-dir="left"]  .note-swipe-icon-del  { opacity: 1; }
+    @keyframes swipeIconPulse {
+      0%   { transform: scale(1); }
+      35%  { transform: scale(1.5); }
+      65%  { transform: scale(0.88); }
+      100% { transform: scale(1); }
+    }
+    .swipe-icon-pulse { animation: swipeIconPulse 0.35s cubic-bezier(0.36,0.07,0.19,0.97) forwards; }
 
     .note-row-top {
       display: flex;
@@ -8688,7 +8695,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.25.77';
+    const VERSION = '4.25.81';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13723,7 +13730,7 @@
         _swipe = {
           noteId: card.dataset.noteId, cardEl: card, rowEl: row,
           startX: e.touches[0].clientX, startY: e.touches[0].clientY,
-          dx: 0, tracking: false
+          dx: 0, tracking: false, triggered: false
         };
       }, { passive: true });
 
@@ -13746,6 +13753,22 @@
           if (dx > 20) bg.dataset.dir = 'right';
           else if (dx < -20) bg.dataset.dir = 'left';
           else delete bg.dataset.dir;
+        }
+        // Pulse icon exactly when threshold is first crossed
+        const abs = Math.abs(dx);
+        const threshold = _swipe.cardEl.offsetWidth * 0.38;
+        if (!_swipe.triggered && abs >= threshold) {
+          _swipe.triggered = true;
+          const iconSel = dx > 0 ? '.note-swipe-icon-done' : '.note-swipe-icon-del';
+          const icon = bg ? bg.querySelector(iconSel) : null;
+          if (icon) {
+            icon.classList.remove('swipe-icon-pulse');
+            void icon.offsetWidth;
+            icon.classList.add('swipe-icon-pulse');
+            icon.addEventListener('animationend', () => icon.classList.remove('swipe-icon-pulse'), { once: true });
+          }
+        } else if (_swipe.triggered && abs < threshold * 0.85) {
+          _swipe.triggered = false; // reset if pulled back
         }
       }, { passive: false });
 
