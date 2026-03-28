@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.7';
+    const VERSION = '4.27.8';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20243,6 +20243,7 @@ Rules:
       renderNvcReminderField();
       const modal = document.getElementById('note-voice-confirm-modal');
       if (modal) modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
     }
 
     function renderNvcPriorityChips() {
@@ -22244,6 +22245,7 @@ QUESTION: ${query}`;
   <!-- ===== NOTE VOICE CONFIRM SHEET ===== -->
   <div id="note-voice-confirm-modal">
     <div class="vc-sheet">
+      <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
       <div class="vc-title">Add Note</div>
       <div class="vc-heard"><strong>Heard:</strong> <span id="nvc-heard-text"></span></div>
       <div class="vc-field">
@@ -22255,4 +22257,41 @@ QUESTION: ${query}`;
         <label class="vc-label">Location</label>
         <div style="display:flex;gap:8px;align-items:center">
           <input id="nvc-loc" class="vc-input" type="text" placeholder="Town name or code" style="flex:1;min-width:0"
-            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+            readonly onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;}; openLocationModal();">
+          <button type="button"
+            onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;}; openLocationModal();"
+            style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+              style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
+            </svg>Site
+          </button>
+        </div>
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Priority</label>
+        <div id="nvc-priority-chips" class="nvc-pri-wrap">
+          <button class="nvc-pri-btn" data-pri="high" onclick="setNvcPriority('high')">High</button>
+          <button class="nvc-pri-btn sel-medium" data-pri="medium" onclick="setNvcPriority('medium')">Medium</button>
+          <button class="nvc-pri-btn" data-pri="low" onclick="setNvcPriority('low')">Low</button>
+        </div>
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Category</label>
+        <div id="nvc-category-chips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+      <div class="vc-field">
+        <label class="vc-label">Reminder</label>
+        <div id="nvc-reminder-wrap"></div>
+      </div>
+      <div class="vc-btns">
+        <button class="vc-btn primary" onclick="confirmNoteVoice()">Add Note</button>
+        <button class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
+      </div>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>
