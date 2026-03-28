@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.6';
+    const VERSION = '4.27.7';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -19795,18 +19795,22 @@
         // Handles: "on a fibre fault", "doing maintenance", "working on installation"
         const numWords = 'one|two|three|four|five|six|seven|eight|nine|ten';
         const stop = `(?=\\s+(?:for\\s+(?:\\d|${numWords})\\b|in\\b|at\\b)|[,.]|\\s*$)`;
+        const W = `[\\w][\\w '\\-]+?`; // word chars + apostrophes/hyphens (e.g. "Marty's notes", "follow-up")
         const descPats = [
-          new RegExp(`\\bworking\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-          new RegExp(`\\bdoing\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-          new RegExp(`\\bon\\s+(?:a\\s+|an\\s+|the\\s+)([\\w][\\w ]+?)${stop}`, 'i'),
-          new RegExp(`\\bfor\\s+(?:a\\s+|an\\s+|the\\s+)([\\w][\\w ]+?)${stop}`, 'i'),
-          new RegExp(`\\bthere\\s+was\\s+(?:a\\s+|an\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-          new RegExp(`\\bI\\s+was\\s+(?:doing\\s+|fixing\\s+|repairing\\s+|on\\s+(?:a\\s+|an\\s+)?)([\\w][\\w ]+?)${stop}`, 'i'),
+          new RegExp(`\\bwill\\s+be\\s+working\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+          new RegExp(`\\bworking\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+          new RegExp(`\\bdoing\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+          new RegExp(`\\bwill\\s+be\\s+doing\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+          new RegExp(`\\bfix(?:ing)?\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+          new RegExp(`\\bon\\s+(?:a\\s+|an\\s+|the\\s+)(${W})${stop}`, 'i'),
+          new RegExp(`\\bfor\\s+(?:a\\s+|an\\s+|the\\s+)(${W})${stop}`, 'i'),
+          new RegExp(`\\bthere\\s+was\\s+(?:a\\s+|an\\s+)?(${W})${stop}`, 'i'),
+          new RegExp(`\\bI\\s+was\\s+(?:doing\\s+|fixing\\s+|repairing\\s+|on\\s+(?:a\\s+|an\\s+)?)?(${W})${stop}`, 'i'),
         ];
         for (const pat of descPats) {
           const m = text.match(pat);
           if (m) {
-            result.description = m[1].trim().replace(/\b\w/g, c => c.toUpperCase());
+            result.description = m[1].trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
             break;
           }
         }
@@ -20054,19 +20058,21 @@
       // Try extractive patterns first (same approach as parseVoiceText)
       const numWords = 'one|two|three|four|five|six|seven|eight|nine|ten';
       const stop = `(?=\\s+(?:for\\s+(?:\\d|${numWords})\\b|in\\b|at\\b)|[,.]|\\s*$)`;
+      const W = `[\\w][\\w '\\-]+?`;
       const descPats = [
-        new RegExp(`\\bworking\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-        new RegExp(`\\bdoing\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-        new RegExp(`\\bfix(?:ing)?\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-        new RegExp(`\\bon\\s+(?:a\\s+|an\\s+|the\\s+)([\\w][\\w ]+?)${stop}`, 'i'),
-        new RegExp(`\\bthere\\s+was\\s+(?:a\\s+|an\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-        new RegExp(`\\bI\\s+was\\s+(?:doing\\s+|fixing\\s+|repairing\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
-        new RegExp(`\\bwill\\s+be\\s+(?:working\\s+on\\s+|doing\\s+)?(?:a\\s+|an\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
+        new RegExp(`\\bwill\\s+be\\s+working\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+        new RegExp(`\\bworking\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+        new RegExp(`\\bdoing\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+        new RegExp(`\\bfix(?:ing)?\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
+        new RegExp(`\\bon\\s+(?:a\\s+|an\\s+|the\\s+)(${W})${stop}`, 'i'),
+        new RegExp(`\\bthere\\s+was\\s+(?:a\\s+|an\\s+)?(${W})${stop}`, 'i'),
+        new RegExp(`\\bI\\s+was\\s+(?:doing\\s+|fixing\\s+|repairing\\s+)?(${W})${stop}`, 'i'),
+        new RegExp(`\\bwill\\s+be\\s+(?:working\\s+on\\s+|doing\\s+)?(?:a\\s+|an\\s+)?(${W})${stop}`, 'i'),
       ];
       let desc = '';
       for (const pat of descPats) {
         const m = text.match(pat);
-        if (m) { desc = m[1].trim(); break; }
+        if (m) { desc = m[1].trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); break; }
       }
 
       // Fallback: strip noise from full transcript
@@ -20083,7 +20089,7 @@
           .replace(/\b(in|at|near|for|the|a|an|to|and|will|be|going)\b/gi, ' ')
           .replace(/\s+/g, ' ').trim();
       }
-      result.description = desc.replace(/\b\w/g, c => c.toUpperCase());
+      result.description = desc.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
       return result;
     }
