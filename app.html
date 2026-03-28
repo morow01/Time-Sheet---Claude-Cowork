@@ -589,6 +589,7 @@
       outline: none;
     }
 
+
     .act-notes-area {
       display: none;
       /* hidden — used only for data storage / dictation */
@@ -9208,7 +9209,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.62';
+    const VERSION = '4.26.63';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -18293,11 +18294,8 @@
           <!-- Date -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Date</span>
-            <div style="position:relative">
-              <input type="date" id="co-date-input" value="${date}" class="act-input" style="cursor:pointer;padding-right:38px"
-                onchange="updateCoField('date', this.value)">
-              <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted)" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
+            <input type="date" id="co-date-input" value="${date}" class="act-input" style="cursor:pointer"
+              onchange="updateCoField('date', this.value)">
           </div>
           <!-- Ticket -->
           <div class="flex flex-col gap-1.5">
@@ -18363,11 +18361,8 @@
           <!-- On-Site Time -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Engineer On Site</span>
-            <div style="position:relative">
-              <input type="time" id="co-time-input" class="act-input" value="${timeStr}" style="padding-right:38px"
-                onchange="updateCoField('engineerOnSite', this.value)">
-              <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text-muted)" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
+            <input type="time" id="co-time-input" class="act-input" value="${timeStr}"
+              onchange="updateCoField('engineerOnSite', this.value)">
           </div>
           <!-- Delete only (auto-save handles saving) -->
           <div class="note-bottom-actions">
