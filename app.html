@@ -5116,7 +5116,11 @@
     .ncm-action-row {
       display: flex;
       gap: 8px;
-      padding: 12px 2px 4px;
+      margin: 10px -12px -12px;
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-page);
+      border-radius: 0 0 14px 14px;
     }
 
     .ncm-action-btn {
@@ -5128,30 +5132,30 @@
       padding: 10px 12px;
       border-radius: 8px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       font-family: inherit;
       transition: background 0.15s, opacity 0.15s;
     }
 
     .ncm-action-remove {
-      background: rgba(239, 68, 68, 0.06);
+      background: rgba(239, 68, 68, 0.08);
       color: #ef4444;
-      border: 1px solid rgba(239, 68, 68, 0.25);
+      border: 1.5px solid rgba(239, 68, 68, 0.35);
     }
 
     .ncm-action-remove:active {
-      background: rgba(239, 68, 68, 0.15);
+      background: rgba(239, 68, 68, 0.18);
     }
 
     .ncm-action-edit {
-      background: rgba(100, 116, 139, 0.06);
+      background: var(--bg-card);
       color: #475569;
-      border: 1px solid rgba(100, 116, 139, 0.25);
+      border: 1.5px solid var(--border);
     }
 
     .ncm-action-edit:active {
-      background: rgba(100, 116, 139, 0.15);
+      background: rgba(100, 116, 139, 0.1);
     }
 
     .note-ghost-pill {
@@ -9392,7 +9396,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.86';
+    const VERSION = '4.26.87';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
