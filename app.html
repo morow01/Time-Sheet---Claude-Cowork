@@ -5716,7 +5716,7 @@
       position: relative;
       z-index: 1;
       background: var(--bg-card);
-      border-radius: 16px;
+      border-radius: 16px 16px 0 0;
       will-change: transform;
     }
 
@@ -5876,10 +5876,6 @@
       max-height: 1200px;
       padding: 16px 16px 20px;
       border-top-width: 1px;
-    }
-
-    .note-card.expanded .note-row {
-      border-radius: 16px 16px 0 0;
     }
 
     .note-detail-row {
@@ -9395,7 +9391,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.89';
+    const VERSION = '4.26.90';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
