@@ -706,7 +706,7 @@
     .act-action-copy {
       background: var(--btn-primary-bg, #eff6ff);
       color: var(--btn-primary-text, #1e3a8a);
-      border-color: rgba(30,58,138,0.15);
+      border-color: rgba(30, 58, 138, 0.15);
     }
 
     .act-action-note {
@@ -723,56 +723,114 @@
 
     /* ── ⋯ More button ── */
     .btn-more {
-      width: 42px; height: 42px; flex: none;
+      width: 42px;
+      height: 42px;
+      flex: none;
       border-radius: 10px;
       border: 1.5px solid var(--border);
       background: var(--bg-input);
       color: var(--text-muted);
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; font-weight: 700; letter-spacing: 2px;
-      font-family: inherit; line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      font-family: inherit;
+      line-height: 1;
       transition: all 0.15s;
     }
+
     .btn-more.open {
-      background: #1e293b; color: #fff; border-color: #1e293b;
+      background: #1e293b;
+      color: #fff;
+      border-color: #1e293b;
     }
-    .btn-more:active { transform: scale(0.95); }
+
+    .btn-more:active {
+      transform: scale(0.95);
+    }
 
     /* ── Context menu ── */
-    .ctx-wrap { position: relative; }
+    .ctx-wrap {
+      position: relative;
+    }
+
     .ctx-menu {
       position: absolute;
-      right: 0; bottom: calc(100% + 8px);
+      right: 0;
+      bottom: calc(100% + 8px);
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.13);
-      min-width: 200px; overflow: hidden;
-      display: none; z-index: 200;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13);
+      min-width: 200px;
+      overflow: hidden;
+      display: none;
+      z-index: 200;
       animation: ctxPop 0.15s ease;
     }
-    .ctx-menu.show { display: block; }
-    @keyframes ctxPop {
-      from { opacity: 0; transform: scale(0.92) translateY(6px); }
-      to   { opacity: 1; transform: scale(1)    translateY(0);   }
+
+    .ctx-menu.show {
+      display: block;
     }
+
+    @keyframes ctxPop {
+      from {
+        opacity: 0;
+        transform: scale(0.92) translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
     .ctx-item {
-      display: flex; align-items: center; gap: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       padding: 13px 16px;
       cursor: pointer;
-      font-size: 14px; font-weight: 600;
+      font-size: 14px;
+      font-weight: 600;
       color: var(--text-primary);
       transition: background 0.1s;
       font-family: inherit;
-      border: none; background: none; width: 100%; text-align: left;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
     }
-    .ctx-item:not(:last-child) { border-bottom: 1px solid var(--border); }
-    .ctx-item:active { background: var(--bg-input); }
-    .ctx-item svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--text-muted); }
-    .ctx-item.ctx-blue  svg { color: #2563eb; }
-    .ctx-item.ctx-green svg { color: #16a34a; }
-    .ctx-item.ctx-purple svg { color: #7c3aed; }
+
+    .ctx-item:not(:last-child) {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ctx-item:active {
+      background: var(--bg-input);
+    }
+
+    .ctx-item svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+    }
+
+    .ctx-item.ctx-blue svg {
+      color: #2563eb;
+    }
+
+    .ctx-item.ctx-green svg {
+      color: #16a34a;
+    }
+
+    .ctx-item.ctx-purple svg {
+      color: #7c3aed;
+    }
 
     /* Add-to-notes confirmation modal */
     .note-confirm-overlay {
@@ -1115,12 +1173,15 @@
       opacity: 0.4;
       cursor: not-allowed;
     }
+
     .copy-picker-actions .btn-copy-move {
       background: #7c3aed;
     }
+
     .copy-picker-actions .btn-copy-move:not(:disabled):active {
       background: #6d28d9;
     }
+
     .copy-note-row {
       display: flex;
       align-items: center;
@@ -1132,6 +1193,7 @@
       border-radius: 12px;
       gap: 12px;
     }
+
     .copy-note-row-left {
       display: flex;
       align-items: center;
@@ -1141,13 +1203,18 @@
       color: var(--text-muted);
       flex-shrink: 0;
     }
-    .copy-note-row-left svg { flex-shrink: 0; }
+
+    .copy-note-row-left svg {
+      flex-shrink: 0;
+    }
+
     .cna-group {
       display: flex;
       gap: 5px;
       flex: 1;
       justify-content: flex-end;
     }
+
     .cna-btn {
       padding: 6px 13px;
       border-radius: 8px;
@@ -1161,11 +1228,13 @@
       transition: all 0.15s;
       white-space: nowrap;
     }
+
     .cna-btn.active {
       background: #2563eb;
       border-color: #2563eb;
       color: #fff;
     }
+
     .cna-btn.cna-move.active {
       background: #7c3aed;
       border-color: #7c3aed;
@@ -5116,7 +5185,7 @@
     .ncm-action-row {
       display: flex;
       gap: 8px;
-      margin: 10px -12px -12px;
+      margin: 10px -12px -9px;
       padding: 10px 16px 14px;
       border-top: 1px solid var(--border);
       border-radius: 0 0 14px 14px;
@@ -5186,13 +5255,33 @@
     }
 
     @keyframes catPickerIn {
-      from { opacity: 0; transform: translateY(-6px); max-height: 0; }
-      to   { opacity: 1; transform: translateY(0);    max-height: 300px; }
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+        max-height: 0;
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 300px;
+      }
     }
+
     @keyframes catPickerOut {
-      from { opacity: 1; transform: translateY(0);    max-height: 300px; }
-      to   { opacity: 0; transform: translateY(-6px); max-height: 0; }
+      from {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 300px;
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(-6px);
+        max-height: 0;
+      }
     }
+
     .note-inline-cat-picker {
       padding: 6px 12px 4px;
       border-bottom: 1px solid var(--border);
@@ -5200,6 +5289,7 @@
       overflow: hidden;
       animation: catPickerIn 0.2s ease forwards;
     }
+
     .note-inline-cat-picker.closing {
       animation: catPickerOut 0.18s ease forwards;
     }
@@ -8952,8 +9042,9 @@
         style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
         <input id="code-search" type="search" placeholder="Search description or code..."
           class="w-full rounded-xl px-4 py-2.5 text-base"
-          style="border:1px solid var(--border-input);background:var(--bg-input);-webkit-appearance:none;appearance:none" oninput="filterCodes(this.value)"
-          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">
+          style="border:1px solid var(--border-input);background:var(--bg-input);-webkit-appearance:none;appearance:none"
+          oninput="filterCodes(this.value)" autocomplete="off" data-lpignore="true" data-form-type="other"
+          data-1p-ignore="true">
         <p class="text-xs mt-1.5 px-1" style="color:var(--text-secondary)">Tap to select. Multiple allowed for routines.
         </p>
       </div>
@@ -9089,10 +9180,13 @@
   <!-- ===== TAG EDITOR MODAL ===== -->
   <div id="tag-editor-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
     style="background:var(--overlay)">
-    <div class="rounded-2xl w-full max-w-sm shadow-2xl flex flex-col" style="background:var(--bg-modal);max-height:85vh">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 18px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
+    <div class="rounded-2xl w-full max-w-sm shadow-2xl flex flex-col"
+      style="background:var(--bg-modal);max-height:85vh">
+      <div
+        style="display:flex;align-items:center;justify-content:space-between;padding:18px 18px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
         <span style="font-size:16px;font-weight:700;color:var(--text-primary)">Notes Tag Manager</span>
-        <button onclick="closeTagEditor()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:20px;line-height:1;padding:0 2px">✕</button>
+        <button onclick="closeTagEditor()"
+          style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:20px;line-height:1;padding:0 2px">✕</button>
       </div>
       <div id="tag-editor-body" style="overflow-y:auto;padding:0 18px 18px;flex:1"></div>
     </div>
@@ -9173,9 +9267,8 @@
     </div>
     <div class="rtn-picker-search-wrap">
       <input id="rtn-picker-search" type="search" placeholder="Search locations…"
-        oninput="filterRoutinesPicker(this.value)"
-        style="-webkit-appearance:none;appearance:none"
-        autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">
+        oninput="filterRoutinesPicker(this.value)" style="-webkit-appearance:none;appearance:none" autocomplete="off"
+        data-lpignore="true" data-form-type="other" data-1p-ignore="true">
     </div>
     <div id="rtn-picker-list" style="flex:1;overflow-y:auto;padding-bottom:40px;"></div>
   </div>
@@ -9391,7 +9484,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.90';
+    const VERSION = '4.26.91';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -12356,8 +12449,8 @@
               </div>
               <div class="act-codes-wrap" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${act.id}')" style="cursor:pointer;min-height:42px">
                 ${act.codes.length === 0
-                  ? `<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add work codes</span>`
-                  : act.codes.map(c => `
+          ? `<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add work codes</span>`
+          : act.codes.map(c => `
                   <div class="act-code-chip" style="pointer-events:none">
                     ${c.d}
                     <span class="act-code-mono">${c.c}</span>
@@ -12558,7 +12651,7 @@
     }
     function toggleActMenu(actId) {
       const menu = document.getElementById('act-ctx-' + actId);
-      const btn  = document.getElementById('act-more-' + actId);
+      const btn = document.getElementById('act-more-' + actId);
       if (!menu || !btn) return;
       const open = menu.classList.contains('show');
       closeAllCtx();
@@ -12566,7 +12659,7 @@
     }
     function toggleNoteMenu(noteId) {
       const menu = document.getElementById('note-ctx-' + noteId);
-      const btn  = document.getElementById('note-more-' + noteId);
+      const btn = document.getElementById('note-more-' + noteId);
       if (!menu || !btn) return;
       const open = menu.classList.contains('show');
       closeAllCtx();
@@ -12579,8 +12672,8 @@
     document.addEventListener('click', e => {
       if (!_catDropdownOpen) return;
       if (!e.target.closest('.note-inline-cat-picker') &&
-          !e.target.closest('.note-cat-badge') &&
-          !e.target.closest('.note-ghost-pill')) {
+        !e.target.closest('.note-cat-badge') &&
+        !e.target.closest('.note-ghost-pill')) {
         _catDropdownOpen = null;
         const picker = document.querySelector('.note-inline-cat-picker');
         if (picker) {
@@ -12704,8 +12797,8 @@
             <button class="btn-cancel" onclick="closeCopyPicker()">Cancel</button>
             <button class="${btnClass}" ${count === 0 ? 'disabled' : ''} onclick="executeCopyTask()">
               ${moveMode
-                ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`
-                : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`}
+          ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>`
+          : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`}
               ${verb} to ${count} day${count !== 1 ? 's' : ''}
             </button>
           </div>
@@ -14207,9 +14300,9 @@
 
       const priChipDefs = [
         { key: 'all', label: `All (${openNotes.length})`, solidColor: null, rgb: null },
-        { key: 'high', label: `High (${counts.high})`, solidColor: '#ef4444', rgb: '239,68,68' },
-        { key: 'medium', label: `Med (${counts.medium})`, solidColor: '#f97316', rgb: '249,115,22' },
         { key: 'low', label: `Low (${counts.low})`, solidColor: '#22c55e', rgb: '34,197,94' },
+        { key: 'medium', label: `Med (${counts.medium})`, solidColor: '#f97316', rgb: '249,115,22' },
+        { key: 'high', label: `High (${counts.high})`, solidColor: '#ef4444', rgb: '239,68,68' },
         { key: 'done', label: `Done (${doneNotes.length})`, solidColor: '#64748b', rgb: '100,116,139' },
       ];
       const priChips = priChipDefs.map(c => {
@@ -14283,7 +14376,7 @@
         if (bellSvg) metaHtml += bellSvg;
         metaHtml += '</div>';
 
-        const priChips = ['high', 'medium', 'low'].map(p =>
+        const priChips = ['low', 'medium', 'high'].map(p =>
           `<div class="note-pri-chip ${note.priority === p ? 'sel-' + p : ''}" onclick="setNotePriority('${note.id}', '${p}')">${p[0].toUpperCase() + p.slice(1)}</div>`
         ).join('');
 
@@ -14384,7 +14477,7 @@
               <div class="note-toolbar-row">
                 <div class="note-pri-dots">
                   <span class="note-pri-dots-label">Priority</span>
-                  ${['high', 'medium', 'low'].map(p =>
+                  ${['low', 'medium', 'high'].map(p =>
               `<button class="note-pri-dot pd-${p}${note.priority === p ? ' pd-active' : ''}" onclick="setNotePriority('${note.id}','${p}')" title="${p[0].toUpperCase() + p.slice(1)}"></button>`
             ).join('')}
                 </div>
@@ -22073,9 +22166,4 @@ QUESTION: ${query}`;
         <label class="vc-label">Location</label>
         <div style="display:flex;gap:8px;align-items:center">
           <input id="nvc-loc" class="vc-input" type="text" placeholder="Town name or code" style="flex:1;min-width:0"
-            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">
-          <button type="button"
-            onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;}; openLocationModal();"
-            style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
-              st
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore=
