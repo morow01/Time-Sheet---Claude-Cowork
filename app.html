@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.11';
+    const VERSION = '4.27.12';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -19794,7 +19794,7 @@
         // General description extraction — stops before location or hours cues
         // Handles: "on a fibre fault", "doing maintenance", "working on installation"
         const numWords = 'one|two|three|four|five|six|seven|eight|nine|ten';
-        const stop = `(?=\\s+(?:for\\s+(?:\\d|${numWords})\\b|in\\b|at\\b)|[,.]|\\s*$)`;
+        const stop = `(?=\\s+(?:for\\s+(?:\\d|${numWords})\\b|in\\b|at\\b)|\\s+(?:it'?s|and|but|ordinary|overtime|remind|tomorrow|urgent|high|low|medium)\\b|[,.]|$)`;
         const W = `[\\w][\\w '\\-]+?`; // word chars + apostrophes/hyphens (e.g. "Marty's notes", "follow-up")
         const descPats = [
           new RegExp(`\\bwill\\s+be\\s+working\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
@@ -20061,7 +20061,8 @@
       // ── Description ──────────────────────────────
       // Try extractive patterns first (same approach as parseVoiceText)
       const numWords = 'one|two|three|four|five|six|seven|eight|nine|ten';
-      const stop = `(?=\\s+(?:for\\s+(?:\\d|${numWords})\\b|in\\b|at\\b)|[,.]|\\s*$)`;
+      // Stop before qualifiers: time phrases, conjunctions, contractions, meta-words
+      const stop = `(?=\\s+(?:for\\s+(?:\\d|${numWords})\\b|in\\b|at\\b)|\\s+(?:it'?s|and|but|job|category|priority|remind|tomorrow|urgent|high|low|medium)\\b|[,.]|$)`;
       const W = `[\\w][\\w '\\-]+?`;
       const descPats = [
         new RegExp(`\\bwill\\s+be\\s+working\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?(${W})${stop}`, 'i'),
@@ -20167,10 +20168,10 @@ Known categories: ${getCategories().map(c => c.label + ' (' + c.key + ')').join(
 Today's date: ${dateToStr(new Date())}
 Return: { "description": "...", "location": "...", "priority": "high|medium|low", "category": "${catKeys}|", "reminder": { "date": "YYYY-MM-DD", "time": "HH:MM" } | null }
 Rules:
-- description: the main subject or activity. Even if spoken in past tense or as narration, extract what happened or what needs doing. ALWAYS return a non-empty description. Title-case it. Do NOT include category/priority/reminder/location text.
+- description: SHORT topic phrase only — 2 to 5 words maximum. Extract ONLY the subject/task (e.g. "Rectifier Issues", "Fiber Break", "Router Fault"). STOP the description immediately before any qualifier: "it's", "and", "but", "for", commas, priority words, category words, reminder words, location words. NEVER include words like high/low/medium/priority/urgent/category/job/fault/personal/follow/up/remind/tomorrow. Title-case the result.
 - location: if a town/exchange is mentioned by name or code, return "Name (CODE)". Otherwise return "".
-- priority: "high" if urgent/critical/important/asap, "low" if minor/low/whenever, else "medium".
-- category: match to one of the known category keys if mentioned or implied. Use "" if unclear.
+- priority: "high" if urgent/critical/important/asap/high priority, "low" if minor/low/whenever/not urgent, else "medium".
+- category: match to one of the known category keys EXACTLY as shown in brackets, e.g. "followup" not "follow-up". Match if the user explicitly says the category name or key word. Use "" if unclear.
 - reminder: if user says "remind me tomorrow at 9:30" return {"date":"YYYY-MM-DD","time":"09:30"}. Parse relative dates (tomorrow, next Monday, in 3 days) relative to today. Return null if no reminder mentioned.`;
 
       try {
@@ -20214,9 +20215,37 @@ Rules:
 
         if (['high', 'medium', 'low'].includes(p.priority)) result.priority = p.priority;
 
-        // Category
+        // Category — trust Gemini key if valid, otherwise run JS keyword scan
         const validCats = getCategories().map(c => c.key);
-        if (p.category && validCats.includes(p.category)) result.category = p.category;
+        if (p.category && validCats.includes(p.category)) {
+          result.category = p.category;
+        } else {
+          // JS keyword fallback (handles "follow up", "followup", label matches)
+          const catKeywords = {
+            fault:    /\b(fault|faults)\b/i,
+            job:      /\b(job)\b/i,
+            followup: /\b(follow[\s-]?up)\b/i,
+            meeting:  /\b(meeting)\b/i,
+            personal: /\b(personal)\b/i,
+            idea:     /\b(idea)\b/i,
+          };
+          // Also match by category label spoken explicitly: "category is X"
+          const catLabelMatch = text.match(/\bcategory\s+is\s+([\w\s-]+?)(?:\s+and\b|\s+it'?s\b|[,.]|$)/i);
+          if (catLabelMatch) {
+            const spoken = catLabelMatch[1].trim().toLowerCase().replace(/[\s-]+/g, '');
+            const found = getCategories().find(c =>
+              c.key === spoken ||
+              c.label.toLowerCase().replace(/[\s-]+/g, '') === spoken ||
+              c.key === spoken.replace(/up$/, '-up')
+            );
+            if (found) result.category = found.key;
+          }
+          if (!result.category) {
+            for (const [key, re] of Object.entries(catKeywords)) {
+              if (validCats.includes(key) && re.test(text)) { result.category = key; break; }
+            }
+          }
+        }
 
         // Reminder — trust Gemini for date parsing, fall back to JS
         if (p.reminder && p.reminder.date) {
