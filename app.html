@@ -9321,7 +9321,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.75';
+    const VERSION = '4.26.76';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14071,7 +14071,13 @@
 
       const openNotes = state.notes.filter(n => n.status !== 'done' && !n.deleted);
       const doneNotes = state.notes.filter(n => n.status === 'done' && !n.deleted);
-      const binNotes = state.notes.filter(n => n.deleted).sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+      const _binQ = (state.notesSearch || '').trim().toLowerCase();
+      const binNotes = state.notes.filter(n => {
+        if (!n.deleted) return false;
+        if (!_binQ) return true;
+        const hay = [n.description || '', n.location || '', n.noteContent || '', n.category || ''].join(' ').toLowerCase();
+        return hay.includes(_binQ);
+      }).sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
       const counts = { high: openNotes.filter(n => n.priority === 'high').length, medium: openNotes.filter(n => n.priority === 'medium').length, low: openNotes.filter(n => n.priority === 'low').length, reminders: state.notes.filter(n => !n.deleted && hasActiveReminder(n.id)).length, pastReminders: state.notes.filter(n => !n.deleted && hasPastReminder(n.id)).length, overdue: openNotes.filter(n => isNoteOverdue(n)).length, hasDueDate: openNotes.filter(n => !!n.dueDate).length };
 
       const cf = state.notesCategoryFilter || '';
@@ -14444,7 +14450,7 @@
       const binView = state.notesBinOpen ? `
         <div style="padding:0 16px 24px;">
           ${binNotes.length === 0
-          ? `<div class="notes-empty" style="margin-top:32px;">Bin is empty</div>`
+          ? `<div class="notes-empty" style="margin-top:32px;">${_binQ ? `No deleted notes match "<strong>${esc(_binQ)}</strong>"` : 'Bin is empty'}</div>`
           : binNotes.map(n => {
             const title = (n.description || 'Untitled note').replace(/<[^>]*>/g, '').trim();
             const ago = n.deletedAt ? formatTimeAgo(n.deletedAt) : '';
