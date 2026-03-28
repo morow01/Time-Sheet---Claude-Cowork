@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.14';
+    const VERSION = '4.27.15';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20226,8 +20226,8 @@ Rules:
           idea:     /\b(idea)\b/i,
         };
 
-        // 1. Explicit spoken "category is X" or "tag is X" — highest priority
-        const catLabelMatch = text.match(/\b(?:category|tag)\s+is\s+([\w\s-]+?)(?:\s+(?:and|but|it'?s|high|low|medium|priority|remind)\b|[,.]|$)/i);
+        // 1. Explicit spoken "category is X", "tag is X", "category or tag is X" etc — highest priority
+        const catLabelMatch = text.match(/\b(?:category(?:\s+or\s+tag)?|tag(?:\s+or\s+category)?)\s+is\s+([\w\s-]+?)(?:\s+(?:and|but|it'?s|high|low|medium|priority|remind)\b|[,.]|$)/i);
         if (catLabelMatch) {
           const spoken = catLabelMatch[1].trim().toLowerCase().replace(/[\s-]+/g, '');
           const found = getCategories().find(c =>
