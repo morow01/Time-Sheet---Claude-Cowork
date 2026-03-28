@@ -5113,6 +5113,45 @@
       background: rgba(239, 68, 68, 0.06);
     }
 
+    .ncm-action-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ncm-action-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .ncm-action-remove {
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+    }
+
+    .ncm-action-remove:active {
+      background: rgba(239, 68, 68, 0.18);
+    }
+
+    .ncm-action-edit {
+      background: rgba(100, 116, 139, 0.08);
+      color: #475569;
+    }
+
+    .ncm-action-edit:active {
+      background: rgba(100, 116, 139, 0.18);
+    }
+
     .note-ghost-pill {
       display: inline-flex;
       visibility: hidden;
@@ -9339,7 +9378,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.83';
+    const VERSION = '4.26.84';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14424,7 +14463,7 @@
       const pinnedOpen = nonOverdueOpen.filter(n => n.pinned);
       const unpinnedOpen = nonOverdueOpen.filter(n => !n.pinned);
       const noteCardHtml = n => `<div class="note-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''} ${n.pinned ? 'pinned-card' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`;
-      const overdueCardHtml = n => `<div class="note-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''}" style="background:#fff5f5;border-color:#fecaca;" data-note-id="${n.id}">${renderNote(n)}</div>`;
+      const overdueCardHtml = n => `<div class="note-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`;
       const CLOCK_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
       const overdueSection = overdueNotes.length
         ? `<div class="notes-section-label" style="color:#ef4444;display:flex;align-items:center;gap:5px;">${CLOCK_SVG} Overdue (${overdueNotes.length})</div>` + overdueNotes.map(overdueCardHtml).join('')
@@ -15053,17 +15092,19 @@
         </div>`;
       };
       let html = `<div class="ncm-pills">${cats.map(mkPill).join('')}</div>`;
-      html += `<div class="ncm-divider" style="margin:8px 0 4px"></div>`;
+      html += `<div class="ncm-divider" style="margin:8px 0 6px"></div>`;
+      html += `<div class="ncm-action-row">`;
       if (currentCatKey) {
-        html += `<div class="ncm-remove" onclick="pickNoteCat('${noteId}','${currentCatKey}')">
+        html += `<button class="ncm-action-btn ncm-action-remove" onclick="pickNoteCat('${noteId}','${currentCatKey}')">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Remove tag
-        </div>`;
+          Remove
+        </button>`;
       }
-      html += `<div class="ncm-create" onclick="toggleNoteCatDD('${noteId}');openTagEditor()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      html += `<button class="ncm-action-btn ncm-action-edit" onclick="toggleNoteCatDD('${noteId}');openTagEditor()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           Edit Tags
-        </div>`;
+        </button>`;
+      html += `</div>`;
       return html;
     }
 
