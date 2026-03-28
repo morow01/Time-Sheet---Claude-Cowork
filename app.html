@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.10';
+    const VERSION = '4.27.11';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20239,7 +20239,11 @@ Rules:
       const heardEl = document.getElementById('nvc-heard-text');
       if (heardEl) heardEl.textContent = transcript;
       const descEl = document.getElementById('nvc-desc');
-      if (descEl) descEl.value = parsed.description || '';
+      if (descEl) {
+        descEl.value = parsed.description || '';
+        descEl.style.height = 'auto';
+        descEl.style.height = descEl.scrollHeight + 'px';
+      }
       const locEl = document.getElementById('nvc-loc');
       if (locEl) locEl.value = parsed.location || '';
       renderNvcPriorityChips();
@@ -20252,8 +20256,9 @@ Rules:
 
     function renderNvcPriorityChips() {
       ['high', 'medium', 'low'].forEach(p => {
-        const btn = document.querySelector(`#nvc-priority-chips [data-pri="${p}"]`);
-        if (btn) btn.className = `note-pri-chip${nvcPriority === p ? ' sel-' + p : ''}`;
+        const btn = document.querySelector(`#nvc-priority-dots [data-pri="${p}"]`);
+        if (!btn) return;
+        btn.classList.toggle('pd-active', nvcPriority === p);
       });
     }
 
@@ -20289,14 +20294,16 @@ Rules:
       if (!wrap) return;
       if (nvcReminder) {
         const d = new Date(nvcReminder.date + 'T' + nvcReminder.time + ':00');
-        const label = d.toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' });
-        const timeLabel = nvcReminder.time;
-        wrap.innerHTML = `<div class="note-reminder">
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const dateStr = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' · ' +
+          String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+        wrap.innerHTML = `<div class="note-reminder-set">
           <div class="note-rem-bell"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
           <div class="note-rem-info">
-            <div class="note-rem-info-label">Reminder</div>
-            <div class="note-rem-info-dt">${label} at ${timeLabel}</div>
+            <div class="note-rem-info-label">Triggers</div>
+            <div class="note-rem-info-dt">${dateStr}</div>
           </div>
+          <span class="note-rem-badge">Pending</span>
           <button type="button" class="note-rem-x" onclick="nvcReminder=null;renderNvcReminderField()">✕</button>
         </div>`;
       } else {
@@ -22293,10 +22300,11 @@ QUESTION: ${query}`;
       </div>
       <div class="vc-field">
         <label class="vc-label">Priority</label>
-        <div id="nvc-priority-chips" class="note-priority-row">
-          <div class="note-pri-chip" data-pri="high" onclick="setNvcPriority('high')">High</div>
-          <div class="note-pri-chip" data-pri="medium" onclick="setNvcPriority('medium')">Medium</div>
-          <div class="note-pri-chip" data-pri="low" onclick="setNvcPriority('low')">Low</div>
+        <div class="note-pri-dots" id="nvc-priority-dots">
+          <span class="note-pri-dots-label">Priority</span>
+          <button type="button" class="note-pri-dot pd-high" data-pri="high" onclick="setNvcPriority('high')" title="High"></button>
+          <button type="button" class="note-pri-dot pd-medium pd-active" data-pri="medium" onclick="setNvcPriority('medium')" title="Medium"></button>
+          <button type="button" class="note-pri-dot pd-low" data-pri="low" onclick="setNvcPriority('low')" title="Low"></button>
         </div>
       </div>
       <div class="vc-field">
