@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.5';
+    const VERSION = '4.27.6';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20051,17 +20051,38 @@
       if (locTown) result.location = `${locTown.name} (${locTown.code})`;
 
       // ── Description ──────────────────────────────
-      // Strip out priority, location, category, and reminder words
-      let desc = text;
-      if (locTown) {
-        desc = desc.replace(wbRe(locTown.code), '').replace(wbRe(locTown.name), '');
+      // Try extractive patterns first (same approach as parseVoiceText)
+      const numWords = 'one|two|three|four|five|six|seven|eight|nine|ten';
+      const stop = `(?=\\s+(?:for\\s+(?:\\d|${numWords})\\b|in\\b|at\\b)|[,.]|\\s*$)`;
+      const descPats = [
+        new RegExp(`\\bworking\\s+on\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
+        new RegExp(`\\bdoing\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
+        new RegExp(`\\bfix(?:ing)?\\s+(?:a\\s+|an\\s+|the\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
+        new RegExp(`\\bon\\s+(?:a\\s+|an\\s+|the\\s+)([\\w][\\w ]+?)${stop}`, 'i'),
+        new RegExp(`\\bthere\\s+was\\s+(?:a\\s+|an\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
+        new RegExp(`\\bI\\s+was\\s+(?:doing\\s+|fixing\\s+|repairing\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
+        new RegExp(`\\bwill\\s+be\\s+(?:working\\s+on\\s+|doing\\s+)?(?:a\\s+|an\\s+)?([\\w][\\w ]+?)${stop}`, 'i'),
+      ];
+      let desc = '';
+      for (const pat of descPats) {
+        const m = text.match(pat);
+        if (m) { desc = m[1].trim(); break; }
       }
-      desc = desc
-        .replace(/\b(urgent|critical|important|high priority|asap|low priority|minor|whenever|not urgent|medium|normal|moderate)\b/gi, '')
-        .replace(/\b(put\s+(it\s+)?(in|into)\s+)?\b(fault|faults|job|follow[\s-]?up|meeting|personal|idea)\b(\s+category)?\b/gi, '')
-        .replace(/\b(also\s+)?remind\s+me\s+.*/gi, '')
-        .replace(/\b(in|at|near|for|the|a|an)\b/gi, ' ')
-        .replace(/\s+/g, ' ').trim();
+
+      // Fallback: strip noise from full transcript
+      if (!desc) {
+        desc = text;
+        if (locTown) desc = desc.replace(wbRe(locTown.code), '').replace(wbRe(locTown.name), '');
+        desc = desc
+          .replace(/\b(urgent|critical|important|high priority|asap|low priority|minor|whenever|not urgent|medium|normal|moderate)\b/gi, '')
+          .replace(/\b(put\s+(it\s+)?(in|into)\s+)?\b(fault|faults|job|follow[\s-]?up|meeting|personal|idea)\b(\s+category)?\b/gi, '')
+          .replace(/\b(also\s+)?remind\s+me\s+.*/gi, '')
+          .replace(/\b(I'?m\s+going\s+to|I\s+will\s+be|I\s+was|there\s+was)\b/gi, '')
+          .replace(/\b(tomorrow|today|yesterday|next\s+\w+)\b/gi, '')
+          .replace(/\b(\d+\.?\d*)\s*hours?\b/gi, '')
+          .replace(/\b(in|at|near|for|the|a|an|to|and|will|be|going)\b/gi, ' ')
+          .replace(/\s+/g, ' ').trim();
+      }
       result.description = desc.replace(/\b\w/g, c => c.toUpperCase());
 
       return result;
@@ -20148,7 +20169,7 @@ Rules:
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { response_mime_type: 'application/json', temperature: 0.1 } })
           }
         );
         if (!res.ok) return null;
