@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.4';
+    const VERSION = '4.27.5';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22054,8 +22054,10 @@ QUESTION: ${query}`;
       </div>
       <div class="vc-field">
         <label class="vc-label">Description</label>
-        <input id="vc-desc" class="vc-input" type="text" placeholder="e.g. Routines"
-          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">
+        <textarea id="vc-desc" class="vc-input" rows="1" placeholder="e.g. Routines"
+          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+          style="resize:none;overflow:hidden"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
       </div>
       <div class="vc-field">
         <label class="vc-label">Location</label>
