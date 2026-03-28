@@ -9208,7 +9208,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.60';
+    const VERSION = '4.26.61';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -18230,7 +18230,7 @@
       }
       // Add button at bottom — same dashed style as "Add Task"
       if (state.calloutsExpandedId !== '__new__') {
-        html += `<button onclick="coOpenAdd()" style="margin:8px 14px 14px;width:calc(100% - 28px);display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1.5px dashed var(--border);background:transparent;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">
+        html += `<button onclick="coOpenAdd()" style="margin:8px 14px 14px;width:calc(100% - 28px);display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1.5px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Callout
         </button>`;
@@ -18320,13 +18320,7 @@
               autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
               oninput="autoGrow(this);updateCoField('fault', this.value.trim())">${esc(fault)}</textarea>
           </div>
-          <!-- On-Site Time -->
-          <div class="flex flex-col gap-1.5">
-            <span class="act-field-label">Engineer On Site</span>
-            <input type="time" id="co-time-input" class="act-input" value="${timeStr}"
-              onchange="updateCoField('engineerOnSite', this.value)">
-          </div>
-          <!-- Notes — exact same as task notes panel -->
+          <!-- Notes — moved below Fault Description -->
           <div class="notes-panel">
             <div class="notes-panel-header" onclick="event.stopPropagation(); coToggleNotes()">
               <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
@@ -18362,6 +18356,12 @@
                 </button>
               </div>
             </div>
+          </div>
+          <!-- On-Site Time -->
+          <div class="flex flex-col gap-1.5">
+            <span class="act-field-label">Engineer On Site</span>
+            <input type="time" id="co-time-input" class="act-input" value="${timeStr}"
+              onchange="updateCoField('engineerOnSite', this.value)">
           </div>
           <!-- Delete only (auto-save handles saving) -->
           <div class="note-bottom-actions">
