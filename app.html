@@ -9486,7 +9486,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.9';
+    const VERSION = '4.27.10';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20253,7 +20253,7 @@ Rules:
     function renderNvcPriorityChips() {
       ['high', 'medium', 'low'].forEach(p => {
         const btn = document.querySelector(`#nvc-priority-chips [data-pri="${p}"]`);
-        if (btn) btn.className = `nvc-pri-btn${nvcPriority === p ? ' sel-' + p : ''}`;
+        if (btn) btn.className = `note-pri-chip${nvcPriority === p ? ' sel-' + p : ''}`;
       });
     }
 
@@ -20265,11 +20265,18 @@ Rules:
     function renderNvcCategoryChips() {
       const wrap = document.getElementById('nvc-category-chips');
       if (!wrap) return;
-      wrap.innerHTML = getCategories().map(c =>
-        `<button type="button" class="nvc-cat-btn${nvcCategory === c.key ? ' nvc-cat-sel' : ''}"
-          data-cat="${c.key}" onclick="setNvcCategory('${c.key}')"
-          style="${nvcCategory === c.key ? 'background:' + c.color + ';color:#fff;border-color:' + c.color : ''}">${c.label}</button>`
-      ).join('');
+      wrap.innerHTML = getCategories().map(c => {
+        const isActive = nvcCategory === c.key;
+        const rgb = hexToRgb(c.color);
+        const pillStyle = isActive
+          ? `background:${c.color};border-color:${c.color};color:#fff;`
+          : `background:rgba(${rgb},0.10);border-color:rgba(${rgb},0.35);color:${c.color};`;
+        const iconHtml = getCatIconHtml(c, 12);
+        const coloredIcon = isActive
+          ? (iconHtml ? iconHtml.replace(/stroke="[^"]*"/g, 'stroke="#fff"') : '')
+          : (iconHtml ? iconHtml.replace(/stroke="[^"]*"/g, `stroke="${c.color}"`) : '');
+        return `<div class="ncm-pill${isActive ? ' ncm-pill-active' : ''}" style="${pillStyle}" onclick="setNvcCategory('${c.key}')">${coloredIcon}${c.label}</div>`;
+      }).join('');
     }
 
     function setNvcCategory(key) {
@@ -20284,13 +20291,16 @@ Rules:
         const d = new Date(nvcReminder.date + 'T' + nvcReminder.time + ':00');
         const label = d.toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' });
         const timeLabel = nvcReminder.time;
-        wrap.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:13px">🔔 ${label} at ${timeLabel}</span>
-          <button type="button" onclick="nvcReminder=null;renderNvcReminderField()"
-            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:2px 6px">✕ Remove</button>
+        wrap.innerHTML = `<div class="note-reminder">
+          <div class="note-rem-bell"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="note-rem-info">
+            <div class="note-rem-info-label">Reminder</div>
+            <div class="note-rem-info-dt">${label} at ${timeLabel}</div>
+          </div>
+          <button type="button" class="note-rem-x" onclick="nvcReminder=null;renderNvcReminderField()">✕</button>
         </div>`;
       } else {
-        wrap.innerHTML = `<span style="font-size:13px;color:var(--text-muted)">No reminder detected</span>`;
+        wrap.innerHTML = `<span style="font-size:13px;color:var(--text-muted)">No reminder set</span>`;
       }
     }
 
@@ -22260,8 +22270,10 @@ QUESTION: ${query}`;
       <div class="vc-heard"><strong>Heard:</strong> <span id="nvc-heard-text"></span></div>
       <div class="vc-field">
         <label class="vc-label">Description</label>
-        <input id="nvc-desc" class="vc-input" type="text" placeholder="e.g. Fix router" autocomplete="off"
-          data-lpignore="true" data-form-type="other" data-1p-ignore="true">
+        <textarea id="nvc-desc" class="vc-input" rows="1" placeholder="e.g. Fix router"
+          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+          style="resize:none;overflow:hidden"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
       </div>
       <div class="vc-field">
         <label class="vc-label">Location</label>
@@ -22281,15 +22293,15 @@ QUESTION: ${query}`;
       </div>
       <div class="vc-field">
         <label class="vc-label">Priority</label>
-        <div id="nvc-priority-chips" class="nvc-pri-wrap">
-          <button class="nvc-pri-btn" data-pri="high" onclick="setNvcPriority('high')">High</button>
-          <button class="nvc-pri-btn sel-medium" data-pri="medium" onclick="setNvcPriority('medium')">Medium</button>
-          <button class="nvc-pri-btn" data-pri="low" onclick="setNvcPriority('low')">Low</button>
+        <div id="nvc-priority-chips" class="note-priority-row">
+          <div class="note-pri-chip" data-pri="high" onclick="setNvcPriority('high')">High</div>
+          <div class="note-pri-chip" data-pri="medium" onclick="setNvcPriority('medium')">Medium</div>
+          <div class="note-pri-chip" data-pri="low" onclick="setNvcPriority('low')">Low</div>
         </div>
       </div>
       <div class="vc-field">
         <label class="vc-label">Category</label>
-        <div id="nvc-category-chips" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        <div id="nvc-category-chips" class="ncm-pills" style="padding:0"></div>
       </div>
       <div class="vc-field">
         <label class="vc-label">Reminder</label>
