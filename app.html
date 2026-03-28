@@ -316,7 +316,7 @@
     }
 
     .act-loc-txt {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-muted);
       white-space: nowrap;
       overflow: hidden;
@@ -572,6 +572,7 @@
       border-radius: 8px;
       padding: 10px 12px;
       font-size: 13px;
+      font-family: inherit;
       color: var(--text-primary);
       outline: none;
       resize: none;
@@ -585,6 +586,7 @@
       border-radius: 8px;
       padding: 10px 12px;
       font-size: 13px;
+      font-family: inherit;
       color: var(--text-primary);
       outline: none;
     }
@@ -5633,7 +5635,7 @@
       flex-wrap: nowrap;
       gap: 10px;
       margin-top: 6px;
-      font-size: 12.5px;
+      font-size: 13px;
       padding-left: 17px;
       color: var(--text-muted);
     }
@@ -9209,7 +9211,7 @@
 
     // ============================================================
     // CONFIG
-    const VERSION = '4.26.63';
+    const VERSION = '4.26.66';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -18305,13 +18307,16 @@
               oninput="this.value=this.value.replace(/\\n/g,'');updateCoField('ticket', this.value.trim())"
               onkeydown="if(event.key==='Enter')event.preventDefault()">${esc(ticket)}</textarea>
           </div>
-          <!-- Site -->
+          <!-- Location -->
           <div class="flex flex-col gap-1.5">
-            <span class="act-field-label">Site</span>
+            <span class="act-field-label">Location</span>
             <div class="location-wrap">
-              <div id="co-site-display" class="act-input" role="button" tabindex="0"
-                style="cursor:pointer;user-select:none;${site ? '' : 'color:var(--text-muted)'}"
-                onclick="_coSiteCallback = (name) => { document.getElementById('co-site-display').textContent = name; document.getElementById('co-site-display').style.color = ''; updateCoField('site', name); }; openLocationModal();">${site ? esc(site) : 'Tap to select location'}</div>
+              <input type="text" id="co-site-display" class="act-input" readonly
+                value="${site ? esc(site) : ''}"
+                placeholder="Tap to select location"
+                style="cursor:pointer;user-select:none;"
+                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+                onclick="_coSiteCallback = (name) => { const el = document.getElementById('co-site-display'); el.value = name; updateCoField('site', name); }; openLocationModal();">
             </div>
           </div>
           <!-- Fault -->
