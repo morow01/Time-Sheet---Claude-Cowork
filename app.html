@@ -3926,6 +3926,7 @@
       padding: 6px 10px;
       min-width: 60px;
       vertical-align: top;
+      position: relative; /* required for selectedCell::after overlay */
     }
     :is(#note-fs-editor .ProseMirror, .tt-prose) th {
       background: var(--bg-page);
@@ -9635,7 +9636,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.43';
+    const VERSION = '4.27.44';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22047,7 +22048,15 @@ QUESTION: ${query}`;
       // Bug fix: look for tableRole === 'cell'|'header_cell' — NOT 'row' which also has tableRole.
       on('tt-merge-cells', () => {
         const { state } = e.view;
-        const $head = state.selection.$head;
+        const sel = state.selection;
+        // If there's already a CellSelection (user drag/shift-selected multiple cells), merge it directly
+        if (sel.$anchorCell) {
+          const ok = e.chain().focus().mergeCells().run();
+          if (!ok) showToast('Merge failed — cells may already be merged or incompatible');
+          return;
+        }
+        // Otherwise fall back: merge current cell with the one to its right
+        const $head = sel.$head;
         let cellDepth = -1;
         for (let d = $head.depth; d > 0; d--) {
           const role = $head.node(d).type.spec.tableRole;
@@ -22063,14 +22072,14 @@ QUESTION: ${query}`;
         }
         const nextRole = $nextCell.nodeAfter?.type?.spec?.tableRole;
         if (nextRole !== 'cell' && nextRole !== 'header_cell') {
-          showToast('No cell to the right — place cursor in the left cell');
+          showToast('No cell to the right — select cells first, or use the ⋮ popup');
           return;
         }
         const ok = e.chain().focus()
           .setCellSelection({ anchorCell, headCell })
           .mergeCells()
           .run();
-        if (!ok) showToast('Merge failed — try selecting cells manually');
+        if (!ok) showToast('Merge failed');
       });
       on('tt-split-cell', () => {
         const ok = e.chain().focus().splitCell().run();
