@@ -9548,7 +9548,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.38';
+    const VERSION = '4.27.39';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14148,10 +14148,39 @@
       notesUnsubscribe = ref.onSnapshot({ includeMetadataChanges: true }, snap => {
         if (snap.metadata.hasPendingWrites) return;
 
-        // If there's a pending local save, our data is newer — skip this echo entirely.
-        // The pending save will push the correct data to Firestore.
+        // If there's a pending local save, do a protective merge instead of skipping.
+        // Updates from OTHER devices to notes we're NOT editing still need to be pulled in;
+        // the pending save will then push the fully-reconciled state to Firestore.
         if (notesSaveTimer) {
-          console.log('[Rian] notes onSnapshot: skipping — local save pending');
+          if (snap.exists) {
+            const _timerRemote = snap.data();
+            if (Array.isArray(_timerRemote?.notes)) {
+              const _ta = document.activeElement;
+              const _tid = _ta && (_ta.tagName === 'TEXTAREA' || _ta.tagName === 'INPUT') ? _ta.dataset.noteId : null;
+              const _tip = (_fnFsNoteId && !document.getElementById('note-fs-modal')?.classList.contains('hidden')) ? _fnFsNoteId : null;
+              const _tipRecent = _tip && (Date.now() - _tiptapLastSaveAt < 10000);
+              const _tipClosed = _tiptapLastSavedNoteId && (Date.now() - _tiptapLastSaveAt < 8000) ? _tiptapLastSavedNoteId : null;
+              const _protectId = _tid || (_tipRecent ? _tip : null) || _tipClosed;
+              const _lmap = new Map((state.notes || []).map(n => [n.id, n]));
+              let _mergeChanged = false;
+              const _merged = _timerRemote.notes.map(rn => {
+                const ln = _lmap.get(rn.id);
+                if (ln && ln.id === _protectId) return deepCopy(ln); // always keep editing note
+                if (ln && (ln.updatedAt || 0) >= (rn.updatedAt || 0)) return deepCopy(ln); // local same-or-newer
+                _mergeChanged = true; return deepCopy(rn); // remote is strictly newer
+              });
+              for (const ln of (state.notes || [])) {
+                if (!_timerRemote.notes.find(rn => rn.id === ln.id) && (ln.updatedAt || 0) > Date.now() - 30000) {
+                  _merged.push(deepCopy(ln)); // keep local-only recent notes
+                }
+              }
+              if (_mergeChanged) {
+                state.notes = _merged;
+                console.log('[Rian] notes onSnapshot: pending-save protective merge — pulled remote-newer notes into state');
+              }
+            }
+          }
+          console.log('[Rian] notes onSnapshot: local save pending — pending save will push reconciled state');
           state.notesSyncStatus = 'synced';
           updateHeaderStatus();
           return;
