@@ -9501,7 +9501,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.22';
+    const VERSION = '4.27.23';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21739,10 +21739,9 @@ QUESTION: ${query}`;
       const e = _tiptapEditor;
       const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
       // Text formatting
-      on('tt-bold',       () => { e.chain().focus().toggleBold().run();        _ttUpdateToolbar(e); });
-      on('tt-italic',     () => { e.chain().focus().toggleItalic().run();      _ttUpdateToolbar(e); });
-      on('tt-underline',  () => { e.chain().focus().toggleUnderline().run();   _ttUpdateToolbar(e); });
-      on('tt-strike',     () => { e.chain().focus().toggleStrike().run();      _ttUpdateToolbar(e); });
+      on('tt-bold',   () => { e.chain().focus().toggleBold().run();   _ttUpdateToolbar(e); });
+      on('tt-italic', () => { e.chain().focus().toggleItalic().run(); _ttUpdateToolbar(e); });
+      on('tt-strike', () => { e.chain().focus().toggleStrike().run(); _ttUpdateToolbar(e); });
       // Headings
       on('tt-h1', () => { e.chain().focus().toggleHeading({ level: 1 }).run(); _ttUpdateToolbar(e); });
       on('tt-h2', () => { e.chain().focus().toggleHeading({ level: 2 }).run(); _ttUpdateToolbar(e); });
@@ -21757,12 +21756,9 @@ QUESTION: ${query}`;
       on('tt-codeblock',  () => { e.chain().focus().toggleCodeBlock().run();  _ttUpdateToolbar(e); });
       on('tt-hr',         () => e.chain().focus().setHorizontalRule().run());
       // Alignment
-      on('tt-align-left',   () => { e.chain().focus().setTextAlignment('left').run();   _ttUpdateToolbar(e); });
-      on('tt-align-center', () => { e.chain().focus().setTextAlignment('center').run(); _ttUpdateToolbar(e); });
-      on('tt-align-right',  () => { e.chain().focus().setTextAlignment('right').run();  _ttUpdateToolbar(e); });
-      // Super / sub
-      on('tt-superscript', () => { e.chain().focus().toggleSuperscript().run(); _ttUpdateToolbar(e); });
-      on('tt-subscript',   () => { e.chain().focus().toggleSubscript().run();   _ttUpdateToolbar(e); });
+      on('tt-align-left',   () => { e.chain().focus().setTextAlign('left').run();   _ttUpdateToolbar(e); });
+      on('tt-align-center', () => { e.chain().focus().setTextAlign('center').run(); _ttUpdateToolbar(e); });
+      on('tt-align-right',  () => { e.chain().focus().setTextAlign('right').run();  _ttUpdateToolbar(e); });
       // Link
       on('tt-link', () => _ttHandleLink());
       // Table insert
@@ -21805,10 +21801,9 @@ QUESTION: ${query}`;
 
     function _ttUpdateToolbar(editor) {
       const map = {
-        'tt-bold':         () => editor.isActive('bold'),
-        'tt-italic':       () => editor.isActive('italic'),
-        'tt-underline':    () => editor.isActive('underline'),
-        'tt-strike':       () => editor.isActive('strike'),
+        'tt-bold':   () => editor.isActive('bold'),
+        'tt-italic': () => editor.isActive('italic'),
+        'tt-strike': () => editor.isActive('strike'),
         'tt-h1':           () => editor.isActive('heading', { level: 1 }),
         'tt-h2':           () => editor.isActive('heading', { level: 2 }),
         'tt-h3':           () => editor.isActive('heading', { level: 3 }),
@@ -21821,9 +21816,7 @@ QUESTION: ${query}`;
         'tt-align-left':   () => editor.isActive({ textAlign: 'left' }),
         'tt-align-center': () => editor.isActive({ textAlign: 'center' }),
         'tt-align-right':  () => editor.isActive({ textAlign: 'right' }),
-        'tt-superscript':  () => editor.isActive('superscript'),
-        'tt-subscript':    () => editor.isActive('subscript'),
-        'tt-link':         () => editor.isActive('link'),
+        'tt-link': () => editor.isActive('link'),
       };
       for (const [id, check] of Object.entries(map)) {
         const el = document.getElementById(id);
@@ -21845,7 +21838,7 @@ QUESTION: ${query}`;
       const url = prompt('Enter URL:', prev);
       if (url === null) return;
       if (url.trim() === '') { e.chain().focus().unsetLink().run(); }
-      else { e.chain().focus().setLink({ href: url.trim() }).run(); }
+      else { e.chain().focus().setLink({ href: url.trim(), target: '_blank' }).run(); }
       _ttUpdateToolbar(e);
     }
 
@@ -21854,11 +21847,11 @@ QUESTION: ${query}`;
       ev.target.value = '';
       if (!file) return;
 
-      // Compress: max 1000px, JPEG 0.78
-      const compressed = await new Promise((resolve) => {
+      // Compress: max 900px, JPEG 0.75 → ~80-120KB inline base64
+      const dataUrl = await new Promise((resolve) => {
         const img = new window.Image();
         img.onload = () => {
-          const MAX = 1000;
+          const MAX = 900;
           let w = img.width, h = img.height;
           if (w > MAX || h > MAX) {
             if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -21867,27 +21860,12 @@ QUESTION: ${query}`;
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          canvas.toBlob(resolve, 'image/jpeg', 0.78);
+          resolve(canvas.toDataURL('image/jpeg', 0.75));
         };
         img.src = URL.createObjectURL(file);
       });
 
-      // Upload to Firebase Storage
-      try {
-        if (!firebase.apps.length) throw new Error('Firebase not ready');
-        const storage = firebase.storage();
-        const uid = auth_fb.currentUser?.uid || 'anon';
-        const path = `note-images/${uid}/${Date.now()}.jpg`;
-        const ref = storage.ref(path);
-        showToast('Uploading photo…');
-        await ref.put(compressed, { contentType: 'image/jpeg' });
-        const url = await ref.getDownloadURL();
-        _tiptapEditor.chain().focus().setImage({ src: url }).run();
-        showToast('Photo added ✓');
-      } catch (err) {
-        console.error('Image upload failed:', err);
-        showToast('Upload failed — check connection');
-      }
+      _tiptapEditor.chain().focus().setImage({ src: dataUrl }).run();
     }
 
     function _ttSetContent(html) {
@@ -22493,7 +22471,6 @@ QUESTION: ${query}`;
         <!-- Text formatting -->
         <button class="tt-btn" id="tt-bold" title="Bold"><b>B</b></button>
         <button class="tt-btn" id="tt-italic" title="Italic"><i>I</i></button>
-        <button class="tt-btn" id="tt-underline" title="Underline"><u>U</u></button>
         <button class="tt-btn" id="tt-strike" title="Strikethrough">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6c0-1.66-1.79-3-4-3s-4 1.34-4 3 1.79 3 4 3"/><path d="M8 18c0 1.66 1.79 3 4 3s4-1.34 4-3-1.79-3-4-3"/></svg>
         </button>
@@ -22534,10 +22511,6 @@ QUESTION: ${query}`;
         <button class="tt-btn" id="tt-align-right" title="Align right">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>
         </button>
-        <div class="tt-sep"></div>
-        <!-- Super / Subscript -->
-        <button class="tt-btn" id="tt-superscript" title="Superscript" style="font-size:12px">A<sup style="font-size:8px">2</sup></button>
-        <button class="tt-btn" id="tt-subscript" title="Subscript" style="font-size:12px">A<sub style="font-size:8px">2</sub></button>
         <div class="tt-sep"></div>
         <!-- Link, Table, Image -->
         <button class="tt-btn" id="tt-link" title="Insert / edit link">
