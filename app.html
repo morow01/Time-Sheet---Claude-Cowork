@@ -644,8 +644,11 @@
     .notes-ta-wrap:hover .act-notes-rich-preview {
       opacity: 0.85;
     }
+
     /* Prevent links in preview cards from navigating — clicking the card opens the editor */
-    .act-notes-rich-preview a { pointer-events: none; }
+    .act-notes-rich-preview a {
+      pointer-events: none;
+    }
 
     .act-actions-row {
       display: flex;
@@ -2182,7 +2185,7 @@
     input,
     select,
     textarea {
-      font-size: 16px !important;
+      font-size: 14px !important;
       color: var(--text-primary);
       background: var(--bg-input);
       border-color: var(--border-input);
@@ -3677,7 +3680,11 @@
       flex-wrap: nowrap;
       scrollbar-width: none;
     }
-    #note-fs-tt-toolbar::-webkit-scrollbar { display: none; }
+
+    #note-fs-tt-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+
     /* Desktop: wrap into multiple rows instead of scrolling */
     @media (min-width: 600px) {
       #note-fs-tt-toolbar {
@@ -3688,10 +3695,12 @@
     }
 
     #note-fs-tt-colors {
-      display: none; /* hidden by default, toggled by palette button */
+      display: none;
+      /* hidden by default, toggled by palette button */
       position: absolute;
       top: calc(100% + 2px);
-      left: 0; right: 0;
+      left: 0;
+      right: 0;
       z-index: 20;
       border: 1px solid var(--border);
       border-radius: 0 0 10px 10px;
@@ -3701,47 +3710,77 @@
       align-items: center;
       gap: 5px;
       flex-wrap: wrap;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
-    #note-fs-tt-colors.tt-colors-open { display: flex; }
-    .tt-toolbar-wrap { position: relative; }
+
+    #note-fs-tt-colors.tt-colors-open {
+      display: flex;
+    }
+
+    .tt-toolbar-wrap {
+      position: relative;
+    }
+
     .tt-colors-label {
-      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
       flex-shrink: 0;
     }
+
     .tt-sep {
-      width: 1px; height: 20px;
+      width: 1px;
+      height: 20px;
       background: var(--border);
       flex-shrink: 0;
       margin: 0 3px;
     }
 
     .tt-btn {
-      width: 34px; height: 34px;
+      width: 34px;
+      height: 34px;
       border: none;
       background: transparent;
       border-radius: 7px;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--text-secondary);
-      font-size: 13px; font-weight: 700;
+      font-size: 13px;
+      font-weight: 700;
       flex-shrink: 0;
       -webkit-tap-highlight-color: transparent;
       transition: background 0.1s, color 0.1s;
     }
-    .tt-btn:active { background: var(--bg-page); }
-    .tt-btn.tt-active { background: #ede9fe; color: #818cf8; }
-    .tt-btn svg { width: 15px; height: 15px; }
+
+    .tt-btn:active {
+      background: var(--bg-page);
+    }
+
+    .tt-btn.tt-active {
+      background: #ede9fe;
+      color: #818cf8;
+    }
+
+    .tt-btn svg {
+      width: 15px;
+      height: 15px;
+    }
 
     .tt-swatch {
-      width: 24px; height: 24px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       border: 2px solid transparent;
       cursor: pointer;
       flex-shrink: 0;
       -webkit-tap-highlight-color: transparent;
     }
-    .tt-swatch:active { transform: scale(0.88); }
+
+    .tt-swatch:active {
+      transform: scale(0.88);
+    }
 
     #note-fs-editor {
       flex: 1;
@@ -3757,36 +3796,71 @@
       color: var(--text-primary);
       min-height: 200px;
     }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) p { margin-bottom: 6px; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) p:last-child { margin-bottom: 0; }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) p {
+      margin-bottom: 6px;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) p:last-child {
+      margin-bottom: 0;
+    }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) h1,
     :is(#note-fs-editor .ProseMirror, .tt-prose) h2,
     :is(#note-fs-editor .ProseMirror, .tt-prose) h3 {
       font-weight: 700;
       padding-top: 12px;
     }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) h1:first-child,
     :is(#note-fs-editor .ProseMirror, .tt-prose) h2:first-child,
-    :is(#note-fs-editor .ProseMirror, .tt-prose) h3:first-child { padding-top: 0; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) h1 { font-size: 22px; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) h2 { font-size: 18px; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) h3 { font-size: 15px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h3:first-child {
+      padding-top: 0;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h1 {
+      font-size: 22px;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h2 {
+      font-size: 18px;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h3 {
+      font-size: 15px;
+    }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul,
-    :is(#note-fs-editor .ProseMirror, .tt-prose) ol { padding-left: 20px; margin-bottom: 6px; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) ul { list-style-type: disc; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) ol { list-style-type: decimal; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) li { margin-bottom: 2px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ol {
+      padding-left: 20px;
+      margin-bottom: 6px;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul {
+      list-style-type: disc;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ol {
+      list-style-type: decimal;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) li {
+      margin-bottom: 2px;
+    }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) blockquote {
       border-left: 3px solid rgba(13, 13, 13, 0.12);
       padding-left: 1rem;
       margin: 1.5rem 0;
       font-style: normal;
     }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) a {
       color: #818cf8;
       text-decoration: underline;
       cursor: pointer;
     }
+
     /* Link bubble menu */
     #tt-link-bubble {
       /* position/display/z-index set inline by _ttUpdateLinkBubble */
@@ -3796,9 +3870,11 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 4px 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-      max-width: 300px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+      width: calc(100vw - 24px);
+      max-width: 640px;
     }
+
     #tt-link-bubble-input {
       font-size: 12px;
       color: var(--text-primary);
@@ -3810,6 +3886,7 @@
       background: transparent;
       padding: 2px 4px;
     }
+
     .tt-link-bbl-btn {
       border: none;
       background: none;
@@ -3821,42 +3898,139 @@
       align-items: center;
       flex-shrink: 0;
     }
-    .tt-link-bbl-btn:hover { background: var(--bg-page); color: var(--text); }
-    .tt-link-bbl-btn svg { width: 14px; height: 14px; }
+
+    .tt-link-bbl-btn:hover {
+      background: var(--bg-page);
+      color: var(--text);
+    }
+
+    .tt-link-bbl-btn svg {
+      width: 14px;
+      height: 14px;
+    }
 
     /* ── Rian custom dialog ── */
     #rian-dialog-overlay {
-      display: none; position: fixed; inset: 0; z-index: 20000;
-      background: rgba(15,28,46,0.45); backdrop-filter: blur(3px);
-      align-items: center; justify-content: center; padding: 16px;
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      background: rgba(15, 28, 46, 0.45);
+      backdrop-filter: blur(3px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
     }
-    #rian-dialog-overlay.rdn-open { display: flex; }
+
+    #rian-dialog-overlay.rdn-open {
+      display: flex;
+    }
+
     #rian-dialog {
-      background: var(--bg-card, #fff); border-radius: 20px;
-      padding: 24px 20px 18px; width: 340px; max-width: 100%;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+      background: var(--bg-card, #fff);
+      border-radius: 20px;
+      padding: 24px 20px 18px;
+      width: 340px;
+      max-width: 100%;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
       animation: rdn-pop .15s ease;
     }
-    @keyframes rdn-pop { from { transform: scale(.94); opacity:0; } to { transform: scale(1); opacity:1; } }
-    .rdn-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
-    .rdn-msg   { font-size: 13px; color: #64748b; margin-bottom: 16px; line-height: 1.5; }
-    .rdn-input {
-      width: 100%; box-sizing: border-box;
-      border: 1.5px solid var(--border); border-radius: 11px;
-      padding: 11px 13px; font-size: 14px; outline: none;
-      background: var(--bg-page); color: var(--text);
-      margin-bottom: 16px; display: block;
+
+    @keyframes rdn-pop {
+      from {
+        transform: scale(.94);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
-    .rdn-input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,.15); }
-    .rdn-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .rdn-spacer  { flex: 1; }
-    .rdn-btn { padding: 10px 18px; border-radius: 11px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity .1s; }
-    .rdn-btn:active { opacity: .8; }
-    .rdn-btn-cancel  { background: var(--bg-page); color: var(--text); }
-    .rdn-btn-confirm { background: #818cf8; color: #fff; }
-    .rdn-btn-danger  { background: #ef4444; color: #fff; }
-    .rdn-btn-ghost   { background: transparent; color: #818cf8; padding: 10px 10px; font-size: 13px; }
-    .rdn-btn-ghost.red { color: #ef4444; }
+
+    .rdn-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .rdn-msg {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .rdn-input {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 13px;
+      font-size: 14px;
+      outline: none;
+      background: var(--bg-page);
+      color: var(--text);
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .rdn-input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, .15);
+    }
+
+    .rdn-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .rdn-spacer {
+      flex: 1;
+    }
+
+    .rdn-btn {
+      padding: 10px 18px;
+      border-radius: 11px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: opacity .1s;
+    }
+
+    .rdn-btn:active {
+      opacity: .8;
+    }
+
+    .rdn-btn-cancel {
+      background: var(--bg-page);
+      color: var(--text);
+    }
+
+    .rdn-btn-confirm {
+      background: #818cf8;
+      color: #fff;
+    }
+
+    .rdn-btn-danger {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    .rdn-btn-ghost {
+      background: transparent;
+      color: #818cf8;
+      padding: 10px 10px;
+      font-size: 13px;
+    }
+
+    .rdn-btn-ghost.red {
+      color: #ef4444;
+    }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) code {
       background: var(--bg-page);
@@ -3864,7 +4038,12 @@
       padding: 1px 5px;
       font-size: 13px;
     }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) mark { border-radius: 3px; padding: 0 2px; }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark {
+      border-radius: 3px;
+      padding: 0 2px;
+    }
+
     #note-fs-editor .ProseMirror p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
       color: var(--text-muted);
@@ -3885,30 +4064,44 @@
       overflow-x: auto;
       margin: 8px 0;
     }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) pre code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+    }
 
     /* Task list */
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] {
       list-style: none;
       padding-left: 4px;
     }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li {
       display: flex;
       align-items: flex-start;
       gap: 8px;
       margin-bottom: 4px;
     }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > label {
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li>label {
       flex-shrink: 0;
       margin-top: 2px;
     }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > label input[type="checkbox"] {
-      width: 16px; height: 16px;
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li>label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
       cursor: pointer;
       accent-color: #0f1c2e;
     }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > div { flex: 1; }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li[data-checked="true"] > div {
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li>div {
+      flex: 1;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li[data-checked="true"]>div {
       text-decoration: line-through;
       color: var(--text-muted);
     }
@@ -3920,31 +4113,41 @@
       margin: 10px 0;
       font-size: 13px;
     }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) td,
     :is(#note-fs-editor .ProseMirror, .tt-prose) th {
       border: 1px solid var(--border);
       padding: 6px 10px;
       min-width: 60px;
       vertical-align: top;
-      position: relative; /* required for selectedCell::after overlay */
+      position: relative;
+      /* required for selectedCell::after overlay */
     }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) th {
       background: var(--bg-page);
       font-weight: 700;
       text-align: left;
     }
+
     #note-fs-editor .ProseMirror .selectedCell::after {
-      background: rgba(129,140,248,0.15);
+      background: rgba(129, 140, 248, 0.15);
       content: '';
       position: absolute;
       inset: 0;
       pointer-events: none;
     }
-    :is(#note-fs-editor .ProseMirror, .tt-prose) .tableWrapper { overflow-x: auto; }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) .tableWrapper {
+      overflow-x: auto;
+    }
+
     /* Column resize handle */
     #note-fs-editor .ProseMirror .column-resize-handle {
       position: absolute;
-      right: -2px; top: 0; bottom: 0;
+      right: -2px;
+      top: 0;
+      bottom: 0;
       width: 4px;
       background: #818cf8;
       opacity: 0;
@@ -3953,11 +4156,15 @@
       pointer-events: auto;
       z-index: 20;
     }
+
     #note-fs-editor .ProseMirror td:hover .column-resize-handle,
     #note-fs-editor .ProseMirror th:hover .column-resize-handle {
       opacity: 0.5;
     }
-    #note-fs-editor .ProseMirror.resize-cursor { cursor: col-resize; }
+
+    #note-fs-editor .ProseMirror.resize-cursor {
+      cursor: col-resize;
+    }
 
     /* Table context bar */
     #note-fs-tt-table-bar {
@@ -3971,9 +4178,14 @@
       overflow-x: auto;
       scrollbar-width: none;
     }
-    #note-fs-tt-table-bar::-webkit-scrollbar { display: none; }
+
+    #note-fs-tt-table-bar::-webkit-scrollbar {
+      display: none;
+    }
+
     .tt-tbl-label {
-      font-size: 10px; font-weight: 700;
+      font-size: 10px;
+      font-weight: 700;
       color: #818cf8;
       padding: 0 4px;
       flex-shrink: 0;
@@ -3984,17 +4196,25 @@
       display: none;
       position: fixed;
       z-index: 10025;
-      width: 26px; height: 26px;
+      width: 26px;
+      height: 26px;
       border-radius: 7px;
       background: #818cf8;
       border: none;
       cursor: pointer;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(129,140,248,0.45);
+      box-shadow: 0 2px 8px rgba(129, 140, 248, 0.45);
       padding: 0;
     }
-    #tt-cell-trigger svg { width: 14px; height: 14px; stroke: white; fill: white; }
+
+    #tt-cell-trigger svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+      fill: white;
+    }
+
     #tt-cell-popup {
       display: none;
       position: fixed;
@@ -4002,34 +4222,72 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 14px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.16);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
       padding: 10px;
       width: 210px;
     }
+
     .tcp-section {
-      font-size: 10px; font-weight: 700; color: #818cf8;
-      text-transform: uppercase; letter-spacing: .04em;
-      padding: 0 2px 5px; margin-top: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #818cf8;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 0 2px 5px;
+      margin-top: 6px;
     }
-    .tcp-section:first-child { margin-top: 0; }
+
+    .tcp-section:first-child {
+      margin-top: 0;
+    }
+
     .tcp-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 5px;
     }
+
     .tcp-btn {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 3px; padding: 8px 4px;
-      border: 1px solid var(--border); border-radius: 9px;
-      background: #fafafa; cursor: pointer;
-      font-size: 10px; color: #475569; line-height: 1.2;
-      text-align: center; -webkit-tap-highlight-color: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 8px 4px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #fafafa;
+      cursor: pointer;
+      font-size: 10px;
+      color: #475569;
+      line-height: 1.2;
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
     }
-    .tcp-btn:active { background: #ede9fe; }
-    .tcp-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-    .tcp-btn.tcp-del { color: #ef4444; }
-    .tcp-sep { height: 1px; background: var(--border); margin: 8px 0 2px; }
+
+    .tcp-btn:active {
+      background: #ede9fe;
+    }
+
+    .tcp-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .tcp-btn.tcp-del {
+      color: #ef4444;
+    }
+
+    .tcp-sep {
+      height: 1px;
+      background: var(--border);
+      margin: 8px 0 2px;
+    }
 
     /* Images */
     #note-fs-editor .ProseMirror img {
@@ -4038,6 +4296,7 @@
       margin: 6px 0;
       display: block;
     }
+
     #note-fs-editor .ProseMirror img.ProseMirror-selectednode {
       outline: 2px solid #818cf8;
     }
@@ -9653,7 +9912,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.48';
+    const VERSION = '4.27.49';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13577,7 +13836,7 @@
       remindState.noteId = null;
       remindState.voiceMode = true;
       const desc = (document.getElementById('nvc-desc')?.value || '').trim() || 'New Note';
-      const loc  = (document.getElementById('nvc-loc')?.value  || '').trim();
+      const loc = (document.getElementById('nvc-loc')?.value || '').trim();
       let defaultDate, defaultTime;
       if (nvcReminder) {
         defaultDate = nvcReminder.date;
@@ -14182,7 +14441,7 @@
               if (state.notesSyncStatus === 'error' && state.currentUser) {
                 fsSetNotes(state.notes)
                   .then(() => { state.notesSyncStatus = 'synced'; updateHeaderStatus(); })
-                  .catch(() => {});
+                  .catch(() => { });
               }
             }, 8000);
           }
@@ -20233,7 +20492,7 @@
         const d = new Date(today); d.setDate(d.getDate() + 1); return dateToStr(d);
       }
       // Day names — prefer nearest future occurrence (within 6 days)
-      const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       for (const name of dayNames) {
         if (new RegExp('\\b' + name + '\\b', 'i').test(text)) {
           const target = dayNames.indexOf(name);
@@ -20272,12 +20531,12 @@
       // 2. Keyword scan fallback — "job" last since it's too generic
       if (!result.category) {
         const catKeywords = [
-          ['fault',    /\b(fault|faults)\b/i],
+          ['fault', /\b(fault|faults)\b/i],
           ['followup', /\b(follow[\s-]?up)\b/i],
-          ['meeting',  /\b(meeting)\b/i],
+          ['meeting', /\b(meeting)\b/i],
           ['personal', /\b(personal)\b/i],
-          ['idea',     /\b(idea)\b/i],
-          ['job',      /\b(job)\b/i],
+          ['idea', /\b(idea)\b/i],
+          ['job', /\b(job)\b/i],
         ];
         for (const [key, re] of catKeywords) {
           const cats = getCategories();
@@ -20464,12 +20723,12 @@ Rules:
         // Category — explicit "category is X" / "tag is X" always wins; then Gemini; then keyword scan
         const validCats = getCategories().map(c => c.key);
         const catKeywords = {
-          fault:    /\b(fault|faults)\b/i,
-          job:      /\b(job)\b/i,
+          fault: /\b(fault|faults)\b/i,
+          job: /\b(job)\b/i,
           followup: /\b(follow[\s-]?up)\b/i,
-          meeting:  /\b(meeting)\b/i,
+          meeting: /\b(meeting)\b/i,
           personal: /\b(personal)\b/i,
-          idea:     /\b(idea)\b/i,
+          idea: /\b(idea)\b/i,
         };
 
         // 1. Explicit spoken "category is X", "tag is X", "category or tag is X" etc — highest priority
@@ -20584,9 +20843,9 @@ Rules:
       if (!wrap) return;
       if (nvcReminder) {
         const d = new Date(nvcReminder.date + 'T' + nvcReminder.time + ':00');
-        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const dateStr = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' · ' +
-          String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+          String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
         wrap.innerHTML = `<div class="note-reminder-set" onclick="openNvcReminder()" style="cursor:pointer">
           <div class="note-rem-bell"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
           <div class="note-rem-info">
@@ -21986,7 +22245,7 @@ QUESTION: ${query}`;
       const e = _tiptapEditor;
       const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
       // Text formatting
-      on('tt-bold',   () => { e.chain().focus().toggleBold().run();   _ttUpdateToolbar(e); });
+      on('tt-bold', () => { e.chain().focus().toggleBold().run(); _ttUpdateToolbar(e); });
       on('tt-italic', () => { e.chain().focus().toggleItalic().run(); _ttUpdateToolbar(e); });
       on('tt-strike', () => { e.chain().focus().toggleStrike().run(); _ttUpdateToolbar(e); });
       // Headings
@@ -21994,18 +22253,18 @@ QUESTION: ${query}`;
       on('tt-h2', () => { e.chain().focus().toggleHeading({ level: 2 }).run(); _ttUpdateToolbar(e); });
       on('tt-h3', () => { e.chain().focus().toggleHeading({ level: 3 }).run(); _ttUpdateToolbar(e); });
       // Lists
-      on('tt-ul',       () => { e.chain().focus().toggleBulletList().run();   _ttUpdateToolbar(e); });
-      on('tt-ol',       () => { e.chain().focus().toggleOrderedList().run();  _ttUpdateToolbar(e); });
-      on('tt-tasklist', () => { e.chain().focus().toggleTaskList().run();     _ttUpdateToolbar(e); });
+      on('tt-ul', () => { e.chain().focus().toggleBulletList().run(); _ttUpdateToolbar(e); });
+      on('tt-ol', () => { e.chain().focus().toggleOrderedList().run(); _ttUpdateToolbar(e); });
+      on('tt-tasklist', () => { e.chain().focus().toggleTaskList().run(); _ttUpdateToolbar(e); });
       // Block elements
       on('tt-blockquote', () => { e.chain().focus().toggleBlockquote().run(); _ttUpdateToolbar(e); });
-      on('tt-code',       () => { e.chain().focus().toggleCode().run();       _ttUpdateToolbar(e); });
-      on('tt-codeblock',  () => { e.chain().focus().toggleCodeBlock().run();  _ttUpdateToolbar(e); });
-      on('tt-hr',         () => e.chain().focus().setHorizontalRule().run());
+      on('tt-code', () => { e.chain().focus().toggleCode().run(); _ttUpdateToolbar(e); });
+      on('tt-codeblock', () => { e.chain().focus().toggleCodeBlock().run(); _ttUpdateToolbar(e); });
+      on('tt-hr', () => e.chain().focus().setHorizontalRule().run());
       // Alignment
-      on('tt-align-left',   () => { e.chain().focus().setTextAlign('left').run();   _ttUpdateToolbar(e); });
+      on('tt-align-left', () => { e.chain().focus().setTextAlign('left').run(); _ttUpdateToolbar(e); });
       on('tt-align-center', () => { e.chain().focus().setTextAlign('center').run(); _ttUpdateToolbar(e); });
-      on('tt-align-right',  () => { e.chain().focus().setTextAlign('right').run();  _ttUpdateToolbar(e); });
+      on('tt-align-right', () => { e.chain().focus().setTextAlign('right').run(); _ttUpdateToolbar(e); });
       // Link
       on('tt-link', () => _ttHandleLink());
       // Link bubble menu buttons
@@ -22021,7 +22280,7 @@ QUESTION: ${query}`;
       const bubbleInput = document.getElementById('tt-link-bubble-input');
       if (bubbleInput) {
         bubbleInput.addEventListener('keydown', (ev) => {
-          if (ev.key === 'Enter')  { ev.preventDefault(); applyBubbleUrl(); }
+          if (ev.key === 'Enter') { ev.preventDefault(); applyBubbleUrl(); }
           if (ev.key === 'Escape') { _ttHideLinkBubble(); e.commands.focus(); }
         });
         // When user blurs input without confirming → hide bubble
@@ -22049,14 +22308,14 @@ QUESTION: ${query}`;
       // Table insert
       on('tt-table', () => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run());
       // Table context buttons
-      on('tt-row-before',  () => e.chain().focus().addRowBefore().run());
-      on('tt-row-after',   () => e.chain().focus().addRowAfter().run());
+      on('tt-row-before', () => e.chain().focus().addRowBefore().run());
+      on('tt-row-after', () => e.chain().focus().addRowAfter().run());
       on('tt-row-del', async () => {
         const ok = await showRianDialog({ title: 'Delete Row', message: 'Delete this row and all its content?', confirmText: 'Delete', danger: true });
         if (ok) e.chain().focus().deleteRow().run();
       });
-      on('tt-col-before',  () => e.chain().focus().addColumnBefore().run());
-      on('tt-col-after',   () => e.chain().focus().addColumnAfter().run());
+      on('tt-col-before', () => e.chain().focus().addColumnBefore().run());
+      on('tt-col-after', () => e.chain().focus().addColumnAfter().run());
       on('tt-col-del', async () => {
         const ok = await showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true });
         if (ok) e.chain().focus().deleteColumn().run();
@@ -22081,10 +22340,10 @@ QUESTION: ${query}`;
         }
         if (cellDepth === -1) { showToast('Place cursor in a cell first'); return; }
         const anchorCell = $head.before(cellDepth);
-        const cellNode   = $head.node(cellDepth);
-        const headCell   = anchorCell + cellNode.nodeSize; // position of next sibling cell
+        const cellNode = $head.node(cellDepth);
+        const headCell = anchorCell + cellNode.nodeSize; // position of next sibling cell
         let $nextCell;
-        try { $nextCell = state.doc.resolve(headCell); } catch(_) {
+        try { $nextCell = state.doc.resolve(headCell); } catch (_) {
           showToast('No adjacent cell to merge'); return;
         }
         const nextRole = $nextCell.nodeAfter?.type?.spec?.tableRole;
@@ -22102,14 +22361,14 @@ QUESTION: ${query}`;
         const ok = e.chain().focus().splitCell().run();
         if (!ok) showToast('Place cursor in a merged cell to split it');
       });
-      on('tt-table-del',   () => e.chain().focus().deleteTable().run());
+      on('tt-table-del', () => e.chain().focus().deleteTable().run());
       // Image
       on('tt-image', () => document.getElementById('tt-image-input').click());
       const imgInput = document.getElementById('tt-image-input');
       if (imgInput) imgInput.addEventListener('change', (ev) => _ttHandleImageUpload(ev));
       // Undo / Redo / Clear
-      on('tt-undo',  () => e.chain().focus().undo().run());
-      on('tt-redo',  () => e.chain().focus().redo().run());
+      on('tt-undo', () => e.chain().focus().undo().run());
+      on('tt-redo', () => e.chain().focus().redo().run());
       on('tt-clear', () => { e.chain().focus().unsetAllMarks().clearNodes().run(); _ttUpdateToolbar(e); });
       // Helper: close colour palette after picking
       const _closePalette = () => {
@@ -22117,40 +22376,40 @@ QUESTION: ${query}`;
         document.getElementById('tt-palette')?.classList.remove('tt-active');
       };
       // Text colours
-      on('tt-col-black',  () => { e.chain().focus().setColor('#1e293b').run(); _closePalette(); });
-      on('tt-col-red',    () => { e.chain().focus().setColor('#e53935').run(); _closePalette(); });
+      on('tt-col-black', () => { e.chain().focus().setColor('#1e293b').run(); _closePalette(); });
+      on('tt-col-red', () => { e.chain().focus().setColor('#e53935').run(); _closePalette(); });
       on('tt-col-orange', () => { e.chain().focus().setColor('#f57c00').run(); _closePalette(); });
-      on('tt-col-green',  () => { e.chain().focus().setColor('#2e7d32').run(); _closePalette(); });
-      on('tt-col-blue',   () => { e.chain().focus().setColor('#1565c0').run(); _closePalette(); });
+      on('tt-col-green', () => { e.chain().focus().setColor('#2e7d32').run(); _closePalette(); });
+      on('tt-col-blue', () => { e.chain().focus().setColor('#1565c0').run(); _closePalette(); });
       on('tt-col-purple', () => { e.chain().focus().setColor('#6a1b9a').run(); _closePalette(); });
-      on('tt-col-reset',  () => { e.chain().focus().unsetColor().run(); _closePalette(); });
+      on('tt-col-reset', () => { e.chain().focus().unsetColor().run(); _closePalette(); });
       // Highlights
       on('tt-hl-yellow', () => { e.chain().focus().setHighlight({ color: '#fef08a' }).run(); _closePalette(); });
-      on('tt-hl-green',  () => { e.chain().focus().setHighlight({ color: '#bbf7d0' }).run(); _closePalette(); });
-      on('tt-hl-red',    () => { e.chain().focus().setHighlight({ color: '#fecaca' }).run(); _closePalette(); });
-      on('tt-hl-blue',   () => { e.chain().focus().setHighlight({ color: '#bfdbfe' }).run(); _closePalette(); });
+      on('tt-hl-green', () => { e.chain().focus().setHighlight({ color: '#bbf7d0' }).run(); _closePalette(); });
+      on('tt-hl-red', () => { e.chain().focus().setHighlight({ color: '#fecaca' }).run(); _closePalette(); });
+      on('tt-hl-blue', () => { e.chain().focus().setHighlight({ color: '#bfdbfe' }).run(); _closePalette(); });
       on('tt-hl-purple', () => { e.chain().focus().setHighlight({ color: '#e9d5ff' }).run(); _closePalette(); });
       on('tt-hl-orange', () => { e.chain().focus().setHighlight({ color: '#fed7aa' }).run(); _closePalette(); });
-      on('tt-hl-reset',  () => { e.chain().focus().unsetHighlight().run(); _closePalette(); });
+      on('tt-hl-reset', () => { e.chain().focus().unsetHighlight().run(); _closePalette(); });
     }
 
     function _ttUpdateToolbar(editor) {
       const map = {
-        'tt-bold':   () => editor.isActive('bold'),
+        'tt-bold': () => editor.isActive('bold'),
         'tt-italic': () => editor.isActive('italic'),
         'tt-strike': () => editor.isActive('strike'),
-        'tt-h1':           () => editor.isActive('heading', { level: 1 }),
-        'tt-h2':           () => editor.isActive('heading', { level: 2 }),
-        'tt-h3':           () => editor.isActive('heading', { level: 3 }),
-        'tt-ul':           () => editor.isActive('bulletList'),
-        'tt-ol':           () => editor.isActive('orderedList'),
-        'tt-tasklist':     () => editor.isActive('taskList'),
-        'tt-blockquote':   () => editor.isActive('blockquote'),
-        'tt-code':         () => editor.isActive('code'),
-        'tt-codeblock':    () => editor.isActive('codeBlock'),
-        'tt-align-left':   () => editor.isActive({ textAlign: 'left' }),
+        'tt-h1': () => editor.isActive('heading', { level: 1 }),
+        'tt-h2': () => editor.isActive('heading', { level: 2 }),
+        'tt-h3': () => editor.isActive('heading', { level: 3 }),
+        'tt-ul': () => editor.isActive('bulletList'),
+        'tt-ol': () => editor.isActive('orderedList'),
+        'tt-tasklist': () => editor.isActive('taskList'),
+        'tt-blockquote': () => editor.isActive('blockquote'),
+        'tt-code': () => editor.isActive('code'),
+        'tt-codeblock': () => editor.isActive('codeBlock'),
+        'tt-align-left': () => editor.isActive({ textAlign: 'left' }),
         'tt-align-center': () => editor.isActive({ textAlign: 'center' }),
-        'tt-align-right':  () => editor.isActive({ textAlign: 'right' }),
+        'tt-align-right': () => editor.isActive({ textAlign: 'right' }),
         'tt-link': () => editor.isActive('link'),
       };
       for (const [id, check] of Object.entries(map)) {
@@ -22160,7 +22419,7 @@ QUESTION: ${query}`;
       // Show/hide table context bar + floating cell trigger
       const tableBar = document.getElementById('note-fs-tt-table-bar');
       const cellTrigger = document.getElementById('tt-cell-trigger');
-      const cellPopup   = document.getElementById('tt-cell-popup');
+      const cellPopup = document.getElementById('tt-cell-popup');
       if (editor.isActive('table')) {
         if (tableBar) tableBar.style.display = 'flex';
         if (cellTrigger) {
@@ -22176,19 +22435,19 @@ QUESTION: ${query}`;
               if (node.tagName === 'TD' || node.tagName === 'TH') { cellDom = node; break; }
               node = node.parentElement;
             }
-          } catch(_) {}
+          } catch (_) { }
           if (cellDom) {
             const r = cellDom.getBoundingClientRect();
-            cellTrigger.style.top  = (r.top + 2) + 'px';
+            cellTrigger.style.top = (r.top + 2) + 'px';
             cellTrigger.style.left = (r.right - 30) + 'px';
           } else {
             const coords = view.coordsAtPos(from);
-            cellTrigger.style.top  = (coords.top - 28) + 'px';
+            cellTrigger.style.top = (coords.top - 28) + 'px';
             cellTrigger.style.left = coords.left + 'px';
           }
           cellTrigger.style.display = 'flex';
           // Save cell position + CellSelection state so popup can use them after mobile blur
-          window._ttSavedCellFrom   = editor.view.state.selection.from;
+          window._ttSavedCellFrom = editor.view.state.selection.from;
           window._ttSavedCellSelCnt = (() => {
             const sel = editor.view.state.selection;
             if (!sel.$anchorCell) return 0;
@@ -22201,7 +22460,7 @@ QUESTION: ${query}`;
       } else {
         if (tableBar) tableBar.style.display = 'none';
         if (cellTrigger) cellTrigger.style.display = 'none';
-        if (cellPopup)   cellPopup.style.display   = 'none';
+        if (cellPopup) cellPopup.style.display = 'none';
       }
       // Show/hide link bubble
       _ttUpdateLinkBubble(editor);
@@ -22234,7 +22493,7 @@ QUESTION: ${query}`;
         let top = Math.max(headerBottom, tr.top);
         if (top + 390 > vh) top = Math.max(headerBottom, vh - 396);
         popup.style.left = Math.max(8, left) + 'px';
-        popup.style.top  = Math.max(headerBottom, top) + 'px';
+        popup.style.top = Math.max(headerBottom, top) + 'px';
       }
     }
 
@@ -22255,7 +22514,7 @@ QUESTION: ${query}`;
         }
         // Fallback: use saved position from when trigger was last shown
         if (window._ttSavedCellFrom != null) {
-          try { return state.doc.resolve(window._ttSavedCellFrom); } catch(_) {}
+          try { return state.doc.resolve(window._ttSavedCellFrom); } catch (_) { }
         }
         return null;
       }
@@ -22270,12 +22529,12 @@ QUESTION: ${query}`;
       }
 
       if (action === 'row-before') { e.chain().focus().addRowBefore().run(); }
-      else if (action === 'row-after')  { e.chain().focus().addRowAfter().run(); }
+      else if (action === 'row-after') { e.chain().focus().addRowAfter().run(); }
       else if (action === 'row-del') { showRianDialog({ title: 'Delete Row', message: 'Delete this row and all its content?', confirmText: 'Delete', danger: true }).then(ok => { if (ok) e.chain().focus().deleteRow().run(); }); }
       else if (action === 'col-before') { e.chain().focus().addColumnBefore().run(); }
-      else if (action === 'col-after')  { e.chain().focus().addColumnAfter().run(); }
+      else if (action === 'col-after') { e.chain().focus().addColumnAfter().run(); }
       else if (action === 'col-del') { showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true }).then(ok => { if (ok) e.chain().focus().deleteColumn().run(); }); }
-      else if (action === 'table-del')  { e.chain().focus().deleteTable().run(); }
+      else if (action === 'table-del') { e.chain().focus().deleteTable().run(); }
       else if (action === 'merge-sel') {
         // Merge an existing multi-cell CellSelection
         const ok = e.chain().focus().mergeCells().run();
@@ -22295,9 +22554,9 @@ QUESTION: ${query}`;
         const cd = _cellDepth($h);
         if (cd === -1) { showToast('Place cursor in a cell first'); return; }
         const anchorCell = $h.before(cd);
-        const headCell   = anchorCell + $h.node(cd).nodeSize;
+        const headCell = anchorCell + $h.node(cd).nodeSize;
         let $next;
-        try { $next = state.doc.resolve(headCell); } catch(_) { showToast('No cell to the right'); return; }
+        try { $next = state.doc.resolve(headCell); } catch (_) { showToast('No cell to the right'); return; }
         const nr = $next.nodeAfter?.type?.spec?.tableRole;
         if (nr !== 'cell' && nr !== 'header_cell') { showToast('No cell to the right'); return; }
         if (!e.chain().focus().setCellSelection({ anchorCell, headCell }).mergeCells().run())
@@ -22308,13 +22567,13 @@ QUESTION: ${query}`;
         const $h = _resolvedHead();
         const cd = _cellDepth($h);
         if (cd === -1) { showToast('Place cursor in a cell first'); return; }
-        const rowDepth   = cd - 1;
+        const rowDepth = cd - 1;
         const tableDepth = cd - 2;
-        const colIndex   = $h.index(rowDepth);
-        const rowIndex   = $h.index(tableDepth);
-        const tableNode  = $h.node(tableDepth);
+        const colIndex = $h.index(rowDepth);
+        const rowIndex = $h.index(tableDepth);
+        const tableNode = $h.node(tableDepth);
         if (rowIndex + 1 >= tableNode.childCount) { showToast('No row below'); return; }
-        const nextRow    = tableNode.child(rowIndex + 1);
+        const nextRow = tableNode.child(rowIndex + 1);
         if (colIndex >= nextRow.childCount) { showToast('No cell below'); return; }
         const anchorCell = $h.before(cd);
         let pos = $h.before(rowDepth) + $h.node(rowDepth).nodeSize + 1;
@@ -22323,7 +22582,7 @@ QUESTION: ${query}`;
         try {
           if (!e.chain().focus().setCellSelection({ anchorCell, headCell }).mergeCells().run())
             showToast('Merge failed — cells may already span differently');
-        } catch(_) { showToast('Cannot merge with cell below'); }
+        } catch (_) { showToast('Cannot merge with cell below'); }
       }
     }
 
@@ -22339,7 +22598,7 @@ QUESTION: ${query}`;
       }
     }
     document.addEventListener('touchstart', _ttDismissPopupIfOutside, { passive: true });
-    document.addEventListener('click',      _ttDismissPopupIfOutside);
+    document.addEventListener('click', _ttDismissPopupIfOutside);
 
     function _ttHideLinkBubble() {
       const bubble = document.getElementById('tt-link-bubble');
@@ -22359,27 +22618,26 @@ QUESTION: ${query}`;
       const href = editor.getAttributes('link').href || '';
       const inputEl = document.getElementById('tt-link-bubble-input');
       if (inputEl && document.activeElement !== inputEl) inputEl.value = href;
-      // Position below the cursor / selection start
+      // Position below the cursor; left-align to the editor container so full width shows
       const { view } = editor;
       const { from } = view.state.selection;
       const coords = view.coordsAtPos(from);
-      const bw = bubble.offsetWidth || 280;
-      const vw = window.innerWidth;
+      const editorRect = view.dom.getBoundingClientRect();
       bubble.style.position = 'fixed';
       bubble.style.top  = (coords.bottom + 6) + 'px';
-      bubble.style.left = Math.max(8, Math.min(coords.left, vw - bw - 8)) + 'px';
+      bubble.style.left = Math.max(8, editorRect.left) + 'px';
       bubble.style.display = 'flex';
     }
 
     // ── Rian custom dialog ──────────────────────────────────────────────────
     let _rdnResolve = null;
 
-    function showRianDialog({ title='', message='', inputType=null, defaultValue='', placeholder='',
-                              confirmText='OK', cancelText='Cancel', danger=false, extraBtns=[] } = {}) {
+    function showRianDialog({ title = '', message = '', inputType = null, defaultValue = '', placeholder = '',
+      confirmText = 'OK', cancelText = 'Cancel', danger = false, extraBtns = [] } = {}) {
       return new Promise(resolve => {
         _rdnResolve = resolve;
         document.getElementById('rdn-title').textContent = title;
-        document.getElementById('rdn-msg').textContent   = message;
+        document.getElementById('rdn-msg').textContent = message;
         const inp = document.getElementById('rdn-input');
         if (inputType) {
           inp.type = inputType;
@@ -22443,7 +22701,7 @@ QUESTION: ${query}`;
       const prev = e.getAttributes('link').href || '';
       const extraBtns = [];
       if (isActive) extraBtns.push({ label: 'Remove link', danger: true, action: () => { e.chain().focus().unsetLink().run(); _ttUpdateToolbar(e); } });
-      if (prev)     extraBtns.push({ label: '↗ Open', action: () => window.open(prev, '_blank', 'noopener') });
+      if (prev) extraBtns.push({ label: '↗ Open', action: () => window.open(prev, '_blank', 'noopener') });
       const url = await showRianDialog({
         title: isActive ? 'Edit Link' : 'Add Link',
         message: isActive ? 'Update the URL below, or remove the link.' : 'Select text first, then paste or type a URL.',
@@ -22473,7 +22731,7 @@ QUESTION: ${query}`;
           let w = img.width, h = img.height;
           if (w > MAX || h > MAX) {
             if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-            else       { w = Math.round(w * MAX / h); h = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
           }
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
@@ -22962,68 +23220,68 @@ QUESTION: ${query}`;
   <div id="voice-confirm-modal">
     <div class="vc-sheet">
       <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
-      <div class="vc-title">Add Entry</div>
-      <div class="vc-heard"><strong>Heard:</strong> <span id="vc-heard-text"></span></div>
-      <div class="vc-field">
-        <label class="vc-label">Day</label>
-        <select id="vc-day" class="vc-input" autocomplete="off"></select>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Description</label>
-        <textarea id="vc-desc" class="vc-input" rows="1" placeholder="e.g. Routines"
-          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-          style="resize:none;overflow:hidden"
-          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Location</label>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="vc-loc" class="vc-input" type="text" placeholder="Town name or code" style="flex:1;min-width:0;cursor:pointer"
-            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-            readonly onclick="_coSiteCallback=(name)=>{document.getElementById('vc-loc').value=name;}; openLocationModal();">
-          <button type="button"
-            onclick="_coSiteCallback=(name)=>{document.getElementById('vc-loc').value=name;}; openLocationModal();"
-            style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
-              style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
-              <path
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
-            </svg>Site
-          </button>
+        <div class="vc-title">Add Entry</div>
+        <div class="vc-heard"><strong>Heard:</strong> <span id="vc-heard-text"></span></div>
+        <div class="vc-field">
+          <label class="vc-label">Day</label>
+          <select id="vc-day" class="vc-input" autocomplete="off"></select>
         </div>
-      </div>
-      <div class="vc-field">
-        <div style="display:flex;gap:12px">
-          <div class="hrs-box" style="flex:1">
-            <label class="vc-label" style="display:block;margin-bottom:8px">Ordinary HRS</label>
-            <div class="hrs-stepper" style="display:flex;align-items:center">
-              <button type="button" onclick="stepVcHrs('vc-hrs',-1)">−</button>
-              <input id="vc-hrs" type="text" class="val" inputmode="decimal" pattern="[0-9.]*" value="0"
-                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-                onchange="setVcHrs('vc-hrs',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
-              <button type="button" onclick="stepVcHrs('vc-hrs',1)">+</button>
-            </div>
-          </div>
-          <div class="hrs-box ot-box" style="flex:1">
-            <label class="vc-label act-field-label-ot" style="display:block;margin-bottom:8px">Overtime HRS</label>
-            <div class="hrs-stepper" style="display:flex;align-items:center">
-              <button type="button" onclick="stepVcHrs('vc-ot',-1)">−</button>
-              <input id="vc-ot" type="text" class="val" inputmode="decimal" pattern="[0-9.]*" value="0"
-                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-                onchange="setVcHrs('vc-ot',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
-              <button type="button" onclick="stepVcHrs('vc-ot',1)">+</button>
-            </div>
+        <div class="vc-field">
+          <label class="vc-label">Description</label>
+          <textarea id="vc-desc" class="vc-input" rows="1" placeholder="e.g. Routines" autocomplete="off"
+            data-lpignore="true" data-form-type="other" data-1p-ignore="true" style="resize:none;overflow:hidden"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        </div>
+        <div class="vc-field">
+          <label class="vc-label">Location</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="vc-loc" class="vc-input" type="text" placeholder="Town name or code"
+              style="flex:1;min-width:0;cursor:pointer" autocomplete="off" data-lpignore="true" data-form-type="other"
+              data-1p-ignore="true" readonly
+              onclick="_coSiteCallback=(name)=>{document.getElementById('vc-loc').value=name;}; openLocationModal();">
+            <button type="button"
+              onclick="_coSiteCallback=(name)=>{document.getElementById('vc-loc').value=name;}; openLocationModal();"
+              style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
+              </svg>Site
+            </button>
           </div>
         </div>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Work Codes</label>
-        <div class="vc-codes-wrap" id="vc-codes-wrap" onclick="openVoiceCodeModal()"></div>
-      </div>
-      <div class="vc-btns">
-        <button class="vc-btn primary" onclick="confirmVoiceEntry()">Add to Timesheet</button>
-        <button class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
-      </div>
+        <div class="vc-field">
+          <div style="display:flex;gap:12px">
+            <div class="hrs-box" style="flex:1">
+              <label class="vc-label" style="display:block;margin-bottom:8px">Ordinary HRS</label>
+              <div class="hrs-stepper" style="display:flex;align-items:center">
+                <button type="button" onclick="stepVcHrs('vc-hrs',-1)">−</button>
+                <input id="vc-hrs" type="text" class="val" inputmode="decimal" pattern="[0-9.]*" value="0"
+                  autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+                  onchange="setVcHrs('vc-hrs',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                <button type="button" onclick="stepVcHrs('vc-hrs',1)">+</button>
+              </div>
+            </div>
+            <div class="hrs-box ot-box" style="flex:1">
+              <label class="vc-label act-field-label-ot" style="display:block;margin-bottom:8px">Overtime HRS</label>
+              <div class="hrs-stepper" style="display:flex;align-items:center">
+                <button type="button" onclick="stepVcHrs('vc-ot',-1)">−</button>
+                <input id="vc-ot" type="text" class="val" inputmode="decimal" pattern="[0-9.]*" value="0"
+                  autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+                  onchange="setVcHrs('vc-ot',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                <button type="button" onclick="stepVcHrs('vc-ot',1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="vc-field">
+          <label class="vc-label">Work Codes</label>
+          <div class="vc-codes-wrap" id="vc-codes-wrap" onclick="openVoiceCodeModal()"></div>
+        </div>
+        <div class="vc-btns">
+          <button class="vc-btn primary" onclick="confirmVoiceEntry()">Add to Timesheet</button>
+          <button class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
+        </div>
       </form>
     </div>
   </div>
@@ -23067,7 +23325,8 @@ QUESTION: ${query}`;
   <div id="note-fs-modal" class="hidden fixed inset-0 flex flex-col items-center"
     style="background:var(--bg-page);z-index:9999;">
     <div class="flex flex-col w-full flex-1 overflow-hidden" style="max-width:672px;background:var(--bg-page);">
-      <div style="background:var(--bg-header);position:relative;z-index:50000" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
+      <div style="background:var(--bg-header);position:relative;z-index:50000"
+        class="text-white px-4 py-3 flex items-center gap-3 safe-top">
         <button onclick="closeNoteFullscreen()" class="text-white p-1 flex items-center justify-center"><svg width="20"
             height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
             stroke-linejoin="round">
@@ -23098,203 +23357,354 @@ QUESTION: ${query}`;
       </div>
       <!-- TipTap toolbar row + colour dropdown wrapper -->
       <div class="tt-toolbar-wrap">
-      <div id="note-fs-tt-toolbar">
-        <!-- Text formatting -->
-        <button class="tt-btn" id="tt-bold" title="Bold"><b>B</b></button>
-        <button class="tt-btn" id="tt-italic" title="Italic"><i>I</i></button>
-        <button class="tt-btn" id="tt-strike" title="Strikethrough">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6c0-1.66-1.79-3-4-3s-4 1.34-4 3 1.79 3 4 3"/><path d="M8 18c0 1.66 1.79 3 4 3s4-1.34 4-3-1.79-3-4-3"/></svg>
-        </button>
-        <div class="tt-sep"></div>
-        <!-- Headings -->
-        <button class="tt-btn" id="tt-h1" title="Heading 1" style="font-size:11px;font-weight:800">H1</button>
-        <button class="tt-btn" id="tt-h2" title="Heading 2" style="font-size:11px;font-weight:800">H2</button>
-        <button class="tt-btn" id="tt-h3" title="Heading 3" style="font-size:11px;font-weight:800">H3</button>
-        <div class="tt-sep"></div>
-        <!-- Lists -->
-        <button class="tt-btn" id="tt-ul" title="Bullet list">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-ol" title="Numbered list">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-tasklist" title="Task list / checkboxes">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        </button>
-        <div class="tt-sep"></div>
-        <!-- Block elements -->
-        <button class="tt-btn" id="tt-blockquote" title="Blockquote">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1zm12 0c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-code" title="Inline code" style="font-family:monospace;font-size:12px">&lt;/&gt;</button>
-        <button class="tt-btn" id="tt-codeblock" title="Code block">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-hr" title="Horizontal divider">—</button>
-        <div class="tt-sep"></div>
-        <!-- Alignment -->
-        <button class="tt-btn" id="tt-align-left" title="Align left">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-align-center" title="Align centre">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-align-right" title="Align right">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>
-        </button>
-        <div class="tt-sep"></div>
-        <!-- Link, Table, Image -->
-        <button class="tt-btn" id="tt-link" title="Insert / edit link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-table" title="Insert table">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-image" title="Insert photo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        </button>
-        <div class="tt-sep"></div>
-        <!-- Undo / Redo / Clear -->
-        <button class="tt-btn" id="tt-undo" title="Undo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
-        </button>
-        <button class="tt-btn" id="tt-redo" title="Redo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
-        </button>
-        <div class="tt-sep"></div>
-        <button class="tt-btn" id="tt-clear" title="Clear formatting">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-        </button>
-        <div class="tt-sep"></div>
-        <!-- Colour palette toggle -->
-        <button class="tt-btn" id="tt-palette" title="Text colour / highlight" onclick="document.getElementById('note-fs-tt-colors').classList.toggle('tt-colors-open');this.classList.toggle('tt-active')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z"/><circle cx="6.5" cy="11.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="9.5" cy="7.5" r="1.5" fill="#e53935" stroke="none"/><circle cx="14.5" cy="7.5" r="1.5" fill="#1565c0" stroke="none"/><circle cx="17.5" cy="11.5" r="1.5" fill="#2e7d32" stroke="none"/></svg>
-        </button>
-      </div>
-      <!-- Colour picker dropdown (hidden by default) -->
-      <!-- Table context bar (shown when cursor is inside a table) -->
-      <div id="note-fs-tt-table-bar">
-        <span class="tt-tbl-label">Table</span>
-        <!-- Row operations -->
-        <button class="tt-btn" id="tt-row-before" title="Add row above">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="9" width="16" height="9" rx="1.5"/>
-            <line x1="10" y1="2" x2="10" y2="7"/><line x1="7" y1="4.5" x2="13" y2="4.5"/>
-          </svg>
-        </button>
-        <button class="tt-btn" id="tt-row-after" title="Add row below">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="16" height="9" rx="1.5"/>
-            <line x1="10" y1="13" x2="10" y2="18"/><line x1="7" y1="15.5" x2="13" y2="15.5"/>
-          </svg>
-        </button>
-        <button class="tt-btn" id="tt-row-del" title="Delete row" style="color:#ef4444">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="6" width="16" height="8" rx="1.5"/>
-            <line x1="7.5" y1="9.5" x2="12.5" y2="10.5"/><line x1="12.5" y1="9.5" x2="7.5" y2="10.5"/>
-          </svg>
-        </button>
-        <div class="tt-sep"></div>
-        <!-- Column operations -->
-        <button class="tt-btn" id="tt-col-before" title="Add column left">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="9" y="2" width="9" height="16" rx="1.5"/>
-            <line x1="2" y1="10" x2="7" y2="10"/><line x1="4.5" y1="7" x2="4.5" y2="13"/>
-          </svg>
-        </button>
-        <button class="tt-btn" id="tt-col-after" title="Add column right">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="9" height="16" rx="1.5"/>
-            <line x1="13" y1="10" x2="18" y2="10"/><line x1="15.5" y1="7" x2="15.5" y2="13"/>
-          </svg>
-        </button>
-        <button class="tt-btn" id="tt-col-del" title="Delete column" style="color:#ef4444">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="6" y="2" width="8" height="16" rx="1.5"/>
-            <line x1="9" y1="8.5" x2="11" y2="11.5"/><line x1="11" y1="8.5" x2="9" y2="11.5"/>
-          </svg>
-        </button>
-        <div class="tt-sep"></div>
-        <!-- Merge / Split -->
-        <button class="tt-btn" id="tt-merge-cells" title="Merge selected cells (select cells first)">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="16" height="16" rx="1.5"/>
-            <line x1="10" y1="2" x2="10" y2="18"/>
-            <line x1="2" y1="10" x2="10" y2="10"/>
-            <polyline points="12,7 17,10 12,13"/>
-          </svg>
-        </button>
-        <button class="tt-btn" id="tt-split-cell" title="Split merged cell">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="16" height="16" rx="1.5"/>
-            <line x1="10" y1="2" x2="10" y2="18"/>
-            <line x1="2" y1="10" x2="10" y2="10"/>
-            <polyline points="15,7 10,10 15,13"/>
-          </svg>
-        </button>
-        <div class="tt-sep"></div>
-        <button class="tt-btn" id="tt-table-del" title="Delete table" style="color:#ef4444">
-          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="16" height="16" rx="1.5"/>
-            <line x1="2" y1="7" x2="18" y2="7"/><line x1="2" y1="13" x2="18" y2="13"/>
-            <line x1="7" y1="2" x2="7" y2="18"/><line x1="13" y1="2" x2="13" y2="18"/>
-            <line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/>
-          </svg>
-        </button>
-      </div>
-      <!-- Floating cell action trigger -->
-      <button id="tt-cell-trigger" title="Cell actions" onmousedown="event.preventDefault()" onclick="_ttToggleCellPopup(event)">
-        <svg viewBox="0 0 20 20"><circle cx="10" cy="4" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="10" cy="16" r="1.8"/></svg>
-      </button>
-      <!-- Cell actions popup -->
-      <div id="tt-cell-popup">
-        <div class="tcp-section">Row</div>
-        <div class="tcp-grid">
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-before')"><svg viewBox="0 0 20 20"><rect x="2" y="10" width="16" height="8" rx="1.5"/><line x1="10" y1="2" x2="10" y2="7"/><line x1="7" y1="4.5" x2="13" y2="4.5"/></svg>Above</button>
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-after')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="8" rx="1.5"/><line x1="10" y1="13" x2="10" y2="18"/><line x1="7" y1="15.5" x2="13" y2="15.5"/></svg>Below</button>
-          <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-del')"><svg viewBox="0 0 20 20"><rect x="2" y="6" width="16" height="8" rx="1.5"/><line x1="7.5" y1="9.5" x2="12.5" y2="10.5"/><line x1="12.5" y1="9.5" x2="7.5" y2="10.5"/></svg>Delete</button>
+        <div id="note-fs-tt-toolbar">
+          <!-- Text formatting -->
+          <button class="tt-btn" id="tt-bold" title="Bold"><b>B</b></button>
+          <button class="tt-btn" id="tt-italic" title="Italic"><i>I</i></button>
+          <button class="tt-btn" id="tt-strike" title="Strikethrough">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <path d="M16 6c0-1.66-1.79-3-4-3s-4 1.34-4 3 1.79 3 4 3" />
+              <path d="M8 18c0 1.66 1.79 3 4 3s4-1.34 4-3-1.79-3-4-3" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Headings -->
+          <button class="tt-btn" id="tt-h1" title="Heading 1" style="font-size:11px;font-weight:800">H1</button>
+          <button class="tt-btn" id="tt-h2" title="Heading 2" style="font-size:11px;font-weight:800">H2</button>
+          <button class="tt-btn" id="tt-h3" title="Heading 3" style="font-size:11px;font-weight:800">H3</button>
+          <div class="tt-sep"></div>
+          <!-- Lists -->
+          <button class="tt-btn" id="tt-ul" title="Bullet list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="9" y1="6" x2="20" y2="6" />
+              <line x1="9" y1="12" x2="20" y2="12" />
+              <line x1="9" y1="18" x2="20" y2="18" />
+              <circle cx="4" cy="6" r="1.2" fill="currentColor" />
+              <circle cx="4" cy="12" r="1.2" fill="currentColor" />
+              <circle cx="4" cy="18" r="1.2" fill="currentColor" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-ol" title="Numbered list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="10" y1="6" x2="21" y2="6" />
+              <line x1="10" y1="12" x2="21" y2="12" />
+              <line x1="10" y1="18" x2="21" y2="18" />
+              <path d="M4 6h1v4" />
+              <path d="M4 10h2" />
+              <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-tasklist" title="Task list / checkboxes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Block elements -->
+          <button class="tt-btn" id="tt-blockquote" title="Blockquote">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1zm12 0c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-code" title="Inline code"
+            style="font-family:monospace;font-size:12px">&lt;/&gt;</button>
+          <button class="tt-btn" id="tt-codeblock" title="Code block">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-hr" title="Horizontal divider">—</button>
+          <div class="tt-sep"></div>
+          <!-- Alignment -->
+          <button class="tt-btn" id="tt-align-left" title="Align left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="15" y2="12" />
+              <line x1="3" y1="18" x2="18" y2="18" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-align-center" title="Align centre">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="6" y1="12" x2="18" y2="12" />
+              <line x1="4" y1="18" x2="20" y2="18" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-align-right" title="Align right">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="9" y1="12" x2="21" y2="12" />
+              <line x1="6" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Link, Table, Image -->
+          <button class="tt-btn" id="tt-link" title="Insert / edit link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-table" title="Insert table">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="3" y1="15" x2="21" y2="15" />
+              <line x1="9" y1="3" x2="9" y2="21" />
+              <line x1="15" y1="3" x2="15" y2="21" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-image" title="Insert photo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Undo / Redo / Clear -->
+          <button class="tt-btn" id="tt-undo" title="Undo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="9 14 4 9 9 4" />
+              <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-redo" title="Redo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="15 14 20 9 15 4" />
+              <path d="M4 20v-7a4 4 0 0 1 4-4h12" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <button class="tt-btn" id="tt-clear" title="Clear formatting">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+              <line x1="2" y1="2" x2="22" y2="22" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Colour palette toggle -->
+          <button class="tt-btn" id="tt-palette" title="Text colour / highlight"
+            onclick="document.getElementById('note-fs-tt-colors').classList.toggle('tt-colors-open');this.classList.toggle('tt-active')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z" />
+              <circle cx="6.5" cy="11.5" r="1.5" fill="currentColor" stroke="none" />
+              <circle cx="9.5" cy="7.5" r="1.5" fill="#e53935" stroke="none" />
+              <circle cx="14.5" cy="7.5" r="1.5" fill="#1565c0" stroke="none" />
+              <circle cx="17.5" cy="11.5" r="1.5" fill="#2e7d32" stroke="none" />
+            </svg>
+          </button>
         </div>
-        <div class="tcp-sep"></div>
-        <div class="tcp-section">Column</div>
-        <div class="tcp-grid">
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-before')"><svg viewBox="0 0 20 20"><rect x="10" y="2" width="8" height="16" rx="1.5"/><line x1="2" y1="10" x2="7" y2="10"/><line x1="4.5" y1="7" x2="4.5" y2="13"/></svg>Left</button>
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-after')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="8" height="16" rx="1.5"/><line x1="13" y1="10" x2="18" y2="10"/><line x1="15.5" y1="7" x2="15.5" y2="13"/></svg>Right</button>
-          <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-del')"><svg viewBox="0 0 20 20"><rect x="6" y="2" width="8" height="16" rx="1.5"/><line x1="9" y1="8.5" x2="11" y2="11.5"/><line x1="11" y1="8.5" x2="9" y2="11.5"/></svg>Delete</button>
+        <!-- Colour picker dropdown (hidden by default) -->
+        <!-- Table context bar (shown when cursor is inside a table) -->
+        <div id="note-fs-tt-table-bar">
+          <span class="tt-tbl-label">Table</span>
+          <!-- Row operations -->
+          <button class="tt-btn" id="tt-row-before" title="Add row above">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="9" width="16" height="9" rx="1.5" />
+              <line x1="10" y1="2" x2="10" y2="7" />
+              <line x1="7" y1="4.5" x2="13" y2="4.5" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-row-after" title="Add row below">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="2" width="16" height="9" rx="1.5" />
+              <line x1="10" y1="13" x2="10" y2="18" />
+              <line x1="7" y1="15.5" x2="13" y2="15.5" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-row-del" title="Delete row" style="color:#ef4444">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="6" width="16" height="8" rx="1.5" />
+              <line x1="7.5" y1="9.5" x2="12.5" y2="10.5" />
+              <line x1="12.5" y1="9.5" x2="7.5" y2="10.5" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Column operations -->
+          <button class="tt-btn" id="tt-col-before" title="Add column left">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="9" y="2" width="9" height="16" rx="1.5" />
+              <line x1="2" y1="10" x2="7" y2="10" />
+              <line x1="4.5" y1="7" x2="4.5" y2="13" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-col-after" title="Add column right">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="2" width="9" height="16" rx="1.5" />
+              <line x1="13" y1="10" x2="18" y2="10" />
+              <line x1="15.5" y1="7" x2="15.5" y2="13" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-col-del" title="Delete column" style="color:#ef4444">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="6" y="2" width="8" height="16" rx="1.5" />
+              <line x1="9" y1="8.5" x2="11" y2="11.5" />
+              <line x1="11" y1="8.5" x2="9" y2="11.5" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Merge / Split -->
+          <button class="tt-btn" id="tt-merge-cells" title="Merge selected cells (select cells first)">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="2" width="16" height="16" rx="1.5" />
+              <line x1="10" y1="2" x2="10" y2="18" />
+              <line x1="2" y1="10" x2="10" y2="10" />
+              <polyline points="12,7 17,10 12,13" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-split-cell" title="Split merged cell">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="2" width="16" height="16" rx="1.5" />
+              <line x1="10" y1="2" x2="10" y2="18" />
+              <line x1="2" y1="10" x2="10" y2="10" />
+              <polyline points="15,7 10,10 15,13" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <button class="tt-btn" id="tt-table-del" title="Delete table" style="color:#ef4444">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="2" width="16" height="16" rx="1.5" />
+              <line x1="2" y1="7" x2="18" y2="7" />
+              <line x1="2" y1="13" x2="18" y2="13" />
+              <line x1="7" y1="2" x2="7" y2="18" />
+              <line x1="13" y1="2" x2="13" y2="18" />
+              <line x1="5" y1="5" x2="15" y2="15" />
+              <line x1="15" y1="5" x2="5" y2="15" />
+            </svg>
+          </button>
         </div>
-        <div class="tcp-sep"></div>
-        <div class="tcp-section">Merge / Split</div>
-        <div class="tcp-grid" style="grid-template-columns:1fr">
-          <!-- Shown when ≥2 cells are selected; hidden otherwise -->
-          <button id="tcp-merge-sel-btn" class="tcp-btn" style="display:none;background:#818cf8;color:#fff;border-radius:10px;font-weight:700;justify-content:center;" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')">Merge selected cells</button>
-          <button class="tcp-btn" style="justify-content:center;" onmousedown="event.preventDefault()" onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><line x1="2" y1="10" x2="18" y2="10"/></svg>Split cell</button>
+        <!-- Floating cell action trigger -->
+        <button id="tt-cell-trigger" title="Cell actions" onmousedown="event.preventDefault()"
+          onclick="_ttToggleCellPopup(event)">
+          <svg viewBox="0 0 20 20">
+            <circle cx="10" cy="4" r="1.8" />
+            <circle cx="10" cy="10" r="1.8" />
+            <circle cx="10" cy="16" r="1.8" />
+          </svg>
+        </button>
+        <!-- Cell actions popup -->
+        <div id="tt-cell-popup">
+          <div class="tcp-section">Row</div>
+          <div class="tcp-grid">
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-before')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="10" width="16" height="8" rx="1.5" />
+                <line x1="10" y1="2" x2="10" y2="7" />
+                <line x1="7" y1="4.5" x2="13" y2="4.5" />
+              </svg>Above</button>
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-after')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="2" width="16" height="8" rx="1.5" />
+                <line x1="10" y1="13" x2="10" y2="18" />
+                <line x1="7" y1="15.5" x2="13" y2="15.5" />
+              </svg>Below</button>
+            <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-del')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="6" width="16" height="8" rx="1.5" />
+                <line x1="7.5" y1="9.5" x2="12.5" y2="10.5" />
+                <line x1="12.5" y1="9.5" x2="7.5" y2="10.5" />
+              </svg>Delete</button>
+          </div>
+          <div class="tcp-sep"></div>
+          <div class="tcp-section">Column</div>
+          <div class="tcp-grid">
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-before')"><svg
+                viewBox="0 0 20 20">
+                <rect x="10" y="2" width="8" height="16" rx="1.5" />
+                <line x1="2" y1="10" x2="7" y2="10" />
+                <line x1="4.5" y1="7" x2="4.5" y2="13" />
+              </svg>Left</button>
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-after')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="2" width="8" height="16" rx="1.5" />
+                <line x1="13" y1="10" x2="18" y2="10" />
+                <line x1="15.5" y1="7" x2="15.5" y2="13" />
+              </svg>Right</button>
+            <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-del')"><svg
+                viewBox="0 0 20 20">
+                <rect x="6" y="2" width="8" height="16" rx="1.5" />
+                <line x1="9" y1="8.5" x2="11" y2="11.5" />
+                <line x1="11" y1="8.5" x2="9" y2="11.5" />
+              </svg>Delete</button>
+          </div>
+          <div class="tcp-sep"></div>
+          <div class="tcp-section">Merge / Split</div>
+          <div class="tcp-grid" style="grid-template-columns:1fr">
+            <!-- Shown when ≥2 cells are selected; hidden otherwise -->
+            <button id="tcp-merge-sel-btn" class="tcp-btn"
+              style="display:none;background:#818cf8;color:#fff;border-radius:10px;font-weight:700;justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')">Merge selected cells</button>
+            <button class="tcp-btn" style="justify-content:center;" onmousedown="event.preventDefault()"
+              onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20">
+                <rect x="2" y="2" width="16" height="16" rx="1.5" />
+                <line x1="10" y1="2" x2="10" y2="18" />
+                <line x1="2" y1="10" x2="18" y2="10" />
+              </svg>Split cell</button>
+          </div>
+          <div class="tcp-sep"></div>
+          <div class="tcp-grid" style="grid-template-columns:1fr">
+            <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('table-del')"><svg
+                viewBox="0 0 20 20" style="width:14px;height:14px;display:inline;vertical-align:middle">
+                <rect x="2" y="2" width="16" height="16" rx="1.5" />
+                <line x1="2" y1="7" x2="18" y2="7" />
+                <line x1="2" y1="13" x2="18" y2="13" />
+                <line x1="7" y1="2" x2="7" y2="18" />
+                <line x1="13" y1="2" x2="13" y2="18" />
+                <line x1="5" y1="5" x2="15" y2="15" />
+                <line x1="15" y1="5" x2="5" y2="15" />
+              </svg> Delete table</button>
+          </div>
         </div>
-        <div class="tcp-sep"></div>
-        <div class="tcp-grid" style="grid-template-columns:1fr">
-          <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('table-del')"><svg viewBox="0 0 20 20" style="width:14px;height:14px;display:inline;vertical-align:middle"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="2" y1="7" x2="18" y2="7"/><line x1="2" y1="13" x2="18" y2="13"/><line x1="7" y1="2" x2="7" y2="18"/><line x1="13" y1="2" x2="13" y2="18"/><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg> Delete table</button>
+        <!-- Hidden image file input -->
+        <input type="file" id="tt-image-input" accept="image/*" style="display:none">
+        <!-- TipTap colour picker (inside wrapper for absolute positioning) -->
+        <div id="note-fs-tt-colors">
+          <span class="tt-colors-label">A</span>
+          <button class="tt-swatch" id="tt-col-black" style="background:#1e293b" title="Black"></button>
+          <button class="tt-swatch" id="tt-col-red" style="background:#e53935" title="Red"></button>
+          <button class="tt-swatch" id="tt-col-orange" style="background:#f57c00" title="Orange"></button>
+          <button class="tt-swatch" id="tt-col-green" style="background:#2e7d32" title="Green"></button>
+          <button class="tt-swatch" id="tt-col-blue" style="background:#1565c0" title="Blue"></button>
+          <button class="tt-swatch" id="tt-col-purple" style="background:#6a1b9a" title="Purple"></button>
+          <button class="tt-swatch" id="tt-col-reset" style="background:#94a3b8;border-color:#cbd5e1"
+            title="Default colour"></button>
+          <div class="tt-sep"></div>
+          <span class="tt-colors-label">🖊</span>
+          <button class="tt-swatch" id="tt-hl-yellow" style="background:#fef08a" title="Yellow"></button>
+          <button class="tt-swatch" id="tt-hl-green" style="background:#bbf7d0" title="Green"></button>
+          <button class="tt-swatch" id="tt-hl-red" style="background:#fecaca" title="Red"></button>
+          <button class="tt-swatch" id="tt-hl-blue" style="background:#bfdbfe" title="Blue"></button>
+          <button class="tt-swatch" id="tt-hl-purple" style="background:#e9d5ff" title="Purple"></button>
+          <button class="tt-swatch" id="tt-hl-orange" style="background:#fed7aa" title="Orange"></button>
+          <button class="tt-swatch" id="tt-hl-reset" style="background:#f1f5f9;border-color:#cbd5e1"
+            title="Remove highlight"></button>
         </div>
-      </div>
-      <!-- Hidden image file input -->
-      <input type="file" id="tt-image-input" accept="image/*" style="display:none">
-      <!-- TipTap colour picker (inside wrapper for absolute positioning) -->
-      <div id="note-fs-tt-colors">
-        <span class="tt-colors-label">A</span>
-        <button class="tt-swatch" id="tt-col-black"  style="background:#1e293b" title="Black"></button>
-        <button class="tt-swatch" id="tt-col-red"    style="background:#e53935" title="Red"></button>
-        <button class="tt-swatch" id="tt-col-orange" style="background:#f57c00" title="Orange"></button>
-        <button class="tt-swatch" id="tt-col-green"  style="background:#2e7d32" title="Green"></button>
-        <button class="tt-swatch" id="tt-col-blue"   style="background:#1565c0" title="Blue"></button>
-        <button class="tt-swatch" id="tt-col-purple" style="background:#6a1b9a" title="Purple"></button>
-        <button class="tt-swatch" id="tt-col-reset"  style="background:#94a3b8;border-color:#cbd5e1" title="Default colour"></button>
-        <div class="tt-sep"></div>
-        <span class="tt-colors-label">🖊</span>
-        <button class="tt-swatch" id="tt-hl-yellow" style="background:#fef08a" title="Yellow"></button>
-        <button class="tt-swatch" id="tt-hl-green"  style="background:#bbf7d0" title="Green"></button>
-        <button class="tt-swatch" id="tt-hl-red"    style="background:#fecaca" title="Red"></button>
-        <button class="tt-swatch" id="tt-hl-blue"   style="background:#bfdbfe" title="Blue"></button>
-        <button class="tt-swatch" id="tt-hl-purple" style="background:#e9d5ff" title="Purple"></button>
-        <button class="tt-swatch" id="tt-hl-orange" style="background:#fed7aa" title="Orange"></button>
-        <button class="tt-swatch" id="tt-hl-reset"  style="background:#f1f5f9;border-color:#cbd5e1" title="Remove highlight"></button>
-      </div>
       </div><!-- end tt-toolbar-wrap -->
       <!-- TipTap editor area -->
       <div id="note-fs-editor"></div>
@@ -23305,13 +23715,26 @@ QUESTION: ${query}`;
     <input id="tt-link-bubble-input" type="text" placeholder="Paste or type URL…" autocomplete="off" spellcheck="false">
     <div class="tt-sep" style="height:16px;margin:0 4px;"></div>
     <button class="tt-link-bbl-btn" id="tt-link-bbl-confirm" title="Apply URL (Enter)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
     </button>
     <button class="tt-link-bbl-btn" id="tt-link-bbl-open" title="Open link in new tab">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+        <polyline points="15 3 21 3 21 9" />
+        <line x1="10" y1="14" x2="21" y2="3" />
+      </svg>
     </button>
     <button class="tt-link-bbl-btn" id="tt-link-bbl-remove" title="Remove link">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        <line x1="2" y1="2" x2="22" y2="22" />
+      </svg>
     </button>
   </div>
 
@@ -23319,7 +23742,7 @@ QUESTION: ${query}`;
   <div id="rian-dialog-overlay" role="dialog" aria-modal="true" onclick="_rdnOverlayClick(event)">
     <div id="rian-dialog">
       <div class="rdn-title" id="rdn-title"></div>
-      <div class="rdn-msg"   id="rdn-msg"></div>
+      <div class="rdn-msg" id="rdn-msg"></div>
       <input class="rdn-input" id="rdn-input" autocomplete="off" spellcheck="false" style="display:none">
       <div class="rdn-actions" id="rdn-actions"></div>
     </div>
@@ -23339,78 +23762,4 @@ QUESTION: ${query}`;
         <button onclick="sendWeeklyEmailFromPreview()" class="bg-amber-500 text-white px-4 py-1.5 text-sm font-bold"
           style="border-radius:12px;">Send Email</button>
       </div>
-      <div
-        style="background:#eff6ff;border-bottom:1px solid #bfdbfe;padding:8px 16px;font-size:12px;color:#2563eb;text-align:center;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-          stroke-linecap="round" stroke-linejoin="round"
-          style="display:inline-block;vertical-align:-2px;margin-right:4px;">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="16" x2="12" y2="12" />
-          <line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg> Tap any <span style="text-decoration:underline;text-decoration-style:dotted;">underlined value</span> to
-        copy
-        it to clipboard
-      </div>
-      <div id="email-preview-body" class="flex-1 overflow-y-auto" style="background:#f1f5f9;padding:16px 12px;"></div>
-    </div>
-  </div>
-
-  <!-- ===== NOTE VOICE CONFIRM SHEET ===== -->
-  <div id="note-voice-confirm-modal">
-    <div class="vc-sheet">
-      <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
-      <div class="vc-title">Add Note</div>
-      <div class="vc-heard"><strong>Heard:</strong> <span id="nvc-heard-text"></span></div>
-      <div class="vc-field">
-        <label class="vc-label">Description</label>
-        <textarea id="nvc-desc" class="vc-input" rows="1" placeholder="e.g. Fix router"
-          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-          style="resize:none;overflow:hidden"
-          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Date</label>
-        <div id="nvc-date-display" class="vc-input" style="background:var(--bg-input);color:var(--text-primary);line-height:38px;padding:0 12px;cursor:default"></div>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Location</label>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="nvc-loc" class="vc-input" type="text" placeholder="Town name or code" style="flex:1;min-width:0"
-            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-            readonly onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;}; openLocationModal();">
-          <button type="button"
-            onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;}; openLocationModal();"
-            style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
-              style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
-            </svg>Site
-          </button>
-        </div>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Priority</label>
-        <div class="note-pri-dots" id="nvc-priority-dots">
-          <button type="button" class="note-pri-dot pd-high" data-pri="high" onclick="setNvcPriority('high')" title="High"></button>
-          <button type="button" class="note-pri-dot pd-medium pd-active" data-pri="medium" onclick="setNvcPriority('medium')" title="Medium"></button>
-          <button type="button" class="note-pri-dot pd-low" data-pri="low" onclick="setNvcPriority('low')" title="Low"></button>
-        </div>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Tags</label>
-        <div id="nvc-category-chips" class="ncm-pills" style="padding:0"></div>
-      </div>
-      <div class="vc-field">
-        <label class="vc-label">Reminder</label>
-        <div id="nvc-reminder-wrap"></div>
-      </div>
-      <div class="vc-btns">
-        <button class="vc-btn primary" onclick="confirmNoteVoice()">Add Note</button>
-        <button class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
-      </div>
-      </form>
-    </div>
-  </div>
-
-</body>
-</html>
+    
