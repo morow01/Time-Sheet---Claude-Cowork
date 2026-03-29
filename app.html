@@ -9636,7 +9636,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.44';
+    const VERSION = '4.27.45';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22170,8 +22170,16 @@ QUESTION: ${query}`;
             cellTrigger.style.left = coords.left + 'px';
           }
           cellTrigger.style.display = 'flex';
-          // Save cell position so _ttCellAct can use it even if editor blurs on mobile
-          window._ttSavedCellFrom = editor.view.state.selection.from;
+          // Save cell position + CellSelection state so popup can use them after mobile blur
+          window._ttSavedCellFrom   = editor.view.state.selection.from;
+          window._ttSavedCellSelCnt = (() => {
+            const sel = editor.view.state.selection;
+            if (!sel.$anchorCell) return 0;
+            // Count selected cells
+            let n = 0;
+            sel.forEachCell(() => n++);
+            return n;
+          })();
         }
       } else {
         if (tableBar) tableBar.style.display = 'none';
@@ -22189,6 +22197,13 @@ QUESTION: ${query}`;
       const isOpen = popup.style.display === 'block';
       popup.style.display = isOpen ? 'none' : 'block';
       if (!isOpen) {
+        // Show "Merge selected" button only when multiple cells are selected
+        const selCount = window._ttSavedCellSelCnt || 0;
+        const mergeSelBtn = document.getElementById('tcp-merge-sel-btn');
+        if (mergeSelBtn) {
+          mergeSelBtn.style.display = selCount >= 2 ? 'flex' : 'none';
+          if (selCount >= 2) mergeSelBtn.textContent = `Merge ${selCount} cells`;
+        }
         const trigger = document.getElementById('tt-cell-trigger');
         const tr = trigger.getBoundingClientRect();
         const vw = window.innerWidth;
@@ -22197,7 +22212,7 @@ QUESTION: ${query}`;
         let left = tr.right + 6;
         if (left + pw > vw - 8) left = tr.left - pw - 6;
         let top = tr.top;
-        if (top + 340 > vh) top = vh - 346;
+        if (top + 380 > vh) top = Math.max(8, vh - 386);
         popup.style.left = Math.max(8, left) + 'px';
         popup.style.top  = Math.max(8, top)  + 'px';
       }
@@ -22241,8 +22256,18 @@ QUESTION: ${query}`;
       else if (action === 'col-after')  { e.chain().focus().addColumnAfter().run(); }
       else if (action === 'col-del') { showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true }).then(ok => { if (ok) e.chain().focus().deleteColumn().run(); }); }
       else if (action === 'table-del')  { e.chain().focus().deleteTable().run(); }
+      else if (action === 'merge-sel') {
+        // Merge an existing multi-cell CellSelection
+        const ok = e.chain().focus().mergeCells().run();
+        if (!ok) showToast('Merge failed — select cells first, then use ⋮ Merge');
+      }
       else if (action === 'split') {
-        if (!e.chain().focus().splitCell().run()) showToast('Place cursor in a merged cell to split');
+        // On mobile the editor blurs; restore cursor to saved cell position first
+        const $h = _resolvedHead();
+        const ok = $h
+          ? e.chain().setTextSelection($h.pos).splitCell().run()
+          : e.chain().focus().splitCell().run();
+        if (!ok) showToast('Place cursor in a merged cell to split');
       }
       else if (action === 'merge-right') {
         const { state } = e.view;
@@ -23019,7 +23044,7 @@ QUESTION: ${query}`;
   <div id="note-fs-modal" class="hidden fixed inset-0 flex flex-col items-center"
     style="background:var(--bg-page);z-index:9999;">
     <div class="flex flex-col w-full flex-1 overflow-hidden" style="max-width:672px;background:var(--bg-page);">
-      <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
+      <div style="background:var(--bg-header);position:relative;z-index:50000" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
         <button onclick="closeNoteFullscreen()" class="text-white p-1 flex items-center justify-center"><svg width="20"
             height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
             stroke-linejoin="round">
@@ -23216,6 +23241,8 @@ QUESTION: ${query}`;
         <div class="tcp-sep"></div>
         <div class="tcp-section">Merge / Split</div>
         <div class="tcp-grid">
+          <!-- Shown dynamically when ≥2 cells are selected -->
+          <button id="tcp-merge-sel-btn" class="tcp-btn tcp-merge-sel" style="display:none;grid-column:span 2;background:#818cf8;color:#fff;border-radius:10px;font-weight:700;" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')">Merge selected</button>
           <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-right')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><polyline points="13,7 17,10 13,13"/></svg>→ Right</button>
           <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-down')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="2" y1="10" x2="18" y2="10"/><polyline points="7,13 10,17 13,13"/></svg>↓ Down</button>
           <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><line x1="2" y1="10" x2="18" y2="10"/></svg>Split</button>
