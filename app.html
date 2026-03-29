@@ -636,20 +636,6 @@
       font-family: 'DM Mono', 'Courier New', monospace !important;
     }
 
-    .act-notes-rich-preview p {
-      margin: 0 0 4px;
-    }
-
-    .act-notes-rich-preview p:last-child {
-      margin-bottom: 0;
-    }
-
-    .act-notes-rich-preview ul,
-    .act-notes-rich-preview ol {
-      margin: 0 0 4px;
-      padding-left: 20px;
-    }
-
     .notes-rich-placeholder {
       color: var(--text-muted);
       font-style: italic;
@@ -3769,31 +3755,31 @@
       color: var(--text-primary);
       min-height: 200px;
     }
-    #note-fs-editor .ProseMirror p { margin-bottom: 6px; }
-    #note-fs-editor .ProseMirror p:last-child { margin-bottom: 0; }
-    #note-fs-editor .ProseMirror h1,
-    #note-fs-editor .ProseMirror h2,
-    #note-fs-editor .ProseMirror h3 {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) p { margin-bottom: 6px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) p:last-child { margin-bottom: 0; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h1,
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h2,
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h3 {
       font-weight: 700;
       padding-top: 12px;
     }
-    #note-fs-editor .ProseMirror h1:first-child,
-    #note-fs-editor .ProseMirror h2:first-child,
-    #note-fs-editor .ProseMirror h3:first-child { padding-top: 0; }
-    #note-fs-editor .ProseMirror h1 { font-size: 22px; }
-    #note-fs-editor .ProseMirror h2 { font-size: 18px; }
-    #note-fs-editor .ProseMirror h3 { font-size: 15px; }
-    #note-fs-editor .ProseMirror ul,
-    #note-fs-editor .ProseMirror ol { padding-left: 20px; margin-bottom: 6px; }
-    #note-fs-editor .ProseMirror ul { list-style-type: disc; }
-    #note-fs-editor .ProseMirror ol { list-style-type: decimal; }
-    #note-fs-editor .ProseMirror li { margin-bottom: 2px; }
-    #note-fs-editor .ProseMirror blockquote {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h1:first-child,
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h2:first-child,
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h3:first-child { padding-top: 0; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h1 { font-size: 22px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h2 { font-size: 18px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) h3 { font-size: 15px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul,
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ol { padding-left: 20px; margin-bottom: 6px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul { list-style-type: disc; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ol { list-style-type: decimal; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) li { margin-bottom: 2px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) blockquote {
       border-left: 3px solid rgba(13, 13, 13, 0.12);
       padding-left: 1rem;
       margin: 1.5rem 0;
     }
-    #note-fs-editor .ProseMirror a {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) a {
       color: #818cf8;
       text-decoration: underline;
       cursor: pointer;
@@ -3834,13 +3820,13 @@
     }
     .tt-link-bbl-btn:hover { background: var(--bg-page); color: var(--text); }
     .tt-link-bbl-btn svg { width: 14px; height: 14px; }
-    #note-fs-editor .ProseMirror code {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) code {
       background: var(--bg-page);
       border-radius: 4px;
       padding: 1px 5px;
       font-size: 13px;
     }
-    #note-fs-editor .ProseMirror mark { border-radius: 3px; padding: 0 2px; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark { border-radius: 3px; padding: 0 2px; }
     #note-fs-editor .ProseMirror p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
       color: var(--text-muted);
@@ -3850,7 +3836,7 @@
     }
 
     /* Code block */
-    #note-fs-editor .ProseMirror pre {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) pre {
       background: #f1f5f9;
       color: #1e293b;
       border: 1px solid #e2e8f0;
@@ -3861,48 +3847,48 @@
       overflow-x: auto;
       margin: 8px 0;
     }
-    #note-fs-editor .ProseMirror pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
 
     /* Task list */
-    #note-fs-editor .ProseMirror ul[data-type="taskList"] {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] {
       list-style: none;
       padding-left: 4px;
     }
-    #note-fs-editor .ProseMirror ul[data-type="taskList"] li {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li {
       display: flex;
       align-items: flex-start;
       gap: 8px;
       margin-bottom: 4px;
     }
-    #note-fs-editor .ProseMirror ul[data-type="taskList"] li > label {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > label {
       flex-shrink: 0;
       margin-top: 2px;
     }
-    #note-fs-editor .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > label input[type="checkbox"] {
       width: 16px; height: 16px;
       cursor: pointer;
     }
-    #note-fs-editor .ProseMirror ul[data-type="taskList"] li > div { flex: 1; }
-    #note-fs-editor .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > div { flex: 1; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li[data-checked="true"] > div {
       text-decoration: line-through;
       color: var(--text-muted);
     }
 
     /* Tables */
-    #note-fs-editor .ProseMirror table {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) table {
       border-collapse: collapse;
       width: 100%;
       margin: 10px 0;
       font-size: 13px;
     }
-    #note-fs-editor .ProseMirror td,
-    #note-fs-editor .ProseMirror th {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) td,
+    :is(#note-fs-editor .ProseMirror, .tt-prose) th {
       border: 1px solid var(--border);
       padding: 6px 10px;
       min-width: 60px;
       vertical-align: top;
     }
-    #note-fs-editor .ProseMirror th {
+    :is(#note-fs-editor .ProseMirror, .tt-prose) th {
       background: var(--bg-page);
       font-weight: 700;
       text-align: left;
@@ -3914,7 +3900,7 @@
       inset: 0;
       pointer-events: none;
     }
-    #note-fs-editor .ProseMirror .tableWrapper { overflow-x: auto; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) .tableWrapper { overflow-x: auto; }
 
     /* Table context bar */
     #note-fs-tt-table-bar {
@@ -9558,7 +9544,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.30';
+    const VERSION = '4.27.31';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14590,7 +14576,7 @@
                 </div>
                 <div class="notes-panel-body ${fnOpen ? 'open' : ''}" data-fn-wrap="${note.id}">
                   <div class="notes-ta-wrap" onclick="event.stopPropagation();openFieldNoteFullscreen('${note.id}')">
-                    <div class="act-notes-rich-preview" data-fn-preview="${note.id}">
+                    <div class="act-notes-rich-preview tt-prose" data-fn-preview="${note.id}">
                       ${ncText
             ? (nc.trim().startsWith('<') ? nc : esc(nc).replace(/\n/g, '<br>'))
             : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
