@@ -9636,7 +9636,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.46';
+    const VERSION = '4.27.47';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22410,14 +22410,13 @@ QUESTION: ${query}`;
       if (ev.target === document.getElementById('rian-dialog-overlay')) _rdnClose(null);
     }
 
-    // Keyboard: Enter to confirm, Escape to cancel
-    document.getElementById('rdn-input').addEventListener('keydown', ev => {
-      if (ev.key === 'Enter')  { ev.preventDefault(); _rdnClose(ev.target.value); }
-      if (ev.key === 'Escape') { ev.preventDefault(); _rdnClose(null); }
-    });
+    // Keyboard: Enter to confirm, Escape to cancel — single document listener (safe at parse time)
     document.addEventListener('keydown', ev => {
-      if (ev.key === 'Escape' && document.getElementById('rian-dialog-overlay').classList.contains('rdn-open')) {
-        _rdnClose(null);
+      const overlay = document.getElementById('rian-dialog-overlay');
+      if (!overlay?.classList.contains('rdn-open')) return;
+      if (ev.key === 'Escape') { ev.preventDefault(); _rdnClose(null); }
+      if (ev.key === 'Enter' && ev.target?.id === 'rdn-input') {
+        ev.preventDefault(); _rdnClose(ev.target.value);
       }
     });
 
@@ -23247,12 +23246,10 @@ QUESTION: ${query}`;
         </div>
         <div class="tcp-sep"></div>
         <div class="tcp-section">Merge / Split</div>
-        <div class="tcp-grid">
-          <!-- Shown dynamically when ≥2 cells are selected -->
-          <button id="tcp-merge-sel-btn" class="tcp-btn tcp-merge-sel" style="display:none;grid-column:span 2;background:#818cf8;color:#fff;border-radius:10px;font-weight:700;" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')">Merge selected</button>
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-right')" title="Join this cell with the one to its right"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><polyline points="13,7 17,10 13,13"/></svg>+ Right</button>
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-down')" title="Join this cell with the one below it"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="2" y1="10" x2="18" y2="10"/><polyline points="7,13 10,17 13,13"/></svg>+ Below</button>
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><line x1="2" y1="10" x2="18" y2="10"/></svg>Split</button>
+        <div class="tcp-grid" style="grid-template-columns:1fr">
+          <!-- Shown when ≥2 cells are selected; hidden otherwise -->
+          <button id="tcp-merge-sel-btn" class="tcp-btn" style="display:none;background:#818cf8;color:#fff;border-radius:10px;font-weight:700;justify-content:center;" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')">Merge selected cells</button>
+          <button class="tcp-btn" style="justify-content:center;" onmousedown="event.preventDefault()" onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><line x1="2" y1="10" x2="18" y2="10"/></svg>Split cell</button>
         </div>
         <div class="tcp-sep"></div>
         <div class="tcp-grid" style="grid-template-columns:1fr">
