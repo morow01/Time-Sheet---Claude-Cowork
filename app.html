@@ -9548,7 +9548,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.37';
+    const VERSION = '4.27.38';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14185,25 +14185,37 @@
         const tiptapEditingId = (_fnFsNoteId && !document.getElementById('note-fs-modal')?.classList.contains('hidden'))
           ? _fnFsNoteId : null;
 
-        // Preserve the note being actively edited (prevent Firestore echo from overwriting mid-typing)
         // For TipTap: protect if a save happened in the last 10 seconds (echo protection window)
         const tiptapRecentlySaved = tiptapEditingId && (Date.now() - _tiptapLastSaveAt < 10000);
-        // Also protect for 8s after editor closed (allows debounce timer to fire + Firestore echo to settle)
+        // Also protect for 8s after editor closed
         const recentClosedNote = _tiptapLastSavedNoteId && (Date.now() - _tiptapLastSaveAt < 8000) ? _tiptapLastSavedNoteId : null;
         const effectiveEditingId = editingNoteId || (tiptapRecentlySaved ? tiptapEditingId : null) || recentClosedNote;
-        const localEditing = effectiveEditingId ? deepCopy(state.notes.find(n => n.id === effectiveEditingId)) : null;
 
-        state.notes = deepCopy(remote.notes);
-        // Strip any HTML still in descriptions from remote data.
-        // Safe to save here — we have the canonical Firestore snapshot.
-        const _migrated = migrateNotesHTML(state.notes);
-        if (_migrated) scheduleNotesSave();
-
-        // Restore locally-edited note to prevent data loss
-        if (localEditing) {
-          const idx = state.notes.findIndex(n => n.id === localEditing.id);
-          if (idx >= 0) state.notes[idx] = localEditing;
+        // PER-NOTE MERGE: keep whichever device has the newer version of each note.
+        // This prevents a device with stale cached data from overwriting edits made on
+        // another device — even after the echo-protection window has expired.
+        const localMap = new Map((state.notes || []).map(n => [n.id, n]));
+        let hadNewerLocal = false;
+        const merged = remote.notes.map(rn => {
+          const ln = localMap.get(rn.id);
+          // Always keep the currently-editing note (overrides timestamp comparison)
+          if (ln && ln.id === effectiveEditingId) { hadNewerLocal = true; return deepCopy(ln); }
+          // Keep local if it's strictly newer
+          if (ln && (ln.updatedAt || 0) > (rn.updatedAt || 0)) { hadNewerLocal = true; return deepCopy(ln); }
+          return deepCopy(rn);
+        });
+        // Keep local-only notes that were created very recently (haven't synced yet)
+        for (const ln of (state.notes || [])) {
+          if (!remote.notes.find(rn => rn.id === ln.id) && (ln.updatedAt || 0) > Date.now() - 30000) {
+            merged.push(deepCopy(ln)); hadNewerLocal = true;
+          }
         }
+        state.notes = merged;
+
+        // Strip any HTML still in descriptions from remote data.
+        const _migrated = migrateNotesHTML(state.notes);
+        // If we kept local-newer notes OR migration ran, push the reconciled state back to Firestore
+        if (_migrated || hadNewerLocal) scheduleNotesSave();
 
         // Conflict detection: if TipTap is open and another device saved this note more recently
         if (tiptapEditingId && !tiptapRecentlySaved) {
