@@ -3684,10 +3684,20 @@
       display: flex;
       align-items: center;
       gap: 2px;
+      /* Mobile: single scrollable row */
       overflow-x: auto;
+      flex-wrap: nowrap;
       scrollbar-width: none;
     }
     #note-fs-tt-toolbar::-webkit-scrollbar { display: none; }
+    /* Desktop: wrap into multiple rows instead of scrolling */
+    @media (min-width: 600px) {
+      #note-fs-tt-toolbar {
+        flex-wrap: wrap;
+        overflow-x: visible;
+        row-gap: 2px;
+      }
+    }
 
     #note-fs-tt-colors {
       border-bottom: 1px solid var(--border);
@@ -3759,7 +3769,6 @@
     #note-fs-editor .ProseMirror h2,
     #note-fs-editor .ProseMirror h3 {
       font-weight: 700;
-      color: #d35b5b;
       padding-top: 12px;
     }
     #note-fs-editor .ProseMirror h1:first-child,
@@ -9501,7 +9510,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.23';
+    const VERSION = '4.27.24';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
