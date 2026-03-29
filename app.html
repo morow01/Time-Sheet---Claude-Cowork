@@ -9548,7 +9548,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.39';
+    const VERSION = '4.27.40';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20828,6 +20828,12 @@ Rules:
 
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(e => console.warn('[Rian]', e));
+        // When a new SW takes over (skipWaiting + clients.claim), reload the page
+        // so the running JS is replaced with the new version immediately.
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('[Rian] New service worker activated — reloading for latest version');
+          window.location.reload();
+        });
       }
 
       try {
