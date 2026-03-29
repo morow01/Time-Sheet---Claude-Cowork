@@ -9558,7 +9558,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.29';
+    const VERSION = '4.27.30';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21816,7 +21816,7 @@ QUESTION: ${query}`;
           Link.configure({ openOnClick: false }),
           Subscript,
           Superscript,
-          Image.configure({ inline: false }),
+          Image.configure({ inline: false, allowBase64: true }),
           BubbleMenu.configure({
             element: document.getElementById('tt-link-bubble'),
             shouldShow: ({ editor }) => editor.isActive('link'),
