@@ -3789,7 +3789,7 @@
     }
     /* Link bubble menu */
     #tt-link-bubble {
-      display: flex;
+      /* position/display/z-index set inline by _ttUpdateLinkBubble */
       align-items: center;
       gap: 2px;
       background: var(--bg-card);
@@ -3797,7 +3797,6 @@
       border-radius: 8px;
       padding: 4px 8px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-      z-index: 10010;
       max-width: 300px;
     }
     #tt-link-bubble-input {
@@ -9549,7 +9548,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.36';
+    const VERSION = '4.27.37';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21754,7 +21753,6 @@ QUESTION: ${query}`;
         { default: Subscript },
         { default: Superscript },
         { default: Image },
-        { BubbleMenu },
       ] = await Promise.all([
         import('https://esm.sh/@tiptap/core@2.4.0'),
         import('https://esm.sh/@tiptap/starter-kit@2.4.0'),
@@ -21774,12 +21772,11 @@ QUESTION: ${query}`;
         import('https://esm.sh/@tiptap/extension-subscript@2.4.0'),
         import('https://esm.sh/@tiptap/extension-superscript@2.4.0'),
         import('https://esm.sh/@tiptap/extension-image@2.4.0'),
-        import('https://esm.sh/@tiptap/extension-bubble-menu@2.4.0'),
       ]);
       _tiptapModules = {
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItem, Table, TableRow, TableHeader, TableCell,
-        Link, Subscript, Superscript, Image, BubbleMenu,
+        Link, Subscript, Superscript, Image,
       };
       return _tiptapModules;
     }
@@ -21789,7 +21786,7 @@ QUESTION: ${query}`;
       const {
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItem, Table, TableRow, TableHeader, TableCell,
-        Link, Subscript, Superscript, Image, BubbleMenu,
+        Link, Subscript, Superscript, Image,
       } = await _loadTipTapModules();
       _tiptapEditor = new Editor({
         element: document.getElementById('note-fs-editor'),
@@ -21817,17 +21814,18 @@ QUESTION: ${query}`;
           Subscript,
           Superscript,
           Image.configure({ inline: false, allowBase64: true }),
-          BubbleMenu.configure({
-            element: document.getElementById('tt-link-bubble'),
-            shouldShow: ({ editor }) => editor.isActive('link'),
-            tippyOptions: { duration: 100, appendTo: () => document.body, placement: 'bottom' },
-          }),
         ],
         content: '',
         onUpdate({ editor }) {
           if (_tiptapOnUpdate) _tiptapOnUpdate(editor);
         },
         onSelectionUpdate({ editor }) { _ttUpdateToolbar(editor); },
+        onBlur({ editor, event }) {
+          // Keep bubble visible if focus moved into the bubble itself
+          const bubble = document.getElementById('tt-link-bubble');
+          if (bubble && event?.relatedTarget && bubble.contains(event.relatedTarget)) return;
+          _ttHideLinkBubble();
+        },
       });
       _ttBindToolbar();
     }
@@ -21867,12 +21865,25 @@ QUESTION: ${query}`;
         _ttUpdateToolbar(e);
       };
       on('tt-link-bbl-confirm', applyBubbleUrl);
-      // Also apply on Enter key inside the input
+      // Enter / Escape inside the input
       const bubbleInput = document.getElementById('tt-link-bubble-input');
       if (bubbleInput) {
         bubbleInput.addEventListener('keydown', (ev) => {
-          if (ev.key === 'Enter') { ev.preventDefault(); applyBubbleUrl(); }
-          if (ev.key === 'Escape') { e.commands.focus(); }
+          if (ev.key === 'Enter')  { ev.preventDefault(); applyBubbleUrl(); }
+          if (ev.key === 'Escape') { _ttHideLinkBubble(); e.commands.focus(); }
+        });
+        // When user blurs input without confirming → hide bubble
+        bubbleInput.addEventListener('blur', (ev) => {
+          // If relatedTarget is still inside the bubble (e.g. clicked a button), stay open
+          const bubble = document.getElementById('tt-link-bubble');
+          if (bubble && ev.relatedTarget && bubble.contains(ev.relatedTarget)) return;
+          // Otherwise hide after short delay (gives click handler on buttons time to fire)
+          setTimeout(() => {
+            const bubble2 = document.getElementById('tt-link-bubble');
+            if (bubble2 && document.activeElement !== bubbleInput) {
+              if (!bubble2.contains(document.activeElement)) _ttHideLinkBubble();
+            }
+          }, 150);
         });
       }
       on('tt-link-bbl-open', () => {
@@ -21888,24 +21899,36 @@ QUESTION: ${query}`;
       // Table context buttons
       on('tt-row-before',  () => e.chain().focus().addRowBefore().run());
       on('tt-row-after',   () => e.chain().focus().addRowAfter().run());
-      on('tt-row-del',     () => e.chain().focus().deleteRow().run());
+      on('tt-row-del', () => {
+        if (!confirm('Delete this row?')) return;
+        e.chain().focus().deleteRow().run();
+      });
       on('tt-col-before',  () => e.chain().focus().addColumnBefore().run());
       on('tt-col-after',   () => e.chain().focus().addColumnAfter().run());
-      on('tt-col-del',     () => e.chain().focus().deleteColumn().run());
-      // Merge: programmatically select current cell + the one to its right, then merge
-      // No drag-selection required — just place cursor in the LEFT cell and tap merge
+      on('tt-col-del', () => {
+        if (!confirm('Delete this column?')) return;
+        e.chain().focus().deleteColumn().run();
+      });
+      // Merge: programmatically select current cell + the one to its right, then merge.
+      // Bug fix: look for tableRole === 'cell'|'header_cell' — NOT 'row' which also has tableRole.
       on('tt-merge-cells', () => {
-        const { state, doc } = e.view.state, $head = state.selection.$head;
+        const { state } = e.view;
+        const $head = state.selection.$head;
         let cellDepth = -1;
         for (let d = $head.depth; d > 0; d--) {
-          if ($head.node(d).type.spec.tableRole) { cellDepth = d; break; }
+          const role = $head.node(d).type.spec.tableRole;
+          if (role === 'cell' || role === 'header_cell') { cellDepth = d; break; }
         }
         if (cellDepth === -1) { showToast('Place cursor in a cell first'); return; }
         const anchorCell = $head.before(cellDepth);
         const cellNode   = $head.node(cellDepth);
-        const headCell   = anchorCell + cellNode.nodeSize; // start of next sibling cell
-        const $nextCell  = e.view.state.doc.resolve(headCell);
-        if (!$nextCell.nodeAfter?.type?.spec?.tableRole) {
+        const headCell   = anchorCell + cellNode.nodeSize; // position of next sibling cell
+        let $nextCell;
+        try { $nextCell = state.doc.resolve(headCell); } catch(_) {
+          showToast('No adjacent cell to merge'); return;
+        }
+        const nextRole = $nextCell.nodeAfter?.type?.spec?.tableRole;
+        if (nextRole !== 'cell' && nextRole !== 'header_cell') {
           showToast('No cell to the right — place cursor in the left cell');
           return;
         }
@@ -21913,7 +21936,7 @@ QUESTION: ${query}`;
           .setCellSelection({ anchorCell, headCell })
           .mergeCells()
           .run();
-        if (!ok) showToast('Merge failed');
+        if (!ok) showToast('Merge failed — try selecting cells manually');
       });
       on('tt-split-cell', () => {
         const ok = e.chain().focus().splitCell().run();
@@ -21977,12 +22000,38 @@ QUESTION: ${query}`;
       // Show/hide table context bar
       const tableBar = document.getElementById('note-fs-tt-table-bar');
       if (tableBar) tableBar.style.display = editor.isActive('table') ? 'flex' : 'none';
-      // Update link bubble URL input
-      if (editor.isActive('link')) {
-        const href = editor.getAttributes('link').href || '';
+      // Show/hide link bubble
+      _ttUpdateLinkBubble(editor);
+    }
+
+    function _ttHideLinkBubble() {
+      const bubble = document.getElementById('tt-link-bubble');
+      if (bubble) bubble.style.display = 'none';
+    }
+
+    function _ttUpdateLinkBubble(editor) {
+      const bubble = document.getElementById('tt-link-bubble');
+      if (!bubble) return;
+      if (!editor.isActive('link')) {
+        // Only hide if the bubble input itself isn't focused
         const inputEl = document.getElementById('tt-link-bubble-input');
-        if (inputEl && document.activeElement !== inputEl) inputEl.value = href;
+        if (document.activeElement !== inputEl) bubble.style.display = 'none';
+        return;
       }
+      // Update URL input (don't overwrite while user is typing)
+      const href = editor.getAttributes('link').href || '';
+      const inputEl = document.getElementById('tt-link-bubble-input');
+      if (inputEl && document.activeElement !== inputEl) inputEl.value = href;
+      // Position below the cursor / selection start
+      const { view } = editor;
+      const { from } = view.state.selection;
+      const coords = view.coordsAtPos(from);
+      const bw = bubble.offsetWidth || 280;
+      const vw = window.innerWidth;
+      bubble.style.position = 'fixed';
+      bubble.style.top  = (coords.bottom + 6) + 'px';
+      bubble.style.left = Math.max(8, Math.min(coords.left, vw - bw - 8)) + 'px';
+      bubble.style.display = 'flex';
     }
 
     function _ttHandleLink() {
@@ -22809,8 +22858,8 @@ QUESTION: ${query}`;
       <div id="note-fs-editor"></div>
     </div>
   </div>
-  <!-- Link bubble (managed by TipTap BubbleMenu, appended to body by tippy) -->
-  <div id="tt-link-bubble" style="display:none">
+  <!-- Link bubble: manually positioned via _ttUpdateLinkBubble() -->
+  <div id="tt-link-bubble" style="display:none;position:fixed;z-index:10020">
     <input id="tt-link-bubble-input" type="text" placeholder="Paste or type URL…" autocomplete="off" spellcheck="false">
     <div class="tt-sep" style="height:16px;margin:0 4px;"></div>
     <button class="tt-link-bbl-btn" id="tt-link-bbl-confirm" title="Apply URL (Enter)">
