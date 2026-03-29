@@ -3778,6 +3778,7 @@
       border-left: 3px solid rgba(13, 13, 13, 0.12);
       padding-left: 1rem;
       margin: 1.5rem 0;
+      font-style: normal;
     }
     :is(#note-fs-editor .ProseMirror, .tt-prose) a {
       color: #818cf8;
@@ -3797,15 +3798,16 @@
       z-index: 10010;
       max-width: 300px;
     }
-    #tt-link-bubble-url {
+    #tt-link-bubble-input {
       font-size: 12px;
-      color: var(--text-secondary);
+      color: var(--text-primary);
       flex: 1;
       min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 180px;
+      max-width: 200px;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 2px 4px;
     }
     .tt-link-bbl-btn {
       border: none;
@@ -3867,6 +3869,7 @@
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > label input[type="checkbox"] {
       width: 16px; height: 16px;
       cursor: pointer;
+      accent-color: var(--accent);
     }
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li > div { flex: 1; }
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li[data-checked="true"] > div {
@@ -9544,7 +9547,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.31';
+    const VERSION = '4.27.32';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21850,14 +21853,22 @@ QUESTION: ${query}`;
       // Link
       on('tt-link', () => _ttHandleLink());
       // Link bubble menu buttons
-      on('tt-link-bbl-edit', () => {
-        const href = e.getAttributes('link').href || '';
-        const url = prompt('Edit URL:', href);
-        if (url === null) return;
-        if (url.trim() === '') { e.chain().focus().unsetLink().run(); }
-        else { e.chain().focus().setLink({ href: url.trim(), target: '_blank' }).run(); }
+      const applyBubbleUrl = () => {
+        const input = document.getElementById('tt-link-bubble-input');
+        const url = input ? input.value.trim() : '';
+        if (url === '') { e.chain().focus().unsetLink().run(); }
+        else { e.chain().focus().setLink({ href: url, target: '_blank' }).run(); }
         _ttUpdateToolbar(e);
-      });
+      };
+      on('tt-link-bbl-confirm', applyBubbleUrl);
+      // Also apply on Enter key inside the input
+      const bubbleInput = document.getElementById('tt-link-bubble-input');
+      if (bubbleInput) {
+        bubbleInput.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter') { ev.preventDefault(); applyBubbleUrl(); }
+          if (ev.key === 'Escape') { e.commands.focus(); }
+        });
+      }
       on('tt-link-bbl-open', () => {
         const href = e.getAttributes('link').href;
         if (href) window.open(href, '_blank', 'noopener');
@@ -21935,11 +21946,11 @@ QUESTION: ${query}`;
       // Show/hide table context bar
       const tableBar = document.getElementById('note-fs-tt-table-bar');
       if (tableBar) tableBar.style.display = editor.isActive('table') ? 'flex' : 'none';
-      // Update link bubble URL text
+      // Update link bubble URL input
       if (editor.isActive('link')) {
         const href = editor.getAttributes('link').href || '';
-        const urlEl = document.getElementById('tt-link-bubble-url');
-        if (urlEl) urlEl.textContent = href.length > 40 ? href.slice(0, 37) + '…' : href;
+        const inputEl = document.getElementById('tt-link-bubble-input');
+        if (inputEl && document.activeElement !== inputEl) inputEl.value = href;
       }
     }
 
@@ -22712,10 +22723,10 @@ QUESTION: ${query}`;
   </div>
   <!-- Link bubble (managed by TipTap BubbleMenu, appended to body by tippy) -->
   <div id="tt-link-bubble" style="display:none">
-    <span id="tt-link-bubble-url"></span>
+    <input id="tt-link-bubble-input" type="text" placeholder="Paste or type URL…" autocomplete="off" spellcheck="false">
     <div class="tt-sep" style="height:16px;margin:0 4px;"></div>
-    <button class="tt-link-bbl-btn" id="tt-link-bbl-edit" title="Edit URL">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <button class="tt-link-bbl-btn" id="tt-link-bbl-confirm" title="Apply URL (Enter)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </button>
     <button class="tt-link-bbl-btn" id="tt-link-bbl-open" title="Open link in new tab">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
