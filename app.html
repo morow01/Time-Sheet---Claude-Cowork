@@ -9636,7 +9636,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.45';
+    const VERSION = '4.27.46';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22209,12 +22209,15 @@ QUESTION: ${query}`;
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const pw = 218;
+        // Keep popup physically BELOW the modal header so it never covers Done/X buttons
+        const headerEl = document.querySelector('#note-fs-modal > div > div');
+        const headerBottom = headerEl ? Math.ceil(headerEl.getBoundingClientRect().bottom) + 4 : 64;
         let left = tr.right + 6;
         if (left + pw > vw - 8) left = tr.left - pw - 6;
-        let top = tr.top;
-        if (top + 380 > vh) top = Math.max(8, vh - 386);
+        let top = Math.max(headerBottom, tr.top);
+        if (top + 390 > vh) top = Math.max(headerBottom, vh - 396);
         popup.style.left = Math.max(8, left) + 'px';
-        popup.style.top  = Math.max(8, top)  + 'px';
+        popup.style.top  = Math.max(headerBottom, top) + 'px';
       }
     }
 
@@ -22307,15 +22310,19 @@ QUESTION: ${query}`;
       }
     }
 
-    // Close cell popup when clicking outside
-    document.addEventListener('click', (ev) => {
+    // Close cell popup when touching/clicking outside — use touchstart for iOS reliability
+    function _ttDismissPopupIfOutside(ev) {
       const popup = document.getElementById('tt-cell-popup');
       const trigger = document.getElementById('tt-cell-trigger');
-      if (popup && popup.style.display === 'block' &&
-          !popup.contains(ev.target) && ev.target !== trigger && !trigger?.contains(ev.target)) {
-        popup.style.display = 'none';
+      if (popup && popup.style.display === 'block') {
+        const t = ev.target;
+        if (!popup.contains(t) && t !== trigger && !trigger?.contains(t)) {
+          popup.style.display = 'none';
+        }
       }
-    });
+    }
+    document.addEventListener('touchstart', _ttDismissPopupIfOutside, { passive: true });
+    document.addEventListener('click',      _ttDismissPopupIfOutside);
 
     function _ttHideLinkBubble() {
       const bubble = document.getElementById('tt-link-bubble');
@@ -23243,8 +23250,8 @@ QUESTION: ${query}`;
         <div class="tcp-grid">
           <!-- Shown dynamically when ≥2 cells are selected -->
           <button id="tcp-merge-sel-btn" class="tcp-btn tcp-merge-sel" style="display:none;grid-column:span 2;background:#818cf8;color:#fff;border-radius:10px;font-weight:700;" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')">Merge selected</button>
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-right')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><polyline points="13,7 17,10 13,13"/></svg>→ Right</button>
-          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-down')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="2" y1="10" x2="18" y2="10"/><polyline points="7,13 10,17 13,13"/></svg>↓ Down</button>
+          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-right')" title="Join this cell with the one to its right"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><polyline points="13,7 17,10 13,13"/></svg>+ Right</button>
+          <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-down')" title="Join this cell with the one below it"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="2" y1="10" x2="18" y2="10"/><polyline points="7,13 10,17 13,13"/></svg>+ Below</button>
           <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><line x1="2" y1="10" x2="18" y2="10"/></svg>Split</button>
         </div>
         <div class="tcp-sep"></div>
