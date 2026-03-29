@@ -3823,6 +3823,41 @@
     }
     .tt-link-bbl-btn:hover { background: var(--bg-page); color: var(--text); }
     .tt-link-bbl-btn svg { width: 14px; height: 14px; }
+
+    /* ── Rian custom dialog ── */
+    #rian-dialog-overlay {
+      display: none; position: fixed; inset: 0; z-index: 20000;
+      background: rgba(15,28,46,0.45); backdrop-filter: blur(3px);
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    #rian-dialog-overlay.rdn-open { display: flex; }
+    #rian-dialog {
+      background: var(--bg-card, #fff); border-radius: 20px;
+      padding: 24px 20px 18px; width: 340px; max-width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+      animation: rdn-pop .15s ease;
+    }
+    @keyframes rdn-pop { from { transform: scale(.94); opacity:0; } to { transform: scale(1); opacity:1; } }
+    .rdn-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+    .rdn-msg   { font-size: 13px; color: #64748b; margin-bottom: 16px; line-height: 1.5; }
+    .rdn-input {
+      width: 100%; box-sizing: border-box;
+      border: 1.5px solid var(--border); border-radius: 11px;
+      padding: 11px 13px; font-size: 14px; outline: none;
+      background: var(--bg-page); color: var(--text);
+      margin-bottom: 16px; display: block;
+    }
+    .rdn-input:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129,140,248,.15); }
+    .rdn-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .rdn-spacer  { flex: 1; }
+    .rdn-btn { padding: 10px 18px; border-radius: 11px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: opacity .1s; }
+    .rdn-btn:active { opacity: .8; }
+    .rdn-btn-cancel  { background: var(--bg-page); color: var(--text); }
+    .rdn-btn-confirm { background: #818cf8; color: #fff; }
+    .rdn-btn-danger  { background: #ef4444; color: #fff; }
+    .rdn-btn-ghost   { background: transparent; color: #818cf8; padding: 10px 10px; font-size: 13px; }
+    .rdn-btn-ghost.red { color: #ef4444; }
+
     :is(#note-fs-editor .ProseMirror, .tt-prose) code {
       background: var(--bg-page);
       border-radius: 4px;
@@ -9600,7 +9635,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.42';
+    const VERSION = '4.27.43';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21998,15 +22033,15 @@ QUESTION: ${query}`;
       // Table context buttons
       on('tt-row-before',  () => e.chain().focus().addRowBefore().run());
       on('tt-row-after',   () => e.chain().focus().addRowAfter().run());
-      on('tt-row-del', () => {
-        if (!confirm('Delete this row?')) return;
-        e.chain().focus().deleteRow().run();
+      on('tt-row-del', async () => {
+        const ok = await showRianDialog({ title: 'Delete Row', message: 'Delete this row and all its content?', confirmText: 'Delete', danger: true });
+        if (ok) e.chain().focus().deleteRow().run();
       });
       on('tt-col-before',  () => e.chain().focus().addColumnBefore().run());
       on('tt-col-after',   () => e.chain().focus().addColumnAfter().run());
-      on('tt-col-del', () => {
-        if (!confirm('Delete this column?')) return;
-        e.chain().focus().deleteColumn().run();
+      on('tt-col-del', async () => {
+        const ok = await showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true });
+        if (ok) e.chain().focus().deleteColumn().run();
       });
       // Merge: programmatically select current cell + the one to its right, then merge.
       // Bug fix: look for tableRole === 'cell'|'header_cell' — NOT 'row' which also has tableRole.
@@ -22192,10 +22227,10 @@ QUESTION: ${query}`;
 
       if (action === 'row-before') { e.chain().focus().addRowBefore().run(); }
       else if (action === 'row-after')  { e.chain().focus().addRowAfter().run(); }
-      else if (action === 'row-del') { if (confirm('Delete this row?')) e.chain().focus().deleteRow().run(); }
+      else if (action === 'row-del') { showRianDialog({ title: 'Delete Row', message: 'Delete this row and all its content?', confirmText: 'Delete', danger: true }).then(ok => { if (ok) e.chain().focus().deleteRow().run(); }); }
       else if (action === 'col-before') { e.chain().focus().addColumnBefore().run(); }
       else if (action === 'col-after')  { e.chain().focus().addColumnAfter().run(); }
-      else if (action === 'col-del') { if (confirm('Delete this column?')) e.chain().focus().deleteColumn().run(); }
+      else if (action === 'col-del') { showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true }).then(ok => { if (ok) e.chain().focus().deleteColumn().run(); }); }
       else if (action === 'table-del')  { e.chain().focus().deleteTable().run(); }
       else if (action === 'split') {
         if (!e.chain().focus().splitCell().run()) showToast('Place cursor in a merged cell to split');
@@ -22278,16 +22313,91 @@ QUESTION: ${query}`;
       bubble.style.display = 'flex';
     }
 
-    function _ttHandleLink() {
-      const e = _tiptapEditor;
-      if (e.isActive('link')) {
-        e.chain().focus().unsetLink().run();
-        _ttUpdateToolbar(e);
-        return;
+    // ── Rian custom dialog ──────────────────────────────────────────────────
+    let _rdnResolve = null;
+
+    function showRianDialog({ title='', message='', inputType=null, defaultValue='', placeholder='',
+                              confirmText='OK', cancelText='Cancel', danger=false, extraBtns=[] } = {}) {
+      return new Promise(resolve => {
+        _rdnResolve = resolve;
+        document.getElementById('rdn-title').textContent = title;
+        document.getElementById('rdn-msg').textContent   = message;
+        const inp = document.getElementById('rdn-input');
+        if (inputType) {
+          inp.type = inputType;
+          inp.value = defaultValue;
+          inp.placeholder = placeholder;
+          inp.style.display = 'block';
+          setTimeout(() => { inp.focus(); inp.select(); }, 80);
+        } else {
+          inp.style.display = 'none';
+        }
+        const actions = document.getElementById('rdn-actions');
+        actions.innerHTML = '';
+        for (const btn of (extraBtns || [])) {
+          const b = document.createElement('button');
+          b.className = 'rdn-btn rdn-btn-ghost' + (btn.danger ? ' red' : '');
+          b.textContent = btn.label;
+          b.onmousedown = (ev) => ev.preventDefault();
+          b.onclick = () => { _rdnClose(undefined); btn.action(); };
+          actions.appendChild(b);
+        }
+        const spacer = document.createElement('div'); spacer.className = 'rdn-spacer';
+        actions.appendChild(spacer);
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'rdn-btn rdn-btn-cancel';
+        cancelBtn.textContent = cancelText;
+        cancelBtn.onmousedown = (ev) => ev.preventDefault();
+        cancelBtn.onclick = () => _rdnClose(null);
+        actions.appendChild(cancelBtn);
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'rdn-btn ' + (danger ? 'rdn-btn-danger' : 'rdn-btn-confirm');
+        confirmBtn.textContent = confirmText;
+        confirmBtn.onmousedown = (ev) => ev.preventDefault();
+        confirmBtn.onclick = () => _rdnClose(inputType ? inp.value : true);
+        actions.appendChild(confirmBtn);
+        document.getElementById('rian-dialog-overlay').classList.add('rdn-open');
+      });
+    }
+
+    function _rdnClose(value) {
+      document.getElementById('rian-dialog-overlay').classList.remove('rdn-open');
+      const r = _rdnResolve; _rdnResolve = null;
+      if (r) r(value);
+    }
+    function _rdnOverlayClick(ev) {
+      if (ev.target === document.getElementById('rian-dialog-overlay')) _rdnClose(null);
+    }
+
+    // Keyboard: Enter to confirm, Escape to cancel
+    document.getElementById('rdn-input').addEventListener('keydown', ev => {
+      if (ev.key === 'Enter')  { ev.preventDefault(); _rdnClose(ev.target.value); }
+      if (ev.key === 'Escape') { ev.preventDefault(); _rdnClose(null); }
+    });
+    document.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && document.getElementById('rian-dialog-overlay').classList.contains('rdn-open')) {
+        _rdnClose(null);
       }
+    });
+
+    async function _ttHandleLink() {
+      const e = _tiptapEditor;
+      const isActive = e.isActive('link');
       const prev = e.getAttributes('link').href || '';
-      const url = prompt('Enter URL:', prev);
-      if (url === null) return;
+      const extraBtns = [];
+      if (isActive) extraBtns.push({ label: 'Remove link', danger: true, action: () => { e.chain().focus().unsetLink().run(); _ttUpdateToolbar(e); } });
+      if (prev)     extraBtns.push({ label: '↗ Open', action: () => window.open(prev, '_blank', 'noopener') });
+      const url = await showRianDialog({
+        title: isActive ? 'Edit Link' : 'Add Link',
+        message: isActive ? 'Update the URL below, or remove the link.' : 'Select text first, then paste or type a URL.',
+        inputType: 'url',
+        defaultValue: prev,
+        placeholder: 'https://example.com',
+        confirmText: 'Apply',
+        danger: false,
+        extraBtns,
+      });
+      if (url === null || url === undefined) return;
       if (url.trim() === '') { e.chain().focus().unsetLink().run(); }
       else { e.chain().focus().setLink({ href: url.trim() }).run(); }
       _ttUpdateToolbar(e);
@@ -23146,6 +23256,16 @@ QUESTION: ${query}`;
     <button class="tt-link-bbl-btn" id="tt-link-bbl-remove" title="Remove link">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
     </button>
+  </div>
+
+  <!-- ===== RIAN CUSTOM DIALOG ===== -->
+  <div id="rian-dialog-overlay" role="dialog" aria-modal="true" onclick="_rdnOverlayClick(event)">
+    <div id="rian-dialog">
+      <div class="rdn-title" id="rdn-title"></div>
+      <div class="rdn-msg"   id="rdn-msg"></div>
+      <input class="rdn-input" id="rdn-input" autocomplete="off" spellcheck="false" style="display:none">
+      <div class="rdn-actions" id="rdn-actions"></div>
+    </div>
   </div>
 
   <!-- ===== EMAIL PREVIEW MODAL ===== -->
