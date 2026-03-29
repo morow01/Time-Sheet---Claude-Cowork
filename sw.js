@@ -1,4 +1,4 @@
-const CACHE = 'timesheet-v4439';
+const CACHE = 'rian-v4.27.38';
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
 const ASSETS = [
   BASE,
@@ -79,26 +79,17 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (e.request.destination === 'document' || url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
+  // Network-first for all same-origin requests: always serve latest when online,
+  // fall back to cache when offline. Fixes stale /app serving old cached version.
+  e.respondWith(
+    fetch(e.request)
+      .then(res => {
+        if (res.ok || res.type === 'opaque') {
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(e.request))
-    );
-    return;
-  }
-
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      return cached || fetch(e.request).then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
         return res;
-      });
-    })
+      })
+      .catch(() => caches.match(e.request))
   );
 });
