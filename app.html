@@ -3926,6 +3926,58 @@
       flex-shrink: 0;
     }
 
+    /* Floating cell action trigger + popup */
+    #tt-cell-trigger {
+      display: none;
+      position: fixed;
+      z-index: 10025;
+      width: 26px; height: 26px;
+      border-radius: 7px;
+      background: #818cf8;
+      border: none;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(129,140,248,0.45);
+      padding: 0;
+    }
+    #tt-cell-trigger svg { width: 14px; height: 14px; stroke: white; fill: white; }
+    #tt-cell-popup {
+      display: none;
+      position: fixed;
+      z-index: 10030;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.16);
+      padding: 10px;
+      width: 210px;
+    }
+    .tcp-section {
+      font-size: 10px; font-weight: 700; color: #818cf8;
+      text-transform: uppercase; letter-spacing: .04em;
+      padding: 0 2px 5px; margin-top: 6px;
+    }
+    .tcp-section:first-child { margin-top: 0; }
+    .tcp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 5px;
+    }
+    .tcp-btn {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px; padding: 8px 4px;
+      border: 1px solid var(--border); border-radius: 9px;
+      background: #fafafa; cursor: pointer;
+      font-size: 10px; color: #475569; line-height: 1.2;
+      text-align: center; -webkit-tap-highlight-color: transparent;
+    }
+    .tcp-btn:active { background: #ede9fe; }
+    .tcp-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .tcp-btn.tcp-del { color: #ef4444; }
+    .tcp-sep { height: 1px; background: var(--border); margin: 8px 0 2px; }
+
     /* Images */
     #note-fs-editor .ProseMirror img {
       max-width: 100%;
@@ -9548,7 +9600,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.40';
+    const VERSION = '4.27.41';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22044,12 +22096,140 @@ QUESTION: ${query}`;
         const el = document.getElementById(id);
         if (el) el.classList.toggle('tt-active', check());
       }
-      // Show/hide table context bar
+      // Show/hide table context bar + floating cell trigger
       const tableBar = document.getElementById('note-fs-tt-table-bar');
-      if (tableBar) tableBar.style.display = editor.isActive('table') ? 'flex' : 'none';
+      const cellTrigger = document.getElementById('tt-cell-trigger');
+      const cellPopup   = document.getElementById('tt-cell-popup');
+      if (editor.isActive('table')) {
+        if (tableBar) tableBar.style.display = 'flex';
+        if (cellTrigger) {
+          const { view } = editor;
+          const { from } = view.state.selection;
+          // Find the cell DOM node to position trigger at its top-right corner
+          let cellDom = null;
+          try {
+            const domInfo = view.domAtPos(from);
+            let node = domInfo.node;
+            if (node.nodeType === 3) node = node.parentElement;
+            while (node && node !== view.dom) {
+              if (node.tagName === 'TD' || node.tagName === 'TH') { cellDom = node; break; }
+              node = node.parentElement;
+            }
+          } catch(_) {}
+          if (cellDom) {
+            const r = cellDom.getBoundingClientRect();
+            cellTrigger.style.top  = (r.top + 2) + 'px';
+            cellTrigger.style.left = (r.right - 30) + 'px';
+          } else {
+            const coords = view.coordsAtPos(from);
+            cellTrigger.style.top  = (coords.top - 28) + 'px';
+            cellTrigger.style.left = coords.left + 'px';
+          }
+          cellTrigger.style.display = 'flex';
+        }
+      } else {
+        if (tableBar) tableBar.style.display = 'none';
+        if (cellTrigger) cellTrigger.style.display = 'none';
+        if (cellPopup)   cellPopup.style.display   = 'none';
+      }
       // Show/hide link bubble
       _ttUpdateLinkBubble(editor);
     }
+
+    function _ttToggleCellPopup(ev) {
+      ev.stopPropagation();
+      const popup = document.getElementById('tt-cell-popup');
+      if (!popup) return;
+      const isOpen = popup.style.display === 'block';
+      popup.style.display = isOpen ? 'none' : 'block';
+      if (!isOpen) {
+        const trigger = document.getElementById('tt-cell-trigger');
+        const tr = trigger.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const pw = 218;
+        let left = tr.right + 6;
+        if (left + pw > vw - 8) left = tr.left - pw - 6;
+        let top = tr.top;
+        if (top + 340 > vh) top = vh - 346;
+        popup.style.left = Math.max(8, left) + 'px';
+        popup.style.top  = Math.max(8, top)  + 'px';
+      }
+    }
+
+    function _ttCellAct(action) {
+      const e = _tiptapEditor;
+      document.getElementById('tt-cell-popup').style.display = 'none';
+      if (!e) return;
+
+      // Helper: find cell depth from current selection
+      function _cellDepth() {
+        const $h = e.view.state.selection.$head;
+        for (let d = $h.depth; d > 0; d--) {
+          const r = $h.node(d).type.spec.tableRole;
+          if (r === 'cell' || r === 'header_cell') return d;
+        }
+        return -1;
+      }
+
+      if (action === 'row-before') { e.chain().focus().addRowBefore().run(); }
+      else if (action === 'row-after')  { e.chain().focus().addRowAfter().run(); }
+      else if (action === 'row-del') { if (confirm('Delete this row?')) e.chain().focus().deleteRow().run(); }
+      else if (action === 'col-before') { e.chain().focus().addColumnBefore().run(); }
+      else if (action === 'col-after')  { e.chain().focus().addColumnAfter().run(); }
+      else if (action === 'col-del') { if (confirm('Delete this column?')) e.chain().focus().deleteColumn().run(); }
+      else if (action === 'table-del')  { e.chain().focus().deleteTable().run(); }
+      else if (action === 'split') {
+        if (!e.chain().focus().splitCell().run()) showToast('Place cursor in a merged cell to split');
+      }
+      else if (action === 'merge-right') {
+        const { state } = e.view;
+        const $h = state.selection.$head;
+        const cd = _cellDepth();
+        if (cd === -1) { showToast('Place cursor in a cell first'); return; }
+        const anchorCell = $h.before(cd);
+        const headCell   = anchorCell + $h.node(cd).nodeSize;
+        let $next;
+        try { $next = state.doc.resolve(headCell); } catch(_) { showToast('No cell to the right'); return; }
+        const nr = $next.nodeAfter?.type?.spec?.tableRole;
+        if (nr !== 'cell' && nr !== 'header_cell') { showToast('No cell to the right'); return; }
+        if (!e.chain().focus().setCellSelection({ anchorCell, headCell }).mergeCells().run())
+          showToast('Merge failed');
+      }
+      else if (action === 'merge-down') {
+        const { state } = e.view;
+        const $h = state.selection.$head;
+        const cd = _cellDepth();
+        if (cd === -1) { showToast('Place cursor in a cell first'); return; }
+        const rowDepth   = cd - 1;
+        const tableDepth = cd - 2;
+        const colIndex   = $h.index(rowDepth);
+        const rowIndex   = $h.index(tableDepth);
+        const tableNode  = $h.node(tableDepth);
+        if (rowIndex + 1 >= tableNode.childCount) { showToast('No row below'); return; }
+        const nextRow    = tableNode.child(rowIndex + 1);
+        if (colIndex >= nextRow.childCount) { showToast('No cell below'); return; }
+        const anchorCell = $h.before(cd);
+        // Walk to the start of next row, then to the target column
+        let pos = $h.before(rowDepth) + $h.node(rowDepth).nodeSize + 1; // inside next row
+        for (let i = 0; i < colIndex; i++) pos += nextRow.child(i).nodeSize;
+        const headCell = pos + nextRow.child(colIndex).nodeSize;
+        try {
+          if (!e.chain().focus().setCellSelection({ anchorCell, headCell }).mergeCells().run())
+            showToast('Merge failed — cells may already span differently');
+        } catch(_) { showToast('Cannot merge with cell below'); }
+      }
+    }
+
+    // Close cell popup when clicking outside
+    document.addEventListener('click', (ev) => {
+      const popup = document.getElementById('tt-cell-popup');
+      const trigger = document.getElementById('tt-cell-trigger');
+      if (popup && popup.style.display === 'block' &&
+          !popup.contains(ev.target) && ev.target !== trigger && !trigger?.contains(ev.target)) {
+        popup.style.display = 'none';
+      }
+    });
 
     function _ttHideLinkBubble() {
       const bubble = document.getElementById('tt-link-bubble');
@@ -22877,6 +23057,37 @@ QUESTION: ${query}`;
             <line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/>
           </svg>
         </button>
+      </div>
+      <!-- Floating cell action trigger -->
+      <button id="tt-cell-trigger" title="Cell actions" onclick="_ttToggleCellPopup(event)">
+        <svg viewBox="0 0 20 20"><circle cx="10" cy="4" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="10" cy="16" r="1.8"/></svg>
+      </button>
+      <!-- Cell actions popup -->
+      <div id="tt-cell-popup">
+        <div class="tcp-section">Row</div>
+        <div class="tcp-grid">
+          <button class="tcp-btn" onclick="_ttCellAct('row-before')"><svg viewBox="0 0 20 20"><rect x="2" y="10" width="16" height="8" rx="1.5"/><line x1="10" y1="2" x2="10" y2="7"/><line x1="7" y1="4.5" x2="13" y2="4.5"/></svg>Above</button>
+          <button class="tcp-btn" onclick="_ttCellAct('row-after')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="8" rx="1.5"/><line x1="10" y1="13" x2="10" y2="18"/><line x1="7" y1="15.5" x2="13" y2="15.5"/></svg>Below</button>
+          <button class="tcp-btn tcp-del" onclick="_ttCellAct('row-del')"><svg viewBox="0 0 20 20"><rect x="2" y="6" width="16" height="8" rx="1.5"/><line x1="7.5" y1="9.5" x2="12.5" y2="10.5"/><line x1="12.5" y1="9.5" x2="7.5" y2="10.5"/></svg>Delete</button>
+        </div>
+        <div class="tcp-sep"></div>
+        <div class="tcp-section">Column</div>
+        <div class="tcp-grid">
+          <button class="tcp-btn" onclick="_ttCellAct('col-before')"><svg viewBox="0 0 20 20"><rect x="10" y="2" width="8" height="16" rx="1.5"/><line x1="2" y1="10" x2="7" y2="10"/><line x1="4.5" y1="7" x2="4.5" y2="13"/></svg>Left</button>
+          <button class="tcp-btn" onclick="_ttCellAct('col-after')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="8" height="16" rx="1.5"/><line x1="13" y1="10" x2="18" y2="10"/><line x1="15.5" y1="7" x2="15.5" y2="13"/></svg>Right</button>
+          <button class="tcp-btn tcp-del" onclick="_ttCellAct('col-del')"><svg viewBox="0 0 20 20"><rect x="6" y="2" width="8" height="16" rx="1.5"/><line x1="9" y1="8.5" x2="11" y2="11.5"/><line x1="11" y1="8.5" x2="9" y2="11.5"/></svg>Delete</button>
+        </div>
+        <div class="tcp-sep"></div>
+        <div class="tcp-section">Merge / Split</div>
+        <div class="tcp-grid">
+          <button class="tcp-btn" onclick="_ttCellAct('merge-right')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><polyline points="13,7 17,10 13,13"/></svg>→ Right</button>
+          <button class="tcp-btn" onclick="_ttCellAct('merge-down')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="2" y1="10" x2="18" y2="10"/><polyline points="7,13 10,17 13,13"/></svg>↓ Down</button>
+          <button class="tcp-btn" onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="10" y1="2" x2="10" y2="18"/><line x1="2" y1="10" x2="18" y2="10"/></svg>Split</button>
+        </div>
+        <div class="tcp-sep"></div>
+        <div class="tcp-grid" style="grid-template-columns:1fr">
+          <button class="tcp-btn tcp-del" onclick="_ttCellAct('table-del')"><svg viewBox="0 0 20 20" style="width:14px;height:14px;display:inline;vertical-align:middle"><rect x="2" y="2" width="16" height="16" rx="1.5"/><line x1="2" y1="7" x2="18" y2="7"/><line x1="2" y1="13" x2="18" y2="13"/><line x1="7" y1="2" x2="7" y2="18"/><line x1="13" y1="2" x2="13" y2="18"/><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg> Delete table</button>
+        </div>
       </div>
       <!-- Hidden image file input -->
       <input type="file" id="tt-image-input" accept="image/*" style="display:none">
