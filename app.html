@@ -3985,30 +3985,39 @@
     }
     #tt-ai-discard:active { opacity: 0.7; }
 
-    /* Floating AI bubble — appears near text selection on mobile */
-    #tt-ai-fab {
+    /* Selection action bar — sticky at bottom of editor, appears when text is selected */
+    #tt-sel-bar {
       display: none;
-      position: fixed;
-      z-index: 10025;
+      position: sticky;
+      bottom: 0;
+      z-index: 201;
       align-items: center;
-      gap: 5px;
+      justify-content: flex-start;
+      gap: 8px;
+      padding: 8px 14px 10px;
+      background: var(--bg-card);
+      border-top: 1.5px solid #c7d2fe;
+      animation: ttAiSlideUp 0.18s ease;
+    }
+    #tt-sel-bar-ai {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       background: #818cf8;
       color: #fff;
       border: none;
       border-radius: 20px;
-      padding: 6px 14px 6px 10px;
-      font-size: 12px;
+      padding: 7px 16px 7px 12px;
+      font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.3px;
       cursor: pointer;
-      box-shadow: 0 2px 12px rgba(129,140,248,0.4);
       -webkit-tap-highlight-color: transparent;
-      animation: ttAiFabPop 0.15s ease;
     }
-    #tt-ai-fab svg { width: 16px; height: 16px; flex-shrink: 0; }
-    @keyframes ttAiFabPop {
-      from { transform: scale(0.8); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
+    #tt-sel-bar-ai svg { width: 15px; height: 15px; flex-shrink: 0; }
+    #tt-sel-bar-hint {
+      font-size: 12px;
+      color: var(--text-muted);
     }
 
     #tt-link-bubble {
@@ -10079,7 +10088,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.28.3';
+    const VERSION = '4.28.4';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22517,12 +22526,14 @@ QUESTION: ${query}`;
           _ttUpdateAiFab(editor);
         },
         onBlur({ editor, event }) {
-          // Keep bubble visible if focus moved into the bubble or AI FAB itself
+          // Keep link bubble visible if focus moved into it
           const bubble = document.getElementById('tt-link-bubble');
-          const aiFab = document.getElementById('tt-ai-fab');
           const rel = event?.relatedTarget;
-          if (rel && ((bubble && bubble.contains(rel)) || rel === aiFab)) return;
+          if (rel && bubble && bubble.contains(rel)) return;
           _ttHideLinkBubble();
+          // Keep selection bar visible if focus moved to the sel-bar button itself
+          const selBar = document.getElementById('tt-sel-bar');
+          if (rel && selBar && selBar.contains(rel)) return;
           _ttHideAiFab();
         },
       });
@@ -23082,43 +23093,41 @@ QUESTION: ${query}`;
       if (bubble) bubble.style.display = 'none';
     }
 
-    // ── Floating AI FAB (shows near selection on mobile) ──
+    // ── Selection action bar (sticky bottom, shows when text is selected) ──
     function _ttHideAiFab() {
-      const fab = document.getElementById('tt-ai-fab');
-      if (fab) fab.style.display = 'none';
+      const bar = document.getElementById('tt-sel-bar');
+      if (bar) bar.style.display = 'none';
     }
 
     function _ttUpdateAiFab(editor) {
-      const fab = document.getElementById('tt-ai-fab');
-      if (!fab) return;
-      const { from, to, empty } = editor.state.selection;
+      const bar = document.getElementById('tt-sel-bar');
+      if (!bar) return;
+      const { empty } = editor.state.selection;
       // Only show when there is a text selection (not an empty cursor)
-      if (empty || from === to) { fab.style.display = 'none'; return; }
-      // Don't show if AI preview panel is already visible
+      // and AI suggestions panel is not already open
       const aiPanel = document.getElementById('tt-ai-preview');
-      if (aiPanel && aiPanel.style.display !== 'none') { fab.style.display = 'none'; return; }
-      // Position BELOW the selection with generous gap to clear native drag handles
-      const coords = editor.view.coordsAtPos(to);
-      const fabW = 70; // approximate width
-      let left = coords.left - fabW / 2;
-      left = Math.max(8, Math.min(left, window.innerWidth - fabW - 8));
-      fab.style.left = left + 'px';
-      fab.style.top = (coords.bottom + 20) + 'px';
-      fab.style.display = 'flex';
+      const aiOpen = aiPanel && aiPanel.style.display !== 'none';
+      const show = !empty && !aiOpen;
+      bar.style.display = show ? 'flex' : 'none';
+      // Hide hint text after first use
+      if (show) {
+        const hint = document.getElementById('tt-sel-bar-hint');
+        if (hint) setTimeout(() => { hint.style.display = 'none'; }, 4000);
+      }
     }
 
-    // Wire FAB tap → trigger the toolbar AI rephrase button
-    // Use touchend on mobile to avoid native selection swallowing the click
-    const _aiFab = document.getElementById('tt-ai-fab');
-    const _aiFabHandler = (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
-      _ttHideAiFab();
-      const btn = document.getElementById('tt-ai-rephrase');
-      if (btn) btn.click();
-    };
-    _aiFab.addEventListener('touchend', _aiFabHandler);
-    _aiFab.addEventListener('click', _aiFabHandler);
+    // Wire selection bar AI button → trigger the toolbar AI rephrase button
+    const _selBarAi = document.getElementById('tt-sel-bar-ai');
+    if (_selBarAi) {
+      const _selBarHandler = (ev) => {
+        ev.preventDefault();
+        _ttHideAiFab();
+        const btn = document.getElementById('tt-ai-rephrase');
+        if (btn) btn.click();
+      };
+      _selBarAi.addEventListener('touchend', _selBarHandler);
+      _selBarAi.addEventListener('click', _selBarHandler);
+    }
 
     function _ttUpdateLinkBubble(editor) {
       const bubble = document.getElementById('tt-link-bubble');
@@ -24344,6 +24353,14 @@ QUESTION: ${query}`;
       </div><!-- end tt-toolbar-wrap -->
       <!-- TipTap editor area -->
       <div id="note-fs-editor"></div>
+      <!-- Selection action bar: appears when text is selected -->
+      <div id="tt-sel-bar">
+        <button id="tt-sel-bar-ai" onmousedown="event.preventDefault()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 10.6l-4.7 3.6 1.8 5.8L12 16.4 6.9 20l1.8-5.8L4 10.6l6.1-1.8z"/></svg>
+          Improve with AI
+        </button>
+        <span id="tt-sel-bar-hint">tap to rephrase selection</span>
+      </div>
       <!-- AI rephrase preview panel (hidden until AI returns a suggestion) -->
       <div id="tt-ai-preview" style="display:none;">
         <div style="font-size:11px;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:0.5px;">✦ AI Suggestions — tap one to select</div>
@@ -24359,11 +24376,6 @@ QUESTION: ${query}`;
       </div>
     </div>
   </div>
-  <!-- Floating AI bubble: appears near text selection -->
-  <button id="tt-ai-fab" onmousedown="event.preventDefault()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 10.6l-4.7 3.6 1.8 5.8L12 16.4 6.9 20l1.8-5.8L4 10.6l6.1-1.8z"/></svg>
-    AI
-  </button>
   <!-- Link bubble: manually positioned via _ttUpdateLinkBubble() -->
   <div id="tt-link-bubble" style="display:none;position:fixed;z-index:10020">
     <input id="tt-link-bubble-input" type="text" placeholder="Paste or type URL…" autocomplete="off" spellcheck="false">
