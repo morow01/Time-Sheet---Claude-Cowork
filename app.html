@@ -4446,7 +4446,7 @@
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li[data-checked="true"]>div {
       text-decoration: line-through;
-      color: #B0AEA8;
+      color: #b0b0b0;
       opacity: 1;
     }
 
@@ -4631,6 +4631,11 @@
       height: 1px;
       background: var(--border);
       margin: 8px 0 2px;
+    }
+
+    .tcp-btn.tcp-merge {
+      font-weight: 600;
+      border-color: rgba(0,0,0,0.18);
     }
 
     /* Images */
@@ -10256,7 +10261,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.30.2';
+    const VERSION = '4.30.3';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -24537,33 +24542,45 @@ QUESTION: ${query}`;
               </svg>Delete</button>
           </div>
           <div class="tcp-sep"></div>
-          <div class="tcp-section">Select / Merge / Split</div>
+          <div class="tcp-section">Merge &amp; Split</div>
           <div class="tcp-grid" style="grid-template-columns:1fr">
-            <!-- Selection mode buttons (mobile cell range selection) -->
-            <button id="tcp-sel-start-btn" class="tcp-btn"
-              style="justify-content:center;background:#0ea5e9;color:#fff;border-radius:10px;font-weight:600;"
-              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-start')">📌 Start selection here</button>
-            <button id="tcp-sel-extend-btn" class="tcp-btn"
-              style="display:none;justify-content:center;background:#0ea5e9;color:#fff;border-radius:10px;font-weight:600;"
-              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-extend')">✓ Extend selection here</button>
-            <button id="tcp-sel-clear-btn" class="tcp-btn"
-              style="display:none;justify-content:center;color:var(--text-secondary);"
-              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-clear')">✕ Cancel selection</button>
-            <!-- Shown when ≥2 cells are selected; hidden otherwise -->
-            <button id="tcp-merge-sel-btn" class="tcp-btn"
-              style="display:none;background:#818cf8;color:#fff;border-radius:10px;font-weight:700;justify-content:center;"
-              onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')">Merge selected cells</button>
-            <button class="tcp-btn" style="justify-content:center;" onmousedown="event.preventDefault()"
-              onclick="_ttCellAct('split')"><svg viewBox="0 0 20 20">
+            <!-- Selection mode buttons -->
+            <button id="tcp-sel-start-btn" class="tcp-btn" style="justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-start')"><svg viewBox="0 0 20 20">
+                <rect x="3" y="3" width="14" height="14" rx="1.5" stroke-dasharray="3 2" />
+                <line x1="10" y1="6.5" x2="10" y2="13.5" />
+                <line x1="6.5" y1="10" x2="13.5" y2="10" />
+              </svg>Start selection</button>
+            <button id="tcp-sel-extend-btn" class="tcp-btn" style="display:none;justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-extend')"><svg viewBox="0 0 20 20">
+                <rect x="3" y="3" width="14" height="14" rx="1.5" stroke-dasharray="3 2" />
+                <line x1="10" y1="6.5" x2="10" y2="13.5" />
+                <polyline points="7,11 10,14 13,11" />
+              </svg>Extend here</button>
+            <button id="tcp-sel-clear-btn" class="tcp-btn tcp-del" style="display:none;justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-clear')"><svg viewBox="0 0 20 20">
+                <line x1="5" y1="5" x2="15" y2="15" />
+                <line x1="15" y1="5" x2="5" y2="15" />
+              </svg>Cancel</button>
+            <!-- Shown when ≥2 cells are selected -->
+            <button id="tcp-merge-sel-btn" class="tcp-btn tcp-merge" style="display:none;justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')"><svg viewBox="0 0 20 20">
+                <rect x="2" y="4" width="6" height="12" rx="1" />
+                <rect x="12" y="4" width="6" height="12" rx="1" />
+                <line x1="8" y1="10" x2="12" y2="10" />
+                <polyline points="9.5,7.5 12,10 9.5,12.5" />
+              </svg>Merge cells</button>
+          </div>
+          <!-- Split + Delete always visible, side by side -->
+          <div class="tcp-grid" style="grid-template-columns:1fr 1fr;margin-top:5px">
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('split')"><svg
+                viewBox="0 0 20 20">
                 <rect x="2" y="2" width="16" height="16" rx="1.5" />
                 <line x1="10" y1="2" x2="10" y2="18" />
                 <line x1="2" y1="10" x2="18" y2="10" />
               </svg>Split cell</button>
-          </div>
-          <div class="tcp-sep"></div>
-          <div class="tcp-grid" style="grid-template-columns:1fr">
             <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('table-del')"><svg
-                viewBox="0 0 20 20" style="width:14px;height:14px;display:inline;vertical-align:middle">
+                viewBox="0 0 20 20">
                 <rect x="2" y="2" width="16" height="16" rx="1.5" />
                 <line x1="2" y1="7" x2="18" y2="7" />
                 <line x1="2" y1="13" x2="18" y2="13" />
@@ -24571,7 +24588,7 @@ QUESTION: ${query}`;
                 <line x1="13" y1="2" x2="13" y2="18" />
                 <line x1="5" y1="5" x2="15" y2="15" />
                 <line x1="15" y1="5" x2="5" y2="15" />
-              </svg> Delete table</button>
+              </svg>Delete table</button>
           </div>
         </div>
         <!-- Hidden image file input -->
@@ -24661,5 +24678,4 @@ QUESTION: ${query}`;
   <!-- ===== RIAN CUSTOM DIALOG ===== -->
   <div id="rian-dialog-overlay" role="dialog" aria-modal="true" onclick="_rdnOverlayClick(event)">
     <div id="rian-dialog">
-      <div class="rdn-title" id="rdn-title"></div>
-      
+      <div class="rdn-title" id="rdn-title"></div>        
