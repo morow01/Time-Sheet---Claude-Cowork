@@ -3768,6 +3768,47 @@
       height: 15px;
     }
 
+    /* ── List-type dropdown ───────────────────────────── */
+    .tt-list-drop { position: relative; }
+    .tt-list-btn  { width: auto !important; padding: 0 5px 0 6px; gap: 2px; }
+    .tt-list-chevron { width: 10px !important; height: 10px !important; opacity: 0.55; flex-shrink: 0; }
+    .tt-list-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      display: none;
+      flex-direction: column;
+      gap: 1px;
+      z-index: 300;
+      min-width: 148px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+    }
+    .tt-list-menu.tt-open { display: flex; }
+    .tt-list-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      border: none;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tt-list-item:hover { background: var(--bg-page); }
+    .tt-list-item.tt-active { background: #ede9fe; color: #818cf8; }
+    .tt-list-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
     .tt-swatch {
       width: 24px;
       height: 24px;
@@ -9930,7 +9971,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.61';
+    const VERSION = '4.27.62';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22315,9 +22356,10 @@ QUESTION: ${query}`;
       on('tt-h2', () => { e.chain().focus().toggleHeading({ level: 2 }).run(); _ttUpdateToolbar(e); });
       on('tt-h3', () => { e.chain().focus().toggleHeading({ level: 3 }).run(); _ttUpdateToolbar(e); });
       // Lists
-      on('tt-ul', () => { e.chain().focus().toggleBulletList().run(); _ttUpdateToolbar(e); });
-      on('tt-ol', () => { e.chain().focus().toggleOrderedList().run(); _ttUpdateToolbar(e); });
-      on('tt-tasklist', () => { e.chain().focus().toggleTaskList().run(); _ttUpdateToolbar(e); });
+      const _closeListMenu = () => document.getElementById('tt-list-menu')?.classList.remove('tt-open');
+      on('tt-ul', () => { e.chain().focus().toggleBulletList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
+      on('tt-ol', () => { e.chain().focus().toggleOrderedList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
+      on('tt-tasklist', () => { e.chain().focus().toggleTaskList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
       // Block elements
       on('tt-blockquote', () => { e.chain().focus().toggleBlockquote().run(); _ttUpdateToolbar(e); });
       on('tt-code', () => { e.chain().focus().toggleCode().run(); _ttUpdateToolbar(e); });
@@ -22485,6 +22527,20 @@ QUESTION: ${query}`;
       for (const [id, check] of Object.entries(map)) {
         const el = document.getElementById(id);
         if (el) el.classList.toggle('tt-active', check());
+      }
+      // Update list dropdown button active state + icon
+      const _listIsActive = editor.isActive('bulletList') || editor.isActive('orderedList') || editor.isActive('taskList');
+      const _listBtn = document.getElementById('tt-list-btn');
+      if (_listBtn) _listBtn.classList.toggle('tt-active', _listIsActive);
+      const _listIcon = document.getElementById('tt-list-icon');
+      if (_listIcon) {
+        if (editor.isActive('orderedList')) {
+          _listIcon.innerHTML = '<line x1="10" y1="6" x2="21" y2="6" stroke-linecap="round"/><line x1="10" y1="12" x2="21" y2="12" stroke-linecap="round"/><line x1="10" y1="18" x2="21" y2="18" stroke-linecap="round"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>';
+        } else if (editor.isActive('taskList')) {
+          _listIcon.innerHTML = '<polyline points="9 11 12 14 22 4" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>';
+        } else {
+          _listIcon.innerHTML = '<line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/>';
+        }
       }
       // Show/hide table context bar + floating cell trigger
       const tableBar = document.getElementById('note-fs-tt-table-bar');
@@ -22713,6 +22769,12 @@ QUESTION: ${query}`;
     }
     document.addEventListener('touchstart', _ttDismissPopupIfOutside, { passive: true });
     document.addEventListener('click', _ttDismissPopupIfOutside);
+    // Close list-type dropdown when clicking outside it
+    document.addEventListener('click', (ev) => {
+      const drop = document.getElementById('tt-list-drop');
+      const menu = document.getElementById('tt-list-menu');
+      if (menu && drop && !drop.contains(ev.target)) menu.classList.remove('tt-open');
+    });
 
     function _ttHideLinkBubble() {
       const bubble = document.getElementById('tt-link-bubble');
@@ -23567,34 +23629,40 @@ QUESTION: ${query}`;
           <button class="tt-btn" id="tt-h2" title="Heading 2" style="font-size:11px;font-weight:800">H2</button>
           <button class="tt-btn" id="tt-h3" title="Heading 3" style="font-size:11px;font-weight:800">H3</button>
           <div class="tt-sep"></div>
-          <!-- Lists -->
-          <button class="tt-btn" id="tt-ul" title="Bullet list">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <line x1="9" y1="6" x2="20" y2="6" />
-              <line x1="9" y1="12" x2="20" y2="12" />
-              <line x1="9" y1="18" x2="20" y2="18" />
-              <circle cx="4" cy="6" r="1.2" fill="currentColor" />
-              <circle cx="4" cy="12" r="1.2" fill="currentColor" />
-              <circle cx="4" cy="18" r="1.2" fill="currentColor" />
-            </svg>
-          </button>
-          <button class="tt-btn" id="tt-ol" title="Numbered list">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <line x1="10" y1="6" x2="21" y2="6" />
-              <line x1="10" y1="12" x2="21" y2="12" />
-              <line x1="10" y1="18" x2="21" y2="18" />
-              <path d="M4 6h1v4" />
-              <path d="M4 10h2" />
-              <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
-            </svg>
-          </button>
-          <button class="tt-btn" id="tt-tasklist" title="Task list / checkboxes">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-              stroke-linejoin="round">
-              <polyline points="9 11 12 14 22 4" />
-              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-            </svg>
-          </button>
+          <!-- Lists dropdown -->
+          <div class="tt-list-drop" id="tt-list-drop">
+            <button class="tt-btn tt-list-btn" id="tt-list-btn" title="List type"
+              onclick="event.stopPropagation();document.getElementById('tt-list-menu').classList.toggle('tt-open');">
+              <svg id="tt-list-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/>
+                <circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/>
+              </svg>
+              <svg class="tt-list-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="tt-list-menu" id="tt-list-menu">
+              <button class="tt-list-item" id="tt-ul">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/>
+                  <circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/>
+                </svg>
+                Bullet List
+              </button>
+              <button class="tt-list-item" id="tt-ol">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/>
+                  <path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>
+                </svg>
+                Ordered List
+              </button>
+              <button class="tt-list-item" id="tt-tasklist">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 11 12 14 22 4"/>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Task List
+              </button>
+            </div>
+          </div>
           <div class="tt-sep"></div>
           <!-- Block elements -->
           <button class="tt-btn" id="tt-blockquote" title="Blockquote">
