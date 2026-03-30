@@ -1,43 +1,38 @@
 /**
- * Rian App Health Check — run in browser console before every push
- * node-compatible stub: paste into DevTools console on localhost:3000/app
+ * Rian App Health Check — paste into DevTools console on localhost:3000/app
+ * Run before every push to catch missing elements or broken functions.
  */
 const ELEMENTS = [
-  // Modals
   'note-voice-confirm-modal', 'voice-confirm-modal', 'voice-listen-modal',
-  'ai-fault-modal', 'remind-modal', 'rian-dialog-overlay',
-  'note-fs-modal',
-  // Voice note confirm fields
+  'ai-fault-modal', 'remind-modal', 'rian-dialog-overlay', 'note-fs-modal',
   'nvc-heard-text', 'nvc-desc', 'nvc-loc', 'nvc-date-display',
   'nvc-priority-dots', 'nvc-category-chips', 'nvc-reminder-wrap',
-  // Table popup
   'tt-cell-popup', 'tt-cell-trigger',
-  // Link bubble
   'tt-link-bubble', 'tt-link-bubble-input',
   'tt-link-bbl-confirm', 'tt-link-bbl-open', 'tt-link-bbl-remove',
-  // FABs
   'note-voice-fab', 'voice-fab',
 ];
 
 const FUNCTIONS = [
-  // Voice notes
   'startNoteVoice', 'startVoiceEntry', 'cancelVoice',
   'confirmNoteVoice', 'showNoteVoiceConfirm',
-  'renderNvcPriorityChips', 'renderNvcCategoryChips',
-  'renderNvcReminderField', 'setNvcPriority', 'setNvcCategory',
-  // Fullscreen note editor
+  'renderNvcPriorityChips', 'renderNvcCategoryChips', 'renderNvcReminderField',
+  'setNvcPriority', 'setNvcCategory',
   'openFieldNoteFullscreen', 'closeNoteFullscreen', 'openNoteFullscreen',
   'startFsDictation',
-  // Table
   '_ttCellAct', '_ttToggleCellPopup', '_ttUpdateLinkBubble',
-  // Sync
   'scheduleNotesSave', 'fsSetNotes',
-  // UI
   'showRianDialog', 'showToast', 'render',
+  'deleteNote', 'permanentDeleteNote', 'emptyBin',
+  '_purgeRemindersForNote', 'fireReminder', 'checkMissedReminders',
+  'scheduleReminderTimer',
 ];
 
 const missingEl = ELEMENTS.filter(id => !document.getElementById(id));
-const missingFn = FUNCTIONS.filter(f => typeof window[f] !== 'function');
+// Use eval to check closure-scoped functions (not just window-level)
+const missingFn = FUNCTIONS.filter(f => {
+  try { return typeof eval(f) !== 'function'; } catch(e) { return true; }
+});
 
 if (missingEl.length === 0 && missingFn.length === 0) {
   console.log('%c✅ Health check PASSED — all elements and functions present', 'color:green;font-weight:bold');

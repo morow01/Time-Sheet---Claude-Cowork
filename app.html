@@ -9914,7 +9914,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.58';
+    const VERSION = '4.27.59';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14102,6 +14102,11 @@
     }
 
     function fireReminder(reminder, alreadySaved) {
+      // Skip if the parent note has been deleted or no longer exists
+      if (reminder.noteId) {
+        const parentNote = state.notes.find(n => n.id === reminder.noteId);
+        if (!parentNote || parentNote.deleted) return;
+      }
       // Double-fire guard: check if already fired (another device may have beaten us)
       const current = getReminders().find(x => x.id === reminder.id);
       if (current && current.fired) return;
@@ -14236,6 +14241,12 @@
       const reminders = getReminders();
       let changed = false;
       reminders.forEach(r => {
+        // Skip reminders for notes that have been deleted or no longer exist
+        const parentNote = r.noteId ? state.notes.find(n => n.id === r.noteId) : null;
+        if (r.noteId && (!parentNote || parentNote.deleted)) {
+          if (reminderTimers[r.id]) { clearTimeout(reminderTimers[r.id]); delete reminderTimers[r.id]; }
+          return;
+        }
         if (!r.fired && r.firedBy !== 'server' && r.remindAt <= now) {
           r.fired = true;
           r.firedBy = getDeviceName();
@@ -16195,6 +16206,17 @@
       render();
     }
 
+    // Cancel and remove all reminders associated with a note
+    function _purgeRemindersForNote(noteId) {
+      const before = getReminders();
+      const toRemove = before.filter(r => r.noteId === noteId);
+      if (!toRemove.length) return;
+      toRemove.forEach(r => {
+        if (reminderTimers[r.id]) { clearTimeout(reminderTimers[r.id]); delete reminderTimers[r.id]; }
+      });
+      saveReminders(before.filter(r => r.noteId !== noteId));
+    }
+
     function deleteNote(id) {
       const note = state.notes.find(n => n.id === id);
       if (!note) return;
@@ -16203,6 +16225,7 @@
         note.deleted = true;
         note.deletedAt = Date.now();
         state.expandedNotes.delete(id);
+        _purgeRemindersForNote(id);
         scheduleNotesSave();
         render();
         showActionToast('Moved to bin', 'Undo', () => {
@@ -16236,6 +16259,7 @@
       const note = state.notes.find(n => n.id === id);
       const desc = note ? (note.description || 'Untitled note').replace(/<[^>]*>/g, '').trim() : 'Are you sure?';
       showConfirm('Delete forever?', desc, () => {
+        _purgeRemindersForNote(id);
         state.notes = state.notes.filter(n => n.id !== id);
         scheduleNotesSave();
         render();
@@ -16244,6 +16268,8 @@
 
     function emptyBin() {
       showConfirm('Empty bin?', 'All deleted notes will be permanently removed.', () => {
+        const deletedIds = state.notes.filter(n => n.deleted).map(n => n.id);
+        deletedIds.forEach(id => _purgeRemindersForNote(id));
         state.notes = state.notes.filter(n => !n.deleted);
         scheduleNotesSave();
         render();
