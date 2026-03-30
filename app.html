@@ -10088,7 +10088,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.28.8';
+    const VERSION = '4.28.9';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22715,42 +22715,16 @@ QUESTION: ${query}`;
       on('tt-hl-purple', () => { e.chain().focus().setHighlight({ color: '#e9d5ff' }).run(); _closePalette(); });
       on('tt-hl-orange', () => { e.chain().focus().setHighlight({ color: '#fed7aa' }).run(); _closePalette(); });
       on('tt-hl-reset', () => { e.chain().focus().unsetHighlight().run(); _closePalette(); });
-      // AI rephrase — shows 3 version cards, user picks one then confirms
-      let _aiPending = null; // { from, to, empty, selectedText }
-      const _hideAiPreview = () => {
-        const panel = document.getElementById('tt-ai-preview');
-        if (panel) panel.style.display = 'none';
-        const loadingEl = document.getElementById('tt-ai-loading');
-        if (loadingEl) loadingEl.style.display = 'none';
-        const container = document.getElementById('tt-ai-versions');
-        if (container) container.innerHTML = '';
-        _aiPending = null;
-        const acceptBtn = document.getElementById('tt-ai-accept');
-        if (acceptBtn) acceptBtn.disabled = true;
-      };
-      const _showAiVersions = (versions, from, to, empty) => {
-        _aiPending = { from, to, empty, selectedText: null };
-        const container = document.getElementById('tt-ai-versions');
-        const acceptBtn = document.getElementById('tt-ai-accept');
-        if (!container) return;
-        container.innerHTML = versions.map((v, i) => `<div class="tt-ai-ver" data-ver-idx="${i}"><div class="tt-ai-ver-label">Option ${i + 1}</div>${esc(v)}</div>`).join('');
-        container.querySelectorAll('.tt-ai-ver').forEach((card, i) => {
-          card.addEventListener('click', () => {
-            container.querySelectorAll('.tt-ai-ver').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            _aiPending.selectedText = versions[i];
-            if (acceptBtn) acceptBtn.disabled = false;
-          });
-        });
-        if (acceptBtn) acceptBtn.disabled = true;
-      };
+      // AI accept/discard — _aiPending/_hideAiPreview/_showAiVersions are module-scope below
       on('tt-ai-accept', () => {
         if (!_aiPending || !_aiPending.selectedText) return;
         const { from, to, empty, selectedText } = _aiPending;
+        const ed = _tiptapEditor;
+        if (!ed) return;
         if (empty) {
-          e.commands.setContent(selectedText);
+          ed.commands.setContent(selectedText);
         } else {
-          e.chain().focus().deleteRange({ from, to }).insertContentAt(from, selectedText).run();
+          ed.chain().focus().deleteRange({ from, to }).insertContentAt(from, selectedText).run();
         }
         _hideAiPreview();
         showToast('✨ Applied!');
@@ -22759,8 +22733,39 @@ QUESTION: ${query}`;
       on('tt-ai-rephrase', () => _ttDoAiRephrase());
     }
 
-    // Standalone rephrase function — always reads live _tiptapEditor so it
-    // works whether called from the toolbar button or the selection bar.
+    // ── AI preview state — module-scope so _ttDoAiRephrase and _ttBindToolbar share them ──
+    let _aiPending = null;
+    function _hideAiPreview() {
+      const panel = document.getElementById('tt-ai-preview');
+      if (panel) panel.style.display = 'none';
+      const loadingEl = document.getElementById('tt-ai-loading');
+      if (loadingEl) loadingEl.style.display = 'none';
+      const container = document.getElementById('tt-ai-versions');
+      if (container) container.innerHTML = '';
+      _aiPending = null;
+      const acceptBtn = document.getElementById('tt-ai-accept');
+      if (acceptBtn) acceptBtn.disabled = true;
+    }
+    function _showAiVersions(versions, from, to, empty) {
+      _aiPending = { from, to, empty, selectedText: null };
+      const container = document.getElementById('tt-ai-versions');
+      const acceptBtn = document.getElementById('tt-ai-accept');
+      if (!container) return;
+      container.innerHTML = versions.map((v, i) =>
+        `<div class="tt-ai-ver" data-ver-idx="${i}"><div class="tt-ai-ver-label">Option ${i + 1}</div>${esc(v)}</div>`
+      ).join('');
+      container.querySelectorAll('.tt-ai-ver').forEach((card, i) => {
+        card.addEventListener('click', () => {
+          container.querySelectorAll('.tt-ai-ver').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          _aiPending.selectedText = versions[i];
+          if (acceptBtn) acceptBtn.disabled = false;
+        });
+      });
+      if (acceptBtn) acceptBtn.disabled = true;
+    }
+
+    // Standalone rephrase function — reads live _tiptapEditor at call time.
     async function _ttDoAiRephrase() {
       _ttHideAiFab();
       const editor = _tiptapEditor;
