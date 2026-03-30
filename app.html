@@ -10079,7 +10079,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.28.2';
+    const VERSION = '4.28.3';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -23097,22 +23097,28 @@ QUESTION: ${query}`;
       // Don't show if AI preview panel is already visible
       const aiPanel = document.getElementById('tt-ai-preview');
       if (aiPanel && aiPanel.style.display !== 'none') { fab.style.display = 'none'; return; }
-      // Position BELOW the selection so it doesn't clash with native Cut/Copy/Paste menu
+      // Position BELOW the selection with generous gap to clear native drag handles
       const coords = editor.view.coordsAtPos(to);
       const fabW = 70; // approximate width
       let left = coords.left - fabW / 2;
       left = Math.max(8, Math.min(left, window.innerWidth - fabW - 8));
       fab.style.left = left + 'px';
-      fab.style.top = (coords.bottom + 6) + 'px';
+      fab.style.top = (coords.bottom + 20) + 'px';
       fab.style.display = 'flex';
     }
 
-    // Wire FAB click → trigger the toolbar AI rephrase button
-    document.getElementById('tt-ai-fab').addEventListener('click', () => {
+    // Wire FAB tap → trigger the toolbar AI rephrase button
+    // Use touchend on mobile to avoid native selection swallowing the click
+    const _aiFab = document.getElementById('tt-ai-fab');
+    const _aiFabHandler = (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
       _ttHideAiFab();
       const btn = document.getElementById('tt-ai-rephrase');
       if (btn) btn.click();
-    });
+    };
+    _aiFab.addEventListener('touchend', _aiFabHandler);
+    _aiFab.addEventListener('click', _aiFabHandler);
 
     function _ttUpdateLinkBubble(editor) {
       const bubble = document.getElementById('tt-link-bubble');
@@ -23310,9 +23316,8 @@ QUESTION: ${query}`;
       const micBtn = document.getElementById('fs-mic-btn');
       if (micBtn) micBtn.classList.remove('fs-mic-listening');
       _tiptapOnUpdate = null;
-      // Destroy TipTap editor to free memory — _ensureTipTap() recreates it next open
-      if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
-      // Dismiss any pending AI preview
+      // Dismiss any pending AI preview + floating bubble
+      _ttHideAiFab();
       const _aiP = document.getElementById('tt-ai-preview');
       if (_aiP) _aiP.style.display = 'none';
       document.getElementById('note-fs-modal').classList.add('hidden');
@@ -23326,6 +23331,8 @@ QUESTION: ${query}`;
             ? (coTa.value.trim().startsWith('<') ? sanitizeHtml(coTa.value) : esc(coTa.value).replace(/\n/g, '<br>'))
             : '<span class="notes-rich-placeholder">Tap to add a note…</span>';
         }
+        // Destroy editor AFTER content is handled
+        if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
         return;
       }
       // If we were editing a field note's noteContent, flush final content + re-render
@@ -23341,7 +23348,12 @@ QUESTION: ${query}`;
         }
         window._tiptapNoteEdited = false;
         _fnFsNoteId = null;
+        // Destroy editor AFTER content is saved
+        if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
         render();
+      } else {
+        // No note context — still destroy to free memory
+        if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
       }
       _noteFsActId = null; _noteFsDi = null;
     }
