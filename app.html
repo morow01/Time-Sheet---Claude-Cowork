@@ -9971,7 +9971,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.64';
+    const VERSION = '4.27.65';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14212,6 +14212,10 @@
         if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
         const ref = userDoc('data/reminders');
         if (ref) {
+          // Track reminders already notified this session so cross-device toasts fire at most once
+          const _xdeviceNotifiedIds = new Set();
+          // Capture which reminders were genuinely pending at subscription time (before any snapshot)
+          const _initialPendingIds = new Set(remindersData.filter(r => !r.fired).map(r => r.id));
           remindersUnsubscribe = ref.onSnapshot({ includeMetadataChanges: true }, snap => {
             if (snap.metadata.hasPendingWrites) return;
             // CRITICAL: only trust non-cached snapshots for sync state.
@@ -14235,10 +14239,11 @@
             // Compare previous state before overwriting remindersData
             if (isFromServer) {
               const myDevice = getDeviceName();
-              const prevPending = new Set(remindersData.filter(r => !r.fired).map(r => r.id));
               remote.reminders.forEach(r => {
-                if (r.fired && prevPending.has(r.id) && r.firedBy && r.firedBy !== myDevice) {
-                  // This reminder just fired on another device — notify this device too
+                // Only notify if: fired on another device, was genuinely pending at startup,
+                // and we haven't already notified for this reminder this session.
+                if (r.fired && _initialPendingIds.has(r.id) && !_xdeviceNotifiedIds.has(r.id) && r.firedBy && r.firedBy !== myDevice) {
+                  _xdeviceNotifiedIds.add(r.id);
                   console.log('[Rian] Cross-device reminder fired by', r.firedBy, '— showing local notification');
                   if ('Notification' in window && Notification.permission === 'granted') {
                     try {
@@ -14264,8 +14269,15 @@
               checkMissedReminders();
             }
 
-            // Re-render notes view if visible (to update Reminded badges)
-            if (state.view === 'notes') render();
+            // Re-render notes view if visible (to update Reminded badges) — but only
+            // when the fired-set actually changed to avoid destroying expanded note state mid-tap
+            if (state.view === 'notes') {
+              const _firedSet = remindersData.map(r => r.id + ':' + r.fired).join(',');
+              if (_firedSet !== (initReminders._lastFiredSet || '')) {
+                initReminders._lastFiredSet = _firedSet;
+                render();
+              }
+            }
           }, () => { });
         }
       }
