@@ -9914,7 +9914,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.54';
+    const VERSION = '4.27.55';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15525,10 +15525,11 @@
         _ttSetContent(note.noteContent || '');
         _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
         _tiptapLastSavedNoteId = noteId;
+        window._tiptapNoteEdited = false; // track whether user actually changed anything
         _tiptapOnUpdate = (editor) => {
           const html = _ttGetHTML();
           const n = state.notes.find(x => x.id === noteId);
-          if (n) { n.noteContent = html; n.updatedAt = Date.now(); _tiptapLastSaveAt = Date.now(); _tiptapLastSavedNoteId = noteId; scheduleNotesSave(); }
+          if (n) { n.noteContent = html; n.updatedAt = Date.now(); _tiptapLastSaveAt = Date.now(); _tiptapLastSavedNoteId = noteId; window._tiptapNoteEdited = true; scheduleNotesSave(); }
         };
         _tiptapEditor.commands.focus();
         _ttUpdateToolbar(_tiptapEditor);
@@ -22847,17 +22848,17 @@ QUESTION: ${query}`;
       }
       // If we were editing a field note's noteContent, flush final content + re-render
       if (_fnFsNoteId) {
-        // Capture final editor content immediately (before any async onSnapshot can overwrite)
-        if (_tiptapEditor) {
+        // Only save if the user actually changed something — never overwrite with stale content
+        if (_tiptapEditor && window._tiptapNoteEdited) {
           const html = _ttGetHTML();
           const n = state.notes.find(x => x.id === _fnFsNoteId);
           if (n) { n.noteContent = html; n.updatedAt = Date.now(); }
+          _tiptapLastSavedNoteId = _fnFsNoteId;
+          _tiptapLastSaveAt = Date.now();
+          scheduleNotesSave();
         }
-        _tiptapLastSavedNoteId = _fnFsNoteId;
-        _tiptapLastSaveAt = Date.now();
-        scheduleNotesSave();
+        window._tiptapNoteEdited = false;
         _fnFsNoteId = null;
-        window._tiptapNoteOpenTs = 0;
         render();
       }
       _noteFsActId = null; _noteFsDi = null;
