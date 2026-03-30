@@ -3849,8 +3849,9 @@
     :is(#note-fs-editor .ProseMirror, .tt-prose) h1,
     :is(#note-fs-editor .ProseMirror, .tt-prose) h2,
     :is(#note-fs-editor .ProseMirror, .tt-prose) h3 {
-      font-weight: 700;
+      font-weight: 600;
       padding-top: 12px;
+      line-height: 1.2;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) h1:first-child,
@@ -3860,15 +3861,20 @@
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) h1 {
-      font-size: 22px;
+      font-size: 26px;
+      letter-spacing: -0.03em;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) h2 {
-      font-size: 18px;
+      font-size: 19px;
+      letter-spacing: -0.02em;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) h3 {
       font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: #3A3836;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul,
@@ -3887,13 +3893,23 @@
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) li {
       margin-bottom: 2px;
+      line-height: 1.9;
+      padding-left: 3px;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) li::marker {
+      color: #C8C6C0;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) blockquote {
-      border-left: 3px solid rgba(13, 13, 13, 0.12);
-      padding-left: 1rem;
-      margin: 1.5rem 0;
-      font-style: normal;
+      border-left: 2.5px solid rgba(0,0,0,0.15);
+      padding: 10px 16px;
+      background: #F5F4F0;
+      border-radius: 0 8px 8px 0;
+      color: #5C5A56;
+      line-height: 1.7;
+      font-style: italic;
+      margin: 8px 0;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) a {
@@ -4193,16 +4209,27 @@
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) code {
-      background: var(--bg-page);
-      border-radius: 4px;
-      padding: 1px 5px;
-      font-size: 13px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      background: #F5F4F0;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 5px;
+      padding: 2px 7px;
+      color: #1A1917;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) mark {
-      border-radius: 3px;
-      padding: 0 2px;
+      border-radius: 4px;
+      padding: 1px 3px;
     }
+
+    /* Muted tinted highlights */
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark[data-color="#fef08a"] { background-color: #FDF3C0 !important; color: #7A5E00; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark[data-color="#bbf7d0"] { background-color: #D6F0C2 !important; color: #2B5A09; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark[data-color="#fecaca"] { background-color: #FDDDD8 !important; color: #8F2610; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark[data-color="#bfdbfe"] { background-color: #D0E8FA !important; color: #0B3C72; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark[data-color="#e9d5ff"] { background-color: #EDE4FF !important; color: #3D2A8A; }
+    :is(#note-fs-editor .ProseMirror, .tt-prose) mark[data-color="#fed7aa"] { background-color: #FDEBD0 !important; color: #7A3D00; }
 
     #note-fs-editor .ProseMirror p.is-editor-empty:first-child::before {
       content: attr(data-placeholder);
@@ -4214,19 +4241,20 @@
 
     /* Code block */
     :is(#note-fs-editor .ProseMirror, .tt-prose) pre {
-      background: #f1f5f9;
-      color: #1e293b;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 12px 14px;
-      font-size: 13px;
+      background: #1C1B19;
+      color: #D4D0C8;
+      border-radius: 10px;
+      padding: 16px 18px;
+      font-size: 12.5px;
       font-family: 'DM Mono', 'Courier New', monospace;
+      line-height: 1.75;
       overflow-x: auto;
       margin: 8px 0;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) pre code {
       background: none;
+      border: none;
       padding: 0;
       font-size: inherit;
       color: inherit;
@@ -4279,7 +4307,8 @@
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) ul[data-type="taskList"] li[data-checked="true"]>div {
       text-decoration: line-through;
-      opacity: 0.35;
+      color: #B0AEA8;
+      opacity: 1;
     }
 
     /* Tables */
@@ -10088,7 +10117,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.29.0';
+    const VERSION = '4.30.0';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
