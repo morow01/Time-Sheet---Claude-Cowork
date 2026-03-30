@@ -10088,7 +10088,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.28.4';
+    const VERSION = '4.28.5';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22531,10 +22531,9 @@ QUESTION: ${query}`;
           const rel = event?.relatedTarget;
           if (rel && bubble && bubble.contains(rel)) return;
           _ttHideLinkBubble();
-          // Keep selection bar visible if focus moved to the sel-bar button itself
-          const selBar = document.getElementById('tt-sel-bar');
-          if (rel && selBar && selBar.contains(rel)) return;
-          _ttHideAiFab();
+          // Do NOT hide the selection bar on blur — on mobile relatedTarget is always
+          // null so we can't tell if the user tapped our button. The bar hides via
+          // onSelectionUpdate (empty selection) or explicitly when AI is triggered.
         },
       });
       _ttBindToolbar();
@@ -23119,8 +23118,11 @@ QUESTION: ${query}`;
     // Wire selection bar AI button → trigger the toolbar AI rephrase button
     const _selBarAi = document.getElementById('tt-sel-bar-ai');
     if (_selBarAi) {
+      // touchstart preventDefault stops the editor losing focus before touchend fires
+      _selBarAi.addEventListener('touchstart', (ev) => ev.preventDefault(), { passive: false });
       const _selBarHandler = (ev) => {
         ev.preventDefault();
+        ev.stopPropagation();
         _ttHideAiFab();
         const btn = document.getElementById('tt-ai-rephrase');
         if (btn) btn.click();
