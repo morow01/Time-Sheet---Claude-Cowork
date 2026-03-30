@@ -9914,7 +9914,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.57';
+    const VERSION = '4.27.58';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -23365,6 +23365,73 @@ QUESTION: ${query}`;
         <div class="vc-btns">
           <button class="vc-btn primary" onclick="confirmVoiceEntry()">Add to Timesheet</button>
           <button class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== NOTE VOICE CONFIRM MODAL ===== -->
+  <div id="note-voice-confirm-modal">
+    <div class="vc-sheet">
+      <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
+        <div class="vc-title">Add Note</div>
+        <div class="vc-heard"><strong>Heard:</strong> <span id="nvc-heard-text"></span></div>
+        <div class="vc-field">
+          <label class="vc-label">Description</label>
+          <textarea id="nvc-desc" class="vc-input" rows="2" placeholder="Note title" autocomplete="off"
+            data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+            style="resize:none;overflow:hidden"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        </div>
+        <div class="vc-field">
+          <label class="vc-label">Location</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="nvc-loc" class="vc-input" type="text" placeholder="Town or site"
+              style="flex:1;min-width:0;cursor:pointer" autocomplete="off" data-lpignore="true"
+              data-form-type="other" data-1p-ignore="true" readonly
+              onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;};openLocationModal();">
+            <button type="button"
+              onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;};openLocationModal();"
+              style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>
+              </svg>Site
+            </button>
+          </div>
+        </div>
+        <div class="vc-field">
+          <label class="vc-label">Date</label>
+          <div style="position:relative">
+            <div id="nvc-date-display" class="vc-input" style="cursor:pointer;line-height:38px;padding:0 12px"
+              onclick="this.nextElementSibling.showPicker?this.nextElementSibling.showPicker():this.nextElementSibling.click()"></div>
+            <input type="date" id="nvc-date-input"
+              style="opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer;border:none;padding:0"
+              onchange="nvcDate=this.value;renderNvcDateField()">
+          </div>
+        </div>
+        <div class="vc-field">
+          <label class="vc-label">Priority</label>
+          <div id="nvc-priority-dots" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <button type="button" class="note-pri-dot pd-high" data-pri="high" onclick="setNvcPriority('high')" title="High"></button>
+            <span style="font-size:12px;color:var(--text-secondary);margin-right:10px">High</span>
+            <button type="button" class="note-pri-dot pd-medium" data-pri="medium" onclick="setNvcPriority('medium')" title="Medium"></button>
+            <span style="font-size:12px;color:var(--text-secondary);margin-right:10px">Medium</span>
+            <button type="button" class="note-pri-dot pd-low" data-pri="low" onclick="setNvcPriority('low')" title="Low"></button>
+            <span style="font-size:12px;color:var(--text-secondary)">Low</span>
+          </div>
+        </div>
+        <div class="vc-field">
+          <label class="vc-label">Category</label>
+          <div id="nvc-category-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+        </div>
+        <div class="vc-field">
+          <label class="vc-label">Reminder</label>
+          <div id="nvc-reminder-wrap"></div>
+        </div>
+        <div class="vc-btns">
+          <button type="button" class="vc-btn primary" onclick="confirmNoteVoice()">Add Note</button>
+          <button type="button" class="vc-btn secondary" onclick="cancelVoice()">Cancel</button>
         </div>
       </form>
     </div>
