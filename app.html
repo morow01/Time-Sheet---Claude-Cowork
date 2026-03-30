@@ -9502,7 +9502,7 @@
         style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
         <div class="finder-search-wrap">
           <input id="location-search" type="search" placeholder="Town name or code…" class="finder-search-input"
-            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+            autocomplete="new-password" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
             oninput="filterLocations(this.value)">
           <div class="finder-v-separator"></div>
           <div class="finder-mic-btn-inline" id="location-mic-btn" onclick="startLocationVoice()" title="Voice search">
@@ -9914,7 +9914,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.59';
+    const VERSION = '4.27.60';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15044,7 +15044,7 @@
                 value="${esc(note.location)}"
                 placeholder="Town name or code…"
                 readonly style="cursor:pointer;width:100%"
-                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+                autocomplete="new-password" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
                 onclick="openLocationModal(null, null, '${note.id}')" />
             </div>
             <div class="note-detail-row">
@@ -19254,7 +19254,7 @@
                 value="${site ? esc(site) : ''}"
                 placeholder="Tap to select location"
                 style="cursor:pointer;user-select:none;"
-                autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+                autocomplete="new-password" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
                 onclick="_coSiteCallback = (name) => { const el = document.getElementById('co-site-display'); el.value = name; updateCoField('site', name); }; openLocationModal();">
             </div>
           </div>
@@ -23346,7 +23346,7 @@ QUESTION: ${query}`;
           <label class="vc-label">Location</label>
           <div style="display:flex;gap:8px;align-items:center">
             <input id="vc-loc" class="vc-input" type="text" placeholder="Town name or code"
-              style="flex:1;min-width:0;cursor:pointer" autocomplete="off" data-lpignore="true" data-form-type="other"
+              style="flex:1;min-width:0;cursor:pointer" autocomplete="new-password" data-lpignore="true" data-form-type="other"
               data-1p-ignore="true" readonly
               onclick="_coSiteCallback=(name)=>{document.getElementById('vc-loc').value=name;}; openLocationModal();">
             <button type="button"
@@ -23413,7 +23413,7 @@ QUESTION: ${query}`;
           <label class="vc-label">Location</label>
           <div style="display:flex;gap:8px;align-items:center">
             <input id="nvc-loc" class="vc-input" type="text" placeholder="Town or site"
-              style="flex:1;min-width:0;cursor:pointer" autocomplete="off" data-lpignore="true"
+              style="flex:1;min-width:0;cursor:pointer" autocomplete="new-password" data-lpignore="true"
               data-form-type="other" data-1p-ignore="true" readonly
               onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;};openLocationModal();">
             <button type="button"
