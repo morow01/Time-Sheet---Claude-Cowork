@@ -1,4 +1,4 @@
-const CACHE = 'rian-v4.27.55';
+const CACHE = 'rian-v4.27.56';
 const BASE = self.location.pathname.replace(/sw\.js$/, '');
 const ASSETS = [
   BASE,
