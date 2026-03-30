@@ -9914,7 +9914,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.27.56';
+    const VERSION = '4.27.57';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -14605,10 +14605,6 @@
             if (!userEdited && rn.updatedAt > openTs) {
               // Opened with stale content, user hasn't edited yet → take remote silently
               return deepCopy(rn);
-            }
-            if (userEdited && rn.updatedAt > openTs) {
-              // Conflict: user edited stale content while another device also saved
-              showToast('⚠️ Conflict: this note was saved on another device. Your edits are kept — please verify.');
             }
             // Keep local (user's edits are preserved)
             hadNewerLocal = true; return deepCopy(ln);
