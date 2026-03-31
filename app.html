@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.32.8';
+    const VERSION = '4.32.9';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15805,7 +15805,19 @@
         if (startIndex === -1) return;
 
         let dropIndex = startIndex;
-        li.style.opacity = '0.35';
+        li.style.opacity = '0.25';
+
+        // Ghost: floating clone of the item text that follows the cursor
+        const liRect = li.getBoundingClientRect();
+        const ghost = document.createElement('div');
+        const contentEl = li.querySelector('div'); // contentDOM div inside the NodeView
+        ghost.textContent = contentEl ? contentEl.textContent : '';
+        ghost.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
+          background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:8px;
+          padding:5px 10px;font-size:14px;color:#1A1917;box-shadow:0 4px 12px rgba(0,0,0,0.12);
+          white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis;
+          left:${liRect.left + 24}px;top:${liRect.top}px;`;
+        document.body.appendChild(ghost);
 
         // Drop-line: fixed overlay on body — inserting into the ProseMirror ul would
         // be immediately removed by ProseMirror's MutationObserver reconciliation.
@@ -15838,11 +15850,14 @@
         function onMove(e) {
           dropIndex = calcDrop(e.clientY);
           showIndicator(dropIndex);
+          ghost.style.left = (e.clientX + 16) + 'px';
+          ghost.style.top  = (e.clientY - 12) + 'px';
         }
 
         function onUp() {
           li.style.opacity = '';
           indicator.remove();
+          ghost.remove();
           document.removeEventListener('pointermove', onMove);
           document.removeEventListener('pointerup', onUp);
           document.removeEventListener('pointercancel', onUp);
