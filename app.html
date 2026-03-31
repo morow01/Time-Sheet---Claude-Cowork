@@ -10286,7 +10286,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.31';
+    const VERSION = '4.33.32';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16594,7 +16594,7 @@
       ).join('');
       return `
         <span class="te-field-label" style="margin-top:0">Tag Name</span>
-        <input class="te-input" id="${idPrefix}NameInput" type="text" name="tag-label" placeholder="${namePlaceholder}"
+        <input class="te-input" id="${idPrefix}NameInput" type="search" name="tag-label" placeholder="${namePlaceholder}"
           autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
           oninput="${idPrefix}UpdatePreview()">
         <span class="te-field-label">Colour</span>
