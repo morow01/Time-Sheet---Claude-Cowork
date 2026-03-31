@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.0';
+    const VERSION = '4.33.1';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15819,9 +15819,11 @@
           opacity:0.95;list-style:none;
           left:${liRect.left}px;top:${liRect.top}px;
           transform:scale(1.02);`;
-        // Remove handle from clone so it doesn't appear to have a double handle
+        // Hide handle and checkbox label — they render loose outside the editor's CSS context
         const cloneHandle = ghost.querySelector('.tt-drag-handle');
-        if (cloneHandle) cloneHandle.style.visibility = 'hidden';
+        if (cloneHandle) cloneHandle.style.display = 'none';
+        const cloneLabel = ghost.querySelector('label');
+        if (cloneLabel) cloneLabel.style.display = 'none';
         document.body.appendChild(ghost);
 
         // Drop-line: fixed overlay on body — inserting into the ProseMirror ul would
