@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.5';
+    const VERSION = '4.33.6';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15821,6 +15821,18 @@
         li.style.opacity = '0';
         li.style.transition = 'opacity 0.1s';
 
+        // Allow shifted items to overflow the list bounds during drag
+        const savedOverflows = [];
+        let el = listEl;
+        while (el && el !== document.body) {
+          const ov = getComputedStyle(el).overflow;
+          if (ov === 'hidden' || ov === 'clip') {
+            savedOverflows.push({ el, overflow: el.style.overflow });
+            el.style.overflow = 'visible';
+          }
+          el = el.parentElement;
+        }
+
         // Ghost card following the cursor
         const offsetX = e.clientX - liRect.left;
         const offsetY = e.clientY - liRect.top;
@@ -15889,6 +15901,7 @@
           li.style.opacity = '';
           li.style.transition = '';
           allItems.forEach(item => { item.style.transform = ''; item.style.transition = ''; });
+          savedOverflows.forEach(({ el, overflow }) => { el.style.overflow = overflow; });
           ghost.remove();
           document.removeEventListener('pointermove', onMove);
           document.removeEventListener('pointerup', onUp);
