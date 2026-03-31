@@ -6370,11 +6370,21 @@
       color: var(--text-primary);
       box-sizing: border-box;
       margin: 8px 0 4px;
+      min-height: 38px;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     .te-input:focus {
       border-color: var(--accent);
       outline: none;
+    }
+
+    .te-input:empty::before {
+      content: attr(data-placeholder);
+      color: var(--text-muted);
+      pointer-events: none;
     }
 
     .te-field-label {
@@ -10286,7 +10296,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.34';
+    const VERSION = '4.33.35';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16594,9 +16604,9 @@
       ).join('');
       return `
         <span class="te-field-label" style="margin-top:0">Tag Name</span>
-        <input class="te-input" id="${idPrefix}NameInput" type="search" name="tag-label" placeholder="${namePlaceholder}"
-          autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-          oninput="${idPrefix}UpdatePreview()">
+        <div class="te-input" id="${idPrefix}NameInput" contenteditable="true" role="textbox"
+          data-placeholder="${namePlaceholder}" aria-label="Tag name"
+          oninput="${idPrefix}UpdatePreview()"></div>
         <span class="te-field-label">Colour</span>
         <div class="ncf-colors" style="margin-top:6px">${swatches}</div>
         <span class="te-field-label">Icon</span>
@@ -16684,7 +16694,7 @@
       if (_teEditKey) {
         const cat = (state.customCategories || []).find(c => c.key === _teEditKey);
         const inp = document.getElementById('teEditNameInput');
-        if (inp && cat) { inp.value = cat.label; teEditUpdatePreview(); inp.focus(); }
+        if (inp && cat) { inp.textContent = cat.label; teEditUpdatePreview(); inp.focus(); }
       }
     }
 
@@ -16694,22 +16704,22 @@
 
     function tePickColor(c) {
       _teColor = c;
-      const v = document.getElementById('teNameInput')?.value || '';
+      const v = document.getElementById('teNameInput')?.textContent || '';
       renderTagEditor();
       const inp = document.getElementById('teNameInput');
-      if (inp) { inp.value = v; inp.focus(); }
+      if (inp) { inp.textContent = v; inp.focus(); }
       teUpdatePreview();
     }
     function tePickIcon(k) {
       _teIconKey = _teIconKey === k ? '' : k;
-      const v = document.getElementById('teNameInput')?.value || '';
+      const v = document.getElementById('teNameInput')?.textContent || '';
       renderTagEditor();
       const inp = document.getElementById('teNameInput');
-      if (inp) { inp.value = v; inp.focus(); }
+      if (inp) { inp.textContent = v; inp.focus(); }
       teUpdatePreview();
     }
     function teUpdatePreview() {
-      const name = document.getElementById('teNameInput')?.value?.trim() || '';
+      const name = document.getElementById('teNameInput')?.textContent?.trim() || '';
       const prev = document.getElementById('tePreview');
       const btn = document.getElementById('teSaveBtn');
       if (prev) { const ih = _teIconKey && NOTE_ICON_SVGS[_teIconKey] ? NOTE_ICON_SVGS[_teIconKey].replace(/width="18" height="18"/g, 'width="11" height="11"') : ''; prev.innerHTML = ih + ' ' + (name || 'Tag Name'); prev.style.background = _teColor; }
@@ -16717,11 +16727,9 @@
     }
     async function teSaveTag() {
       const inp = document.getElementById('teNameInput');
-      const name = inp?.value?.trim();
+      const name = inp?.textContent?.trim();
       if (!name) return;
-      // Strip field identity before DOM removal — autofill captured value on keystrokes,
-      // removing name/type/autocomplete breaks the credential association
-      if (inp) { inp.value = ''; inp.name = ''; inp.type = 'hidden'; inp.removeAttribute('autocomplete'); }
+      if (inp) inp.textContent = '';
       const key = 'custom_' + Date.now();
       state.customCategories = state.customCategories || [];
       state.customCategories.push({ key, label: name, color: _teColor, iconKey: _teIconKey, isDefault: false });
@@ -16745,22 +16753,22 @@
 
     function teEditPickColor(c) {
       _teEditColor = c;
-      const v = document.getElementById('teEditNameInput')?.value || '';
+      const v = document.getElementById('teEditNameInput')?.textContent || '';
       renderTagEditor();
       const inp = document.getElementById('teEditNameInput');
-      if (inp) { inp.value = v; inp.focus(); }
+      if (inp) { inp.textContent = v; inp.focus(); }
       teEditUpdatePreview();
     }
     function teEditPickIcon(k) {
       _teEditIconKey = _teEditIconKey === k ? '' : k;
-      const v = document.getElementById('teEditNameInput')?.value || '';
+      const v = document.getElementById('teEditNameInput')?.textContent || '';
       renderTagEditor();
       const inp = document.getElementById('teEditNameInput');
-      if (inp) { inp.value = v; inp.focus(); }
+      if (inp) { inp.textContent = v; inp.focus(); }
       teEditUpdatePreview();
     }
     function teEditUpdatePreview() {
-      const name = document.getElementById('teEditNameInput')?.value?.trim() || '';
+      const name = document.getElementById('teEditNameInput')?.textContent?.trim() || '';
       const prev = document.getElementById('teEditPreview');
       const btn = document.getElementById('teEditSaveBtn');
       if (prev) { const ih = _teEditIconKey && NOTE_ICON_SVGS[_teEditIconKey] ? NOTE_ICON_SVGS[_teEditIconKey].replace(/width="18" height="18"/g, 'width="11" height="11"') : ''; prev.innerHTML = ih + ' ' + (name || 'Tag Name'); prev.style.background = _teEditColor; }
@@ -16768,9 +16776,9 @@
     }
     async function teApplyEdit() {
       const inp = document.getElementById('teEditNameInput');
-      const name = inp?.value?.trim();
+      const name = inp?.textContent?.trim();
       if (!name || !_teEditKey) return;
-      if (inp) { inp.value = ''; inp.name = ''; inp.type = 'hidden'; inp.removeAttribute('autocomplete'); }
+      if (inp) inp.textContent = '';
       const cat = (state.customCategories || []).find(c => c.key === _teEditKey);
       if (!cat) return;
       cat.label = name; cat.color = _teEditColor; cat.iconKey = _teEditIconKey;
