@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.25';
+    const VERSION = '4.33.26';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -23678,18 +23678,13 @@ QUESTION: ${query}`;
     }
 
     // ── External URL opener ─────────────────────────────────────────────────
-    // Use a temporary <a> click rather than window.open() so Android routes the
-    // URL through the OS intent system and opens it in the default browser
-    // (e.g. Firefox) instead of always using the PWA host (Chrome).
+    // Must be called directly inside a user-gesture handler (click/tap) so the
+    // browser allows window.open without popup-blocking. A programmatic <a>.click()
+    // does not count as a user gesture on mobile and gets blocked / falls back to
+    // same-tab navigation, which is why it appeared to "open in Rian".
     function _openUrl(url) {
       if (!url) return;
-      const a = document.createElement('a');
-      a.href = url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
 
     // ── Rian custom dialog ──────────────────────────────────────────────────
