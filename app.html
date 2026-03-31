@@ -10286,7 +10286,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.33';
+    const VERSION = '4.33.34';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16719,7 +16719,9 @@
       const inp = document.getElementById('teNameInput');
       const name = inp?.value?.trim();
       if (!name) return;
-      if (inp) inp.value = ''; // clear before DOM removal to suppress "Save password?" prompt
+      // Strip field identity before DOM removal — autofill captured value on keystrokes,
+      // removing name/type/autocomplete breaks the credential association
+      if (inp) { inp.value = ''; inp.name = ''; inp.type = 'hidden'; inp.removeAttribute('autocomplete'); }
       const key = 'custom_' + Date.now();
       state.customCategories = state.customCategories || [];
       state.customCategories.push({ key, label: name, color: _teColor, iconKey: _teIconKey, isDefault: false });
@@ -16768,7 +16770,7 @@
       const inp = document.getElementById('teEditNameInput');
       const name = inp?.value?.trim();
       if (!name || !_teEditKey) return;
-      if (inp) inp.value = ''; // clear before DOM removal to suppress "Save password?" prompt
+      if (inp) { inp.value = ''; inp.name = ''; inp.type = 'hidden'; inp.removeAttribute('autocomplete'); }
       const cat = (state.customCategories || []).find(c => c.key === _teEditKey);
       if (!cat) return;
       cat.label = name; cat.color = _teEditColor; cat.iconKey = _teEditIconKey;
