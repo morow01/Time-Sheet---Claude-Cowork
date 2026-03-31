@@ -10286,7 +10286,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.32';
+    const VERSION = '4.33.33';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16716,8 +16716,10 @@
       if (btn) btn.disabled = !name;
     }
     async function teSaveTag() {
-      const name = document.getElementById('teNameInput')?.value?.trim();
+      const inp = document.getElementById('teNameInput');
+      const name = inp?.value?.trim();
       if (!name) return;
+      if (inp) inp.value = ''; // clear before DOM removal to suppress "Save password?" prompt
       const key = 'custom_' + Date.now();
       state.customCategories = state.customCategories || [];
       state.customCategories.push({ key, label: name, color: _teColor, iconKey: _teIconKey, isDefault: false });
@@ -16763,8 +16765,10 @@
       if (btn) btn.disabled = !name;
     }
     async function teApplyEdit() {
-      const name = document.getElementById('teEditNameInput')?.value?.trim();
+      const inp = document.getElementById('teEditNameInput');
+      const name = inp?.value?.trim();
       if (!name || !_teEditKey) return;
+      if (inp) inp.value = ''; // clear before DOM removal to suppress "Save password?" prompt
       const cat = (state.customCategories || []).find(c => c.key === _teEditKey);
       if (!cat) return;
       cat.label = name; cat.color = _teEditColor; cat.iconKey = _teEditIconKey;
