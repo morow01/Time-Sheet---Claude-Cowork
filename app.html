@@ -4444,6 +4444,26 @@
       opacity: 1;
     }
 
+    /* Task list drag handle */
+    .tt-drag-handle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 22px;
+      flex-shrink: 0;
+      cursor: grab;
+      color: #D0CEC8;
+      margin-right: 2px;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tt-drag-handle:active { cursor: grabbing; color: #9C9A96; }
+    .tt-task-drag-ghost { opacity: 0.3; }
+    .tt-prose .tt-drag-handle { display: none; } /* hide in read-only previews */
+
     /* Tables */
     :is(#note-fs-editor .ProseMirror, .tt-prose) table {
       border-collapse: collapse;
@@ -10256,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.31.1';
+    const VERSION = '4.32.0';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15749,6 +15769,73 @@
         scheduleNotesSave();
         render();
       }, 4000);
+    }
+
+    // ---- Task list drag-to-reorder (SortableJS) ----
+    let _Sortable = null;
+    let _taskSortables = [];
+    let _sortableTimer = null;
+
+    async function _ensureSortable() {
+      if (_Sortable) return _Sortable;
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js';
+        s.onload = () => { _Sortable = window.Sortable; resolve(_Sortable); };
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    async function initTaskSortable() {
+      if (!_tiptapEditor) return;
+      const S = await _ensureSortable().catch(() => null);
+      if (!S) return;
+      _taskSortables.forEach(s => { try { s.destroy(); } catch (e) {} });
+      _taskSortables = [];
+      _tiptapEditor.view.dom.querySelectorAll('ul[data-type="taskList"]').forEach(listEl => {
+        _taskSortables.push(S.create(listEl, {
+          handle: '.tt-drag-handle',
+          animation: 150,
+          ghostClass: 'tt-task-drag-ghost',
+          onEnd(evt) { _ttReorderTaskItem(evt.from, evt.oldIndex, evt.newIndex); }
+        }));
+      });
+    }
+
+    function _ttReorderTaskItem(listEl, oldIndex, newIndex) {
+      if (!_tiptapEditor || oldIndex === newIndex) return;
+      const allLists = Array.from(_tiptapEditor.view.dom.querySelectorAll('ul[data-type="taskList"]'));
+      const listIndex = allLists.indexOf(listEl);
+      if (listIndex === -1) return;
+      const json = _tiptapEditor.getJSON();
+      let count = 0, reordered = false;
+      function traverse(nodes) {
+        if (!nodes || reordered) return;
+        for (const node of nodes) {
+          if (node.type === 'taskList') {
+            if (count === listIndex) {
+              const items = node.content || [];
+              const [moved] = items.splice(oldIndex, 1);
+              items.splice(newIndex, 0, moved);
+              reordered = true;
+              return;
+            }
+            count++;
+          }
+          if (node.content) traverse(node.content);
+        }
+      }
+      traverse(json.content);
+      if (reordered) {
+        _tiptapEditor.commands.setContent(json);
+        setTimeout(initTaskSortable, 50);
+      }
+    }
+
+    function _scheduleTaskSortableInit() {
+      clearTimeout(_sortableTimer);
+      _sortableTimer = setTimeout(initTaskSortable, 300);
     }
 
     function notePressStart(e, id) {
@@ -22641,9 +22728,62 @@ QUESTION: ${query}`;
           };
         },
       });
+      // Custom TaskItem that injects a drag-handle grip into each task item NodeView
+      const TaskItemWithHandle = TaskItem.extend({
+        addNodeView() {
+          return ({ editor, node, getPos }) => {
+            const li = document.createElement('li');
+            li.dataset.type = 'taskItem';
+            li.dataset.checked = String(node.attrs.checked);
+
+            const handle = document.createElement('span');
+            handle.className = 'tt-drag-handle';
+            handle.contentEditable = 'false';
+            handle.innerHTML = `<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+              <circle cx="3" cy="2.5" r="1.3"/><circle cx="7" cy="2.5" r="1.3"/>
+              <circle cx="3" cy="7"   r="1.3"/><circle cx="7" cy="7"   r="1.3"/>
+              <circle cx="3" cy="11.5" r="1.3"/><circle cx="7" cy="11.5" r="1.3"/>
+            </svg>`;
+
+            const label = document.createElement('label');
+            label.contentEditable = 'false';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = node.attrs.checked;
+            checkbox.addEventListener('change', () => {
+              if (typeof getPos !== 'function') return;
+              editor.chain().command(({ tr }) => {
+                tr.setNodeMarkup(getPos(), undefined, { ...node.attrs, checked: checkbox.checked });
+                return true;
+              }).run();
+            });
+            label.addEventListener('mousedown', e => e.preventDefault());
+            label.appendChild(checkbox);
+
+            const content = document.createElement('div');
+
+            li.appendChild(handle);
+            li.appendChild(label);
+            li.appendChild(content);
+
+            return {
+              dom: li,
+              contentDOM: content,
+              update(updatedNode) {
+                if (updatedNode.type !== node.type) return false;
+                checkbox.checked = updatedNode.attrs.checked;
+                li.dataset.checked = String(updatedNode.attrs.checked);
+                node = updatedNode;
+                return true;
+              }
+            };
+          };
+        }
+      }).configure({ nested: true });
+
       _tiptapModules = {
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
-        TextAlign, TaskList, TaskItem, Table, TableRow, TableHeader, TableCell,
+        TextAlign, TaskList, TaskItem, TaskItemWithHandle, Table, TableRow, TableHeader, TableCell,
         TableCellWithBg, TableHeaderWithBg,
         Link, Subscript, Superscript, Image,
       };
@@ -22654,7 +22794,7 @@ QUESTION: ${query}`;
       if (_tiptapEditor) return;
       const {
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
-        TextAlign, TaskList, TaskItem, Table, TableRow,
+        TextAlign, TaskList, TaskItemWithHandle, Table, TableRow,
         TableCellWithBg, TableHeaderWithBg,
         Link, Subscript, Superscript, Image,
       } = await _loadTipTapModules();
@@ -22669,7 +22809,7 @@ QUESTION: ${query}`;
           Placeholder.configure({ placeholder: 'Start typing your note…' }),
           TextAlign.configure({ types: ['heading', 'paragraph'] }),
           TaskList,
-          TaskItem.configure({ nested: true }),
+          TaskItemWithHandle,
           Table.configure({ resizable: true }),
           TableRow,
           TableHeaderWithBg,
@@ -22688,6 +22828,7 @@ QUESTION: ${query}`;
         content: '',
         onUpdate({ editor }) {
           if (_tiptapOnUpdate) _tiptapOnUpdate(editor);
+          _scheduleTaskSortableInit();
         },
         onSelectionUpdate({ editor }) {
           _ttUpdateToolbar(editor);
@@ -22705,6 +22846,7 @@ QUESTION: ${query}`;
         },
       });
       _ttBindToolbar();
+      initTaskSortable();
     }
 
     let _ttToolbarBound = false;
