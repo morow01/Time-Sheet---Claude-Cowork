@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.32.0';
+    const VERSION = '4.32.1';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15798,6 +15798,7 @@
           handle: '.tt-drag-handle',
           animation: 150,
           ghostClass: 'tt-task-drag-ghost',
+          forceFallback: true,   // use clone-based drag, avoids HTML5 drag conflicts with TipTap
           onEnd(evt) { _ttReorderTaskItem(evt.from, evt.oldIndex, evt.newIndex); }
         }));
       });
@@ -22744,6 +22745,9 @@ QUESTION: ${query}`;
               <circle cx="3" cy="7"   r="1.3"/><circle cx="7" cy="7"   r="1.3"/>
               <circle cx="3" cy="11.5" r="1.3"/><circle cx="7" cy="11.5" r="1.3"/>
             </svg>`;
+            // Prevent ProseMirror from stealing drag-start events
+            handle.addEventListener('mousedown', e => e.stopPropagation());
+            handle.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
 
             const label = document.createElement('label');
             label.contentEditable = 'false';
