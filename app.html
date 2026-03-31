@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.16';
+    const VERSION = '4.33.17';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15817,56 +15817,21 @@
 
         let dropIndex = startIndex;
 
-        // Ghost card following the cursor
+        // Use the actual li as the ghost via stylesheet — position:fixed lifts it out of flow
+        // while keeping its full CSS context (fonts, layout, inherited styles) intact.
+        // No clone needed, no CSS recreation — the element renders identically to in-editor.
         const offsetX = e.clientX - liRect.left;
         const offsetY = e.clientY - liRect.top;
-        const isChecked = li.dataset.checked === 'true';
 
-        // Ghost: clone the li, place it at exactly the same size/position as the original.
-        // Card appearance comes from box-shadow + background only — no padding changes,
-        // no width adjustments — so text wraps at the exact same point.
-        const _liCs = window.getComputedStyle(li);
-        const ghostLi = li.cloneNode(true);
-        ghostLi.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
-          list-style:none;box-sizing:border-box;
-          left:${liRect.left}px;top:${liRect.top}px;width:${liRect.width}px;
-          background:#fff;border-radius:8px;
-          box-shadow:0 8px 24px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.10);
-          font-size:${_liCs.fontSize};line-height:${_liCs.lineHeight};
-          font-family:${_liCs.fontFamily};
-          display:flex;align-items:flex-start;gap:8px;margin:0;padding:${_liCs.paddingTop} ${_liCs.paddingRight} ${_liCs.paddingBottom} ${_liCs.paddingLeft};`;
-        // Re-apply child styles lost outside .ProseMirror context
-        const _gLabel = ghostLi.querySelector('label');
-        if (_gLabel) {
-          _gLabel.style.flexShrink = '0'; _gLabel.style.marginTop = '2px';
-          const _gCb = _gLabel.querySelector('input[type="checkbox"]');
-          if (_gCb) _gCb.style.cssText = `width:16px;height:16px;flex-shrink:0;margin:0;
-            appearance:none;-webkit-appearance:none;border-radius:3px;
-            border:1.5px solid ${isChecked?'#0f172a':'#cbd5e1'};
-            background:${isChecked?`#0f172a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolyline points='2.5,8 6.5,12 13.5,4' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/11px no-repeat`:'transparent'};`;
-        }
-        const _gDiv = ghostLi.querySelector('div');
-        if (_gDiv) {
-          _gDiv.style.flex = '1';
-          if (isChecked) { _gDiv.style.textDecoration = 'line-through'; _gDiv.style.color = '#b0b0b0'; }
-        }
-        // Keep handle in flow but invisible so flex layout matches original exactly
-        const _gh = ghostLi.querySelector('.tt-drag-handle');
-        if (_gh) { _gh.style.display = 'flex'; _gh.style.visibility = 'hidden'; }
-        document.body.appendChild(ghostLi);
-        const ghost = ghostLi; // alias for onMove / onUp
-
-        // Inject a <style> element — inline style mutations on ProseMirror-managed li elements
-        // are reverted immediately by its MutationObserver; a <head> stylesheet is invisible to it.
+        // Inject <style> element — invisible to ProseMirror's MutationObserver.
         const dragStyle = document.createElement('style');
         document.head.appendChild(dragStyle);
         const nthSel = (n) => `#note-fs-editor .ProseMirror ul[data-type="taskList"] li:nth-child(${n})`;
         const draggedN = startIndex + 1;
 
-        // Gap model: collapse the dragged item so there's no hole, then shift other items
-        // DOWN by itemH to open a gap at the drop position.
-        // After collapse, items originally below startIndex move up by itemH in DOM flow.
-        // calcDrop adjusts midpoints for that shift so hit-testing stays accurate.
+        // Ghost position tracker — updated on every pointermove via the stylesheet.
+        let ghostLeft = liRect.left, ghostTop = liRect.top;
+
         const filteredRects = cachedRects.filter((_, i) => i !== startIndex);
         function calcDrop(y) {
           for (let i = 0; i < filteredRects.length; i++) {
@@ -15880,34 +15845,39 @@
 
         function applyShifts(targetDropIdx) {
           const rules = [];
-          // Collapse dragged item completely — no hole, no opacity flash
-          rules.push(`${nthSel(draggedN)} { height:0 !important; overflow:hidden !important; ` +
-            `padding-top:0 !important; padding-bottom:0 !important; ` +
-            `margin-top:0 !important; margin-bottom:0 !important; opacity:0 !important; }`);
+          // Lift the dragged li out of flow with position:fixed — it becomes the ghost.
+          // Fixed positioning removes it from flow (other items close the gap), and the
+          // element keeps its full CSS context so fonts and layout match exactly.
+          rules.push(`${nthSel(draggedN)} {
+            position:fixed !important; z-index:10000 !important; pointer-events:none !important;
+            left:${ghostLeft}px !important; top:${ghostTop}px !important;
+            width:${liRect.width}px !important; box-sizing:border-box !important;
+            height:auto !important; overflow:visible !important; opacity:1 !important;
+            background:#fff !important; border-radius:8px !important;
+            box-shadow:0 8px 24px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.10) !important;
+            margin:0 !important; transform:none !important;
+          }`);
+          // Other items shift DOWN to open a gap at the drop position.
           allItems.forEach((item, origIdx) => {
             if (origIdx === startIndex) return;
-            // filteredIdx: position in the list after removing the dragged item
             const filtIdx = origIdx < startIndex ? origIdx : origIdx - 1;
-            // Items at filtIdx >= targetDropIdx shift DOWN to open the gap
             const shift = filtIdx >= targetDropIdx ? itemH : 0;
             rules.push(`${nthSel(origIdx + 1)} { transform:translateY(${shift}px); transition:transform 0.15s ease; }`);
           });
           dragStyle.textContent = rules.join('\n');
         }
 
-        // Apply initial collapse immediately
         applyShifts(startIndex);
 
         function onMove(e) {
+          ghostLeft = e.clientX - offsetX;
+          ghostTop  = e.clientY - offsetY;
           dropIndex = calcDrop(e.clientY);
           applyShifts(dropIndex);
-          ghost.style.left = (e.clientX - offsetX) + 'px';
-          ghost.style.top  = (e.clientY - offsetY) + 'px';
         }
 
         function onUp() {
           dragStyle.remove();
-          ghost.remove();
           document.removeEventListener('pointermove', onMove);
           document.removeEventListener('pointerup', onUp);
           document.removeEventListener('pointercancel', onUp);
