@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.19';
+    const VERSION = '4.33.20';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15813,7 +15813,14 @@
         // Cache rects now (before any transforms) so calcDrop isn't affected by live shifts
         const cachedRects = allItems.map(item => item.getBoundingClientRect());
         const liRect = cachedRects[startIndex];
-        const itemH = liRect.height;
+        // slotH = the actual flow space the dragged li occupies, including its margin-bottom.
+        // getBoundingClientRect().height excludes margins, so we measure the gap between
+        // adjacent tops (or ul bottom for the last item) to get the true slot size.
+        const ulRect = listEl.getBoundingClientRect();
+        const slotH = startIndex < allItems.length - 1
+          ? cachedRects[startIndex + 1].top - liRect.top
+          : ulRect.bottom - liRect.top;
+        const itemH = slotH; // used throughout for shifts and spacer
 
         let dropIndex = startIndex;
 
