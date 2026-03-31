@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.21';
+    const VERSION = '4.33.22';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15808,9 +15808,13 @@
         document.addEventListener('contextmenu', _suppressCtxMenu);
 
         // Blur the editor so the mobile keyboard doesn't pop up (and cause pointercancel)
-        // when the handle is touched inside a contenteditable element
+        // when the handle is touched inside a contenteditable element.
+        // Preserve scroll position: blur() on mobile can trigger the browser to scroll
+        // to a default focus target (e.g. first focusable element / top of page).
         if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          const _sx = window.scrollX, _sy = window.scrollY;
           document.activeElement.blur();
+          window.scrollTo(_sx, _sy);
         }
 
         const snapshot = JSON.stringify(_tiptapEditor.getJSON());
@@ -15879,9 +15883,10 @@
             box-shadow:0 8px 24px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.10) !important;
             margin:0 !important; transform:none !important;
           }`);
-          // ::after spacer on the ul keeps it at its original height so content
-          // below (e.g. a table) doesn't jump up when the li leaves the flow.
-          rules.push(`${_ulSel}::after { content:''; display:block; height:${itemH}px; }`);
+          // Lock the ul's min-height to its pre-drag value so it can never shrink
+          // (or grow) regardless of margin-collapse edge cases. Simpler and more
+          // reliable than an ::after spacer whose size depends on margin math.
+          rules.push(`${_ulSel} { min-height:${ulRect.height}px; }`);
           // Other items shift DOWN to open a gap at the drop position.
           allItems.forEach((item, origIdx) => {
             if (origIdx === startIndex) return;
