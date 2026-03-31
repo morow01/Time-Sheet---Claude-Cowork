@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.32.3';
+    const VERSION = '4.32.4';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22757,9 +22757,10 @@ QUESTION: ${query}`;
               <circle cx="3" cy="7"   r="1.3"/><circle cx="7" cy="7"   r="1.3"/>
               <circle cx="3" cy="11.5" r="1.3"/><circle cx="7" cy="11.5" r="1.3"/>
             </svg>`;
-            // Prevent ProseMirror from stealing drag-start events
-            handle.addEventListener('mousedown', e => e.stopPropagation());
-            handle.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+            // preventDefault stops ProseMirror placing a cursor on mousedown,
+            // but the event still bubbles up to the ul where SortableJS is listening.
+            // stopPropagation would block SortableJS too — don't use it here.
+            handle.addEventListener('mousedown', e => e.preventDefault());
 
             const label = document.createElement('label');
             label.contentEditable = 'false';
