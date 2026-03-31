@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.1';
+    const VERSION = '4.33.2';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15805,31 +15805,56 @@
         if (startIndex === -1) return;
 
         let dropIndex = startIndex;
-        li.style.opacity = '0.25';
+        li.style.opacity = '0.2';
+        li.style.transition = 'opacity 0.15s';
 
-        // Ghost: full clone of the li, floats under the cursor at exact item width
+        // Ghost: clean hand-built card — avoids CSS bleed from cloning editor internals
         const liRect = li.getBoundingClientRect();
-        const offsetX = e.clientX - liRect.left;  // keep grab point relative to item
+        const offsetX = e.clientX - liRect.left;
         const offsetY = e.clientY - liRect.top;
-        const ghost = li.cloneNode(true);
+        const isChecked = li.dataset.checked === 'true';
+        const contentEl = li.querySelector('div');
+        const itemText = contentEl ? contentEl.textContent : '';
+
+        const ghost = document.createElement('div');
         ghost.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
-          width:${liRect.width}px;box-sizing:border-box;
-          background:#fff;border-radius:8px;
-          box-shadow:0 6px 20px rgba(0,0,0,0.15);
-          opacity:0.95;list-style:none;
+          display:flex;align-items:center;gap:8px;
+          min-width:${liRect.width}px;max-width:${liRect.width}px;box-sizing:border-box;
+          background:#fff;border-radius:10px;padding:7px 12px;
+          box-shadow:0 8px 24px rgba(0,0,0,0.13),0 2px 6px rgba(0,0,0,0.08);
           left:${liRect.left}px;top:${liRect.top}px;
-          transform:scale(1.02);`;
-        // Hide handle and checkbox label — they render loose outside the editor's CSS context
-        const cloneHandle = ghost.querySelector('.tt-drag-handle');
-        if (cloneHandle) cloneHandle.style.display = 'none';
-        const cloneLabel = ghost.querySelector('label');
-        if (cloneLabel) cloneLabel.style.display = 'none';
+          transform:rotate(1.5deg) scale(1.03);
+          transition:transform 0.1s;
+          font-size:14px;color:${isChecked ? '#B0AEA8' : '#1A1917'};
+          ${isChecked ? 'text-decoration:line-through;' : ''}`;
+
+        // Checkbox circle
+        const cb = document.createElement('span');
+        cb.style.cssText = `flex-shrink:0;width:16px;height:16px;border-radius:4px;
+          border:1.5px solid ${isChecked ? '#3b82f6' : '#C8C6C0'};
+          background:${isChecked ? '#3b82f6' : 'transparent'};
+          display:flex;align-items:center;justify-content:center;`;
+        if (isChecked) {
+          cb.innerHTML = `<svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>`;
+        }
+
+        const txt = document.createElement('span');
+        txt.style.cssText = 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        txt.textContent = itemText;
+
+        ghost.appendChild(cb);
+        ghost.appendChild(txt);
         document.body.appendChild(ghost);
 
-        // Drop-line: fixed overlay on body — inserting into the ProseMirror ul would
-        // be immediately removed by ProseMirror's MutationObserver reconciliation.
+        // Drop-line: fixed overlay on body (ProseMirror would remove it from the ul immediately)
         const indicator = document.createElement('div');
         indicator.style.cssText = 'position:fixed;height:2px;background:#3b82f6;border-radius:2px;pointer-events:none;z-index:9999;display:none;';
+        // Small circle at the left end of the line
+        const indicatorDot = document.createElement('div');
+        indicatorDot.style.cssText = 'position:absolute;left:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:#3b82f6;';
+        indicator.appendChild(indicatorDot);
         document.body.appendChild(indicator);
 
         function otherItems() { return liveItems().filter(i => i !== li); }
@@ -15863,6 +15888,7 @@
 
         function onUp() {
           li.style.opacity = '';
+          li.style.transition = '';
           indicator.remove();
           ghost.remove();
           document.removeEventListener('pointermove', onMove);
