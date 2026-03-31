@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.11';
+    const VERSION = '4.33.12';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15828,12 +15828,15 @@
         const _gh = ghost.querySelector('.tt-drag-handle');
         if (_gh) _gh.remove();
         // Card + positioning (replaces ProseMirror ancestor selectors that no longer apply)
+        // padding:7px 12px is cosmetic — expand outer width by 2×12px and shift left by 12px
+        // so the inner content area stays exactly liRect.width (same wrapping as original)
+        const _gPad = 12;
         ghost.style.cssText = `position:fixed;pointer-events:none;z-index:10000;list-style:none;
           display:flex;align-items:flex-start;gap:8px;margin:0;
-          width:${liRect.width}px;box-sizing:border-box;
-          background:#fff;border-radius:10px;padding:7px 12px;
+          width:${liRect.width + _gPad * 2}px;box-sizing:border-box;
+          background:#fff;border-radius:10px;padding:7px ${_gPad}px;
           box-shadow:0 8px 24px rgba(0,0,0,0.13),0 2px 6px rgba(0,0,0,0.08);
-          left:${liRect.left}px;top:${liRect.top}px;transform:scale(1.02);`;
+          left:${liRect.left - _gPad}px;top:${liRect.top}px;transform:scale(1.02);`;
         // Re-apply label/checkbox styles (lost outside .ProseMirror context)
         const _gl = ghost.querySelector('label');
         if (_gl) {
@@ -15901,7 +15904,7 @@
         function onMove(e) {
           dropIndex = calcDrop(e.clientY);
           applyShifts(dropIndex);
-          ghost.style.left = (e.clientX - offsetX) + 'px';
+          ghost.style.left = (e.clientX - offsetX - _gPad) + 'px';
           ghost.style.top  = (e.clientY - offsetY) + 'px';
         }
 
