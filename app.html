@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.6';
+    const VERSION = '4.33.7';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15872,21 +15872,28 @@
           return filteredRects.length;
         }
 
-        // Shift other items with CSS transforms — no DOM moves, ProseMirror stays unaware
+        // Inject a <style> element to apply transforms — inline style changes on ProseMirror-managed
+        // li elements get reverted by its MutationObserver immediately; stylesheet rules are invisible to it.
+        // Use nth-child (1-based) to target items by position within the list.
+        const dragStyle = document.createElement('style');
+        document.head.appendChild(dragStyle);
+        // Base selector — scoped to the editor so it doesn't affect other lists on the page
+        const nthSel = (n) => `#note-fs-editor .ProseMirror ul[data-type="taskList"] li:nth-child(${n})`;
+
         function applyShifts(targetIdx) {
+          const rules = [];
           allItems.forEach((item, origIdx) => {
             if (item === li) return;
             let shift = 0;
             if (targetIdx > startIndex) {
-              // dragging down: items between startIndex+1 and targetIdx (inclusive, orig space) shift up
               if (origIdx > startIndex && origIdx <= targetIdx) shift = -itemH;
             } else if (targetIdx < startIndex) {
-              // dragging up: items between targetIdx and startIndex-1 (inclusive, orig space) shift down
               if (origIdx >= targetIdx && origIdx < startIndex) shift = itemH;
             }
-            item.style.transition = 'transform 0.15s ease';
-            item.style.transform = shift ? `translateY(${shift}px)` : '';
+            const n = origIdx + 1;
+            rules.push(`${nthSel(n)} { transform: translateY(${shift}px); transition: transform 0.15s ease; }`);
           });
+          dragStyle.textContent = rules.join('\n');
         }
 
         function onMove(e) {
@@ -15900,7 +15907,7 @@
           // Reset all visual state
           li.style.opacity = '';
           li.style.transition = '';
-          allItems.forEach(item => { item.style.transform = ''; item.style.transition = ''; });
+          dragStyle.remove();
           savedOverflows.forEach(({ el, overflow }) => { el.style.overflow = overflow; });
           ghost.remove();
           document.removeEventListener('pointermove', onMove);
