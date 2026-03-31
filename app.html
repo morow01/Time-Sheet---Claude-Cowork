@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.9';
+    const VERSION = '4.33.10';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15826,23 +15826,23 @@
 
         const ghost = document.createElement('div');
         ghost.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
-          display:flex;align-items:center;gap:8px;
-          min-width:${liRect.width}px;max-width:${liRect.width}px;box-sizing:border-box;
+          display:flex;align-items:flex-start;gap:8px;
+          width:${liRect.width}px;box-sizing:border-box;
           background:#fff;border-radius:10px;padding:7px 12px;
           box-shadow:0 8px 24px rgba(0,0,0,0.13),0 2px 6px rgba(0,0,0,0.08);
           left:${liRect.left}px;top:${liRect.top}px;
           transform:scale(1.02);
-          font-size:14px;color:${isChecked ? '#B0AEA8' : '#1A1917'};
+          font-size:14px;line-height:1.45;color:${isChecked ? '#B0AEA8' : '#1A1917'};
           ${isChecked ? 'text-decoration:line-through;' : ''}`;
         const cb = document.createElement('span');
-        cb.style.cssText = `flex-shrink:0;width:16px;height:16px;border-radius:4px;
+        cb.style.cssText = `flex-shrink:0;width:16px;height:16px;border-radius:4px;margin-top:2px;
           border:1.5px solid ${isChecked ? '#3b82f6' : '#C8C6C0'};
           background:${isChecked ? '#3b82f6' : 'transparent'};
           display:flex;align-items:center;justify-content:center;`;
         if (isChecked) cb.innerHTML = `<svg width="10" height="8" viewBox="0 0 10 8" fill="none">
           <path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         const txt = document.createElement('span');
-        txt.style.cssText = 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        txt.style.cssText = 'flex:1;overflow:hidden;word-break:break-word;';
         txt.textContent = itemText;
         ghost.appendChild(cb); ghost.appendChild(txt);
         document.body.appendChild(ghost);
