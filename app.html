@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.10';
+    const VERSION = '4.33.11';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15821,30 +15821,39 @@
         const offsetX = e.clientX - liRect.left;
         const offsetY = e.clientY - liRect.top;
         const isChecked = li.dataset.checked === 'true';
-        const contentEl = li.querySelector('div');
-        const itemText = contentEl ? contentEl.textContent : '';
 
-        const ghost = document.createElement('div');
-        ghost.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
-          display:flex;align-items:flex-start;gap:8px;
+        // Clone the real li so the ghost inherits all formatting (bold, italic, etc.)
+        const ghost = li.cloneNode(true);
+        // Remove the drag handle — not needed on the ghost
+        const _gh = ghost.querySelector('.tt-drag-handle');
+        if (_gh) _gh.remove();
+        // Card + positioning (replaces ProseMirror ancestor selectors that no longer apply)
+        ghost.style.cssText = `position:fixed;pointer-events:none;z-index:10000;list-style:none;
+          display:flex;align-items:flex-start;gap:8px;margin:0;
           width:${liRect.width}px;box-sizing:border-box;
           background:#fff;border-radius:10px;padding:7px 12px;
           box-shadow:0 8px 24px rgba(0,0,0,0.13),0 2px 6px rgba(0,0,0,0.08);
-          left:${liRect.left}px;top:${liRect.top}px;
-          transform:scale(1.02);
-          font-size:14px;line-height:1.45;color:${isChecked ? '#B0AEA8' : '#1A1917'};
-          ${isChecked ? 'text-decoration:line-through;' : ''}`;
-        const cb = document.createElement('span');
-        cb.style.cssText = `flex-shrink:0;width:16px;height:16px;border-radius:4px;margin-top:2px;
-          border:1.5px solid ${isChecked ? '#3b82f6' : '#C8C6C0'};
-          background:${isChecked ? '#3b82f6' : 'transparent'};
-          display:flex;align-items:center;justify-content:center;`;
-        if (isChecked) cb.innerHTML = `<svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-          <path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        const txt = document.createElement('span');
-        txt.style.cssText = 'flex:1;overflow:hidden;word-break:break-word;';
-        txt.textContent = itemText;
-        ghost.appendChild(cb); ghost.appendChild(txt);
+          left:${liRect.left}px;top:${liRect.top}px;transform:scale(1.02);`;
+        // Re-apply label/checkbox styles (lost outside .ProseMirror context)
+        const _gl = ghost.querySelector('label');
+        if (_gl) {
+          _gl.style.cssText = 'flex-shrink:0;margin-top:2px;';
+          const _gc = _gl.querySelector('input[type="checkbox"]');
+          if (_gc) {
+            const _chk = isChecked;
+            _gc.style.cssText = `width:16px;height:16px;flex-shrink:0;margin:0;position:relative;
+              appearance:none;-webkit-appearance:none;border-radius:3px;
+              border:1.5px solid ${_chk ? '#0f172a' : '#cbd5e1'};
+              background:${_chk ? '#0f172a' : 'transparent'};
+              ${_chk ? `background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolyline points='2.5,8 6.5,12 13.5,4' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:11px 11px;background-repeat:no-repeat;background-position:center;` : ''}`;
+          }
+        }
+        // Re-apply content div styles
+        const _gd = ghost.querySelector('div');
+        if (_gd) {
+          _gd.style.flex = '1';
+          if (isChecked) { _gd.style.textDecoration = 'line-through'; _gd.style.color = '#b0b0b0'; }
+        }
         document.body.appendChild(ghost);
 
         // Inject a <style> element — inline style mutations on ProseMirror-managed li elements
