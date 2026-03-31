@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.14';
+    const VERSION = '4.33.15';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15822,22 +15822,33 @@
         const offsetY = e.clientY - liRect.top;
         const isChecked = li.dataset.checked === 'true';
 
-        // Build ghost by wrapping a cloned li in a .tt-prose > ul[data-type="taskList"] context
-        // so ALL scoped CSS rules (li layout, label, checkbox, checked state) apply automatically.
-        // The font-size/line-height come from .ProseMirror so we set them explicitly on the wrapper.
+        // Measure exactly what we need to replicate from the live element
+        const _origContentDiv = li.querySelector('div');
+        const _origContentW = _origContentDiv ? _origContentDiv.getBoundingClientRect().width : 0;
+        const _liCs = window.getComputedStyle(li);
         const _gPad = 12;
+
+        // Wrap cloned li in .tt-prose > ul context so scoped CSS rules apply automatically.
         const ghostWrap = document.createElement('div');
         ghostWrap.className = 'tt-prose';
         ghostWrap.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
           background:#fff;border-radius:10px;padding:7px ${_gPad}px;
           box-shadow:0 8px 24px rgba(0,0,0,0.13),0 2px 6px rgba(0,0,0,0.08);
           left:${liRect.left - _gPad}px;top:${liRect.top}px;
-          width:${liRect.width + _gPad * 2}px;box-sizing:border-box;
-          font-size:14px;line-height:1.7;`;
+          font-size:${_liCs.fontSize};line-height:${_liCs.lineHeight};
+          font-family:${_liCs.fontFamily};`;
         const ghostUl = document.createElement('ul');
         ghostUl.setAttribute('data-type', 'taskList');
-        ghostUl.style.cssText = 'margin:0;padding:0;';
+        ghostUl.style.cssText = 'margin:0;padding:0;width:' + liRect.width + 'px;';
         const ghostLi = li.cloneNode(true);
+        // Force li to exact same pixel width as the original so flex layout is identical
+        ghostLi.style.width = liRect.width + 'px';
+        ghostLi.style.boxSizing = 'border-box';
+        // Lock content div to exact measured width — eliminates any rounding/padding drift
+        if (_origContentW) {
+          const _gcd = ghostLi.querySelector('div');
+          if (_gcd) { _gcd.style.width = _origContentW + 'px'; _gcd.style.flex = 'none'; }
+        }
         // .tt-prose sets tt-drag-handle to display:none — override inline so it stays in flow
         // but is invisible, preserving the exact same flex layout as the original item.
         const _gh = ghostLi.querySelector('.tt-drag-handle');
