@@ -10276,7 +10276,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.33.15';
+    const VERSION = '4.33.16';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15822,41 +15822,39 @@
         const offsetY = e.clientY - liRect.top;
         const isChecked = li.dataset.checked === 'true';
 
-        // Measure exactly what we need to replicate from the live element
-        const _origContentDiv = li.querySelector('div');
-        const _origContentW = _origContentDiv ? _origContentDiv.getBoundingClientRect().width : 0;
+        // Ghost: clone the li, place it at exactly the same size/position as the original.
+        // Card appearance comes from box-shadow + background only — no padding changes,
+        // no width adjustments — so text wraps at the exact same point.
         const _liCs = window.getComputedStyle(li);
-        const _gPad = 12;
-
-        // Wrap cloned li in .tt-prose > ul context so scoped CSS rules apply automatically.
-        const ghostWrap = document.createElement('div');
-        ghostWrap.className = 'tt-prose';
-        ghostWrap.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
-          background:#fff;border-radius:10px;padding:7px ${_gPad}px;
-          box-shadow:0 8px 24px rgba(0,0,0,0.13),0 2px 6px rgba(0,0,0,0.08);
-          left:${liRect.left - _gPad}px;top:${liRect.top}px;
-          font-size:${_liCs.fontSize};line-height:${_liCs.lineHeight};
-          font-family:${_liCs.fontFamily};`;
-        const ghostUl = document.createElement('ul');
-        ghostUl.setAttribute('data-type', 'taskList');
-        ghostUl.style.cssText = 'margin:0;padding:0;width:' + liRect.width + 'px;';
         const ghostLi = li.cloneNode(true);
-        // Force li to exact same pixel width as the original so flex layout is identical
-        ghostLi.style.width = liRect.width + 'px';
-        ghostLi.style.boxSizing = 'border-box';
-        // Lock content div to exact measured width — eliminates any rounding/padding drift
-        if (_origContentW) {
-          const _gcd = ghostLi.querySelector('div');
-          if (_gcd) { _gcd.style.width = _origContentW + 'px'; _gcd.style.flex = 'none'; }
+        ghostLi.style.cssText = `position:fixed;pointer-events:none;z-index:10000;
+          list-style:none;box-sizing:border-box;
+          left:${liRect.left}px;top:${liRect.top}px;width:${liRect.width}px;
+          background:#fff;border-radius:8px;
+          box-shadow:0 8px 24px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.10);
+          font-size:${_liCs.fontSize};line-height:${_liCs.lineHeight};
+          font-family:${_liCs.fontFamily};
+          display:flex;align-items:flex-start;gap:8px;margin:0;padding:${_liCs.paddingTop} ${_liCs.paddingRight} ${_liCs.paddingBottom} ${_liCs.paddingLeft};`;
+        // Re-apply child styles lost outside .ProseMirror context
+        const _gLabel = ghostLi.querySelector('label');
+        if (_gLabel) {
+          _gLabel.style.flexShrink = '0'; _gLabel.style.marginTop = '2px';
+          const _gCb = _gLabel.querySelector('input[type="checkbox"]');
+          if (_gCb) _gCb.style.cssText = `width:16px;height:16px;flex-shrink:0;margin:0;
+            appearance:none;-webkit-appearance:none;border-radius:3px;
+            border:1.5px solid ${isChecked?'#0f172a':'#cbd5e1'};
+            background:${isChecked?`#0f172a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpolyline points='2.5,8 6.5,12 13.5,4' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/11px no-repeat`:'transparent'};`;
         }
-        // .tt-prose sets tt-drag-handle to display:none — override inline so it stays in flow
-        // but is invisible, preserving the exact same flex layout as the original item.
+        const _gDiv = ghostLi.querySelector('div');
+        if (_gDiv) {
+          _gDiv.style.flex = '1';
+          if (isChecked) { _gDiv.style.textDecoration = 'line-through'; _gDiv.style.color = '#b0b0b0'; }
+        }
+        // Keep handle in flow but invisible so flex layout matches original exactly
         const _gh = ghostLi.querySelector('.tt-drag-handle');
         if (_gh) { _gh.style.display = 'flex'; _gh.style.visibility = 'hidden'; }
-        ghostUl.appendChild(ghostLi);
-        ghostWrap.appendChild(ghostUl);
-        document.body.appendChild(ghostWrap);
-        const ghost = ghostWrap; // alias for onMove / onUp
+        document.body.appendChild(ghostLi);
+        const ghost = ghostLi; // alias for onMove / onUp
 
         // Inject a <style> element — inline style mutations on ProseMirror-managed li elements
         // are reverted immediately by its MutationObserver; a <head> stylesheet is invisible to it.
@@ -15903,7 +15901,7 @@
         function onMove(e) {
           dropIndex = calcDrop(e.clientY);
           applyShifts(dropIndex);
-          ghost.style.left = (e.clientX - offsetX - _gPad) + 'px';
+          ghost.style.left = (e.clientX - offsetX) + 'px';
           ghost.style.top  = (e.clientY - offsetY) + 'px';
         }
 
