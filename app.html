@@ -5573,6 +5573,11 @@
       padding-bottom: 24px;
     }
 
+    #notes-search-input[contenteditable]:empty::before {
+      content: attr(data-placeholder);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
     .notes-tab-bar {
       display: flex;
       border-bottom: 1.5px solid var(--border);
@@ -10575,7 +10580,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.34.1';
+    const VERSION = '4.34.2';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -15867,13 +15872,13 @@
         style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input id="notes-search-input" type="text" value="${esc(state.notesSearch)}"
-        placeholder="Search ${notesTab === 'archive' ? 'archive' : notesTab === 'bin' ? 'bin' : 'notes'}…"
-        autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-        oninput="notesSearchInput(this.value)"
+      <div id="notes-search-input" contenteditable="true" role="searchbox" spellcheck="false"
+        data-placeholder="Search ${notesTab === 'archive' ? 'archive' : notesTab === 'bin' ? 'bin' : 'notes'}…"
+        oninput="notesSearchInput(this.textContent)"
         style="width:100%;box-sizing:border-box;padding:9px 34px 9px 34px;border-radius:12px;border:1.5px solid var(--border);
-          background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;">
-      ${state.notesSearch ? `<button onclick="notesSearchInput('');document.getElementById('notes-search-input').value=''" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px;line-height:1">×</button>` : ''}
+          background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;
+          white-space:nowrap;overflow:hidden;line-height:1.4;">${esc(state.notesSearch)}</div>
+      ${state.notesSearch ? `<button onclick="notesSearchInput('');const _si=document.getElementById('notes-search-input');if(_si){_si.textContent='';_si.focus();}" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px;line-height:1">×</button>` : ''}
     </div>
   </div>`;
       const headerRow = `<div style="margin-top:4px"></div>`;
@@ -16002,19 +16007,48 @@
     // ---- Notes search ----
     let _notesSearchTimer = null;
     function notesSearchInput(q) {
-      state.notesSearch = q;
+      state.notesSearch = (q || '').trim();
       // Debounce re-render slightly so typing stays fluid
       if (_notesSearchTimer) clearTimeout(_notesSearchTimer);
       _notesSearchTimer = setTimeout(() => {
         _notesSearchTimer = null;
         const wasFocused = document.activeElement?.id === 'notes-search-input';
-        const pos = wasFocused ? document.activeElement.selectionStart : null;
+        // Save caret offset for contenteditable restoration
+        let caretOffset = null;
+        if (wasFocused) {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) {
+            caretOffset = sel.getRangeAt(0).startOffset;
+          }
+        }
         render();
-        // Restore focus and cursor after re-render
+        // Restore focus and caret after re-render
         if (wasFocused) {
           requestAnimationFrame(() => {
             const el2 = document.getElementById('notes-search-input');
-            if (el2) { el2.focus(); if (pos !== null) { try { el2.setSelectionRange(pos, pos); } catch (e) { } } }
+            if (el2) {
+              el2.focus();
+              if (caretOffset !== null && el2.firstChild) {
+                try {
+                  const range = document.createRange();
+                  const textNode = el2.firstChild;
+                  const offset = Math.min(caretOffset, textNode.length || 0);
+                  range.setStart(textNode, offset);
+                  range.collapse(true);
+                  const sel2 = window.getSelection();
+                  sel2.removeAllRanges();
+                  sel2.addRange(range);
+                } catch (e) { /* ignore */ }
+              } else if (caretOffset !== null) {
+                // Empty field — put caret at end
+                const range = document.createRange();
+                range.selectNodeContents(el2);
+                range.collapse(false);
+                const sel2 = window.getSelection();
+                sel2.removeAllRanges();
+                sel2.addRange(range);
+              }
+            }
           });
         }
       }, 120);
