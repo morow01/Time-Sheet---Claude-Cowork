@@ -4733,16 +4733,6 @@
     .img-resize-presets button.active-align {
       background: rgba(129,140,248,0.5);
     }
-    .img-drag-grip {
-      display: flex;
-      align-items: center;
-      padding: 0 6px;
-      color: rgba(255,255,255,0.5);
-      cursor: grab;
-      font-size: 16px;
-      letter-spacing: -1px;
-      user-select: none;
-    }
     .img-resize-presets {
       position: absolute;
       top: -44px;
@@ -10583,7 +10573,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.34.4';
+    const VERSION = '4.34.5';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16236,7 +16226,14 @@
         // Inject <style> element — invisible to ProseMirror's MutationObserver.
         const dragStyle = document.createElement('style');
         document.head.appendChild(dragStyle);
-        const nthSel = (n) => `#note-fs-editor .ProseMirror ul[data-type="taskList"] li:nth-child(${n})`;
+
+        // CRITICAL: mark THIS specific list with a unique id so CSS selectors target
+        // only its children — without this, nth-child rules apply to ALL task lists
+        // in the doc simultaneously, causing the wrong items to ghost/shift.
+        const _dragId = '_drag_' + Date.now();
+        listEl.setAttribute('data-drag-id', _dragId);
+        const nthSel = (n) => `[data-drag-id="${_dragId}"] > li:nth-child(${n})`;
+        const _ulSel = `[data-drag-id="${_dragId}"]`;
         const draggedN = startIndex + 1;
 
         // Ghost position tracker — updated on every pointermove via the stylesheet.
@@ -16252,13 +16249,6 @@
           }
           return filteredRects.length;
         }
-
-        // Compute the ul's nth-child position among its parent's children so we can
-        // add an ::after spacer to keep the ul at its original height while the
-        // dragged li is position:fixed (and therefore removed from flow).
-        const _ulSiblings = Array.from(listEl.parentElement.children);
-        const _ulN = _ulSiblings.indexOf(listEl) + 1;
-        const _ulSel = `#note-fs-editor .ProseMirror > :nth-child(${_ulN})`;
 
         function applyShifts(targetDropIdx, instant = false) {
           const rules = [];
@@ -16302,6 +16292,7 @@
 
         function onUp() {
           dragStyle.remove();
+          listEl.removeAttribute('data-drag-id'); // remove unique drag marker
           // Restore normal text selection and context menu behaviour.
           document.body.style.userSelect = '';
           document.body.style.webkitUserSelect = '';
@@ -23470,7 +23461,6 @@ QUESTION: ${query}`;
 
       // Custom resizable image extension
       const ResizableImage = Image.extend({
-        draggable: true,
         addAttributes() {
           return {
             ...this.parent?.(),
@@ -23493,6 +23483,9 @@ QUESTION: ${query}`;
         },
         addNodeView() {
           return ({ node, editor, getPos }) => {
+            // Track current attrs — closure over `node` is stale after updates
+            let currentAttrs = { ...node.attrs };
+
             const container = document.createElement('div');
             container.classList.add('img-resize-wrap');
             container.contentEditable = 'false';
@@ -23503,25 +23496,68 @@ QUESTION: ${query}`;
             if (node.attrs.title) img.title = node.attrs.title;
             img.classList.add('tt-resizable-img');
 
-            // Apply width + float alignment
+            // Apply width + float — use individual style properties so we never
+            // clobber the class-level position:relative / overflow:visible / margin-top
             const applyAttrs = (attrs) => {
               img.style.width = attrs.width || '50%';
               const align = attrs.align || 'none';
               if (align === 'left') {
-                container.style.cssText = 'float:left;margin:0 14px 8px 0;clear:left;';
+                container.style.float = 'left';
+                container.style.marginRight = '14px';
+                container.style.marginLeft = '';
+                container.style.marginBottom = '8px';
+                container.style.display = '';
+                container.style.clear = '';
               } else if (align === 'right') {
-                container.style.cssText = 'float:right;margin:0 0 8px 14px;clear:right;';
+                container.style.float = 'right';
+                container.style.marginLeft = '14px';
+                container.style.marginRight = '';
+                container.style.marginBottom = '8px';
+                container.style.display = '';
+                container.style.clear = '';
               } else {
-                container.style.cssText = 'float:none;display:block;margin:6px 0;clear:both;';
+                container.style.float = '';
+                container.style.display = 'block';
+                container.style.marginRight = '';
+                container.style.marginLeft = '';
+                container.style.marginBottom = '';
+                container.style.clear = 'both';
               }
             };
             applyAttrs(node.attrs);
 
-            // Toolbar: drag grip | align buttons | size presets
+            // Move image up/down one block in the document
+            const moveImg = (dir) => {
+              const pos = getPos();
+              const { state } = editor;
+              const imgNode = state.doc.nodeAt(pos);
+              if (!imgNode) return;
+              const tr = state.tr;
+              if (dir < 0) {
+                const $pos = state.doc.resolve(pos);
+                const prevNode = $pos.nodeBefore;
+                if (!prevNode) return;
+                const prevStart = pos - prevNode.nodeSize;
+                tr.delete(pos, pos + imgNode.nodeSize);
+                tr.insert(prevStart, imgNode);
+              } else {
+                const nextStart = pos + imgNode.nodeSize;
+                if (nextStart >= state.doc.content.size) return;
+                const nextNode = state.doc.nodeAt(nextStart);
+                if (!nextNode) return;
+                tr.delete(pos, pos + imgNode.nodeSize);
+                tr.insert(pos + nextNode.nodeSize, imgNode);
+              }
+              editor.view.dispatch(tr);
+            };
+
+            // Toolbar: move ↑↓ | align ←⊞→ | size S M L Full
             const presets = document.createElement('div');
             presets.classList.add('img-resize-presets');
             presets.innerHTML = `
-              <span class="img-drag-grip" title="Drag to move">⠿</span>
+              <button data-move="-1" title="Move up">↑</button>
+              <button data-move="1"  title="Move down">↓</button>
+              <span class="preset-divider"></span>
               <button data-align="left"  title="Float left">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="8" height="8" rx="1"/><rect x="3" y="14" width="18" height="2" rx="1"/><rect x="3" y="18" width="14" height="2" rx="1"/></svg>
               </button>
@@ -23546,18 +23582,23 @@ QUESTION: ${query}`;
             };
             refreshAlignBtns(node.attrs.align);
 
+            presets.addEventListener('mousedown', e => e.preventDefault()); // prevent editor blur
             presets.addEventListener('click', (e) => {
-              const btn = e.target.closest('button[data-size], button[data-align]');
+              const btn = e.target.closest('button[data-size], button[data-align], button[data-move]');
               if (!btn) return;
-              const pos = getPos();
-              if (btn.dataset.size) {
+              e.stopPropagation();
+              if (btn.dataset.move !== undefined) {
+                moveImg(parseInt(btn.dataset.move, 10));
+              } else if (btn.dataset.size) {
+                const pos = getPos();
                 editor.chain().focus().command(({ tr }) => {
-                  tr.setNodeMarkup(pos, undefined, { ...node.attrs, width: btn.dataset.size });
+                  tr.setNodeMarkup(pos, undefined, { ...currentAttrs, width: btn.dataset.size });
                   return true;
                 }).run();
               } else if ('align' in btn.dataset) {
+                const pos = getPos();
                 editor.chain().focus().command(({ tr }) => {
-                  tr.setNodeMarkup(pos, undefined, { ...node.attrs, align: btn.dataset.align });
+                  tr.setNodeMarkup(pos, undefined, { ...currentAttrs, align: btn.dataset.align });
                   return true;
                 }).run();
               }
@@ -23574,6 +23615,7 @@ QUESTION: ${query}`;
               dom: container,
               update(updatedNode) {
                 if (updatedNode.type.name !== 'image') return false;
+                currentAttrs = { ...updatedNode.attrs }; // keep attrs fresh
                 img.src = updatedNode.attrs.src;
                 applyAttrs(updatedNode.attrs);
                 refreshAlignBtns(updatedNode.attrs.align);
