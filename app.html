@@ -4735,10 +4735,12 @@
     }
     .img-resize-presets {
       position: absolute;
-      top: -44px;
+      top: -48px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 3px;
       background: rgba(20,20,30,0.88);
       backdrop-filter: blur(10px);
@@ -4749,7 +4751,7 @@
       pointer-events: none;
       transition: opacity 0.15s;
       z-index: 3;
-      white-space: nowrap;
+      max-width: min(320px, 92vw);
       box-shadow: 0 2px 12px rgba(0,0,0,0.25);
     }
     .img-resize-wrap.selected .img-resize-presets {
@@ -4763,13 +4765,16 @@
       color: #fff;
       font-size: 13px;
       font-weight: 700;
-      padding: 6px 14px;
-      min-height: 34px;
-      min-width: 36px;
+      padding: 5px 11px;
+      min-height: 32px;
+      min-width: 32px;
       cursor: pointer;
       font-family: inherit;
       transition: background 0.12s;
       -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .img-resize-presets button:hover,
     .img-resize-presets button:active {
@@ -10573,7 +10578,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.34.5';
+    const VERSION = '4.34.6';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16227,13 +16232,13 @@
         const dragStyle = document.createElement('style');
         document.head.appendChild(dragStyle);
 
-        // CRITICAL: mark THIS specific list with a unique id so CSS selectors target
-        // only its children — without this, nth-child rules apply to ALL task lists
-        // in the doc simultaneously, causing the wrong items to ghost/shift.
-        const _dragId = '_drag_' + Date.now();
-        listEl.setAttribute('data-drag-id', _dragId);
-        const nthSel = (n) => `[data-drag-id="${_dragId}"] > li:nth-child(${n})`;
-        const _ulSel = `[data-drag-id="${_dragId}"]`;
+        // Build a stable CSS selector for THIS specific task list using its position
+        // among its parent's children — scopes all rules to this list only, without
+        // touching any ProseMirror-managed DOM attributes (which would trigger a re-sync).
+        const _ulSiblings = Array.from(listEl.parentElement.children);
+        const _ulN = _ulSiblings.indexOf(listEl) + 1;
+        const _ulSel = `#note-fs-editor .ProseMirror > :nth-child(${_ulN})`;
+        const nthSel = (n) => `${_ulSel} > li:nth-child(${n})`;
         const draggedN = startIndex + 1;
 
         // Ghost position tracker — updated on every pointermove via the stylesheet.
@@ -16292,7 +16297,6 @@
 
         function onUp() {
           dragStyle.remove();
-          listEl.removeAttribute('data-drag-id'); // remove unique drag marker
           // Restore normal text selection and context menu behaviour.
           document.body.style.userSelect = '';
           document.body.style.webkitUserSelect = '';
@@ -23526,45 +23530,17 @@ QUESTION: ${query}`;
             };
             applyAttrs(node.attrs);
 
-            // Move image up/down one block in the document
-            const moveImg = (dir) => {
-              const pos = getPos();
-              const { state } = editor;
-              const imgNode = state.doc.nodeAt(pos);
-              if (!imgNode) return;
-              const tr = state.tr;
-              if (dir < 0) {
-                const $pos = state.doc.resolve(pos);
-                const prevNode = $pos.nodeBefore;
-                if (!prevNode) return;
-                const prevStart = pos - prevNode.nodeSize;
-                tr.delete(pos, pos + imgNode.nodeSize);
-                tr.insert(prevStart, imgNode);
-              } else {
-                const nextStart = pos + imgNode.nodeSize;
-                if (nextStart >= state.doc.content.size) return;
-                const nextNode = state.doc.nodeAt(nextStart);
-                if (!nextNode) return;
-                tr.delete(pos, pos + imgNode.nodeSize);
-                tr.insert(pos + nextNode.nodeSize, imgNode);
-              }
-              editor.view.dispatch(tr);
-            };
-
-            // Toolbar: move ↑↓ | align ←⊞→ | size S M L Full
+            // Toolbar: align ←⊞→ | size S M L Full
             const presets = document.createElement('div');
             presets.classList.add('img-resize-presets');
             presets.innerHTML = `
-              <button data-move="-1" title="Move up">↑</button>
-              <button data-move="1"  title="Move down">↓</button>
-              <span class="preset-divider"></span>
-              <button data-align="left"  title="Float left">
+              <button data-align="left"  title="Float left — text wraps right">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="8" height="8" rx="1"/><rect x="3" y="14" width="18" height="2" rx="1"/><rect x="3" y="18" width="14" height="2" rx="1"/></svg>
               </button>
-              <button data-align="none"  title="No wrap">
+              <button data-align="none"  title="Block — full line">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
               </button>
-              <button data-align="right" title="Float right">
+              <button data-align="right" title="Float right — text wraps left">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="13" y="4" width="8" height="8" rx="1"/><rect x="3" y="14" width="18" height="2" rx="1"/><rect x="7" y="18" width="14" height="2" rx="1"/></svg>
               </button>
               <span class="preset-divider"></span>
@@ -23584,19 +23560,16 @@ QUESTION: ${query}`;
 
             presets.addEventListener('mousedown', e => e.preventDefault()); // prevent editor blur
             presets.addEventListener('click', (e) => {
-              const btn = e.target.closest('button[data-size], button[data-align], button[data-move]');
+              const btn = e.target.closest('button[data-size], button[data-align]');
               if (!btn) return;
               e.stopPropagation();
-              if (btn.dataset.move !== undefined) {
-                moveImg(parseInt(btn.dataset.move, 10));
-              } else if (btn.dataset.size) {
-                const pos = getPos();
+              const pos = getPos();
+              if (btn.dataset.size) {
                 editor.chain().focus().command(({ tr }) => {
                   tr.setNodeMarkup(pos, undefined, { ...currentAttrs, width: btn.dataset.size });
                   return true;
                 }).run();
               } else if ('align' in btn.dataset) {
-                const pos = getPos();
                 editor.chain().focus().command(({ tr }) => {
                   tr.setNodeMarkup(pos, undefined, { ...currentAttrs, align: btn.dataset.align });
                   return true;
