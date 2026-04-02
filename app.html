@@ -10193,7 +10193,7 @@
         style="background:var(--bg-modal-search);border-bottom:1px solid var(--border)">
         <div class="finder-search-wrap">
           <input id="location-search" type="search" placeholder="Town name or code…" class="finder-search-input"
-            autocomplete="new-password" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+            autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
             oninput="filterLocations(this.value)">
           <div class="finder-v-separator"></div>
           <div class="finder-mic-btn-inline" id="location-mic-btn" onclick="startLocationVoice()" title="Voice search">
@@ -10605,7 +10605,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.12';
+    const VERSION = '4.35.13';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -26020,17 +26020,6 @@ QUESTION: ${query}`;
       </div><!-- end tt-toolbar-wrap -->
       <!-- TipTap editor area -->
       <div id="note-fs-editor"></div>
-      <!-- Selection action bar: appears when text is selected -->
-      <div id="tt-sel-bar">
-        <button id="tt-sel-bar-ai" onmousedown="event.preventDefault()" onclick="_ttDoAiRephrase()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M12 3l1.9 5.8L20 10.6l-4.7 3.6 1.8 5.8L12 16.4 6.9 20l1.8-5.8L4 10.6l6.1-1.8z" />
-          </svg>
-          Improve with AI
-        </button>
-        <span id="tt-sel-bar-hint">tap to rephrase selection</span>
-      </div>
       <!-- AI rephrase preview panel (hidden until AI returns a suggestion) -->
       <div id="tt-ai-preview" style="display:none;">
         <div style="font-size:11px;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:0.5px;">✦ AI
