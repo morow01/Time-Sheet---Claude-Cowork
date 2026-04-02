@@ -10601,7 +10601,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.5';
+    const VERSION = '4.35.6';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -23699,6 +23699,8 @@ QUESTION: ${query}`;
             const presets = document.createElement('div');
             presets.classList.add('img-resize-presets');
             presets.innerHTML = `
+              <button class="img-drag-handle" title="Drag to move">⠿</button>
+              <span class="preset-divider"></span>
               <button data-align="left" title="Left (no wrap)">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round">
                   <rect x="1" y="1" width="6" height="5" rx="1" fill="currentColor" stroke="none" opacity="0.85"/>
@@ -23747,8 +23749,6 @@ QUESTION: ${query}`;
               <button data-size="50%">M</button>
               <button data-size="75%">L</button>
               <button data-size="100%">Full</button>
-              <span class="preset-divider"></span>
-              <button class="img-drag-handle" title="Drag to move">⠿</button>
             `;
 
             // Highlight active layout button
