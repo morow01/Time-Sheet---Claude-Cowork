@@ -4704,6 +4704,11 @@
       margin: 6px 0;
       display: block;
     }
+    /* NodeView images sit inside img-resize-wrap — the 6px margin creates a gap
+       between the outline and the image. Zero it out; spacing is handled by the container. */
+    #note-fs-editor .ProseMirror .img-resize-wrap img {
+      margin: 0;
+    }
 
     /* ── Image resize ── */
     .img-resize-wrap {
@@ -4752,7 +4757,7 @@
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      flex-wrap: nowrap;         /* always single row */
+      flex-wrap: nowrap;
       align-items: center;
       gap: 3px;
       background: rgba(20,20,30,0.88);
@@ -4766,7 +4771,12 @@
       z-index: 10;
       white-space: nowrap;
       box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      /* Prevent clipping on narrow screens */
+      max-width: calc(100vw - 16px);
+      overflow-x: auto;
+      scrollbar-width: none;
     }
+    .img-resize-presets::-webkit-scrollbar { display: none; }
     .img-resize-wrap.selected .img-resize-presets {
       opacity: 1;
       pointer-events: auto;
@@ -10591,7 +10601,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.2';
+    const VERSION = '4.35.3';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
