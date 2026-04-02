@@ -10601,7 +10601,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.9';
+    const VERSION = '4.35.10';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20074,17 +20074,31 @@
         dateWrap.style.display = '';
         dateEl.value = year + '-' + String(month).padStart(2, '0') + '-' + String(auto.day).padStart(2, '0');
         btnsEl.innerHTML = `
-          <button class="rtn-log-btn primary" onclick="saveRoutinesVisit()">Update date</button>
-          <button class="rtn-log-btn danger" onclick="removeRoutinesVisit()">Remove</button>
-          <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()">Cancel</button>`;
+          <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+            <div style="display:flex;gap:8px">
+              <button class="rtn-log-btn primary" onclick="saveRoutinesVisit()">Update date</button>
+              <button class="rtn-log-btn cancel" onclick="openRoutinesDayInWeek()">📅 Open day</button>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="rtn-log-btn danger" onclick="removeRoutinesVisit()">Remove</button>
+              <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()">Cancel</button>
+            </div>
+          </div>`;
       } else if (manual) {
         srcEl.style.display = 'none';
         dateWrap.style.display = '';
         dateEl.value = year + '-' + String(month).padStart(2, '0') + '-' + String(manual.day).padStart(2, '0');
         btnsEl.innerHTML = `
-          <button class="rtn-log-btn primary" onclick="saveRoutinesVisit()">Update</button>
-          <button class="rtn-log-btn danger" onclick="removeRoutinesVisit()">Remove</button>
-          <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()">Cancel</button>`;
+          <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+            <div style="display:flex;gap:8px">
+              <button class="rtn-log-btn primary" onclick="saveRoutinesVisit()">Update</button>
+              <button class="rtn-log-btn cancel" onclick="openRoutinesDayInWeek()">📅 Open day</button>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="rtn-log-btn danger" onclick="removeRoutinesVisit()">Remove</button>
+              <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()">Cancel</button>
+            </div>
+          </div>`;
       } else {
         srcEl.style.display = 'none';
         dateWrap.style.display = '';
@@ -20104,6 +20118,17 @@
       const el = document.getElementById('rtn-log-modal');
       if (el) el.classList.remove('open');
       _rtnLogCtx = null;
+    }
+
+    function openRoutinesDayInWeek() {
+      const dateEl = document.getElementById('rtn-log-date');
+      if (!dateEl || !dateEl.value) return;
+      const fridayStr = getNearestFriday(dateEl.value);
+      closeRoutinesLogModal();
+      state.view = 'week';
+      localStorage.setItem('lastView', 'week');
+      window.scrollTo(0, 0);
+      loadWeek(fridayStr);
     }
 
     async function saveRoutinesVisit() {
