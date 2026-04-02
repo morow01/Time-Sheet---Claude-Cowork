@@ -3868,6 +3868,7 @@
       padding: 16px;
       font-size: 14px;
       line-height: 1.7;
+      overflow: hidden; /* clearfix: contains floated images */
       color: #3A3836;
       min-height: 200px;
     }
@@ -4742,6 +4743,7 @@
     .img-resize-presets {
       position: absolute;
       top: -48px;
+      z-index: 10;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -10584,7 +10586,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.34.9';
+    const VERSION = '4.35.0';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -23631,23 +23633,36 @@ QUESTION: ${query}`;
             if (node.attrs.title) img.title = node.attrs.title;
             img.classList.add('tt-resizable-img');
 
-            // Apply width + alignment. Margins go on the IMAGE (which has a specific
-            // width e.g. 50%), NOT the container (which is always 100% wide —
-            // margins on a full-width block do nothing visible).
+            // Apply width + alignment.
+            // Left/right: float the container so text wraps around it; img fills 100% of it.
+            // Center: full-width container, img centered via auto margins.
             const applyAttrs = (attrs) => {
-              img.style.width = attrs.width || '50%';
-              img.style.display = 'block'; // block so auto-margins work
-              container.style.display = 'block';
-              container.style.float = '';
+              const width = attrs.width || '50%';
               const align = attrs.align || 'none';
-              if (align === 'left') {
-                img.style.marginLeft = '0';
-                img.style.marginRight = 'auto';
-              } else if (align === 'right') {
-                img.style.marginLeft = 'auto';
-                img.style.marginRight = '0';
+              if (align === 'left' || align === 'right') {
+                // Float container — text in subsequent blocks wraps around the image
+                container.style.float = align;
+                container.style.width = width;
+                container.style.display = 'block';
+                container.style.marginTop = '2px';
+                container.style.marginBottom = '6px';
+                container.style.marginLeft = align === 'left' ? '0' : '10px';
+                container.style.marginRight = align === 'left' ? '10px' : '0';
+                img.style.width = '100%';
+                img.style.display = 'block';
+                img.style.marginLeft = '';
+                img.style.marginRight = '';
               } else {
-                // Center (default)
+                // Center: no float, full-width container, auto margins on img
+                container.style.float = '';
+                container.style.width = '';
+                container.style.display = 'block';
+                container.style.marginTop = '';
+                container.style.marginBottom = '';
+                container.style.marginLeft = '';
+                container.style.marginRight = '';
+                img.style.width = width;
+                img.style.display = 'block';
                 img.style.marginLeft = 'auto';
                 img.style.marginRight = 'auto';
               }
