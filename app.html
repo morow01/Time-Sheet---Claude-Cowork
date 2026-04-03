@@ -2968,6 +2968,18 @@
     }
 
     /* ── In-app callouts summary table (3-col, Option A style) ── */
+    /* ── Callouts divider inside summary card ── */
+    .co-sum-divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 0;
+    }
+    .co-sum-divider .sum-section-line {
+      margin: 0;
+    }
     .co-sum-table {
       background: var(--bg-card);
       border-radius: 14px;
@@ -2978,6 +2990,7 @@
       display: grid;
       grid-template-columns: 76px 1fr 1fr;
       background: var(--bg-card-alt);
+      border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
     }
     .co-sum-row {
@@ -10903,7 +10916,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.33';
+    const VERSION = '4.35.34';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13210,28 +13223,24 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-  ${(function() {
-    var _coEntries = state.callouts && state.callouts.weeks && state.weekData ? (state.callouts.weeks[state.weekData.weekStart] && state.callouts.weeks[state.weekData.weekStart].callouts || []) : [];
-    if (!_coEntries.length) return '';
-    var _MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var _coRows = _coEntries.map(function(co) {
-      var _dl = co.date ? (function() { var p = co.date.split('-'); return p[2].replace(/^0/,'') + '. ' + _MN[parseInt(p[1],10)-1]; })() : '\u2014';
-      var _site = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '\u2014';
-      return '<div class="co-sum-row">' +
-        '<div class="co-sum-cell co-sum-date">' + esc(_dl) + '</div>' +
-        '<div class="co-sum-cell co-sum-ticket">' + esc(co.ticket || '\u2014') + '</div>' +
-        '<div class="co-sum-cell co-sum-loc">' + esc(_site) + '</div>' +
-      '</div>';
-    }).join('');
-    return '<div class="sum-section-hdr" style="margin-top:8px;">' +
-        '<div class="sum-section-line"></div>' +
-        '<div class="sum-section-label">Callouts</div>' +
-        '<div class="sum-section-line"></div>' +
-      '</div>' +
-      '<div class="sum-section">' +
-        '<div class="co-sum-table">' +
+      ${(function() {
+        var _coEntries = state.callouts && state.callouts.weeks && state.weekData ? (state.callouts.weeks[state.weekData.weekStart] && state.callouts.weeks[state.weekData.weekStart].callouts || []) : [];
+        if (!_coEntries.length) return '';
+        var _MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var _coRows = _coEntries.map(function(co) {
+          var _dl = co.date ? (function() { var p = co.date.split('-'); return p[2].replace(/^0/,'') + '. ' + _MN[parseInt(p[1],10)-1]; })() : '\u2014';
+          var _site = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '\u2014';
+          return '<div class="co-sum-row">' +
+            '<div class="co-sum-cell co-sum-date">' + esc(_dl) + '</div>' +
+            '<div class="co-sum-cell co-sum-ticket">' + esc(co.ticket || '\u2014') + '</div>' +
+            '<div class="co-sum-cell co-sum-loc">' + esc(_site) + '</div>' +
+          '</div>';
+        }).join('');
+        return '<div class="co-sum-divider">' +
+            '<div class="sum-section-line"></div>' +
+            '<div class="sum-section-label" style="font-size:9px;">Callouts</div>' +
+            '<div class="sum-section-line"></div>' +
+          '</div>' +
           '<div class="co-sum-head">' +
             '<div class="co-sum-cell co-sum-date co-sum-th">Date</div>' +
             '<div class="co-sum-cell co-sum-ticket co-sum-th">Ticket Number</div>' +
@@ -13241,15 +13250,15 @@
           '<div class="sum-new-footer">' +
             '<div class="sum-footer-label">Total</div>' +
             '<div class="sum-footer-totals">' +
-              '<div class="sum-footer-item">' +
+              '<div class="sum-footer-item" style="text-align:center;">' +
                 '<div class="sum-footer-lbl">Callouts</div>' +
                 '<div class="sum-footer-val">' + _coEntries.length + '</div>' +
               '</div>' +
             '</div>' +
-          '</div>' +
-        '</div>' +
-      '</div>';
-  })()}`;
+          '</div>';
+      })()}
+    </div>
+  </div>`;
 
       const anomalyHtml = renderAnomalyBanner(state.weekData);
       return `<main class="pb-6">${anomalyHtml ? `<div style="padding:10px 12px 0">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
