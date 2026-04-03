@@ -2987,7 +2987,7 @@
     /* Callouts column headers — same style as .sum-new-col-head */
     .co-sum-head {
       display: grid;
-      grid-template-columns: 76px 1fr 1fr;
+      grid-template-columns: 100px 1fr 1fr;
       padding: 10px 16px 8px;
       background: var(--bg-card-alt);
       border-bottom: 1px solid var(--border);
@@ -2995,9 +2995,10 @@
     /* Callouts data rows — same padding as .sum-new-row */
     .co-sum-row {
       display: grid;
-      grid-template-columns: 76px 1fr 1fr;
+      grid-template-columns: 100px 1fr 1fr;
       border-bottom: 1px solid var(--border);
       background: var(--bg-card);
+      align-items: center;
     }
     .co-sum-row:last-of-type {
       border-bottom: none;
@@ -3017,6 +3018,10 @@
       text-transform: uppercase;
       color: var(--text-muted);
       padding: 0;
+    }
+    .co-sum-head .co-sum-th + .co-sum-th {
+      border-left: 1px solid var(--border);
+      padding-left: 16px;
     }
     /* Date — matches sum-row-code style */
     .co-sum-date {
@@ -10925,7 +10930,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.35';
+    const VERSION = '4.35.36';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13251,9 +13256,9 @@
             '<div class="sum-section-line"></div>' +
           '</div>' +
           '<div class="co-sum-head">' +
-            '<div class="co-sum-cell co-sum-date co-sum-th">Date</div>' +
-            '<div class="co-sum-cell co-sum-ticket co-sum-th">Ticket Number</div>' +
-            '<div class="co-sum-cell co-sum-loc co-sum-th">Location</div>' +
+            '<div class="co-sum-th">Date</div>' +
+            '<div class="co-sum-th">Ticket Number</div>' +
+            '<div class="co-sum-th">Location</div>' +
           '</div>' +
           _coRows +
           '<div class="sum-new-footer">' +
