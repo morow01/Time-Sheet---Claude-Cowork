@@ -10851,7 +10851,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.27';
+    const VERSION = '4.35.28';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -25433,7 +25433,10 @@ QUESTION: ${query}`;
         const target = actId
           ? document.querySelector(`.activity-card[data-act-id="${actId}"]`)
           : document.querySelector(`.day-card[data-day-idx="${di}"]`);
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (target) {
+          const y = target.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        }
       }, 120);
     }
 
