@@ -10691,7 +10691,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.21';
+    const VERSION = '4.35.22';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -12831,8 +12831,9 @@
     }
 
     function gotoRemedyTask(di, actId) {
-      // Expand the day, scroll to the specific activity card
+      // Expand the day and the specific activity card, then scroll to it
       state.expandedDays.add(di);
+      if (actId) state.activitiesExpanded.add(actId);
       render();
       setTimeout(() => {
         const card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
