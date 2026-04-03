@@ -1007,7 +1007,7 @@
       border-radius: 20px;
       padding: 2px 8px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 100;
     }
 
     .remedy-banner {
@@ -10851,7 +10851,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.24';
+    const VERSION = '4.35.25';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13858,7 +13858,7 @@
               </div>
             </div>
           </div>
-          <button class="act-remedy-flag-btn ${act.remedyPending ? 'active' : ''}" onclick="event.stopPropagation(); toggleRemedyFlag(${di}, '${act.id}')" title="Flag Remedy ticket needed"><svg width="14" height="14" viewBox="0 0 24 24" fill="${act.remedyPending ? '#7c3aed' : 'none'}" stroke="${act.remedyPending ? '#7c3aed' : 'var(--text-muted)'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg></button>
+          
           <span class="chevron" style="font-size:14px;color:var(--text-muted);transform:${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'};transition:transform 0.2s;flex-shrink:0;">›</span>
         </div>
         <div class="activity-detail ${isExpanded ? 'open' : ''}" style="${isExpanded ? '' : 'display:none'}">
@@ -13982,6 +13982,10 @@
                   <button class="ctx-item ctx-green" onclick="closeAllCtx();openAddToNotes('${act.id}',${di})">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                     Add to Notes
+                  </button>
+                  <button class="ctx-item ctx-purple" onclick="closeAllCtx();toggleRemedyFlag(${di},'${act.id}')">
+                    <svg viewBox="0 0 24 24" fill="${act.remedyPending ? '#7c3aed' : 'none'}" stroke="${act.remedyPending ? '#7c3aed' : 'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>
+                    ${act.remedyPending ? 'Remove Remedy flag' : 'Flag Remedy ticket'}
                   </button>
                 </div>
               </div>
