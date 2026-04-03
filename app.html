@@ -2988,7 +2988,7 @@
     .co-sum-head {
       display: grid;
       grid-template-columns: 100px 1fr 1fr;
-      padding: 10px 16px 8px;
+      padding: 10px 0 8px;
       background: var(--bg-card-alt);
       border-bottom: 1px solid var(--border);
     }
@@ -3017,7 +3017,7 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-muted);
-      padding: 0;
+      padding: 0 0 0 16px;
     }
     .co-sum-head .co-sum-th + .co-sum-th {
       border-left: 1px solid var(--border);
@@ -3028,7 +3028,7 @@
       font-family: var(--font-mono);
       font-size: 10px;
       font-weight: 600;
-      color: var(--accent);
+      color: var(--text-secondary);
       letter-spacing: 0.03em;
     }
     /* Ticket — matches sum-row-desc mono style */
@@ -3036,7 +3036,7 @@
       font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 500;
-      color: var(--text-primary);
+      color: var(--accent);
       border-left: 1px solid var(--border);
     }
     /* Location — matches sum-row-desc muted style */
@@ -10930,7 +10930,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.36';
+    const VERSION = '4.35.37';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
