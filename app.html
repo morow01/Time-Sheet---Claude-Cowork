@@ -944,6 +944,68 @@
       cursor: pointer;
     }
 
+    /* Remedy flag */
+    .act-remedy-btn {
+      flex: 1;
+      background: var(--bg-card-alt);
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .act-remedy-btn.active {
+      background: #7c3aed;
+      color: #fff;
+      border-color: #7c3aed;
+    }
+    .activity-card.remedy-flagged {
+      border-color: #7c3aed !important;
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.13);
+    }
+    .pill-remedy {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: #7c3aed;
+      color: #fff;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .remedy-banner {
+      background: #7c3aed;
+      color: #fff;
+      border-radius: 12px;
+      padding: 11px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .remedy-banner-due {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.85;
+    }
+    .remedy-banner-due.urgent {
+      opacity: 1;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 2px 8px;
+    }
+
     /* Copy-task day picker modal */
     .copy-picker-overlay {
       position: fixed;
@@ -10605,7 +10667,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.16';
+    const VERSION = '4.35.17';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -11570,7 +11632,15 @@
     }
 
     function createActivity() {
-      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '' };
+      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false };
+    }
+
+    function toggleRemedyFlag(di, actId) {
+      const act = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
+      if (!act) return;
+      act.remedyPending = !act.remedyPending;
+      scheduleAutoSave();
+      render();
     }
 
     function createNote() {
@@ -12736,6 +12806,23 @@
       }, 60);
     }
 
+    function renderRemedyBanner(weekData) {
+      if (!weekData) return '';
+      const pendingTasks = [];
+      weekData.days.forEach(day => {
+        day.activities.forEach(act => {
+          if (act.remedyPending) pendingTasks.push({ desc: act.description || 'Unnamed', date: day.date, dayName: day.dayName });
+        });
+      });
+      if (!pendingTasks.length) return '';
+      const today = new Date();
+      const dow = today.getDay(); // 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri
+      const isUrgent = dow === 3 || dow === 4; // Wed or Thu
+      const dueLabel = isUrgent ? '⚠ Due today!' : 'Due by Thursday';
+      const ticketSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/><line x1="9" y1="12" x2="15" y2="12" stroke-dasharray="2 2"/></svg>';
+      return `<div class="remedy-banner">${ticketSvg} ${pendingTasks.length} Remedy ticket${pendingTasks.length > 1 ? 's' : ''} to create<span class="remedy-banner-due${isUrgent ? ' urgent' : ''}">${dueLabel}</span></div>`;
+    }
+
     function renderAnomalyBanner(weekData) {
       if (isAnomalyDismissed()) return '';
       const issues = detectAnomalies(weekData);
@@ -12842,7 +12929,8 @@
   </div>`;
 
       const anomalyHtml = renderAnomalyBanner(state.weekData);
-      return `<main class="pb-6">${anomalyHtml ? `<div style="padding:10px 12px 0">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
+      const remedyHtml = renderRemedyBanner(state.weekData);
+      return `<main class="pb-6">${remedyHtml ? `<div style="padding:10px 12px 0">${remedyHtml}</div>` : ''}${anomalyHtml ? `<div style="padding:${remedyHtml ? '0' : '10px'} 12px 0">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
     }
 
     // ============================================================
@@ -13290,6 +13378,7 @@
         const ot = parseFloat(a.overtime) || 0;
         return ((ord > 0 || ot > 0) && a.codes.length === 0) || (a.codes.length > 0 && ord === 0 && ot === 0);
       });
+      const remedyCount = day.activities.filter(a => a.remedyPending).length;
 
       return `
 <div class="day-card ${isWeekend ? 'day-weekend' : ''} ${isExpanded ? 'expanded' : ''} ${day.date === dateToStr(new Date()) ? 'day-today' : ''}" data-day-idx="${di}">
@@ -13304,6 +13393,7 @@
         ${ord > 0 ? `<span class="pill-hrs">${Math.round(ord) === ord ? ord : ord.toFixed(1)}h</span>` : ''}
         ${ot > 0 ? `<span class="pill-ot">+${Math.round(ot) === ot ? ot : ot.toFixed(1)} OT</span>` : ''}
         ${hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : ''}
+        ${remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/></svg> ${remedyCount}R</span>` : ''}
       </div>
     </div>
     <div class="day-chevron">
@@ -13534,8 +13624,9 @@
       const otPerTask = overtime > 0 ? Math.round(overtime / numTasks) : '—';
       const notesOpen = state.notesOpen.has(act.id) ? state.notesOpen.get(act.id) : !!act.notes;
 
+      const remedyStyle = act.remedyPending && !showRedBorder ? 'border-color:#7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.13)' : '';
       return `
-      <div class="activity-card ${isExpanded ? 'expanded' : ''}" data-act-id="${act.id}" style="${showRedBorder ? 'border-color:var(--btn-danger-color); box-shadow: 0 0 8px rgba(232, 69, 60, 0.2)' : ''}">
+      <div class="activity-card ${isExpanded ? 'expanded' : ''}${act.remedyPending ? ' remedy-flagged' : ''}" data-act-id="${act.id}" style="${showRedBorder ? 'border-color:var(--btn-danger-color); box-shadow: 0 0 8px rgba(232, 69, 60, 0.2)' : remedyStyle}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="toggleActivityDetails('${act.id}')">
           <div class="task-num">${actIndex + 1}</div>
           <div class="flex-1 min-w-0 act-meta">
@@ -13549,6 +13640,7 @@
               <div class="act-pill-row">
                 ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" style="display:none"></span>`}
                 ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" style="display:none"></span>`}
+                ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/></svg>R</span>` : ''}
               </div>
             </div>
           </div>
@@ -13657,6 +13749,7 @@
             </div>
 
             <div class="act-actions-row" style="gap:8px;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;">
+              <button class="act-remedy-btn ${act.remedyPending ? 'active' : ''}" onclick="toggleRemedyFlag(${di}, '${act.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/><line x1="9" y1="12" x2="15" y2="12" stroke-dasharray="2 2"/></svg> Remedy</button>
               <button onclick="showConfirm('Delete task?','${escAttr(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))" class="act-action-btn act-action-delete">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 Delete
