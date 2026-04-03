@@ -10667,7 +10667,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '4.35.17';
+    const VERSION = '4.35.18';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -12819,7 +12819,7 @@
       const dow = today.getDay(); // 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri
       const isUrgent = dow === 3 || dow === 4; // Wed or Thu
       const dueLabel = isUrgent ? '⚠ Due today!' : 'Due by Thursday';
-      const ticketSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/><line x1="9" y1="12" x2="15" y2="12" stroke-dasharray="2 2"/></svg>';
+      const ticketSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>';
       return `<div class="remedy-banner">${ticketSvg} ${pendingTasks.length} Remedy ticket${pendingTasks.length > 1 ? 's' : ''} to create<span class="remedy-banner-due${isUrgent ? ' urgent' : ''}">${dueLabel}</span></div>`;
     }
 
@@ -13392,8 +13392,8 @@
         ${actCount > 0 ? `<span class="pill-hrs" style="background:#EDF1F5;color:#5A7289">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)}
         ${ord > 0 ? `<span class="pill-hrs">${Math.round(ord) === ord ? ord : ord.toFixed(1)}h</span>` : ''}
         ${ot > 0 ? `<span class="pill-ot">+${Math.round(ot) === ot ? ot : ot.toFixed(1)} OT</span>` : ''}
+        ${remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : ''}
         ${hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : ''}
-        ${remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/></svg> ${remedyCount}R</span>` : ''}
       </div>
     </div>
     <div class="day-chevron">
@@ -13640,7 +13640,7 @@
               <div class="act-pill-row">
                 ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" style="display:none"></span>`}
                 ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" style="display:none"></span>`}
-                ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/></svg>R</span>` : ''}
+                ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>` : ''}
               </div>
             </div>
           </div>
@@ -13749,7 +13749,7 @@
             </div>
 
             <div class="act-actions-row" style="gap:8px;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;">
-              <button class="act-remedy-btn ${act.remedyPending ? 'active' : ''}" onclick="toggleRemedyFlag(${di}, '${act.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9z"/><line x1="9" y1="12" x2="15" y2="12" stroke-dasharray="2 2"/></svg> Remedy</button>
+              <button class="act-remedy-btn ${act.remedyPending ? 'active' : ''}" onclick="toggleRemedyFlag(${di}, '${act.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</button>
               <button onclick="showConfirm('Delete task?','${escAttr(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))" class="act-action-btn act-action-delete">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 Delete
@@ -16142,7 +16142,25 @@
         </div>` : '';
 
       const previewSheet = renderNotePreviewSheet();
-      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:120px' : ''}">${headerRow}${searchBar}${notesTab === 'bin' ? binView : notesTab === 'archive' ? archiveView : `<div class="nf-wrap">${chips}</div>${addCard}${searchEmpty}${openSection}${doneSection}${notesHint}${bulkBar}`}${previewSheet}</div>`;
+      // Remedy banner — show tasks flagged in current week
+      let remedyNotifHtml = '';
+      if (state.weekData && notesTab !== 'bin' && notesTab !== 'archive') {
+        const remedyTasks = [];
+        state.weekData.days.forEach(day => {
+          day.activities.forEach(act => {
+            if (act.remedyPending) remedyTasks.push({ desc: act.description || 'Unnamed', dayName: day.dayName, date: day.date });
+          });
+        });
+        if (remedyTasks.length) {
+          const today = new Date(); const dow = today.getDay();
+          const isUrgent = dow === 3 || dow === 4;
+          const tagSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>';
+          const taskList = remedyTasks.map(t => `<span style="opacity:0.85;font-weight:400">${esc(t.dayName)}: </span>${esc(t.desc)}`).join('  ·  ');
+          const dueLabel = isUrgent ? '⚠ Due today!' : 'Due by Thursday';
+          remedyNotifHtml = `<div class="remedy-banner" style="margin:10px 12px 0;cursor:pointer" onclick="setView('week')" title="Go to week view">${tagSvg} ${remedyTasks.length} Remedy ticket${remedyTasks.length > 1 ? 's' : ''} to create<span class="remedy-banner-due${isUrgent ? ' urgent' : ''}">${dueLabel}</span></div><div style="padding:4px 14px 0;font-size:11px;color:#a78bfa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${taskList}</div>`;
+        }
+      }
+      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:120px' : ''}">${remedyNotifHtml}${headerRow}${searchBar}${notesTab === 'bin' ? binView : notesTab === 'archive' ? archiveView : `<div class="nf-wrap">${chips}</div>${addCard}${searchEmpty}${openSection}${doneSection}${notesHint}${bulkBar}`}${previewSheet}</div>`;
     }
 
     // ---- Notes search ----
