@@ -11237,7 +11237,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.22';
+    const VERSION = '5.1.23';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16816,7 +16816,7 @@
           dbPut('notes', { id:'j_notebooks', userId, data:state.jNotebooks, updatedAt:r._updatedAt||Date.now() });
         }
         state.jSyncStatus = 'synced'; updateHeaderStatus();
-        if (state.view === 'journal') render();
+        if (state.view === 'journal' && !_jMouseDrag && !_jTouchDrag) render();
       }, () => { state.jSyncStatus = 'error'; updateHeaderStatus(); });
 
       _jUnsubSec = secRef.onSnapshot(snap => {
@@ -16826,7 +16826,7 @@
           state.jSections = _mergeArr(r.sections, state.jSections);
           dbPut('notes', { id:'j_sections', userId, data:state.jSections, updatedAt:r._updatedAt||Date.now() });
         }
-        if (state.view === 'journal') render();
+        if (state.view === 'journal' && !_jMouseDrag && !_jTouchDrag) render();
       }, () => {});
 
       _jUnsubPg = pgRef.onSnapshot(snap => {
@@ -16836,7 +16836,7 @@
           state.jPages = _mergeArr(r.pages, state.jPages);
           dbPut('notes', { id:'j_pages', userId, data:state.jPages, updatedAt:r._updatedAt||Date.now() });
         }
-        if (state.view === 'journal') render();
+        if (state.view === 'journal' && !_jMouseDrag && !_jTouchDrag) render();
       }, () => {});
 
       state.jSyncStatus = 'synced';
