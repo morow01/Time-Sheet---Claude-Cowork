@@ -11237,7 +11237,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.24';
+    const VERSION = '5.1.25';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -17067,6 +17067,7 @@
       var rowEl=document.querySelector('[data-jid="'+id+'"]');
       if (!rowEl) return;
       var rect=rowEl.getBoundingClientRect();
+      var rowW=rowEl.offsetWidth; // capture BEFORE removal (detached elements return 0)
       var container=rowEl.parentNode;
       var ph=_jMakePlaceholder(rowEl);
       container.insertBefore(ph, rowEl);
@@ -17075,7 +17076,7 @@
       var ghost=rowEl.cloneNode(true);
       ghost.removeAttribute('data-jid');
       ghost.classList.add('j-drag-ghost');
-      ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rowEl.offsetWidth+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;cursor:grabbing;';
+      ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rowW+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;cursor:grabbing;';
       document.body.appendChild(ghost);
       _jMouseDrag={type:type,id:id,rowEl:rowEl,ghost:ghost,ph:ph,container:container,origRects:origRects,startY:e.clientY,rectTop:rect.top};
       document.addEventListener('mousemove',_jMouseMove);
@@ -17105,6 +17106,7 @@
       var rowEl=document.querySelector('[data-jid="'+id+'"]');
       if (!rowEl) return;
       var rect=rowEl.getBoundingClientRect();
+      var rowW=rowEl.offsetWidth; // capture BEFORE removal (detached elements return 0)
       var container=rowEl.parentNode;
       var ph=_jMakePlaceholder(rowEl);
       container.insertBefore(ph, rowEl);
@@ -17113,7 +17115,7 @@
       var ghost=rowEl.cloneNode(true);
       ghost.removeAttribute('data-jid');
       ghost.classList.add('j-drag-ghost');
-      ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rowEl.offsetWidth+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;';
+      ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rowW+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;';
       document.body.appendChild(ghost);
       _jTouchDrag={type:type,id:id,rowEl:rowEl,ghost:ghost,ph:ph,container:container,origRects:origRects,startY:touch.clientY,rectTop:rect.top};
       document.addEventListener('touchmove',_jTouchMove,{passive:false});
