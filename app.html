@@ -11239,7 +11239,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.35';
+    const VERSION = '5.1.36';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16970,7 +16970,6 @@
     // ── Edit mode (long press → drag/delete) ──
     let _jLpTimer = null;
     let _jLpStartXY = [0,0];
-    let _jTouchDrag = null;
     let _jH5DragId = null, _jH5DragType = null;
 
     function jRowPressStart(e, type, itemId) {
@@ -17086,17 +17085,12 @@
         if (_jPointerDrag.rowEl) _jPointerDrag.rowEl.remove();
         _jPointerDrag = null;
       }
-      _jMouseDrag = null;
-      _jTouchDrag = null;
     }
 
     // ── Drag cooldown: block Firestore re-renders for 2s after drag ends ──
     var _jDragCooldown = false;
     var _jDragCooldownTimer = null;
     var _jPointerDrag = null;
-    // _jMouseDrag/_jTouchDrag kept as null stubs so any stale references don't crash
-    var _jMouseDrag = null;
-    var _jTouchDrag = null;
     function _jDragBusy() { return !!(_jPointerDrag || _jDragCooldown); }
     function _jStartCooldown() {
       _jDragCooldown = true;
