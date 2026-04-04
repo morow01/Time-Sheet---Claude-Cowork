@@ -7361,6 +7361,148 @@
     .sec-form-btn.primary { background: var(--accent); color: #fff; }
     .sec-form-btn.cancel  { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
 
+    /* ── Journal drag/edit mode ───────────────────────────────────── */
+    .j-drag-handle { display:flex;align-items:center;padding:0 6px 0 4px;cursor:grab;touch-action:none;flex-shrink:0;color:var(--text-muted); }
+    .j-drag-handle:active { cursor:grabbing; }
+    .j-edit-done { background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--accent);padding:4px 16px 4px 8px;flex-shrink:0; }
+    .j-placeholder { border-radius:10px; background:rgba(45,107,228,0.07); border:2px dashed rgba(45,107,228,0.35); box-sizing:border-box; flex-shrink:0; }
+
+    /* ── Journal v5.1.0 — OneNote drill-down ─────────────────────── */
+    .j-screen { min-height: 100vh; padding-bottom: 90px; background: #dde8f8; }
+    .j-sub-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      background: #dde8f8;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .j-back-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--accent); padding: 4px 6px;
+      display: flex; align-items: center; gap: 4px;
+      font-size: 15px; font-weight: 700; font-family: inherit;
+    }
+    .j-sub-title {
+      font-size: 16px; font-weight: 800; color: var(--text-primary);
+      flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .j-nb-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px; cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      transition: background 0.12s;
+    }
+    .j-nb-row:active { background: var(--bg-card-alt); }
+    .j-nb-row.j-edit-row,
+    .j-sec-row.j-edit-row,
+    .j-pg-row.j-edit-row  { padding-left: 0; }
+    .j-nb-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: #8b9ab0;
+      background: rgba(139,154,176,0.12);
+    }
+    .j-nb-info { flex: 1; min-width: 0; }
+    .j-nb-name {
+      font-size: 15px; font-weight: 500; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .j-nb-meta { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .j-nb-chevron { color: var(--text-muted); display: flex; align-items: center; }
+    .j-sec-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px; cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      transition: background 0.12s;
+    }
+    .j-sec-row:active { background: var(--bg-card-alt); }
+    .j-sec-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .j-sec-info { flex: 1; min-width: 0; }
+    .j-sec-name {
+      font-size: 15px; font-weight: 500; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .j-sec-meta { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .j-sec-chevron { color: var(--text-muted); display: flex; align-items: center; margin-right: 16px; }
+    .j-pg-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+      transition: background 0.12s;
+    }
+    .j-pg-row:active { background: var(--bg-card-alt); }
+    .j-pg-icon { color: var(--text-muted); display: flex; align-items: center; flex-shrink: 0; }
+    .j-pg-info { flex: 1; min-width: 0; }
+    .j-pg-title {
+      font-size: 15px; font-weight: 500; color: var(--text-primary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .j-pg-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .j-pg-preview {
+      font-size: 12px; color: var(--text-secondary);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+    .j-fab {
+      position: fixed; bottom: 88px; right: 20px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 28px;
+      padding: 14px 20px; font-size: 14px; font-weight: 700;
+      cursor: pointer; box-shadow: 0 4px 16px rgba(45,107,228,0.4);
+      display: flex; align-items: center; gap: 6px;
+      z-index: 200; font-family: inherit;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .j-fab:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(45,107,228,0.3); }
+    .j-sheet-overlay {
+      position: fixed; inset: 0; z-index: 800;
+      background: rgba(0,0,0,0.4);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .j-sheet {
+      background: var(--bg-card); border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 600px;
+      padding: 20px 20px 32px; box-sizing: border-box;
+    }
+    .j-sheet-title { font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; }
+    .j-sheet-input {
+      width: 100%; box-sizing: border-box;
+      padding: 12px 14px; border: 1.5px solid var(--border);
+      border-radius: 12px; background: var(--bg-card-alt);
+      color: var(--text-primary); font-size: 16px; font-family: inherit;
+      outline: none; margin-bottom: 14px;
+    }
+    .j-sheet-input:focus { border-color: var(--accent); }
+    .j-sheet-btns { display: flex; gap: 10px; }
+    .j-sheet-btn {
+      flex: 1; padding: 12px; border-radius: 12px; border: none;
+      font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .j-sheet-btn.primary { background: var(--accent); color: #fff; }
+    .j-sheet-btn.cancel  { background: var(--bg-card-alt); border: 1px solid var(--border); color: var(--text-muted); }
+    .j-del-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); padding: 8px; flex-shrink: 0;
+      display: flex; align-items: center;
+    }
+    .j-del-btn:active { color: #ef4444; }
+    .j-top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 10px;
+    }
+    .j-top-title { font-size: 22px; font-weight: 800; color: var(--text-primary); }
+    .j-empty {
+      text-align: center; padding: 60px 24px 24px;
+      color: var(--text-muted); font-size: 14px; line-height: 1.6;
+    }
+
     .note-card {
       background: var(--bg-card);
       border-radius: 16px;
@@ -11095,7 +11237,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.0.1';
+    const VERSION = '5.1.18';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -11746,15 +11888,21 @@
       calloutsNotesOpen: false,  // whether notes panel is open in expanded callout
       coSelectionMode: false,
       selectedCallouts: new Set(),
-      // ── Journal (v5.0.0) ──
-      journal: [],               // array of journal sections + entries
-      journalSyncStatus: 'idle', // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
-      journalCollapsed: {},      // { [sectionId]: true|false }
-      journalSectionsModalOpen: false,
-      journalSectionsEditId: null,
-      journalSectionsForm: null, // { title, type, parentId, date, location }
-      journalSearch: '',
-      journalExpandedId: null,   // id of entry open in fullscreen
+      // ── Journal (v5.1.0 — OneNote-style: Notebooks → Sections → Pages) ──
+      jNotebooks: [],      // [{id, title, color, displayOrder, createdAt, updatedAt}]
+      jSections:  [],      // [{id, notebookId, title, color, displayOrder, createdAt, updatedAt}]
+      jPages:     [],      // [{id, sectionId, title, noteContent, date, displayOrder, createdAt, updatedAt}]
+      jScreen: 'notebooks',// 'notebooks' | 'sections' | 'pages'
+      jNotebookId: null,   // currently selected notebook id
+      jSectionId:  null,   // currently selected section id
+      jSyncStatus: 'idle', // 'idle' | 'pending' | 'syncing' | 'synced' | 'error'
+      jAddMode: null,      // null | 'notebook' | 'section' | 'page'
+      jAddTitle: '',       // input text for add form
+      jAddColor: '',       // selected color in add-section sheet
+      jEditId: null,       // id of item being renamed
+      jRenameTitle: '',    // input text for rename
+      jColorPickId: null,  // section id whose color is being changed
+      jEditMode: false,    // long-press edit/reorder mode
     };
 
     let codeModalCtx = { dayIndex: null, activityId: null, selected: [] };
@@ -11917,6 +12065,22 @@
       const ref = userDoc('data/journal');
       if (!ref) return;
       await ref.set({ entries, _updatedAt: Date.now() });
+    }
+
+    async function fsSetJNotebooks(notebooks) {
+      const ref = userDoc('data/jNotebooks');
+      if (!ref) return;
+      await ref.set({ notebooks, _updatedAt: Date.now() });
+    }
+    async function fsSetJSections(sections) {
+      const ref = userDoc('data/jSections');
+      if (!ref) return;
+      await ref.set({ sections, _updatedAt: Date.now() });
+    }
+    async function fsSetJPages(pages) {
+      const ref = userDoc('data/jPages');
+      if (!ref) return;
+      await ref.set({ pages, _updatedAt: Date.now() });
     }
 
     async function loadCallouts() {
@@ -13456,6 +13620,11 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Navigation</div>
                 <div class="menu-card">
+                  <button class="menu-row" onclick="setView('journal');closeThemeMenu()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Notebooks</span><span class="menu-row-sub">Notebooks → Sections → Pages</span></span>
+                    ${chev}
+                  </button>
                   <button class="menu-row" onclick="setView('routines');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="6" cy="9" r="1.2" fill="currentColor"/><circle cx="6" cy="13" r="1.2" fill="currentColor"/><circle cx="6" cy="17" r="1.2" fill="currentColor"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Routines</span><span class="menu-row-sub">Track monthly site visits</span></span>
@@ -13607,10 +13776,6 @@
       <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Notes</span>
         ${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus]}"></span>` : ''}
-      </button>
-      <button onclick="setView('journal')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'journal' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'journal' ? 'border-bottom:2.5px solid #F5A623' : ''}">
-        <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Journal</span>
-        ${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.journalSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.journalSyncStatus]}"></span>` : ''}
       </button>
       <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? '#F5A623' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid #F5A623' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Finder</span>
@@ -16565,240 +16730,427 @@
     }
 
     // ============================================================
-    // JOURNAL — sync, render, event handlers (v5.0.0)
+    // JOURNAL — v5.1.0 (OneNote-style: Notebooks → Sections → Pages)
     // ============================================================
-    let journalSaveTimer = null;
-    let journalUnsubscribe = null;
+    const J_COLORS = ['#2D6BE4','#7c3aed','#db2777','#dc2626','#ea580c','#d97706','#16a34a','#0891b2'];
+    function _nextJColor(arr) { return J_COLORS[arr.length % J_COLORS.length]; }
 
-    function scheduleJournalSave() {
-      state.journalSyncStatus = 'pending';
-      if (journalSaveTimer) clearTimeout(journalSaveTimer);
-      journalSaveTimer = setTimeout(async () => {
-        journalSaveTimer = null;
+    let _jSaveTimer = null;
+    let _jUnsubNb = null, _jUnsubSec = null, _jUnsubPg = null;
+
+    function scheduleJournalSave() { /* deprecated stub — old journal source no longer used */ }
+    function scheduleJSave() {
+      state.jSyncStatus = 'pending';
+      updateHeaderStatus();
+      if (_jSaveTimer) clearTimeout(_jSaveTimer);
+      _jSaveTimer = setTimeout(async () => {
+        _jSaveTimer = null;
         const ts = Date.now();
-        await dbPut('notes', { id: 'journal_all', userId: state.currentUser?.uid || null, data: state.journal, updatedAt: ts });
+        const userId = state.currentUser?.uid || null;
+        await Promise.all([
+          dbPut('notes', { id: 'j_notebooks', userId, data: state.jNotebooks, updatedAt: ts }),
+          dbPut('notes', { id: 'j_sections',  userId, data: state.jSections,  updatedAt: ts }),
+          dbPut('notes', { id: 'j_pages',     userId, data: state.jPages,     updatedAt: ts }),
+        ]);
         if (state.currentUser) {
           try {
-            await fsSetJournal(state.journal);
-            state.journalSyncStatus = 'synced';
+            await Promise.all([
+              fsSetJNotebooks(state.jNotebooks),
+              fsSetJSections(state.jSections),
+              fsSetJPages(state.jPages),
+            ]);
+            state.jSyncStatus = 'synced';
           } catch(e) {
-            state.journalSyncStatus = 'error';
-            console.warn('[Rian] journal save error:', e);
+            state.jSyncStatus = 'error';
+            console.warn('[Rian] jSave error:', e);
           }
         } else {
-          state.journalSyncStatus = 'synced';
+          state.jSyncStatus = 'synced';
         }
         updateHeaderStatus();
       }, 1000);
     }
 
     async function loadJournal() {
-      state.journalSyncStatus = 'idle';
-      if (journalUnsubscribe) { journalUnsubscribe(); journalUnsubscribe = null; }
-
-      const uid = state.currentUser?.uid;
-      if (!uid) { render(); return; }
+      state.jSyncStatus = 'idle';
+      [_jUnsubNb, _jUnsubSec, _jUnsubPg].forEach(u => { if (u) u(); });
+      _jUnsubNb = _jUnsubSec = _jUnsubPg = null;
 
       // Load from IDB first (instant display)
-      const stored = await dbGet('notes', 'journal_all').catch(() => null);
-      if (stored?.data && state.journal.length === 0) {
-        state.journal = stored.data;
-        render();
+      const [nbStored, secStored, pgStored] = await Promise.all([
+        dbGet('notes', 'j_notebooks').catch(() => null),
+        dbGet('notes', 'j_sections').catch(() => null),
+        dbGet('notes', 'j_pages').catch(() => null),
+      ]);
+      if (nbStored?.data)  state.jNotebooks = nbStored.data;
+      if (secStored?.data) state.jSections  = secStored.data;
+      if (pgStored?.data)  state.jPages     = pgStored.data;
+      render();
+
+      const userId = state.currentUser?.uid;
+      if (!userId) return;
+
+      function _mergeArr(remote, local) {
+        const lmap = new Map(local.map(e => [e.id, e]));
+        const merged = remote.map(re => {
+          const le = lmap.get(re.id);
+          return (le && (le.updatedAt||0) > (re.updatedAt||0)) ? le : re;
+        });
+        for (const le of local) {
+          if (!remote.find(re => re.id === le.id) && (le.updatedAt||0) > Date.now()-120000)
+            merged.push(le);
+        }
+        return merged;
       }
 
-      // Subscribe to Firestore
-      const ref = userDoc('data/journal');
-      if (!ref) { render(); return; }
+      const nbRef  = userDoc('data/jNotebooks');
+      const secRef = userDoc('data/jSections');
+      const pgRef  = userDoc('data/jPages');
+      if (!nbRef) { render(); return; }
 
-      journalUnsubscribe = ref.onSnapshot(snap => {
-        if (!snap.exists) {
-          // No remote data yet — push local if we have it
-          if (state.journal.length > 0) {
-            fsSetJournal(state.journal).catch(e => console.warn('[Rian]', e));
-          }
-          state.journalSyncStatus = 'synced';
-          updateHeaderStatus();
-          if (state.view === 'journal') render();
-          return;
+      _jUnsubNb = nbRef.onSnapshot(snap => {
+        if (!snap.exists) { if (state.jNotebooks.length) fsSetJNotebooks(state.jNotebooks).catch(()=>{}); return; }
+        const r = snap.data();
+        if (r.notebooks?.length) {
+          state.jNotebooks = _mergeArr(r.notebooks, state.jNotebooks);
+          dbPut('notes', { id:'j_notebooks', userId, data:state.jNotebooks, updatedAt:r._updatedAt||Date.now() });
         }
-        const remote = snap.data();
-        if (!remote.entries || remote.entries.length === 0) {
-          if (state.journal.length > 0) {
-            fsSetJournal(state.journal).catch(e => console.warn('[Rian]', e));
-          }
-          state.journalSyncStatus = 'synced';
-          updateHeaderStatus();
-          if (state.view === 'journal') render();
-          return;
-        }
-        // Per-entry merge (keep newer version)
-        const localMap = new Map(state.journal.map(e => [e.id, e]));
-        const merged = remote.entries.map(re => {
-          const le = localMap.get(re.id);
-          if (le && (le.updatedAt || 0) > (re.updatedAt || 0)) return le;
-          return re;
-        });
-        for (const le of state.journal) {
-          if (!remote.entries.find(re => re.id === le.id) && (le.updatedAt || 0) > Date.now() - 120000) {
-            merged.push(le);
-          }
-        }
-        state.journal = merged;
-        dbPut('notes', { id: 'journal_all', userId: uid, data: state.journal, updatedAt: remote._updatedAt || Date.now() });
-        state.journalSyncStatus = 'synced';
-        updateHeaderStatus();
+        state.jSyncStatus = 'synced'; updateHeaderStatus();
         if (state.view === 'journal') render();
-      }, () => {
-        state.journalSyncStatus = 'error';
-        updateHeaderStatus();
-      });
+      }, () => { state.jSyncStatus = 'error'; updateHeaderStatus(); });
 
-      state.journalSyncStatus = 'synced';
+      _jUnsubSec = secRef.onSnapshot(snap => {
+        if (!snap.exists) { if (state.jSections.length) fsSetJSections(state.jSections).catch(()=>{}); return; }
+        const r = snap.data();
+        if (r.sections?.length) {
+          state.jSections = _mergeArr(r.sections, state.jSections);
+          dbPut('notes', { id:'j_sections', userId, data:state.jSections, updatedAt:r._updatedAt||Date.now() });
+        }
+        if (state.view === 'journal') render();
+      }, () => {});
+
+      _jUnsubPg = pgRef.onSnapshot(snap => {
+        if (!snap.exists) { if (state.jPages.length) fsSetJPages(state.jPages).catch(()=>{}); return; }
+        const r = snap.data();
+        if (r.pages?.length) {
+          state.jPages = _mergeArr(r.pages, state.jPages);
+          dbPut('notes', { id:'j_pages', userId, data:state.jPages, updatedAt:r._updatedAt||Date.now() });
+        }
+        if (state.view === 'journal') render();
+      }, () => {});
+
+      state.jSyncStatus = 'synced';
       updateHeaderStatus();
     }
 
-    function createJournalEntry(sectionId) {
-      const now = Date.now();
-      return {
-        id: uid(),
-        isSection: false,
-        sectionId: sectionId || null,
-        description: '',
-        noteContent: '',
-        location: '',
-        date: dateToStr(new Date()),
-        displayOrder: 0,
-        createdAt: now,
-        updatedAt: now,
-      };
-    }
-
-    function addJournalEntry(sectionId) {
-      const entry = createJournalEntry(sectionId);
-      if (sectionId) state.journalCollapsed[sectionId] = false;
-      state.journal.unshift(entry);
-      scheduleJournalSave();
-      render();
-      // Open fullscreen editor right away
-      setTimeout(function() { openJournalEntryEditor(entry.id); }, 80);
-    }
-
-    function addJournalSection(title, type, parentId, visitDate, location) {
-      const sec = createSection(title, type, parentId, visitDate, location, state.journal);
-      state.journal.unshift(sec);
-      scheduleJournalSave();
+    // ── Navigation ──
+    function navJournal(screen, opts) {
+      state.jScreen = screen; state.jEditMode = false;
+      if (opts?.notebookId !== undefined) state.jNotebookId = opts.notebookId;
+      if (opts?.sectionId  !== undefined) state.jSectionId  = opts.sectionId;
+      state.jAddMode = null; state.jAddTitle = '';
+      state.jEditId = null; state.jRenameTitle = '';
+      try {
+        localStorage.setItem('jScreen', state.jScreen || 'notebooks');
+        localStorage.setItem('jNotebookId', state.jNotebookId || '');
+        localStorage.setItem('jSectionId',  state.jSectionId  || '');
+      } catch(e) {}
       render();
     }
-
-    function deleteJournalSectionById(sectionId) {
-      state.journal.forEach(function(e) {
-        if (!e.isSection && e.sectionId === sectionId) e.sectionId = null;
-      });
-      const children = state.journal.filter(e => e.isSection && e.parentId === sectionId);
-      children.forEach(function(c) { deleteJournalSectionById(c.id); });
-      const sec = state.journal.find(e => e.id === sectionId);
-      if (sec) { sec.deleted = true; sec.updatedAt = Date.now(); }
-      scheduleJournalSave();
-    }
-
-    function toggleJournalSectionCollapsed(id) {
-      state.journalCollapsed[id] = !state.journalCollapsed[id];
-      render();
-    }
-
-    function openJournalSectionsModal() {
-      state.journalSectionsModalOpen = true;
-      state.journalSectionsEditId = null;
-      state.journalSectionsForm = null;
-      render();
-    }
-
-    function closeJournalSectionsModal() {
-      state.journalSectionsModalOpen = false;
-      state.journalSectionsEditId = null;
-      state.journalSectionsForm = null;
-      render();
-    }
-
-    function openNewJournalSectionForm(parentId) {
-      state.journalSectionsForm = { title: '', type: 'folder', parentId: parentId || null, date: '', location: '' };
-      state.journalSectionsEditId = null;
-      render();
-    }
-
-    function openEditJournalSectionForm(sectionId) {
-      const sec = state.journal.find(e => e.id === sectionId && e.isSection);
-      if (!sec) return;
-      state.journalSectionsEditId = sectionId;
-      state.journalSectionsForm = { title: sec.sectionTitle, type: sec.sectionType, parentId: sec.parentId, date: sec.date || '', location: sec.location || '' };
-      render();
-    }
-
-    function cancelJournalSectionForm() {
-      state.journalSectionsForm = null;
-      state.journalSectionsEditId = null;
-      render();
-    }
-
-    function commitJournalSectionForm() {
-      const f = state.journalSectionsForm;
-      if (!f || !f.title.trim()) return;
-      if (state.journalSectionsEditId) {
-        const sec = state.journal.find(e => e.id === state.journalSectionsEditId && e.isSection);
-        if (sec) {
-          sec.sectionTitle = f.title.trim();
-          sec.sectionType = f.type;
-          sec.date = f.date || '';
-          sec.location = f.location || '';
-          sec.updatedAt = Date.now();
-        }
+    function navJBack() {
+      state.jAddMode = null; state.jAddTitle = '';
+      state.jEditId = null; state.jRenameTitle = ''; state.jEditMode = false;
+      if (state.jScreen === 'pages') {
+        state.jSectionId = null;
+        state.jScreen = 'sections';
       } else {
-        addJournalSection(f.title.trim(), f.type, f.parentId, f.date, f.location);
-        state.journalSectionsForm = null;
-        state.journalSectionsEditId = null;
+        state.jNotebookId = null;
+        state.jScreen = 'notebooks';
+      }
+      try {
+        localStorage.setItem('jScreen', state.jScreen);
+        localStorage.setItem('jNotebookId', state.jNotebookId || '');
+        localStorage.setItem('jSectionId',  state.jSectionId  || '');
+      } catch(e) {}
+      render();
+    }
+
+    // ── Add / Rename sheets ──
+    function jOpenAdd(mode) {
+      state.jAddMode = mode; state.jAddTitle = '';
+      // Pre-select next unused color for section
+      if (mode === 'section') {
+        const used = state.jSections.filter(s => s.notebookId === state.jNotebookId).map(s => s.color);
+        state.jAddColor = J_COLORS.find(c => !used.includes(c)) || J_COLORS[used.length % J_COLORS.length];
+      }
+      render();
+      setTimeout(() => document.getElementById('j-add-input')?.focus(), 80);
+    }
+    function jCancelAdd() { state.jAddMode = null; state.jAddTitle = ''; render(); }
+    function jCommitAdd() {
+      const t = (state.jAddTitle || '').trim();
+      if (!t) return;
+      const now = Date.now();
+      if (state.jAddMode === 'notebook') {
+        state.jNotebooks.push({ id: uid(), title: t, color: _nextJColor(state.jNotebooks), displayOrder: state.jNotebooks.length, createdAt: now, updatedAt: now });
+      } else if (state.jAddMode === 'section') {
+        const nbId = state.jNotebookId;
+        if (!nbId) return;
+        const secs = state.jSections.filter(s => s.notebookId === nbId);
+        const chosenColor = state.jAddColor || _nextJColor(secs);
+        state.jSections.push({ id: uid(), notebookId: nbId, title: t, color: chosenColor, displayOrder: secs.length, createdAt: now, updatedAt: now });
+      } else if (state.jAddMode === 'page') {
+        const secId = state.jSectionId;
+        if (!secId) return;
+        const pg = { id: uid(), sectionId: secId, title: t, noteContent: '', date: dateToStr(new Date()), displayOrder: 0, createdAt: now, updatedAt: now };
+        state.jPages.unshift(pg);
+        state.jAddMode = null; state.jAddTitle = '';
+        scheduleJSave();
         render();
+        setTimeout(() => openFieldNoteFullscreen(pg.id, 'jpage'), 80);
         return;
       }
-      scheduleJournalSave();
-      state.journalSectionsForm = null;
-      state.journalSectionsEditId = null;
+      scheduleJSave();
+      state.jAddMode = null; state.jAddTitle = '';
       render();
     }
 
-    function confirmDeleteJournalSection(sectionId) {
-      const sec = state.journal.find(e => e.id === sectionId && e.isSection);
-      if (!sec) return;
-      const count = state.journal.filter(e => !e.isSection && e.sectionId === sectionId && !e.deleted).length;
-      const msg = count > 0
-        ? 'Delete "' + sec.sectionTitle + '"? Its ' + count + ' entr' + (count===1?'y':'ies') + ' will become unsorted.'
-        : 'Delete "' + sec.sectionTitle + '"?';
-      if (!confirm(msg)) return;
-      deleteJournalSectionById(sectionId);
+    function jOpenRename(id, currentTitle) {
+      state.jEditId = id; state.jRenameTitle = currentTitle;
+      render();
+      setTimeout(() => document.getElementById('j-rename-input')?.focus(), 80);
+    }
+    function jCancelRename() { state.jEditId = null; state.jRenameTitle = ''; render(); }
+    function jCommitRename() {
+      const t = (state.jRenameTitle || '').trim();
+      if (!t) return;
+      const now = Date.now();
+      const nb  = state.jNotebooks.find(x => x.id === state.jEditId);
+      if (nb)  { nb.title  = t; nb.updatedAt  = now; }
+      const sec = state.jSections.find(x => x.id === state.jEditId);
+      if (sec) { sec.title = t; sec.updatedAt = now; }
+      const pg  = state.jPages.find(x => x.id === state.jEditId);
+      if (pg)  { pg.title  = t; pg.updatedAt  = now; }
+      scheduleJSave();
+      state.jEditId = null; state.jRenameTitle = '';
       render();
     }
 
-    // Open a journal entry in the TipTap fullscreen editor
-    function openJournalEntryEditor(entryId) {
-      const entry = state.journal.find(e => e.id === entryId);
-      if (!entry) return;
-      openFieldNoteFullscreen(entryId, 'journal');
-    }
-
-    function updateJournalEntryField(entryId, field, value) {
-      const entry = state.journal.find(e => e.id === entryId);
-      if (!entry) return;
-      entry[field] = value;
-      entry.updatedAt = Date.now();
-      scheduleJournalSave();
-    }
-
-    function deleteJournalEntry(entryId) {
-      const entry = state.journal.find(e => e.id === entryId);
-      if (!entry) return;
-      entry.deleted = true;
-      entry.updatedAt = Date.now();
-      scheduleJournalSave();
+    // ── Section color picker ──
+    function jOpenColorPick(secId) {
+      state.jColorPickId = secId;
       render();
+    }
+    function jSetSectionColor(secId, color) {
+      const sec = state.jSections.find(s => s.id === secId);
+      if (sec) { sec.color = color; sec.updatedAt = Date.now(); scheduleJSave(); }
+      state.jColorPickId = null;
+      render();
+    }
+    function jCloseColorPick() { state.jColorPickId = null; render(); }
+
+    // ── Edit mode (long press → drag/delete) ──
+    let _jLpTimer = null;
+    let _jLpStartXY = [0,0];
+    let _jTouchDrag = null;
+    let _jH5DragId = null, _jH5DragType = null;
+
+    function jRowPressStart(e, type) {
+      if (state.jEditMode) return;
+      if (e.target.closest('button,.j-nb-icon,.j-sec-icon')) return;
+      clearTimeout(_jLpTimer);
+      _jLpStartXY = e.touches ? [e.touches[0].clientX, e.touches[0].clientY] : [0,0];
+      _jLpTimer = setTimeout(function() {
+        _jLpTimer = null;
+        state.jEditMode = true;
+        if (navigator.vibrate) navigator.vibrate(40);
+        render();
+      }, 500);
+    }
+    // Only cancel long-press if finger moved more than 8px (normal small tremor = OK)
+    function jRowPressMove(e) {
+      if (!_jLpTimer || !e.touches) return;
+      var dx = e.touches[0].clientX - _jLpStartXY[0];
+      var dy = e.touches[0].clientY - _jLpStartXY[1];
+      if (dx*dx + dy*dy > 64) jRowPressEnd(); // 8px threshold
+    }
+    function jRowPressEnd() { clearTimeout(_jLpTimer); _jLpTimer = null; }
+    function jExitEditMode() { state.jEditMode = false; render(); }
+
+    // ── Reorder ──
+    function _jSortedItems(type) {
+      if (type === 'notebook')
+        return state.jNotebooks.slice().sort(function(a,b){ return (a.displayOrder||0)-(b.displayOrder||0); });
+      if (type === 'section')
+        return state.jSections.filter(function(s){ return s.notebookId===state.jNotebookId; })
+          .sort(function(a,b){ return (a.displayOrder||0)-(b.displayOrder||0); });
+      return state.jPages.filter(function(p){ return p.sectionId===state.jSectionId&&!p.deleted; })
+        .sort(function(a,b){
+          if (a.displayOrder!=null&&b.displayOrder!=null) return a.displayOrder-b.displayOrder;
+          return (b.createdAt||0)-(a.createdAt||0);
+        });
+    }
+    // ── Reorder helper — insert fromId before beforeId (null = end) ──
+    function _jReorderInsertBefore(type, fromId, beforeId) {
+      const sorted = _jSortedItems(type);
+      const item = sorted.find(function(i){ return i.id===fromId; });
+      if (!item) return;
+      const rest = sorted.filter(function(i){ return i.id!==fromId; });
+      if (beforeId===null) {
+        rest.push(item);
+      } else {
+        const idx = rest.findIndex(function(i){ return i.id===beforeId; });
+        rest.splice(idx<0 ? rest.length : idx, 0, item);
+      }
+      rest.forEach(function(it,i){ it.displayOrder=i; it.updatedAt=Date.now(); });
+      scheduleJSave(); _renderNow(); // sync render — next drag must see fresh DOM immediately
+    }
+
+    // ── Shared: create placeholder sized to match rowEl ──
+    function _jMakePlaceholder(rect) {
+      var ph=document.createElement('div');
+      ph.className='j-placeholder';
+      ph.style.height=rect.height+'px';
+      ph.style.margin='0 0 8px 0';
+      return ph;
+    }
+
+    // ── Shared: find insertion point and move placeholder ──
+    function _jMovePlaceholder(ph, container, midY) {
+      var rows=Array.from(container.querySelectorAll('[data-jid]'));
+      var insertBefore=null;
+      for (var i=0;i<rows.length;i++){
+        var r=rows[i].getBoundingClientRect();
+        if (midY < r.top+r.height/2){ insertBefore=rows[i]; break; }
+      }
+      if (insertBefore) container.insertBefore(ph, insertBefore);
+      else container.appendChild(ph);
+    }
+
+    // ── Shared: resolve beforeId from placeholder position ──
+    function _jBeforeId(ph) {
+      var next=ph.nextElementSibling;
+      while(next){ if(next.getAttribute('data-jid')) return next.getAttribute('data-jid'); next=next.nextElementSibling; }
+      return null;
+    }
+
+    // ── Mouse drag (desktop) ──
+    let _jMouseDrag = null;
+    function jMouseDragStart(e, type, id) {
+      if (e.button!==0) return;
+      e.preventDefault(); e.stopPropagation();
+      var rowEl=document.querySelector('[data-jid="'+id+'"]');
+      if (!rowEl) return;
+      var rect=rowEl.getBoundingClientRect();
+      var container=rowEl.parentNode;
+      var ph=_jMakePlaceholder(rect);
+      container.insertBefore(ph, rowEl);
+      container.removeChild(rowEl);
+      var ghost=rowEl.cloneNode(true);
+      ghost.removeAttribute('data-jid');
+      ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;cursor:grabbing;';
+      document.body.appendChild(ghost);
+      _jMouseDrag={type:type,id:id,rowEl:rowEl,ghost:ghost,ph:ph,container:container,startY:e.clientY,rectTop:rect.top};
+      document.addEventListener('mousemove',_jMouseMove);
+      document.addEventListener('mouseup',_jMouseUp,{once:true});
+    }
+    function _jMouseMove(e) {
+      if (!_jMouseDrag) return;
+      var dy=e.clientY-_jMouseDrag.startY;
+      _jMouseDrag.ghost.style.top=(_jMouseDrag.rectTop+dy)+'px';
+      _jMovePlaceholder(_jMouseDrag.ph, _jMouseDrag.container, e.clientY);
+    }
+    function _jMouseUp() {
+      if (!_jMouseDrag) return;
+      document.removeEventListener('mousemove',_jMouseMove);
+      var d=_jMouseDrag; _jMouseDrag=null;
+      var beforeId=_jBeforeId(d.ph);
+      d.ghost.remove(); d.ph.remove();
+      _jReorderInsertBefore(d.type, d.id, beforeId);
+    }
+
+    // ── Touch drag (mobile) ──
+    function jTouchDragStart(e, type, id) {
+      e.preventDefault(); e.stopPropagation();
+      var touch=e.touches[0];
+      var rowEl=document.querySelector('[data-jid="'+id+'"]');
+      if (!rowEl) return;
+      var rect=rowEl.getBoundingClientRect();
+      var container=rowEl.parentNode;
+      var ph=_jMakePlaceholder(rect);
+      container.insertBefore(ph, rowEl);
+      container.removeChild(rowEl);
+      var ghost=rowEl.cloneNode(true);
+      ghost.removeAttribute('data-jid');
+      ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;';
+      document.body.appendChild(ghost);
+      _jTouchDrag={type:type,id:id,rowEl:rowEl,ghost:ghost,ph:ph,container:container,startY:touch.clientY,rectTop:rect.top};
+      document.addEventListener('touchmove',_jTouchMove,{passive:false});
+      document.addEventListener('touchend',_jTouchEnd,{once:true});
+      document.addEventListener('touchcancel',_jTouchEnd,{once:true});
+    }
+    function _jTouchMove(e) {
+      if (!_jTouchDrag) return;
+      e.preventDefault();
+      var touch=e.touches[0];
+      var dy=touch.clientY-_jTouchDrag.startY;
+      _jTouchDrag.ghost.style.top=(_jTouchDrag.rectTop+dy)+'px';
+      _jMovePlaceholder(_jTouchDrag.ph, _jTouchDrag.container, touch.clientY);
+    }
+    function _jTouchEnd() {
+      if (!_jTouchDrag) return;
+      document.removeEventListener('touchmove',_jTouchMove);
+      var d=_jTouchDrag; _jTouchDrag=null;
+      var beforeId=_jBeforeId(d.ph);
+      d.ghost.remove(); d.ph.remove();
+      _jReorderInsertBefore(d.type, d.id, beforeId);
+    }
+
+    // ── Delete ──
+    function jDeleteNotebook(id) {
+      const nb = state.jNotebooks.find(n => n.id === id);
+      const secIds = state.jSections.filter(s => s.notebookId === id).map(s => s.id);
+      const pgCount = state.jPages.filter(p => secIds.includes(p.sectionId)).length;
+      showConfirmDialog(
+        'Delete notebook?',
+        'Delete "' + (nb ? nb.title : 'this notebook') + '"' + (pgCount ? ' and all ' + pgCount + ' page' + (pgCount===1?'':'s') + ' inside' : '') + '? This cannot be undone.',
+        function() {
+          state.jPages     = state.jPages.filter(p => !secIds.includes(p.sectionId));
+          state.jSections  = state.jSections.filter(s => s.notebookId !== id);
+          state.jNotebooks = state.jNotebooks.filter(n => n.id !== id);
+          scheduleJSave(); render();
+        }
+      );
+    }
+    function jDeleteSection(id) {
+      const sec = state.jSections.find(s => s.id === id);
+      const pgCount = state.jPages.filter(p => p.sectionId === id && !p.deleted).length;
+      showConfirmDialog(
+        'Delete section?',
+        'Delete "' + (sec ? sec.title : 'this section') + '"' + (pgCount ? ' and its ' + pgCount + ' page' + (pgCount===1?'':'s') : '') + '? This cannot be undone.',
+        function() {
+          state.jPages    = state.jPages.filter(p => p.sectionId !== id);
+          state.jSections = state.jSections.filter(s => s.id !== id);
+          if (state.jSectionId === id) { state.jSectionId = null; state.jScreen = 'sections'; }
+          scheduleJSave(); render();
+        }
+      );
+    }
+    function jDeletePage(id) {
+      const pg = state.jPages.find(p => p.id === id);
+      showConfirmDialog(
+        'Delete page?',
+        'Delete "' + (pg ? (pg.title || 'Untitled') : 'this page') + '"? This cannot be undone.',
+        function() {
+          state.jPages = state.jPages.filter(p => p.id !== id);
+          scheduleJSave(); render();
+        }
+      );
+    }
+
+    // ── Open page in TipTap editor ──
+    function jOpenPage(pageId) {
+      openFieldNoteFullscreen(pageId, 'jpage');
     }
 
     // ---- Notes render ----
@@ -17436,243 +17788,241 @@
     }
 
     // ============================================================
-    // JOURNAL RENDER (v5.0.0)
+    // JOURNAL RENDER v5.1.0 — OneNote drill-down
     // ============================================================
-    function renderJournalEntryCard(entry) {
-      const title = entry.description || '';
-      const dateStr = entry.date ? formatDateShort(entry.date) : '';
-      const loc = entry.location ? entry.location.replace(/\s*\([^)]+\)\s*$/, '').trim() : '';
-      const ncText = entry.noteContent ? stripHtml(entry.noteContent).slice(0, 120).trim() : '';
-      // Auto-derive display title: explicit description > first line of content > placeholder
-      const firstLine = ncText ? ncText.split(/[\n\r]/)[0].slice(0, 80).trim() : '';
-      const displayTitle = title || firstLine || '';
-      return '<div class="note-card" data-journal-id="' + entry.id + '" onclick="openJournalEntryEditor(\'' + entry.id + '\')" '
-        + 'style="cursor:pointer;margin:0 16px 10px;border-radius:14px;background:var(--bg-card);border:1px solid var(--border);padding:14px 16px;">'
-        + '<div style="display:flex;align-items:center;gap:8px;min-width:0;">'
-          + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
-          + '<div style="font-size:14px;font-weight:600;color:var(--text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
-              + (displayTitle ? esc(displayTitle) : '<span style="color:var(--text-muted);font-style:italic">New entry…</span>')
-            + '</div>'
-          + '<button onclick="event.stopPropagation();deleteJournalEntry(\'' + entry.id + '\')" '
-              + 'style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:3px;flex-shrink:0;opacity:0.5;line-height:0">'
-              + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
-            + '</button>'
-        + '</div>'
-        + ((dateStr || loc) ? '<div style="display:flex;align-items:center;gap:10px;margin-top:6px;font-size:12px;color:var(--text-muted);">'
-            + (dateStr ? '<span style="display:inline-flex;align-items:center;gap:3px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + dateStr + '</span>' : '')
-            + (loc ? '<span style="display:inline-flex;align-items:center;gap:3px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>' + esc(loc) + '</span>' : '')
-          + '</div>' : '')
-        + (ncText ? '<div style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">' + esc(ncText) + '</div>' : '')
-        + '</div>';
+    function _jChevronSvg() {
+      return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
     }
-
-    function renderJournalSectionsModal() {
-      if (!state.journalSectionsModalOpen) return '';
-      const rootSections = state.journal.filter(e => e.isSection && !e.parentId && !e.deleted)
-        .sort(function(a,b){return (a.displayOrder||0)-(b.displayOrder||0);});
-
-      const renderModalRow = function(sec, depth) {
-        const pad = depth * 20;
-        const subCount = state.journal.filter(e => !e.isSection && e.sectionId === sec.id && !e.deleted).length;
-        const childSecs = state.journal.filter(e => e.isSection && e.parentId === sec.id && !e.deleted)
-          .sort(function(a,b){return (a.displayOrder||0)-(b.displayOrder||0);});
-        const typeLabel = sec.sectionType === 'site' ? 'Site Visit' : sec.sectionType === 'year' ? 'Year' : 'Folder';
-        let row = '<div class="sec-modal-row" style="padding-left:' + (8 + pad) + 'px">'
-          + '<div style="flex:1;min-width:0;">'
-            + '<div class="sec-modal-row-title">' + esc(sec.sectionTitle) + '</div>'
-            + '<div class="sec-modal-row-sub">' + typeLabel + (subCount > 0 ? ' · ' + subCount + ' entr' + (subCount===1?'y':'ies') : '') + '</div>'
-          + '</div>'
-          + '<div class="sec-modal-actions">'
-            + '<button class="sec-modal-btn" onclick="openEditJournalSectionForm(\'' + sec.id + '\')" title="Edit">'
-                + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit'
-              + '</button>'
-            + '<button class="sec-modal-btn" onclick="openNewJournalSectionForm(\'' + sec.id + '\')" title="Add sub">'
-                + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Sub'
-              + '</button>'
-            + '<button class="sec-modal-btn danger" onclick="confirmDeleteJournalSection(\'' + sec.id + '\')">'
-                + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>'
-              + '</button>'
-          + '</div>'
-          + '</div>';
-        for (const child of childSecs) row += renderModalRow(child, depth + 1);
-        return row;
-      };
-
-      let listHtml = rootSections.length === 0
-        ? '<div style="padding:24px 8px;text-align:center;color:var(--text-muted);font-size:14px;">No sections yet.<br><span style="font-size:12px;">Create your first section below.</span></div>'
-        : rootSections.map(function(s) { return renderModalRow(s, 0); }).join('');
-
-      const f = state.journalSectionsForm;
-      const isEdit = !!state.journalSectionsEditId;
-      const parentOptions = state.journal.filter(e => e.isSection && !e.deleted && e.id !== state.journalSectionsEditId)
-        .map(function(s) { return '<option value="' + s.id + '"' + (f && f.parentId === s.id ? ' selected' : '') + '>' + esc(s.sectionTitle) + '</option>'; }).join('');
-
-      const formHtml = f ? (
-        '<div class="sec-form">'
-        + '<div><label>Section Name</label><input id="jsf-title" type="text" value="' + esc(f.title) + '" placeholder="e.g. 2026, March, Ballinagar…" oninput="state.journalSectionsForm.title=this.value"></div>'
-        + '<div><label>Type</label><select id="jsf-type" onchange="state.journalSectionsForm.type=this.value;render()">'
-            + '<option value="year"' + (f.type==='year'?' selected':'') + '>Year</option>'
-            + '<option value="folder"' + (f.type==='folder'?' selected':'') + '>Folder / Month</option>'
-            + '<option value="site"' + (f.type==='site'?' selected':'') + '>Site Visit</option>'
-          + '</select></div>'
-        + (f.type === 'site'
-            ? '<div><label>Visit Date</label><input id="jsf-date" type="date" value="' + esc(f.date) + '" oninput="state.journalSectionsForm.date=this.value"></div>'
-              + '<div><label>Location</label><input id="jsf-loc" type="text" value="' + esc(f.location) + '" placeholder="Town or site code…" oninput="state.journalSectionsForm.location=this.value"></div>'
-            : '')
-        + (rootSections.length > 0 && !isEdit
-            ? '<div><label>Parent Section (optional)</label><select id="jsf-parent" onchange="state.journalSectionsForm.parentId=this.value||null"><option value="">— None (top level) —</option>' + parentOptions + '</select></div>'
-            : '')
-        + '<div class="sec-form-btns">'
-            + '<button class="sec-form-btn cancel" onclick="cancelJournalSectionForm()">Cancel</button>'
-            + '<button class="sec-form-btn primary" onclick="commitJournalSectionForm()">' + (isEdit ? 'Save' : 'Create') + '</button>'
-          + '</div>'
-        + '</div>'
-      ) : '';
-
-      const addBtnHtml = !f
-        ? '<button class="sec-manage-btn" onclick="openNewJournalSectionForm(null)" style="width:100%;margin-top:12px;justify-content:center;">'
-            + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Section'
-          + '</button>'
+    function _jPageIconSvg() {
+      return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    }
+    function _jTrashSvg() {
+      return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+    }
+    function _jSyncDot() {
+      const c = { pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.jSyncStatus];
+      return c ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + c + ';margin-left:6px;vertical-align:middle"></span>' : '';
+    }
+    // onClickTpl: string with __C__ replaced by each color, e.g. "state.jAddColor='__C__';render()"
+    function _jColorSwatches(selectedColor, onClickTpl) {
+      return '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">'
+        + J_COLORS.map(function(c) {
+            const isSelected = c === selectedColor;
+            const onclick = onClickTpl.replace(/__C__/g, c);
+            return '<div onclick="' + onclick + '" style="width:30px;height:30px;border-radius:50%;background:' + c + ';cursor:pointer;flex-shrink:0;'
+              + (isSelected ? 'box-shadow:0 0 0 3px var(--bg-card),0 0 0 5px ' + c + ';transform:scale(1.15);' : 'opacity:0.55;')
+              + 'transition:all 0.15s;"></div>';
+          }).join('')
+      + '</div>';
+    }
+    function _jAddSheet() {
+      if (!state.jAddMode) return '';
+      const labels = { notebook: 'Add Notebook', section: 'Add Section', page: 'Add Page' };
+      const ph = { notebook: 'e.g. 2026, Work, Personal…', section: 'e.g. April, Kilbeggan…', page: 'e.g. Kilbeggan (KBNB) Site Visit…' };
+      const colorRow = state.jAddMode === 'section'
+        ? '<div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Colour</div>'
+          + _jColorSwatches(state.jAddColor, "state.jAddColor='__C__';render()")
         : '';
-
-      return '<div class="sec-modal-overlay" onclick="if(event.target===this)closeJournalSectionsModal()">'
-        + '<div class="sec-modal">'
-          + '<div class="sec-modal-header"><span class="sec-modal-title">Journal Sections</span>'
-              + '<button onclick="closeJournalSectionsModal()" style="background:none;border:none;font-size:22px;color:var(--text-muted);cursor:pointer;line-height:1;padding:8px;margin:-8px">×</button></div>'
-          + '<div class="sec-modal-body">' + listHtml + formHtml + addBtnHtml + '</div>'
+      return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCancelAdd()">'
+        + '<div class="j-sheet">'
+          + '<div class="j-sheet-title">' + (labels[state.jAddMode] || 'Add') + '</div>'
+          + '<input id="j-add-input" class="j-sheet-input" type="text" value="' + esc(state.jAddTitle) + '" placeholder="' + (ph[state.jAddMode]||'') + '" '
+              + 'oninput="state.jAddTitle=this.value" onkeydown="if(event.key===\'Enter\')jCommitAdd()">'
+          + colorRow
+          + '<div class="j-sheet-btns">'
+              + '<button class="j-sheet-btn cancel" onclick="jCancelAdd()">Cancel</button>'
+              + '<button class="j-sheet-btn primary" onclick="jCommitAdd()">Add</button>'
+            + '</div>'
+        + '</div>'
+      + '</div>';
+    }
+    function _jColorPickSheet() {
+      if (!state.jColorPickId) return '';
+      return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseColorPick()">'
+        + '<div class="j-sheet">'
+          + '<div class="j-sheet-title">Choose Colour</div>'
+          + _jColorSwatches(
+              (state.jSections.find(function(s){return s.id===state.jColorPickId;})||{}).color || '',
+              "jSetSectionColor('" + state.jColorPickId + "','__C__')"
+            )
+          + '<div class="j-sheet-btns">'
+              + '<button class="j-sheet-btn cancel" style="flex:none;width:100%" onclick="jCloseColorPick()">Cancel</button>'
+            + '</div>'
+        + '</div>'
+      + '</div>';
+    }
+    function _jRenameSheet() {
+      if (!state.jEditId) return '';
+      return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCancelRename()">'
+        + '<div class="j-sheet">'
+          + '<div class="j-sheet-title">Rename</div>'
+          + '<input id="j-rename-input" class="j-sheet-input" type="text" value="' + esc(state.jRenameTitle) + '" '
+              + 'oninput="state.jRenameTitle=this.value" onkeydown="if(event.key===\'Enter\')jCommitRename()">'
+          + '<div class="j-sheet-btns">'
+              + '<button class="j-sheet-btn cancel" onclick="jCancelRename()">Cancel</button>'
+              + '<button class="j-sheet-btn primary" onclick="jCommitRename()">Save</button>'
+            + '</div>'
         + '</div>'
       + '</div>';
     }
 
-    function renderJournalSectionNode(node, depth) {
-      depth = depth || 0;
-      const isCollapsed = !!state.journalCollapsed[node.id];
-      const noteCount = _sectionNoteCount(node, null);
-      const isSite = node.sectionType === 'site';
-      const isYear = node.sectionType === 'year';
-
-      const chevronSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
-      const iconSvg = isSite
-        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>'
-        : isYear
-          ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
-          : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
-
-      let siteMeta = '';
-      if (isSite) {
-        const parts = [];
-        if (node.date) parts.push(formatDateShort(node.date));
-        if (node.location) parts.push(node.location.replace(/\s*\([^)]+\)\s*$/, '').trim());
-        if (parts.length) siteMeta = '<div class="sec-site-meta">' + parts.join(' · ') + '</div>';
-      }
-
-      const countBadge = noteCount > 0 ? '<span class="sec-count">' + noteCount + '</span>' : '';
-      const titleCls = 'sec-title' + (isYear ? ' sec-title-year' : '');
-
-      const header = '<div class="sec-header' + (isSite ? ' sec-header-site' : '') + '" onclick="toggleJournalSectionCollapsed(\'' + node.id + '\')">'
-        + '<span class="sec-chevron' + (isCollapsed ? '' : ' open') + '">' + chevronSvg + '</span>'
-        + '<span style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">'
-            + '<span style="color:var(--text-muted);flex-shrink:0;">' + iconSvg + '</span>'
-            + '<span class="' + titleCls + '">' + esc(node.sectionTitle) + '</span>'
-          + '</span>'
-        + siteMeta
-        + countBadge
-        + '<button class="sec-add-btn" onclick="event.stopPropagation();addJournalEntry(\'' + node.id + '\')" title="Add entry">'
-            + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
-          + '</button>'
+    function renderJNotebooks() {
+      const edit = state.jEditMode;
+      const grip = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.35"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>';
+      const _nbRowIcon = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+      const nbs = _jSortedItems('notebook');
+      const rows = nbs.map(function(nb) {
+        const secs = state.jSections.filter(function(s){ return s.notebookId === nb.id; });
+        const pgs  = state.jPages.filter(function(p){ return secs.some(function(s){ return s.id === p.sectionId; }) && !p.deleted; });
+        const meta = secs.length + ' section' + (secs.length===1?'':'s') + ' \xb7 ' + pgs.length + ' page' + (pgs.length===1?'':'s');
+        const dragAttrs = edit
+          ? ' data-jid="' + nb.id + '"'
+          : ' onclick="navJournal(\'sections\',{notebookId:\'' + nb.id + '\'})"'
+              + ' ontouchstart="jRowPressStart(event,\'notebook\')" ontouchend="jRowPressEnd()" ontouchmove="jRowPressMove(event)"'
+              + ' oncontextmenu="event.preventDefault()"'
+              + ' onmousedown="jRowPressStart(event,\'notebook\')" onmouseup="jRowPressEnd()" onmouseleave="jRowPressEnd()"';
+        return '<div class="j-nb-row' + (edit ? ' j-edit-row' : '') + '"' + dragAttrs + '>'
+          + (edit ? '<div class="j-drag-handle" onmousedown="jMouseDragStart(event,\'notebook\',\'' + nb.id + '\')" ontouchstart="jTouchDragStart(event,\'notebook\',\'' + nb.id + '\')">' + grip + '</div>' : '')
+          + '<div class="j-nb-icon" style="cursor:pointer" title="Tap to rename" onclick="event.stopPropagation();jOpenRename(\'' + nb.id + '\',\'' + esc(nb.title).replace(/'/g,'\\\'') + '\')">' + _nbRowIcon + '</div>'
+          + '<div class="j-nb-info">'
+            + '<div class="j-nb-name">' + esc(nb.title) + '</div>'
+            + '<div class="j-nb-meta">' + esc(meta) + '</div>'
+          + '</div>'
+          + (edit
+            ? '<button class="j-del-btn" onclick="event.stopPropagation();jDeleteNotebook(\'' + nb.id + '\')">' + _jTrashSvg() + '</button>'
+            : '<div class="j-nb-chevron">' + _jChevronSvg() + '</div>')
         + '</div>';
+      }).join('');
 
-      let childHtml = '';
-      for (const child of node.children) childHtml += renderJournalSectionNode(child, depth + 1);
-      for (const e of node.notes) childHtml += renderJournalEntryCard(e);
+      const empty = nbs.length === 0
+        ? '<div class="j-empty">No notebooks yet.<br><span style="font-size:12px">Tap <strong>+ Add Notebook</strong> to start.</span></div>'
+        : '';
 
-      const indentStyle = depth > 0 ? ' class="sec-indent"' : '';
-      const childrenHtml = isCollapsed ? '' : '<div' + indentStyle + '>' + childHtml + '</div>';
-      return header + childrenHtml;
+      const _nbIconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+      return '<div class="j-screen">'
+        + '<div class="j-top-bar" style="display:flex;align-items:center;justify-content:space-between;">'
+            + '<div class="j-top-title" style="display:flex;align-items:center;gap:8px;">' + _nbIconSvg + 'Notebooks' + _jSyncDot() + '</div>'
+            + (edit ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>' : '')
+          + '</div>'
+        + (rows || empty)
+        + (edit ? '' : '<button class="j-fab" onclick="jOpenAdd(\'notebook\')">'
+            + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+            + ' Add Notebook'
+          + '</button>')
+        + _jAddSheet()
+        + _jRenameSheet()
+      + '</div>';
+    }
+
+    function renderJSections() {
+      const edit = state.jEditMode;
+      const grip = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.35"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>';
+      const nb = state.jNotebooks.find(function(n){ return n.id === state.jNotebookId; });
+      const nbTitle = nb ? nb.title : 'Notebook';
+      const secs = _jSortedItems('section');
+
+      const rows = secs.map(function(sec) {
+        const pgCount = state.jPages.filter(function(p){ return p.sectionId === sec.id && !p.deleted; }).length;
+        const folderSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + sec.color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+        const dragAttrs = edit
+          ? ' data-jid="' + sec.id + '"'
+          : ' onclick="navJournal(\'pages\',{sectionId:\'' + sec.id + '\'})"'
+              + ' ontouchstart="jRowPressStart(event,\'section\')" ontouchend="jRowPressEnd()" ontouchmove="jRowPressMove(event)"'
+              + ' oncontextmenu="event.preventDefault()"'
+              + ' onmousedown="jRowPressStart(event,\'section\')" onmouseup="jRowPressEnd()" onmouseleave="jRowPressEnd()"';
+        return '<div class="j-sec-row' + (edit ? ' j-edit-row' : '') + '"' + dragAttrs + '>'
+          + (edit ? '<div class="j-drag-handle" onmousedown="jMouseDragStart(event,\'section\',\'' + sec.id + '\')" ontouchstart="jTouchDragStart(event,\'section\',\'' + sec.id + '\')">' + grip + '</div>' : '')
+          + '<div class="j-sec-icon" style="background:' + sec.color + '22;cursor:pointer" title="Tap to change colour" onclick="event.stopPropagation();jOpenColorPick(\'' + sec.id + '\')">' + folderSvg + '</div>'
+          + '<div class="j-sec-info">'
+            + '<div class="j-sec-name">' + esc(sec.title) + '</div>'
+            + '<div class="j-sec-meta">' + pgCount + ' page' + (pgCount===1?'':'s') + '</div>'
+          + '</div>'
+          + (edit
+            ? '<button class="j-del-btn" onclick="event.stopPropagation();jDeleteSection(\'' + sec.id + '\')">' + _jTrashSvg() + '</button>'
+            : '<div class="j-sec-chevron">' + _jChevronSvg() + '</div>')
+        + '</div>';
+      }).join('');
+
+      const empty = secs.length === 0
+        ? '<div class="j-empty">No sections yet.<br><span style="font-size:12px">Tap <strong>+ Add Section</strong> to create one.</span></div>'
+        : '';
+
+      const backSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+      const _secHeaderIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.55"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+      return '<div class="j-screen">'
+        + '<div class="j-sub-header" style="display:flex;align-items:center;justify-content:space-between;">'
+            + '<div style="display:flex;align-items:center;gap:0;">'
+              + '<button class="j-back-btn" onclick="navJBack()">' + backSvg + '</button>'
+              + '<div class="j-sub-title" style="display:flex;align-items:center;gap:6px;">' + _secHeaderIcon + esc(nbTitle) + '</div>'
+            + '</div>'
+            + (edit ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>' : '')
+          + '</div>'
+        + (rows || empty)
+        + (edit ? '' : '<button class="j-fab" onclick="jOpenAdd(\'section\')">'
+            + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+            + ' Add Section'
+          + '</button>')
+        + _jAddSheet()
+        + _jRenameSheet()
+        + _jColorPickSheet()
+      + '</div>';
+    }
+
+    function renderJPages() {
+      const edit = state.jEditMode;
+      const grip = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.35"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg>';
+      const sec = state.jSections.find(function(s){ return s.id === state.jSectionId; });
+      const secTitle = sec ? sec.title : 'Section';
+      const secColor = sec ? sec.color : 'var(--accent)';
+      const pages = _jSortedItems('page');
+
+      const rows = pages.map(function(pg) {
+        const dragAttrs = edit
+          ? ' data-jid="' + pg.id + '"'
+          : ' onclick="jOpenPage(\'' + pg.id + '\')"'
+              + ' ontouchstart="jRowPressStart(event,\'page\')" ontouchend="jRowPressEnd()" ontouchmove="jRowPressMove(event)"'
+              + ' oncontextmenu="event.preventDefault()"'
+              + ' onmousedown="jRowPressStart(event,\'page\')" onmouseup="jRowPressEnd()" onmouseleave="jRowPressEnd()"';
+        return '<div class="j-pg-row' + (edit ? ' j-edit-row' : '') + '"' + dragAttrs + '>'
+          + (edit ? '<div class="j-drag-handle" onmousedown="jMouseDragStart(event,\'page\',\'' + pg.id + '\')" ontouchstart="jTouchDragStart(event,\'page\',\'' + pg.id + '\')">' + grip + '</div>' : '')
+          + '<div class="j-pg-icon">' + _jPageIconSvg() + '</div>'
+          + '<div class="j-pg-info">'
+            + '<div class="j-pg-title">' + esc(pg.title || 'Untitled') + '</div>'
+          + '</div>'
+          + (edit
+            ? '<button class="j-del-btn" onclick="event.stopPropagation();jDeletePage(\'' + pg.id + '\')">' + _jTrashSvg() + '</button>'
+            : '')
+        + '</div>';
+      }).join('');
+
+      const empty = pages.length === 0
+        ? '<div class="j-empty">No pages yet.<br><span style="font-size:12px">Tap <strong>+ Add Page</strong> to create one.</span></div>'
+        : '';
+
+      const backSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+      const _pgHeaderIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="' + secColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+      return '<div class="j-screen">'
+        + '<div class="j-sub-header" style="border-left:4px solid ' + secColor + ';padding-left:12px;display:flex;align-items:center;justify-content:space-between;">'
+            + '<div style="display:flex;align-items:center;gap:0;">'
+              + '<button class="j-back-btn" onclick="navJBack()">' + backSvg + '</button>'
+              + '<div class="j-sub-title" style="display:flex;align-items:center;gap:6px;">' + _pgHeaderIcon + esc(secTitle) + '</div>'
+            + '</div>'
+            + (edit ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>' : '')
+          + '</div>'
+        + (rows || empty)
+        + (edit ? '' : '<button class="j-fab" onclick="jOpenAdd(\'page\')">'
+            + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+            + ' Add Page'
+          + '</button>')
+        + _jAddSheet()
+        + _jRenameSheet()
+      + '</div>';
     }
 
     function renderJournalView() {
-      const q = (state.journalSearch || '').trim().toLowerCase();
-      const allEntries = state.journal.filter(e => !e.isSection && !e.deleted);
-      const hasSections = state.journal.some(e => e.isSection && !e.deleted);
-
-      // Build tree
-      const tree = buildNoteTree(state.journal);
-
-      // Search mode: flat filtered list
-      const searchResults = q
-        ? allEntries.filter(function(e) {
-            const hay = [e.description||'', e.noteContent ? stripHtml(e.noteContent) : '', e.location||''].join(' ').toLowerCase();
-            return hay.includes(q);
-          })
-        : null;
-
-      // Section header render for tree mode
-      const syncDot = state.journalSyncStatus === 'pending'
-        ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--priority-medium);margin-left:4px;vertical-align:middle"></span>'
-        : state.journalSyncStatus === 'error'
-          ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--priority-high);margin-left:4px;vertical-align:middle"></span>'
-          : '';
-
-      const searchBar = '<div style="padding:10px 16px 4px;position:relative;">'
-        + '<div style="position:relative;">'
-          + '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
-          + '<input id="journal-search" type="search" value="' + esc(q) + '" placeholder="Search journal…" oninput="state.journalSearch=this.value;render()" '
-              + 'style="width:100%;box-sizing:border-box;padding:9px 34px 9px 34px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;">'
-          + (q ? '<button onclick="state.journalSearch=\'\';render()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px;line-height:1">×</button>' : '')
-        + '</div>'
-        + '</div>';
-
-      const topBar = '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 4px;">'
-        + '<div style="font-size:17px;font-weight:800;color:var(--text-primary);">Field Journal' + syncDot + '</div>'
-        + '<button class="sec-manage-btn" onclick="openJournalSectionsModal()">'
-            + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Sections'
-          + '</button>'
-        + '</div>';
-
-      // Add entry card (to unsorted)
-      const addCard = '<div class="add-note-dashed" onclick="addJournalEntry(null)" style="margin:8px 16px 4px;">'
-        + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
-        + 'New Entry'
-        + '</div>';
-
-      let mainHtml = '';
-
-      if (searchResults) {
-        // Search mode: flat
-        if (searchResults.length === 0) {
-          mainHtml = '<div class="notes-empty" style="margin-top:32px">No entries match "<strong>' + esc(q) + '</strong>"</div>';
-        } else {
-          mainHtml = searchResults.map(function(e) { return renderJournalEntryCard(e); }).join('');
-        }
-      } else if (hasSections) {
-        // Tree mode
-        let treeHtml = '';
-        for (const root of tree.roots) treeHtml += renderJournalSectionNode(root, 0);
-        if (tree.unsectioned.length > 0) {
-          if (tree.roots.length > 0) treeHtml += '<div class="notes-section-label" style="margin-top:8px;">Unsorted</div>';
-          treeHtml += tree.unsectioned.map(function(e) { return renderJournalEntryCard(e); }).join('');
-        }
-        mainHtml = treeHtml || '<div class="notes-empty" style="margin-top:32px">No entries yet. Create sections above or tap "New Entry".</div>';
-      } else {
-        // No sections: flat list of all entries
-        if (allEntries.length === 0) {
-          mainHtml = '<div class="notes-empty" style="margin-top:24px;padding:0 16px">No journal entries yet.<br><span style="font-size:12px;color:var(--text-muted)">Tap "New Entry" or use Sections to organise by site visit.</span></div>';
-        } else {
-          mainHtml = allEntries.map(function(e) { return renderJournalEntryCard(e); }).join('');
-        }
-      }
-
-      const hint = '<div style="margin-top:12px;margin-bottom:20px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap an entry to open the editor · Use Sections to organise by site</div>';
-
-      return '<div style="min-height:100vh;padding-bottom:80px">'
-        + topBar
-        + searchBar
-        + addCard
-        + mainHtml
-        + hint
-        + renderJournalSectionsModal()
-        + '</div>';
+      if (state.jScreen === 'sections') return renderJSections();
+      if (state.jScreen === 'pages')    return renderJPages();
+      return renderJNotebooks();
     }
 
     // ---- Notes search ----
@@ -18310,10 +18660,12 @@
       saveUiState(); // persist so refresh remembers the panel state
     }
 
-    let _fnFsSource = 'notes'; // 'notes' | 'journal'
+    let _fnFsSource = 'notes'; // 'notes' | 'journal' | 'jpage'
     function openFieldNoteFullscreen(noteId, source) {
       _fnFsSource = source || 'notes';
-      const arr = _fnFsSource === 'journal' ? state.journal : state.notes;
+      const arr = _fnFsSource === 'jpage' ? state.jPages
+                : _fnFsSource === 'journal' ? state.journal
+                : state.notes;
       const note = arr.find(n => n.id === noteId);
       if (!note) return;
       _fnFsNoteId = noteId;
@@ -18323,11 +18675,20 @@
       // Reuse the existing fullscreen editor modal
       const titleEl = document.getElementById('note-fs-title');
       const subEl = document.getElementById('note-fs-subtitle');
-      if (titleEl) titleEl.textContent = note.description?.slice(0, 50) || 'Edit Note';
-      if (subEl) {
-        const loc = note.location?.trim();
-        subEl.innerHTML = loc ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.6)" style="display:inline-block;vertical-align:-1px;margin-right:3px;flex-shrink:0;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${loc}` : '';
-        subEl.style.display = loc ? 'block' : 'none';
+      if (_fnFsSource === 'jpage') {
+        // Journal page: show title and date
+        if (titleEl) titleEl.textContent = note.title?.slice(0, 60) || 'Edit Page';
+        if (subEl) {
+          subEl.textContent = note.date ? formatDateShort(note.date) : '';
+          subEl.style.display = note.date ? 'block' : 'none';
+        }
+      } else {
+        if (titleEl) titleEl.textContent = note.description?.slice(0, 50) || 'Edit Note';
+        if (subEl) {
+          const loc = note.location?.trim();
+          subEl.innerHTML = loc ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="rgba(255,255,255,0.6)" style="display:inline-block;vertical-align:-1px;margin-right:3px;flex-shrink:0;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${loc}` : '';
+          subEl.style.display = loc ? 'block' : 'none';
+        }
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
       setTimeout(async () => {
@@ -18339,12 +18700,16 @@
         window._tiptapNoteEdited = false; // track whether user actually changed anything
         _tiptapOnUpdate = (editor) => {
           const html = _ttGetHTML();
-          const _fsArr = _fnFsSource === 'journal' ? state.journal : state.notes;
+          const _fsArr = _fnFsSource === 'jpage' ? state.jPages
+                       : _fnFsSource === 'journal' ? state.journal
+                       : state.notes;
           const n = _fsArr.find(x => x.id === noteId);
           if (n) {
             n.noteContent = html; n.updatedAt = Date.now();
             _tiptapLastSaveAt = Date.now(); _tiptapLastSavedNoteId = noteId; window._tiptapNoteEdited = true;
-            if (_fnFsSource === 'journal') scheduleJournalSave(); else scheduleNotesSave();
+            if (_fnFsSource === 'jpage') scheduleJSave();
+            else if (_fnFsSource === 'journal') scheduleJournalSave();
+            else scheduleNotesSave();
           }
         };
         _tiptapEditor.commands.focus();
@@ -24199,7 +24564,12 @@ Rules:
 
       try {
         const lastView = localStorage.getItem('lastView');
-        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai') state.view = lastView;
+        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal') state.view = lastView;
+        if (lastView === 'journal') {
+          const ljScreen = localStorage.getItem('jScreen'); if (ljScreen) state.jScreen = ljScreen;
+          const ljNbId   = localStorage.getItem('jNotebookId'); if (ljNbId)   state.jNotebookId = ljNbId;
+          const ljSecId  = localStorage.getItem('jSectionId');  if (ljSecId)  state.jSectionId  = ljSecId;
+        }
       } catch (e) { console.warn('[Rian] LocalStorage blocked:', e); }
 
       // Show login immediately while waiting
@@ -24296,6 +24666,7 @@ Rules:
         } catch (e) { console.warn('[Rian] Recovery check failed:', e); }
 
         if (state.view === 'notes') loadNotes();
+        else if (state.view === 'journal') loadJournal();
         else if (state.view === 'routines') loadRoutines();
         else if (state.view === 'callouts') loadCallouts();
 
@@ -26614,11 +26985,16 @@ QUESTION: ${query}`;
         // Only save if the user actually changed something — never overwrite with stale content
         if (_tiptapEditor && window._tiptapNoteEdited) {
           const html = _ttGetHTML();
-          const n = state.notes.find(x => x.id === _fnFsNoteId);
+          const _closeArr = _fnFsSource === 'jpage' ? state.jPages
+                          : _fnFsSource === 'journal' ? state.journal
+                          : state.notes;
+          const n = _closeArr.find(x => x.id === _fnFsNoteId);
           if (n) { n.noteContent = html; n.updatedAt = Date.now(); }
           _tiptapLastSavedNoteId = _fnFsNoteId;
           _tiptapLastSaveAt = Date.now();
-          scheduleNotesSave();
+          if (_fnFsSource === 'jpage') scheduleJSave();
+          else if (_fnFsSource === 'journal') scheduleJournalSave();
+          else scheduleNotesSave();
         }
         window._tiptapNoteEdited = false;
         _fnFsNoteId = null;
