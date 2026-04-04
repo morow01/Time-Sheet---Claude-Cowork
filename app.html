@@ -11239,7 +11239,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.36';
+    const VERSION = '5.1.37';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -17079,9 +17079,9 @@
       document.querySelectorAll('.j-placeholder').forEach(function(el){ el.remove(); });
       document.querySelectorAll('.j-drag-ghost').forEach(function(el){ el.remove(); });
       if (_jPointerDrag) {
-        _jPointerDrag.container.removeEventListener('pointermove',  _jOnPointerMove);
-        _jPointerDrag.container.removeEventListener('pointerup',    _jOnPointerUp);
-        _jPointerDrag.container.removeEventListener('pointercancel',_jOnPointerUp);
+        document.removeEventListener('pointermove',  _jOnPointerMove);
+        document.removeEventListener('pointerup',    _jOnPointerUp);
+        document.removeEventListener('pointercancel',_jOnPointerUp);
         if (_jPointerDrag.rowEl) _jPointerDrag.rowEl.remove();
         _jPointerDrag = null;
       }
@@ -17099,8 +17099,9 @@
     }
 
     // ── Unified Pointer Events drag (mouse + touch + pen) ──
-    // setPointerCapture guarantees pointermove/pointerup go to the container
-    // even if the row element is hidden — no touchcancel risk, no scroll interference.
+    // Listeners go on document (not container) so hiding the source row
+    // never drops events. No setPointerCapture — that was blocking mobile
+    // first-drag and freezing CDP event dispatch.
     function jPointerDragStart(e, type, id) {
       if (e.target.closest('button')) return;
       if (_jDragBusy()) return;
@@ -17122,27 +17123,25 @@
       ghost.classList.add('j-drag-ghost');
       ghost.style.cssText = 'position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rowW+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;'+(e.pointerType==='mouse'?'cursor:grabbing;':'');
       document.body.appendChild(ghost);
-      // Capture: all subsequent pointer events for this pointer go to container
-      try { container.setPointerCapture(e.pointerId); } catch(ex) {}
-      _jPointerDrag = {type:type, id:id, rowEl:rowEl, ghost:ghost, ph:ph, container:container, origRects:origRects, startY:e.clientY, rectTop:rect.top, hasMoved:false};
-      container.addEventListener('pointermove', _jOnPointerMove);
-      container.addEventListener('pointerup',   _jOnPointerUp, {once:true});
-      container.addEventListener('pointercancel',_jOnPointerUp, {once:true});
+      _jPointerDrag = {type:type, id:id, pointerId:e.pointerId, rowEl:rowEl, ghost:ghost, ph:ph, container:container, origRects:origRects, startY:e.clientY, rectTop:rect.top, hasMoved:false};
+      document.addEventListener('pointermove',  _jOnPointerMove);
+      document.addEventListener('pointerup',    _jOnPointerUp);
+      document.addEventListener('pointercancel',_jOnPointerUp);
     }
     function _jOnPointerMove(e) {
-      if (!_jPointerDrag) return;
+      if (!_jPointerDrag || e.pointerId !== _jPointerDrag.pointerId) return;
       e.preventDefault();
       _jPointerDrag.hasMoved = true;
       var dy = e.clientY - _jPointerDrag.startY;
       _jPointerDrag.ghost.style.top = (_jPointerDrag.rectTop + dy) + 'px';
       _jMovePlaceholder(_jPointerDrag.ph, _jPointerDrag.container, e.clientY, _jPointerDrag.origRects);
     }
-    function _jOnPointerUp() {
-      if (!_jPointerDrag) return;
+    function _jOnPointerUp(e) {
+      if (!_jPointerDrag || e.pointerId !== _jPointerDrag.pointerId) return;
       var d = _jPointerDrag; _jPointerDrag = null;
-      d.container.removeEventListener('pointermove',  _jOnPointerMove);
-      d.container.removeEventListener('pointerup',    _jOnPointerUp);
-      d.container.removeEventListener('pointercancel',_jOnPointerUp);
+      document.removeEventListener('pointermove',  _jOnPointerMove);
+      document.removeEventListener('pointerup',    _jOnPointerUp);
+      document.removeEventListener('pointercancel',_jOnPointerUp);
       var beforeId = d.hasMoved ? _jBeforeId(d.ph) : null;
       d.ghost.remove(); d.ph.remove();
       if (d.rowEl) d.rowEl.remove();
