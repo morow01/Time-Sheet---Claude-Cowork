@@ -11237,7 +11237,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.19';
+    const VERSION = '5.1.20';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -17049,11 +17049,21 @@
       return null;
     }
 
+    // ── Shared: clean up any stale drag artifacts ──
+    function _jDragCleanup() {
+      document.querySelectorAll('.j-placeholder').forEach(function(el){ el.remove(); });
+      document.querySelectorAll('.j-drag-ghost').forEach(function(el){ el.remove(); });
+      if (_jMouseDrag) { document.removeEventListener('mousemove',_jMouseMove); _jMouseDrag=null; }
+      if (_jTouchDrag) { document.removeEventListener('touchmove',_jTouchMove); _jTouchDrag=null; }
+    }
+
     // ── Mouse drag (desktop) ──
     let _jMouseDrag = null;
     function jMouseDragStart(e, type, id) {
       if (e.button!==0) return;
+      if (e.target.closest('button')) return; // don't drag from delete btn
       e.preventDefault(); e.stopPropagation();
+      _jDragCleanup();
       var rowEl=document.querySelector('[data-jid="'+id+'"]');
       if (!rowEl) return;
       var rect=rowEl.getBoundingClientRect();
@@ -17064,6 +17074,7 @@
       var origRects=_jSnapshotRects(container); // snapshot AFTER removal, BEFORE any moves
       var ghost=rowEl.cloneNode(true);
       ghost.removeAttribute('data-jid');
+      ghost.className='j-drag-ghost';
       ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;cursor:grabbing;';
       document.body.appendChild(ghost);
       _jMouseDrag={type:type,id:id,rowEl:rowEl,ghost:ghost,ph:ph,container:container,origRects:origRects,startY:e.clientY,rectTop:rect.top};
@@ -17087,7 +17098,9 @@
 
     // ── Touch drag (mobile) ──
     function jTouchDragStart(e, type, id) {
+      if (e.target.closest('button')) return; // don't drag from delete btn
       e.preventDefault(); e.stopPropagation();
+      _jDragCleanup();
       var touch=e.touches[0];
       var rowEl=document.querySelector('[data-jid="'+id+'"]');
       if (!rowEl) return;
@@ -17099,6 +17112,7 @@
       var origRects=_jSnapshotRects(container);
       var ghost=rowEl.cloneNode(true);
       ghost.removeAttribute('data-jid');
+      ghost.className='j-drag-ghost';
       ghost.style.cssText='position:fixed;top:'+rect.top+'px;left:'+rect.left+'px;width:'+rect.width+'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;';
       document.body.appendChild(ghost);
       _jTouchDrag={type:type,id:id,rowEl:rowEl,ghost:ghost,ph:ph,container:container,origRects:origRects,startY:touch.clientY,rectTop:rect.top};
@@ -17893,13 +17907,13 @@
         const pgs  = state.jPages.filter(function(p){ return secs.some(function(s){ return s.id === p.sectionId; }) && !p.deleted; });
         const meta = secs.length + ' section' + (secs.length===1?'':'s') + ' \xb7 ' + pgs.length + ' page' + (pgs.length===1?'':'s');
         const dragAttrs = edit
-          ? ' data-jid="' + nb.id + '"'
+          ? ' data-jid="' + nb.id + '" style="cursor:grab;touch-action:none" onmousedown="jMouseDragStart(event,\'notebook\',\'' + nb.id + '\')" ontouchstart="jTouchDragStart(event,\'notebook\',\'' + nb.id + '\')"'
           : ' onclick="navJournal(\'sections\',{notebookId:\'' + nb.id + '\'})"'
               + ' ontouchstart="jRowPressStart(event,\'notebook\')" ontouchend="jRowPressEnd()" ontouchmove="jRowPressMove(event)"'
               + ' oncontextmenu="event.preventDefault()"'
               + ' onmousedown="jRowPressStart(event,\'notebook\')" onmouseup="jRowPressEnd()" onmouseleave="jRowPressEnd()"';
         return '<div class="j-nb-row' + (edit ? ' j-edit-row' : '') + '"' + dragAttrs + '>'
-          + (edit ? '<div class="j-drag-handle" onmousedown="jMouseDragStart(event,\'notebook\',\'' + nb.id + '\')" ontouchstart="jTouchDragStart(event,\'notebook\',\'' + nb.id + '\')">' + grip + '</div>' : '')
+          + (edit ? '<div class="j-drag-handle">' + grip + '</div>' : '')
           + '<div class="j-nb-icon" style="cursor:pointer" title="Tap to rename" onclick="event.stopPropagation();jOpenRename(\'' + nb.id + '\',\'' + esc(nb.title).replace(/'/g,'\\\'') + '\')">' + _nbRowIcon + '</div>'
           + '<div class="j-nb-info">'
             + '<div class="j-nb-name">' + esc(nb.title) + '</div>'
@@ -17942,13 +17956,13 @@
         const pgCount = state.jPages.filter(function(p){ return p.sectionId === sec.id && !p.deleted; }).length;
         const folderSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + sec.color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
         const dragAttrs = edit
-          ? ' data-jid="' + sec.id + '"'
+          ? ' data-jid="' + sec.id + '" style="cursor:grab;touch-action:none" onmousedown="jMouseDragStart(event,\'section\',\'' + sec.id + '\')" ontouchstart="jTouchDragStart(event,\'section\',\'' + sec.id + '\')"'
           : ' onclick="navJournal(\'pages\',{sectionId:\'' + sec.id + '\'})"'
               + ' ontouchstart="jRowPressStart(event,\'section\')" ontouchend="jRowPressEnd()" ontouchmove="jRowPressMove(event)"'
               + ' oncontextmenu="event.preventDefault()"'
               + ' onmousedown="jRowPressStart(event,\'section\')" onmouseup="jRowPressEnd()" onmouseleave="jRowPressEnd()"';
         return '<div class="j-sec-row' + (edit ? ' j-edit-row' : '') + '"' + dragAttrs + '>'
-          + (edit ? '<div class="j-drag-handle" onmousedown="jMouseDragStart(event,\'section\',\'' + sec.id + '\')" ontouchstart="jTouchDragStart(event,\'section\',\'' + sec.id + '\')">' + grip + '</div>' : '')
+          + (edit ? '<div class="j-drag-handle">' + grip + '</div>' : '')
           + '<div class="j-sec-icon" style="background:' + sec.color + '22;cursor:pointer" title="Tap to change colour" onclick="event.stopPropagation();jOpenColorPick(\'' + sec.id + '\')">' + folderSvg + '</div>'
           + '<div class="j-sec-info">'
             + '<div class="j-sec-name">' + esc(sec.title) + '</div>'
@@ -17995,13 +18009,13 @@
 
       const rows = pages.map(function(pg) {
         const dragAttrs = edit
-          ? ' data-jid="' + pg.id + '"'
+          ? ' data-jid="' + pg.id + '" style="cursor:grab;touch-action:none" onmousedown="jMouseDragStart(event,\'page\',\'' + pg.id + '\')" ontouchstart="jTouchDragStart(event,\'page\',\'' + pg.id + '\')"'
           : ' onclick="jOpenPage(\'' + pg.id + '\')"'
               + ' ontouchstart="jRowPressStart(event,\'page\')" ontouchend="jRowPressEnd()" ontouchmove="jRowPressMove(event)"'
               + ' oncontextmenu="event.preventDefault()"'
               + ' onmousedown="jRowPressStart(event,\'page\')" onmouseup="jRowPressEnd()" onmouseleave="jRowPressEnd()"';
         return '<div class="j-pg-row' + (edit ? ' j-edit-row' : '') + '"' + dragAttrs + '>'
-          + (edit ? '<div class="j-drag-handle" onmousedown="jMouseDragStart(event,\'page\',\'' + pg.id + '\')" ontouchstart="jTouchDragStart(event,\'page\',\'' + pg.id + '\')">' + grip + '</div>' : '')
+          + (edit ? '<div class="j-drag-handle">' + grip + '</div>' : '')
           + '<div class="j-pg-icon">' + _jPageIconSvg() + '</div>'
           + '<div class="j-pg-info">'
             + '<div class="j-pg-title">' + esc(pg.title || 'Untitled') + '</div>'
