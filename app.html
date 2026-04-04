@@ -11270,7 +11270,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.41';
+    const VERSION = '5.1.42';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -11939,6 +11939,8 @@
       jSearchMode: false,       // journal search overlay active
       jSearchQuery: '',         // current search query
       jPageActionId: null,      // page id whose action sheet is open
+      jNbActionId: null,        // notebook id whose action sheet is open
+      jSecActionId: null,       // section id whose action sheet is open
       jDatePickId: null,        // page id being date-changed
       jDatePickVal: '',         // value in date picker input
       jCopyMovePgId: null,      // page id for copy/move
@@ -18012,7 +18014,7 @@
           + '</div>'
           + (edit
             ? '<button class="j-del-btn" onclick="event.stopPropagation();jDeleteNotebook(\'' + nb.id + '\')">' + _jTrashSvg() + '</button>'
-            : '<div class="j-nb-chevron">' + _jChevronSvg() + '</div>')
+            : '<button class="j-pg-more" onclick="event.stopPropagation();jOpenNbAction(\'' + nb.id + '\')" title="Notebook options">\u22ef</button>')
         + '</div>';
       }).join('');
 
@@ -18037,6 +18039,7 @@
           + '</button>')
         + _jAddSheet()
         + _jRenameSheet()
+        + _jNbActionSheet()
       + '</div>';
     }
 
@@ -18066,7 +18069,7 @@
           + '</div>'
           + (edit
             ? '<button class="j-del-btn" onclick="event.stopPropagation();jDeleteSection(\'' + sec.id + '\')">' + _jTrashSvg() + '</button>'
-            : '<div class="j-sec-chevron">' + _jChevronSvg() + '</div>')
+            : '<button class="j-pg-more" onclick="event.stopPropagation();jOpenSecAction(\'' + sec.id + '\')" title="Section options">\u22ef</button>')
         + '</div>';
       }).join('');
 
@@ -18094,6 +18097,7 @@
         + _jAddSheet()
         + _jRenameSheet()
         + _jColorPickSheet()
+        + _jSecActionSheet()
       + '</div>';
     }
 
@@ -18206,6 +18210,52 @@
           + '</div>'
           + '<div class="j-sheet-btns" style="margin-top:12px;">'
             + '<button class="j-sheet-btn cancel" style="flex:none;width:100%;" onclick="jClosePageAction()">Cancel</button>'
+          + '</div>'
+        + '</div>'
+      + '</div>';
+    }
+
+    // ── Notebook actions: rename ─────────────────────────────────────
+    function jOpenNbAction(nbId) { state.jNbActionId = nbId; _renderNow(); }
+    function jCloseNbAction() { state.jNbActionId = null; _renderNow(); }
+    function _jNbActionSheet() {
+      if (!state.jNbActionId) return '';
+      const nb = state.jNotebooks.find(function(n){ return n.id === state.jNbActionId; });
+      if (!nb) return '';
+      const id = nb.id;
+      const renameIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+      return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseNbAction()">'
+        + '<div class="j-sheet">'
+          + '<div class="j-sheet-title" style="font-size:15px;padding-bottom:0;">' + esc(nb.title || 'Untitled') + '</div>'
+          + '<div class="j-action-list">'
+            + '<button class="j-action-btn" onclick="state.jNbActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=' + JSON.stringify(nb.title||'') + ';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
+          + '</div>'
+          + '<div class="j-sheet-btns" style="margin-top:12px;">'
+            + '<button class="j-sheet-btn cancel" style="flex:none;width:100%;" onclick="jCloseNbAction()">Cancel</button>'
+          + '</div>'
+        + '</div>'
+      + '</div>';
+    }
+
+    // ── Section actions: rename, change colour ───────────────────────
+    function jOpenSecAction(secId) { state.jSecActionId = secId; _renderNow(); }
+    function jCloseSecAction() { state.jSecActionId = null; _renderNow(); }
+    function _jSecActionSheet() {
+      if (!state.jSecActionId) return '';
+      const sec = state.jSections.find(function(s){ return s.id === state.jSecActionId; });
+      if (!sec) return '';
+      const id = sec.id;
+      const renameIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+      const colorIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>';
+      return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseSecAction()">'
+        + '<div class="j-sheet">'
+          + '<div class="j-sheet-title" style="font-size:15px;padding-bottom:0;">' + esc(sec.title || 'Untitled') + '</div>'
+          + '<div class="j-action-list">'
+            + '<button class="j-action-btn" onclick="state.jSecActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=' + JSON.stringify(sec.title||'') + ';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
+            + '<button class="j-action-btn" onclick="state.jSecActionId=null;_renderNow();jOpenColorPick(\'' + id + '\')">' + colorIcon + 'Change Colour\u2026</button>'
+          + '</div>'
+          + '<div class="j-sheet-btns" style="margin-top:12px;">'
+            + '<button class="j-sheet-btn cancel" style="flex:none;width:100%;" onclick="jCloseSecAction()">Cancel</button>'
           + '</div>'
         + '</div>'
       + '</div>';
