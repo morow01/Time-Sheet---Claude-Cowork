@@ -11239,7 +11239,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.29';
+    const VERSION = '5.1.30';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -16811,6 +16811,7 @@
       if (!nbRef) { render(); return; }
 
       _jUnsubNb = nbRef.onSnapshot(snap => {
+        if (_jDragBusy()) return; // skip merge + render while dragging
         if (!snap.exists) { if (state.jNotebooks.length) fsSetJNotebooks(state.jNotebooks).catch(()=>{}); return; }
         const r = snap.data();
         if (r.notebooks?.length) {
@@ -16818,27 +16819,29 @@
           dbPut('notes', { id:'j_notebooks', userId, data:state.jNotebooks, updatedAt:r._updatedAt||Date.now() });
         }
         state.jSyncStatus = 'synced'; updateHeaderStatus();
-        if (state.view === 'journal' && !_jDragBusy()) render();
+        if (state.view === 'journal') render();
       }, () => { state.jSyncStatus = 'error'; updateHeaderStatus(); });
 
       _jUnsubSec = secRef.onSnapshot(snap => {
+        if (_jDragBusy()) return; // skip merge + render while dragging
         if (!snap.exists) { if (state.jSections.length) fsSetJSections(state.jSections).catch(()=>{}); return; }
         const r = snap.data();
         if (r.sections?.length) {
           state.jSections = _mergeArr(r.sections, state.jSections);
           dbPut('notes', { id:'j_sections', userId, data:state.jSections, updatedAt:r._updatedAt||Date.now() });
         }
-        if (state.view === 'journal' && !_jDragBusy()) render();
+        if (state.view === 'journal') render();
       }, () => {});
 
       _jUnsubPg = pgRef.onSnapshot(snap => {
+        if (_jDragBusy()) return; // skip merge + render while dragging
         if (!snap.exists) { if (state.jPages.length) fsSetJPages(state.jPages).catch(()=>{}); return; }
         const r = snap.data();
         if (r.pages?.length) {
           state.jPages = _mergeArr(r.pages, state.jPages);
           dbPut('notes', { id:'j_pages', userId, data:state.jPages, updatedAt:r._updatedAt||Date.now() });
         }
-        if (state.view === 'journal' && !_jDragBusy()) render();
+        if (state.view === 'journal') render();
       }, () => {});
 
       state.jSyncStatus = 'synced';
@@ -16965,6 +16968,9 @@
       _jLpTimer = setTimeout(function() {
         _jLpTimer = null;
         state.jEditMode = true;
+        // Set touch-action on parent BEFORE render so browser uses it for the very next touch
+        var _app = document.getElementById('app');
+        if (_app) _app.style.touchAction = 'none';
         if (navigator.vibrate) navigator.vibrate(40);
         render();
       }, 500);
@@ -16977,7 +16983,12 @@
       if (dx*dx + dy*dy > 64) jRowPressEnd(); // 8px threshold
     }
     function jRowPressEnd() { clearTimeout(_jLpTimer); _jLpTimer = null; }
-    function jExitEditMode() { state.jEditMode = false; render(); }
+    function jExitEditMode() {
+      state.jEditMode = false;
+      var _app = document.getElementById('app');
+      if (_app) _app.style.touchAction = '';
+      render();
+    }
 
     // ── Reorder ──
     function _jSortedItems(type) {
