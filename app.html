@@ -11496,7 +11496,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.60';
+    const VERSION = '5.1.61';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21339,6 +21339,13 @@
     async function _resolveConflict(id, choice) {
       const conflict = state.conflicts.find(c => c.id === id);
       if (!conflict) return;
+      // Test mode — never touch real data, just dismiss
+      if (id.startsWith('test_')) {
+        state.conflicts = state.conflicts.filter(c => c.id !== id);
+        document.getElementById('conflict-resolution-modal')?.remove();
+        showToast(choice === 'cloud' ? '⚠️ Test mode — no data changed.' : '✓ Test dismissed.');
+        render(); return;
+      }
       if (choice === 'cloud') {
         // Apply the remote version that was rejected
         try {
