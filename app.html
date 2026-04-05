@@ -2105,11 +2105,11 @@
     /* Resolution modal */
     .conflict-modal-overlay {
       position: fixed; inset: 0; background: rgba(15,28,46,0.5);
-      z-index: 200; display: flex; align-items: flex-end;
+      z-index: 200; display: flex; align-items: flex-end; justify-content: center;
     }
     .conflict-modal-sheet {
       background: var(--bg-card); border-radius: 18px 18px 0 0;
-      width: 100%; max-height: 88vh; overflow-y: auto;
+      width: 100%; max-width: 672px; max-height: 88vh; overflow-y: auto;
     }
     .conflict-modal-handle {
       width: 36px; height: 4px; background: var(--border);
@@ -8893,8 +8893,10 @@
     .bottom-nav {
       position: fixed;
       bottom: 0;
-      left: 0;
-      right: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 672px; /* matches max-w-2xl */
       height: 65px;
       background: var(--bg-card);
       backdrop-filter: blur(20px);
@@ -11388,7 +11390,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.52';
+    const VERSION = '5.1.53';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -13844,7 +13846,7 @@
                 <div class="menu-card">
                   ${state.conflicts.length > 0 ? `
                   <button class="menu-row" onclick="setView('conflicts');closeThemeMenu()" style="background:#FEF3DC">
-                    <span class="menu-row-icon" style="color:#D97706">⚠️</span>
+                    <span class="menu-row-icon" style="color:#D97706">${_cIcons.warning}</span>
                     <span class="menu-row-body"><span class="menu-row-label" style="color:#D97706">Sync Conflicts</span><span class="menu-row-sub">${state.conflicts.length} item${state.conflicts.length > 1 ? 's' : ''} need attention</span></span>
                     <span style="background:#DC2626;color:#fff;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:800;margin-right:4px">${state.conflicts.length}</span>
                     ${chev}
@@ -21196,6 +21198,27 @@
     // SYNC CONFLICT SYSTEM
     // ══════════════════════════════════════════════════════════════════════════
 
+    // Flat SVG icons for the conflict UI (stroke-based, matches Rian style)
+    const _cIcons = {
+      warning: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+      timesheet:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>`,
+      notes:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+      notebooks:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+      callouts: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.9 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.83 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+      routines: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="6" cy="9" r="1" fill="currentColor"/><circle cx="6" cy="13" r="1" fill="currentColor"/><circle cx="6" cy="17" r="1" fill="currentColor"/></svg>`,
+      tags:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
+      device:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+      cloud:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`,
+      check:    `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+      x:        `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+      cloudDown:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><polyline points="12 12 12 18"/><polyline points="9 16 12 19 15 16"/></svg>`,
+    };
+    // Map section name → icon SVG
+    function _cIcon(section) {
+      const map = { Timesheet:_cIcons.timesheet, Notes:_cIcons.notes, Notebooks:_cIcons.notebooks, Callouts:_cIcons.callouts, Routines:_cIcons.routines, 'Note Tags':_cIcons.tags };
+      return map[section] || _cIcons.notes;
+    }
+
     // Register a detected conflict. Deduplicates by id so repeated snapshots
     // don't create duplicate entries.
     function _registerConflict(conflict) {
@@ -21250,7 +21273,7 @@
       const n = state.conflicts.length;
       if (n === 0) return '';
       return `<div class="conflict-global-banner">
-        <span style="font-size:16px">⚠️</span>
+        <span style="color:#D97706;display:flex;align-items:center">${_cIcons.warning}</span>
         <span class="conflict-global-banner-text">${n} sync conflict${n > 1 ? 's' : ''} need attention</span>
         <button class="conflict-global-banner-btn" onclick="setView('conflicts')">View all</button>
       </div>`;
@@ -21260,21 +21283,21 @@
     function renderConflictsView() {
       const n = state.conflicts.length;
       const emptyHtml = `<div class="conflicts-empty">
-        <div class="conflicts-empty-icon">✅</div>
+        <div class="conflicts-empty-icon" style="color:#16A34A;display:flex;justify-content:center"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
         <div class="conflicts-empty-title">All synced</div>
         <div class="conflicts-empty-sub">No conflicts across any section.</div>
       </div>`;
 
       const rowsHtml = state.conflicts.map(c => `
         <div class="conflict-list-row" onclick="_openConflictModal('${esc(c.id)}')">
-          <span class="conflict-list-icon">${c.icon}</span>
+          <span class="conflict-list-icon" style="color:#D97706">${_cIcon(c.section)}</span>
           <div class="conflict-list-meta">
             <div class="conflict-list-section">${esc(c.section)}</div>
             <div class="conflict-list-desc">${esc(c.description)}</div>
             <div class="conflict-list-time">${_formatSnapTime(c.detectedAt).relative}</div>
           </div>
           <span class="conflict-list-badge">CONFLICT</span>
-          <span style="color:var(--text-muted);font-size:16px">›</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </div>`).join('');
 
       const sectionLabelHtml = n > 0 ? `<div style="font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);padding:14px 16px 6px;background:var(--bg-card-alt);border-bottom:1px solid var(--border)">Unresolved — ${n} item${n > 1 ? 's' : ''}</div>` : '';
@@ -21299,18 +21322,18 @@
       if (c.displayType === 'split') {
         versionsHtml = `<div class="conflict-split-grid">
           <div class="conflict-split-pane local">
-            <div class="conflict-split-label">Your version</div>
+            <div class="conflict-split-label" style="display:flex;align-items:center;gap:5px">${_cIcons.device} Your version</div>
             <div class="conflict-split-time">${esc(c.localMeta?.time || 'This device')}</div>
             <div class="conflict-split-content">${esc(c.localMeta?.content || '')}</div>
           </div>
           <div class="conflict-split-pane remote">
-            <div class="conflict-split-label">Cloud version</div>
+            <div class="conflict-split-label" style="display:flex;align-items:center;gap:5px">${_cIcons.cloud} Cloud version</div>
             <div class="conflict-split-time">${esc(c.remoteMeta?.time || 'Cloud')}</div>
             <div class="conflict-split-content">${esc(c.remoteMeta?.content || '')}</div>
           </div>
         </div>`;
       } else {
-        const makeCard = (label, cls, meta) => {
+        const makeCard = (iconHtml, label, cls, meta) => {
           const rows = (meta.rows || []).map(r => `
             <div class="conflict-data-row ${r.hi ? 'present' : 'missing'}">
               <span class="conflict-data-code">${esc(r.code||'—')}</span>
@@ -21319,15 +21342,15 @@
             </div>`).join('');
           return `<div class="conflict-version-card ${cls}">
             <div class="conflict-version-head">
-              <span>${cls === 'local' ? '💻' : '☁️'}</span>
+              <span style="display:flex;align-items:center">${iconHtml}</span>
               <span class="conflict-version-label">${esc(label)}</span>
               <span class="conflict-version-time">${esc(meta.time||'')}</span>
             </div>
             <div class="conflict-version-body">${rows}<div class="conflict-summary">${esc(meta.summary||'')}</div></div>
           </div>`;
         };
-        versionsHtml = makeCard('Your version (this device)', 'local', c.localMeta || {})
-                     + makeCard('Cloud version', 'remote', c.remoteMeta || {});
+        versionsHtml = makeCard(_cIcons.device, 'Your version (this device)', 'local',  c.localMeta  || {})
+                     + makeCard(_cIcons.cloud,  'Cloud version',              'remote', c.remoteMeta || {});
       }
 
       const modal = document.createElement('div');
@@ -21336,13 +21359,16 @@
       modal.innerHTML = `
         <div class="conflict-modal-sheet">
           <div class="conflict-modal-handle"></div>
-          <div class="conflict-modal-title">⚠️ ${esc(c.section)} Conflict</div>
+          <div class="conflict-modal-title" style="display:flex;align-items:center;gap:8px">
+            <span style="color:#D97706;display:flex">${_cIcons.warning}</span>
+            <span>${esc(c.section)} Conflict</span>
+          </div>
           <div class="conflict-modal-sub">${esc(c.description)}</div>
           ${versionsHtml}
           <div class="conflict-action-row">
-            <button class="conflict-btn-later"  onclick="document.getElementById('conflict-resolution-modal').remove()">Later</button>
-            <button class="conflict-btn-cloud"  onclick="_resolveConflict('${esc(id)}','cloud')">Use Cloud</button>
-            <button class="conflict-btn-keep"   onclick="_resolveConflict('${esc(id)}','local')">Keep Mine ✓</button>
+            <button class="conflict-btn-later"  onclick="document.getElementById('conflict-resolution-modal').remove()" style="display:flex;align-items:center;justify-content:center;gap:6px">${_cIcons.x} Later</button>
+            <button class="conflict-btn-cloud"  onclick="_resolveConflict('${esc(id)}','cloud')" style="display:flex;align-items:center;justify-content:center;gap:6px">${_cIcons.cloudDown} Use Cloud</button>
+            <button class="conflict-btn-keep"   onclick="_resolveConflict('${esc(id)}','local')" style="display:flex;align-items:center;justify-content:center;gap:6px">${_cIcons.check} Keep Mine</button>
           </div>
         </div>`;
       modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
