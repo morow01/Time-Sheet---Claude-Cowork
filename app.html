@@ -11457,7 +11457,7 @@
               Cloud Backups
             </div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">Automatic daily snapshots — notes,
-              callouts, timesheets, routines</div>
+              callouts, timesheets, routines, note tags</div>
           </div>
           <button onclick="document.getElementById('backup-modal').classList.add('hidden')"
             style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;padding:0 0 0 12px;line-height:1">✕</button>
@@ -11540,7 +11540,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.74';
+    const VERSION = '5.1.75';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -23023,12 +23023,13 @@
         const existing = await backupRef.get().catch(() => null);
         if (existing?.exists) return; // already have one for this key
       }
-      const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc] = await Promise.all([
+      const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc, catsDoc] = await Promise.all([
         db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
         userDoc('data/notes')?.get().catch(() => null),
         userDoc('data/reminders')?.get().catch(() => null),
         userDoc('data/callouts')?.get().catch(() => null),
-        userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null))
+        userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null)),
+        userDoc('data/categories')?.get().catch(() => null)
       ]);
       const weeks = {};
       if (weeksSnap) weeksSnap.docs.forEach(d => { weeks[d.id] = d.data(); });
@@ -23036,11 +23037,13 @@
       const reminders = remDoc?.exists ? remDoc.data() : null;
       const callouts = coDoc?.exists ? coDoc.data() : null;
       const routines = rtnDoc?.exists ? rtnDoc.data() : null;
+      const categories = catsDoc?.exists ? catsDoc.data() : null;
       const noteCount = notes?.notes?.length || 0;
       const weekCount = Object.keys(weeks).length;
       const calloutCount = callouts ? Object.values(callouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
       const reminderCount = reminders?.reminders?.length || 0;
       const routineCount = routines?.selectedSites?.length || 0;
+      const tagCount = categories?.categories?.length || 0;
       // Collect settings from localStorage (same as Export All Data)
       const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
         'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'];
@@ -23061,12 +23064,14 @@
         _calloutCount: calloutCount,
         _reminderCount: reminderCount,
         _routineCount: routineCount,
+        _tagCount: tagCount,
         // Data — same fields as export
         weeks,
         notes,
         reminders,
         callouts,
         routines,
+        categories,
         settings
       });
       // Prune: keep only the 30 most recent backups
@@ -23116,7 +23121,8 @@
             b._weekCount != null ? `${b._weekCount} weeks` : '',
             b._calloutCount != null && b._calloutCount > 0 ? `${b._calloutCount} callouts` : '',
             b._reminderCount != null && b._reminderCount > 0 ? `${b._reminderCount} reminders` : '',
-            b._routineCount != null && b._routineCount > 0 ? `${b._routineCount} routines` : ''
+            b._routineCount != null && b._routineCount > 0 ? `${b._routineCount} routines` : '',
+            b._tagCount != null && b._tagCount > 0 ? `${b._tagCount} tags` : ''
           ].filter(Boolean).join(' · ');
           const isLast = i === snap.docs.length - 1;
           return `<div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
@@ -23160,7 +23166,7 @@
         ? p[2].replace(/^0/, '') + ' ' + (MN[parseInt(p[1], 10) - 1] || '') + ' ' + p[0]
         : dateKey;
       const msgEl = document.getElementById('restore-confirm-msg');
-      if (msgEl) msgEl.innerHTML = `This will replace your current <strong>notes, callouts, timesheets, routines and reminders</strong> with the snapshot from <strong>${label}</strong>.<br><br>Your current data will be saved as a safety backup first.`;
+      if (msgEl) msgEl.innerHTML = `This will replace your current <strong>notes, callouts, timesheets, routines, reminders and note tags</strong> with the snapshot from <strong>${label}</strong>.<br><br>Your current data will be saved as a safety backup first.`;
       const btn = document.getElementById('restore-confirm-btn');
       if (btn) { btn.onclick = () => { document.getElementById('restore-confirm-modal').classList.add('hidden'); restoreFromBackup(dateKey); }; }
       document.getElementById('restore-confirm-modal').classList.remove('hidden');
@@ -23241,6 +23247,13 @@
         } else {
           state.routines = null;
           await userDoc('data/routines')?.delete().catch(() => { });
+        }
+
+        // 7. Note Tags (categories)
+        if (b.categories) {
+          state.customCategories = deepCopy(b.categories.categories || []);
+          state.disabledCats = deepCopy(b.categories.disabledCats || []);
+          await saveCustomCategories();
         }
 
         document.getElementById('backup-modal').classList.add('hidden');
