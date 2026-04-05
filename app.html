@@ -11499,7 +11499,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.64';
+    const VERSION = '5.1.65';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21483,7 +21483,6 @@
         </div>`;
       // Set body content — full read-only note card when noteData available
       const body = el.querySelector('.conflict-fullview-body');
-      const { noteData } = cached;
       if (noteData) {
         body.style.padding = '0';
         body.innerHTML = _renderNoteReadOnly(noteData);
