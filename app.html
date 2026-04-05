@@ -2232,6 +2232,14 @@
     /* Read-only note card inside conflict tab */
     .c-note-ro-field { font-size: 14px; color: var(--text-primary); background: var(--bg-input,#f8fafc); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; line-height: 1.5; word-break: break-word; }
     .c-note-ro-note-body { background: var(--bg-input,#f8fafc); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; min-height: 40px; font-size: 13px; line-height: 1.65; }
+    /* Diff view */
+    .c-diff-wrap { padding: 10px 0; font-size: 13px; line-height: 1.7; }
+    .c-diff-legend { display: flex; gap: 12px; padding: 8px 14px 10px; font-size: 11px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+    .c-diff-legend-mine   { color: #15803d; font-weight: 700; }
+    .c-diff-legend-theirs { color: #b91c1c; font-weight: 700; }
+    .c-diff-same   { padding: 3px 14px; color: var(--text-primary); }
+    .c-diff-mine   { padding: 3px 14px; background: rgba(22,163,74,0.1); border-left: 3px solid #16A34A; color: #15803d; font-weight: 500; }
+    .c-diff-theirs { padding: 3px 14px; background: rgba(220,38,38,0.08); border-left: 3px solid #DC2626; color: #b91c1c; text-decoration: line-through; }
     /* Full-content overlay */
     .conflict-fullview-overlay {
       position: fixed; inset: 0; background: rgba(15,28,46,0.6);
@@ -11499,7 +11507,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.66';
+    const VERSION = '5.1.67';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21686,18 +21694,74 @@
       if (body) body.innerHTML = side === 'local' ? el._localHtml : el._remoteHtml;
     }
 
-    // Open fullscreen note detail overlay for Notes/Notebooks conflict (Your version vs Cloud version tabs)
+    // LCS diff on string arrays — returns [{type:'same'|'mine'|'theirs', text}]
+    function _lcsLines(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({length: m + 1}, () => new Int32Array(n + 1));
+      for (let i = 1; i <= m; i++)
+        for (let j = 1; j <= n; j++)
+          dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1]);
+      const result = [];
+      let i = m, j = n;
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && a[i-1] === b[j-1]) { result.unshift({type:'same',   text: a[i-1]}); i--; j--; }
+        else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) { result.unshift({type:'theirs', text: b[j-1]}); j--; }
+        else { result.unshift({type:'mine', text: a[i-1]}); i--; }
+      }
+      return result;
+    }
+
+    // Extract meaningful text lines from a note object for diffing
+    function _noteToLines(note) {
+      const nc = note?.noteContent || '';
+      if (!nc.trim()) return [];
+      if (nc.trim().startsWith('<')) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = nc;
+        const lines = [];
+        tmp.querySelectorAll('p, li, h1, h2, h3, h4, blockquote, td, th').forEach(el => {
+          const t = el.textContent.trim();
+          if (t) lines.push(t);
+        });
+        return lines.length ? lines : [tmp.textContent.trim()].filter(Boolean);
+      }
+      return nc.split('\n').map(l => l.trim()).filter(Boolean);
+    }
+
+    // Build diff HTML for a note conflict
+    function _buildNoteDiffHtml(localNote, remoteNote) {
+      const aLines = _noteToLines(localNote);
+      const bLines = _noteToLines(remoteNote);
+      if (!aLines.length && !bLines.length)
+        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">Both versions are empty.</div>';
+      const diff = _lcsLines(aLines, bLines);
+      const hasDiff = diff.some(d => d.type !== 'same');
+      if (!hasDiff)
+        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">Note content is identical in both versions.</div>';
+      const rows = diff.map(({type, text}) =>
+        `<div class="c-diff-${type}">${esc(text)}</div>`
+      ).join('');
+      return `<div class="c-diff-wrap">
+        <div class="c-diff-legend">
+          <span class="c-diff-legend-mine">▌ Your version only</span>
+          <span class="c-diff-legend-theirs">▌ Cloud version only</span>
+        </div>
+        ${rows}
+      </div>`;
+    }
+
+    // Open fullscreen note detail overlay for Notes/Notebooks conflict
     function _openConflictNoteDetail(conflictId) {
       const c = (state.conflicts || []).find(x => x.id === conflictId);
       if (!c) return;
       const existing = document.getElementById('conflict-fullview');
       if (existing) existing.remove();
-      const ckLocal  = 'fv_' + c.id + '_local';
-      const ckRemote = 'fv_' + c.id + '_remote';
-      const localCached  = _cFullViewCache[ckLocal]  || {};
-      const remoteCached = _cFullViewCache[ckRemote] || {};
-      const lHtml = _renderNoteReadOnly(localCached.noteData);
-      const rHtml = _renderNoteReadOnly(remoteCached.noteData);
+      const localCached  = _cFullViewCache['fv_' + c.id + '_local']  || {};
+      const remoteCached = _cFullViewCache['fv_' + c.id + '_remote'] || {};
+      const lHtml   = _renderNoteReadOnly(localCached.noteData);
+      const rHtml   = _renderNoteReadOnly(remoteCached.noteData);
+      const diffHtml = _buildNoteDiffHtml(localCached.noteData, remoteCached.noteData);
+      const diffIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
       const xIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
       const el = document.createElement('div');
       el.id = 'conflict-fullview';
@@ -21708,14 +21772,16 @@
             <span class="conflict-fullview-title">${esc(c.localMeta?.noteTitle || c.description || 'Note')}</span>
             <button class="conflict-fullview-close" onclick="document.getElementById('conflict-fullview')?.remove()">${xIcon}</button>
           </div>
-          <div class="conflict-tab-bar" id="cdd_bar" style="margin:0 0 0">
-            <button class="conflict-tab active" id="cdd_btn_local"  onclick="_switchNoteDetailTab('local')">${_cIcons.device} Your version</button>
-            <button class="conflict-tab"        id="cdd_btn_remote" onclick="_switchNoteDetailTab('remote')">${_cIcons.cloud} Cloud version</button>
+          <div class="conflict-tab-bar" id="cdd_bar" style="margin:0">
+            <button class="conflict-tab active" id="cdd_btn_local"  onclick="_switchNoteDetailTab('local')">${_cIcons.device} Yours</button>
+            <button class="conflict-tab"        id="cdd_btn_remote" onclick="_switchNoteDetailTab('remote')">${_cIcons.cloud} Cloud</button>
+            <button class="conflict-tab"        id="cdd_btn_diff"   onclick="_switchNoteDetailTab('diff')" style="gap:4px">${diffIcon} Changes</button>
           </div>
           <div class="conflict-fullview-body" id="cdd_body" style="padding:0"></div>
         </div>`;
       el._localHtml  = lHtml;
       el._remoteHtml = rHtml;
+      el._diffHtml   = diffHtml;
       el.addEventListener('click', e => { if (e.target === el) el.remove(); });
       document.body.appendChild(el);
       document.getElementById('cdd_body').innerHTML = lHtml;
@@ -21724,10 +21790,14 @@
     function _switchNoteDetailTab(side) {
       const el = document.getElementById('conflict-fullview');
       if (!el) return;
-      document.getElementById('cdd_btn_local') ?.classList.toggle('active', side === 'local');
-      document.getElementById('cdd_btn_remote')?.classList.toggle('active', side === 'remote');
+      ['local','remote','diff'].forEach(s =>
+        document.getElementById('cdd_btn_' + s)?.classList.toggle('active', s === side)
+      );
       const body = document.getElementById('cdd_body');
-      if (body) body.innerHTML = side === 'local' ? el._localHtml : el._remoteHtml;
+      if (!body) return;
+      if (side === 'local')  body.innerHTML = el._localHtml;
+      if (side === 'remote') body.innerHTML = el._remoteHtml;
+      if (side === 'diff')   body.innerHTML = el._diffHtml;
     }
 
     // Open resolution modal for a specific conflict
