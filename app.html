@@ -11528,7 +11528,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.72';
+    const VERSION = '5.1.73';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21868,24 +21868,64 @@
 
     // Build diff HTML for a note conflict
     function _buildNoteDiffHtml(localNote, remoteNote) {
+      if (!localNote && !remoteNote)
+        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">No data in either version.</div>';
+      const l = localNote  || {};
+      const r = remoteNote || {};
+      const parts = [];
+
+      // Field-level differences (description, location, dueDate, priority)
+      const fieldRows = [];
+      const lDesc = ((l.description || l.title) || '').trim();
+      const rDesc = ((r.description || r.title) || '').trim();
+      if (lDesc !== rDesc) fieldRows.push(
+        '<div class="c-day-diff-row"><div class="c-day-diff-key">Description</div>' +
+        '<div class="c-day-diff-vals"><span class="c-day-diff-mine">'   + esc(lDesc || '\u2014') + '</span>' +
+        '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+        '<span class="c-day-diff-theirs">' + esc(rDesc || '\u2014') + '</span></div></div>');
+      const lLoc = (l.location || '').trim(), rLoc = (r.location || '').trim();
+      if (lLoc !== rLoc) fieldRows.push(
+        '<div class="c-day-diff-row"><div class="c-day-diff-key">Location</div>' +
+        '<div class="c-day-diff-vals"><span class="c-day-diff-mine">'   + esc(lLoc || '\u2014') + '</span>' +
+        '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+        '<span class="c-day-diff-theirs">' + esc(rLoc || '\u2014') + '</span></div></div>');
+      const lDue = (l.dueDate || '').trim(), rDue = (r.dueDate || '').trim();
+      if (lDue !== rDue) fieldRows.push(
+        '<div class="c-day-diff-row"><div class="c-day-diff-key">Due Date</div>' +
+        '<div class="c-day-diff-vals"><span class="c-day-diff-mine">'   + esc(lDue || '\u2014') + '</span>' +
+        '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+        '<span class="c-day-diff-theirs">' + esc(rDue || '\u2014') + '</span></div></div>');
+      const lPri = (l.priority || 'medium'), rPri = (r.priority || 'medium');
+      if (lPri !== rPri) fieldRows.push(
+        '<div class="c-day-diff-row"><div class="c-day-diff-key">Priority</div>' +
+        '<div class="c-day-diff-vals"><span class="c-day-diff-mine">'   + esc(lPri) + '</span>' +
+        '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+        '<span class="c-day-diff-theirs">' + esc(rPri) + '</span></div></div>');
+      if (fieldRows.length)
+        parts.push('<div class="c-day-diff-act">' + fieldRows.join('') + '</div>');
+
+      // Note content line diff
       const aLines = _noteToLines(localNote);
       const bLines = _noteToLines(remoteNote);
-      if (!aLines.length && !bLines.length)
-        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">Both versions are empty.</div>';
-      const diff = _lcsLines(aLines, bLines);
-      const hasDiff = diff.some(d => d.type !== 'same');
-      if (!hasDiff)
-        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">Note content is identical in both versions.</div>';
-      const rows = diff.map(({type, text}) =>
-        `<div class="c-diff-${type}">${esc(text)}</div>`
-      ).join('');
-      return `<div class="c-diff-wrap">
-        <div class="c-diff-legend">
-          <span class="c-diff-legend-mine">▌ Your version only</span>
-          <span class="c-diff-legend-theirs">▌ Cloud version only</span>
-        </div>
-        ${rows}
-      </div>`;
+      if (aLines.length || bLines.length) {
+        const diff = _lcsLines(aLines, bLines);
+        const hasDiff = diff.some(d => d.type !== 'same');
+        if (hasDiff) {
+          const rows = diff.map(({type, text}) => `<div class="c-diff-${type}">${esc(text)}</div>`).join('');
+          parts.push('<div class="c-diff-wrap" style="margin-top:4px">' +
+            '<div class="c-day-diff-key" style="padding:8px 14px 4px">Note content</div>' +
+            rows + '</div>');
+        }
+      }
+
+      if (!parts.length)
+        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">Both versions are identical.</div>';
+
+      return '<div>' +
+        '<div class="c-diff-legend" style="padding:10px 14px 6px">' +
+        '<span class="c-diff-legend-mine">\u258c Your version</span>' +
+        '<span class="c-diff-legend-theirs">\u258c Cloud version</span>' +
+        '</div>' + parts.join('') + '</div>';
     }
 
     // Open fullscreen note detail overlay for Notes/Notebooks conflict
