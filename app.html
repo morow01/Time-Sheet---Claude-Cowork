@@ -7401,11 +7401,22 @@
     /* ── Journal v5.1.0 — OneNote drill-down ─────────────────────── */
     .j-screen { min-height: 100vh; padding-bottom: 90px; background: #dde8f8; }
     .j-sub-header {
-      display: flex; align-items: center; gap: 10px;
-      padding: 12px 16px 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px 8px 8px;
       border-bottom: 1px solid var(--border);
       background: #dde8f8;
       position: sticky; top: 0; z-index: 10;
+    }
+    .j-screen-heading {
+      padding: 10px 16px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .j-screen-heading-title {
+      font-size: 26px; font-weight: 800; color: var(--text-primary); line-height: 1.15;
+    }
+    .j-screen-heading-sub {
+      font-size: 13px; color: var(--text-muted); margin-top: 3px; font-weight: 500;
     }
     .j-back-btn {
       background: none; border: none; cursor: pointer;
@@ -7528,7 +7539,10 @@
     .j-del-btn:active { color: #ef4444; }
     .j-top-bar {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 16px 10px;
+      padding: 8px 12px 8px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      position: sticky; top: 0; z-index: 10;
     }
     .j-top-title { font-size: 22px; font-weight: 800; color: var(--text-primary); }
     .j-empty {
@@ -11270,7 +11284,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.42';
+    const VERSION = '5.1.43';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -18022,15 +18036,18 @@
         ? '<div class="j-empty">No notebooks yet.<br><span style="font-size:12px">Tap <strong>+ Add Notebook</strong> to start.</span></div>'
         : '';
 
-      const _nbIconSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
       return '<div class="j-screen">'
-        + '<div class="j-top-bar" style="display:flex;align-items:center;justify-content:space-between;">'
-            + '<div class="j-top-title" style="display:flex;align-items:center;gap:8px;">' + _nbIconSvg + 'Notebooks' + _jSyncDot() + '</div>'
+        + '<div class="j-top-bar">'
+            + '<div>' + _jSyncDot() + '</div>'
             + (edit
                 ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>'
                 : '<button class="j-search-btn" onclick="jToggleSearch()" title="Search">'
                     + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
                   + '</button>')
+          + '</div>'
+        + '<div class="j-screen-heading">'
+            + '<div class="j-screen-heading-title">Field Journal</div>'
+            + '<div class="j-screen-heading-sub">Notebooks \xb7 ' + nbs.length + ' item' + (nbs.length === 1 ? '' : 's') + '</div>'
           + '</div>'
         + (rows || empty)
         + (edit ? '' : '<button class="j-fab" onclick="jOpenAdd(\'notebook\')">'
@@ -18077,17 +18094,15 @@
         ? '<div class="j-empty">No sections yet.<br><span style="font-size:12px">Tap <strong>+ Add Section</strong> to create one.</span></div>'
         : '';
 
-      const backSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
-      const _secHeaderIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.65"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+      const backSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
       return '<div class="j-screen">'
-        + '<div class="j-sub-header" style="display:flex;align-items:center;justify-content:space-between;">'
-            + '<div style="display:flex;align-items:center;gap:0;">'
-              + '<button class="j-back-btn" onclick="navJBack()">' + backSvg + '</button>'
-              + '<div class="j-sub-title" style="display:flex;align-items:center;gap:6px;">' + _secHeaderIcon + esc(nbTitle) + '</div>'
-            + '</div>'
-            + '<div style="display:flex;align-items:center;gap:4px;">'
-              + (edit ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>' : '<button class="j-search-btn" onclick="jToggleSearch()" title="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>')
-            + '</div>'
+        + '<div class="j-sub-header">'
+            + '<button class="j-back-btn" onclick="navJBack()">' + backSvg + ' Journal</button>'
+            + (edit ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>' : '<button class="j-search-btn" onclick="jToggleSearch()" title="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>')
+          + '</div>'
+        + '<div class="j-screen-heading">'
+            + '<div class="j-screen-heading-title">' + esc(nbTitle) + '</div>'
+            + '<div class="j-screen-heading-sub">Notebook \xb7 ' + secs.length + ' section' + (secs.length === 1 ? '' : 's') + '</div>'
           + '</div>'
         + (rows || empty)
         + (edit ? '' : '<button class="j-fab" onclick="jOpenAdd(\'section\')">'
@@ -18135,17 +18150,17 @@
         ? '<div class="j-empty">No pages yet.<br><span style="font-size:12px">Tap <strong>+ Add Page</strong> to create one.</span></div>'
         : '';
 
-      const backSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
-      const _pgHeaderIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="' + secColor + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+      const nb = state.jNotebooks.find(function(n){ return n.id === state.jNotebookId; });
+      const nbTitle = nb ? nb.title : 'Notebook';
+      const backSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
       return '<div class="j-screen">'
-        + '<div class="j-sub-header" style="border-left:4px solid ' + secColor + ';padding-left:12px;display:flex;align-items:center;justify-content:space-between;">'
-            + '<div style="display:flex;align-items:center;gap:0;">'
-              + '<button class="j-back-btn" onclick="navJBack()">' + backSvg + '</button>'
-              + '<div class="j-sub-title" style="display:flex;align-items:center;gap:6px;">' + _pgHeaderIcon + esc(secTitle) + '</div>'
-            + '</div>'
-            + '<div style="display:flex;align-items:center;gap:4px;">'
-              + (edit ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>' : '<button class="j-search-btn" onclick="jToggleSearch()" title="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>')
-            + '</div>'
+        + '<div class="j-sub-header" style="border-left:4px solid ' + secColor + ';">'
+            + '<button class="j-back-btn" onclick="navJBack()">' + backSvg + ' ' + esc(nbTitle) + '</button>'
+            + (edit ? '<button class="j-edit-done" onclick="jExitEditMode()">Done</button>' : '<button class="j-search-btn" onclick="jToggleSearch()" title="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>')
+          + '</div>'
+        + '<div class="j-screen-heading" style="border-left:4px solid ' + secColor + ';padding-left:14px;">'
+            + '<div class="j-screen-heading-title">' + esc(secTitle) + '</div>'
+            + '<div class="j-screen-heading-sub">' + esc(nbTitle) + '</div>'
           + '</div>'
         + (rows || empty)
         + (edit ? '' : '<button class="j-fab" onclick="jOpenAdd(\'page\')">'
