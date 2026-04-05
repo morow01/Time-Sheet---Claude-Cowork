@@ -2058,6 +2058,107 @@
       color: rgba(239, 68, 68, 0.25);
     }
 
+    /* ── Sync Conflict UI ─────────────────────────────────── */
+    .conflict-menu-badge {
+      position: absolute; top: -5px; right: -5px;
+      background: #DC2626; color: #fff;
+      border-radius: 50%; width: 17px; height: 17px;
+      font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .conflict-global-banner {
+      background: #FEF3DC;
+      border-bottom: 2px solid #F59E0B;
+      padding: 9px 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .conflict-global-banner-text {
+      flex: 1; font-size: 13px; font-weight: 700; color: #D97706;
+    }
+    .conflict-global-banner-btn {
+      background: #D97706; color: #fff; border: none;
+      border-radius: 6px; padding: 5px 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .conflict-list-row {
+      display: flex; align-items: center; padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #FEF3DC; gap: 12px; cursor: pointer;
+    }
+    .conflict-list-row:active { opacity: 0.8; }
+    .conflict-list-icon { font-size: 22px; width: 30px; text-align: center; }
+    .conflict-list-meta { flex: 1; }
+    .conflict-list-section { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .conflict-list-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .conflict-list-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .conflict-list-badge {
+      background: #D97706; color: #fff;
+      border-radius: 4px; padding: 2px 7px;
+      font-size: 10px; font-weight: 800; white-space: nowrap;
+    }
+    .conflict-resolved-banner {
+      background: #DCFCE7; border-bottom: 2px solid #16A34A;
+      padding: 9px 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .conflict-resolved-text { font-size: 13px; font-weight: 700; color: #16A34A; flex: 1; }
+    /* Resolution modal */
+    .conflict-modal-overlay {
+      position: fixed; inset: 0; background: rgba(15,28,46,0.5);
+      z-index: 200; display: flex; align-items: flex-end;
+    }
+    .conflict-modal-sheet {
+      background: var(--bg-card); border-radius: 18px 18px 0 0;
+      width: 100%; max-height: 88vh; overflow-y: auto;
+    }
+    .conflict-modal-handle {
+      width: 36px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 12px auto 4px;
+    }
+    .conflict-modal-title { font-size: 16px; font-weight: 800; padding: 10px 16px 2px; color: var(--text-primary); }
+    .conflict-modal-sub { font-size: 12px; color: var(--text-secondary); padding: 0 16px 12px; border-bottom: 1px solid var(--border); }
+    .conflict-version-card { border-radius: 10px; margin: 10px 12px; overflow: hidden; }
+    .conflict-version-card.local  { border: 1px solid var(--accent); }
+    .conflict-version-card.remote { border: 1px solid var(--border); }
+    .conflict-version-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px; border-bottom: 1px solid var(--border);
+    }
+    .conflict-version-card.local  .conflict-version-head { background: #EBF1FD; border-color: #bdd0f7; }
+    .conflict-version-card.remote .conflict-version-head { background: var(--bg-card-alt); }
+    .conflict-version-label { font-size: 12px; font-weight: 700; flex: 1; }
+    .conflict-version-card.local  .conflict-version-label { color: var(--accent); }
+    .conflict-version-time { font-size: 11px; color: var(--text-muted); }
+    .conflict-version-body { padding: 10px 12px; }
+    .conflict-data-row {
+      display: flex; gap: 8px; margin-bottom: 5px;
+      font-size: 12px; align-items: baseline;
+      border-radius: 0 4px 4px 0; padding: 2px 4px;
+    }
+    .conflict-data-row.present { background: #DCFCE7; border-left: 3px solid #16A34A; padding-left: 6px; }
+    .conflict-data-row.missing { background: #FEE2E2; border-left: 3px solid #DC2626; padding-left: 6px; }
+    .conflict-data-code  { font-weight: 700; color: var(--accent); min-width: 36px; }
+    .conflict-data-val   { color: var(--text-secondary); min-width: 36px; }
+    .conflict-data-note  { color: var(--text-muted); flex: 1; }
+    .conflict-summary    { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+    .conflict-split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 12px 4px; }
+    .conflict-split-pane { border-radius: 8px; padding: 10px; }
+    .conflict-split-pane.local  { border: 1px solid var(--accent); background: #EBF1FD; }
+    .conflict-split-pane.remote { border: 1px solid var(--border); background: var(--bg-card-alt); }
+    .conflict-split-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .conflict-split-pane.local  .conflict-split-label { color: var(--accent); }
+    .conflict-split-pane.remote .conflict-split-label { color: var(--text-muted); }
+    .conflict-split-time { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; }
+    .conflict-split-content { font-size: 11px; color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; }
+    .conflict-action-row { display: flex; gap: 8px; padding: 10px 12px 20px; }
+    .conflict-btn-later   { flex:1; background:none; color:var(--text-muted); border:1px solid var(--border); border-radius:8px; padding:10px 0; font-size:13px; font-weight:600; cursor:pointer; }
+    .conflict-btn-cloud   { flex:1; background:none; color:#D97706; border:1px solid #F59E0B; border-radius:8px; padding:10px 0; font-size:13px; font-weight:700; cursor:pointer; }
+    .conflict-btn-keep    { flex:1; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:10px 0; font-size:13px; font-weight:700; cursor:pointer; }
+    .conflicts-empty { text-align:center; padding: 60px 24px; color: var(--text-muted); }
+    .conflicts-empty-icon { font-size: 44px; margin-bottom: 12px; }
+    .conflicts-empty-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .conflicts-empty-sub { font-size: 13px; }
+
     .menu-spacer {
       flex: 1;
     }
@@ -11287,7 +11388,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.51';
+    const VERSION = '5.1.52';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -11940,6 +12041,7 @@
       selectedCallouts: new Set(),
       // ── Journal (v5.1.0 — OneNote-style: Notebooks → Sections → Pages) ──
       jNotebooks: [],      // [{id, title, color, displayOrder, createdAt, updatedAt}]
+      conflicts: [],       // [{id, section, icon, description, detectedAt, localData, remoteData, displayType}]
       jSections:  [],      // [{id, notebookId, title, color, displayOrder, createdAt, updatedAt}]
       jPages:     [],      // [{id, sectionId, title, noteContent, date, displayOrder, createdAt, updatedAt}]
       jScreen: 'notebooks',// 'notebooks' | 'sections' | 'pages'
@@ -12959,6 +13061,15 @@
           if (_hwm > HWM_THRESHOLD && _remoteHrs < _hwm - HWM_THRESHOLD) {
             console.warn('[Rian] Rejecting remote data — hours regression:', _remoteHrs.toFixed(1), '< HWM', _hwm.toFixed(1));
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+            _registerConflict({
+              id: 'ts_' + weekStart,
+              section: 'Timesheet', icon: '📅',
+              description: `Week of ${weekStart} — ${_weekTotalHours(state.weekData).toFixed(1)}h locally vs ${_remoteHrs.toFixed(1)}h in cloud.`,
+              displayType: 'rows',
+              localData: deepCopy(state.weekData), remoteData: deepCopy(remote),
+              localMeta: { time: 'This device (preserved)', rows: [{code:'Total',val:_weekTotalHours(state.weekData).toFixed(1)+'h',note:'local entries',hi:true}], summary: `HWM: ${_hwm.toFixed(1)}h` },
+              remoteMeta: { time: 'Cloud version (rejected)', rows: [{code:'Total',val:_remoteHrs.toFixed(1)+'h',note:'cloud — regression detected',hi:false}], summary: `${_hwm.toFixed(1) - _remoteHrs.toFixed(1)}h below high-water-mark` },
+            });
             return;
           }
           // Activity-count regression guard — catches the case where remote was
@@ -12970,6 +13081,24 @@
           if (_localActCount > 0 && _remoteActCount < _localActCount) {
             console.warn('[Rian] Rejecting remote data — entry regression (local:', _localActCount, 'acts, remote:', _remoteActCount, 'acts)');
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+            _registerConflict({
+              id: 'ts_' + weekStart,
+              section: 'Timesheet', icon: '📅',
+              description: `Week of ${weekStart} — ${_localActCount} entries on this device, only ${_remoteActCount} in cloud.`,
+              displayType: 'rows',
+              localData: deepCopy(state.weekData),
+              remoteData: deepCopy(remote),
+              localMeta: {
+                time: 'This device (preserved)',
+                rows: (state.weekData.days || []).filter(d => (d.activities||[]).some(a => (parseFloat(a.ordinary)||0)>0 || (parseFloat(a.overtime)||0)>0)).slice(0,4).map(d => ({ code: (d.activities[0]?.codes||[])[0]||'—', val: (d.activities.reduce((s,a)=>s+(parseFloat(a.ordinary)||0)+(parseFloat(a.overtime)||0),0)).toFixed(1)+'h', note: d.date ? new Date(d.date).toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'}) : '', hi: true })),
+                summary: `Total: ${_weekTotalHours(state.weekData).toFixed(1)}h · ${_localActCount} entries`
+              },
+              remoteMeta: {
+                time: 'Cloud version (rejected)',
+                rows: (state.weekData.days || []).filter(d => (d.activities||[]).some(a => (parseFloat(a.ordinary)||0)>0 || (parseFloat(a.overtime)||0)>0)).slice(0,4).map(d => ({ code: '—', val: '0h', note: d.date ? new Date(d.date).toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'}) : '', hi: false })),
+                summary: `Total: ${_weekTotalHours(remote).toFixed(1)}h · ${_remoteActCount} entries`
+              },
+            });
             return;
           }
 
@@ -13562,7 +13691,9 @@
       const savedScroll = parseInt(sessionStorage.getItem('scrollPos_' + state.view) || '0');
 
       let viewBody = '';
-      if (state.view === 'exchanges') {
+      if (state.view === 'conflicts') {
+        viewBody = renderConflictsView();
+      } else if (state.view === 'exchanges') {
         viewBody = renderExchangesView();
       } else if (state.view === 'notes') {
         viewBody = renderNotesView();
@@ -13580,7 +13711,7 @@
         viewBody = renderWeekView();
       }
 
-      app.innerHTML = renderHeader() + viewBody;
+      app.innerHTML = renderHeader() + _renderConflictBanner() + viewBody;
       attachEvents();
       // Re-apply any open ctx menu that was open during a render (e.g. after toggleRemedyFlag)
       if (state._openCtxActId) {
@@ -13673,12 +13804,13 @@
       </div>
       <button onclick="nextWeek()" class="hdr-nav-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
       <div class="theme-menu-wrap">
-        <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu">
+        <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu" style="position:relative">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
+          ${state.conflicts.length > 0 ? `<span class="conflict-menu-badge">${state.conflicts.length}</span>` : ''}
         </button>
         <div class="menu-backdrop ${state.isMenuOpen ? 'show' : ''}" onclick="closeThemeMenu()"></div>
         <div class="theme-dropdown ${state.isMenuOpen ? 'open' : ''}" id="theme-dropdown" onclick="event.stopPropagation()">
@@ -13710,6 +13842,13 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Navigation</div>
                 <div class="menu-card">
+                  ${state.conflicts.length > 0 ? `
+                  <button class="menu-row" onclick="setView('conflicts');closeThemeMenu()" style="background:#FEF3DC">
+                    <span class="menu-row-icon" style="color:#D97706">⚠️</span>
+                    <span class="menu-row-body"><span class="menu-row-label" style="color:#D97706">Sync Conflicts</span><span class="menu-row-sub">${state.conflicts.length} item${state.conflicts.length > 1 ? 's' : ''} need attention</span></span>
+                    <span style="background:#DC2626;color:#fff;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:800;margin-right:4px">${state.conflicts.length}</span>
+                    ${chev}
+                  </button>` : ''}
                   <button class="menu-row" onclick="setView('journal');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Notebooks</span><span class="menu-row-sub">Notebooks → Sections → Pages</span></span>
@@ -21053,6 +21192,259 @@
       }
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // SYNC CONFLICT SYSTEM
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // Register a detected conflict. Deduplicates by id so repeated snapshots
+    // don't create duplicate entries.
+    function _registerConflict(conflict) {
+      if (state.conflicts.some(c => c.id === conflict.id)) return;
+      conflict.detectedAt = conflict.detectedAt || Date.now();
+      state.conflicts.push(conflict);
+      render();
+      console.warn('[Rian] Conflict registered:', conflict.section, conflict.description);
+    }
+
+    // Resolve a conflict — either keep local (already pushed back) or apply cloud.
+    async function _resolveConflict(id, choice) {
+      const conflict = state.conflicts.find(c => c.id === id);
+      if (!conflict) return;
+      if (choice === 'cloud') {
+        // Apply the remote version that was rejected
+        try {
+          if (conflict.section === 'Timesheet' && conflict.remoteData) {
+            state.weekData = deepCopy(conflict.remoteData);
+            state.weekData._updatedAt = Date.now();
+            const uid = state.currentUser?.uid || null;
+            await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: state.weekData, updatedAt: state.weekData._updatedAt });
+            await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+          } else if (conflict.section === 'Notes' && conflict.remoteData) {
+            state.notes = deepCopy(conflict.remoteData);
+            await fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
+          } else if (conflict.section === 'Notebooks' && conflict.remoteData) {
+            state.jNotebooks = deepCopy(conflict.remoteData.notebooks || conflict.remoteData);
+            await fsSetJNotebooks(state.jNotebooks).catch(e => console.warn('[Rian]', e));
+          } else if (conflict.section === 'Callouts' && conflict.remoteData) {
+            state.callouts = deepCopy(conflict.remoteData);
+            await fsSetCallouts(state.callouts).catch(e => console.warn('[Rian]', e));
+          } else if (conflict.section === 'Routines' && conflict.remoteData) {
+            state.routines = deepCopy(conflict.remoteData);
+            if (typeof fsSetRoutines === 'function') await fsSetRoutines(state.routines).catch(e => console.warn('[Rian]', e));
+          } else if (conflict.section === 'Note Tags' && conflict.remoteData) {
+            state.noteTags = deepCopy(conflict.remoteData);
+            if (typeof fsSetNoteTags === 'function') await fsSetNoteTags(state.noteTags).catch(e => console.warn('[Rian]', e));
+          }
+          showToast('Cloud version restored.');
+        } catch(e) { showToast('Failed to apply cloud version: ' + (e.message || e)); return; }
+      } else {
+        showToast('Your local version kept.');
+      }
+      state.conflicts = state.conflicts.filter(c => c.id !== id);
+      document.getElementById('conflict-resolution-modal')?.remove();
+      render();
+    }
+
+    // Global conflict banner — rendered on every screen
+    function _renderConflictBanner() {
+      const n = state.conflicts.length;
+      if (n === 0) return '';
+      return `<div class="conflict-global-banner">
+        <span style="font-size:16px">⚠️</span>
+        <span class="conflict-global-banner-text">${n} sync conflict${n > 1 ? 's' : ''} need attention</span>
+        <button class="conflict-global-banner-btn" onclick="setView('conflicts')">View all</button>
+      </div>`;
+    }
+
+    // Conflicts list screen
+    function renderConflictsView() {
+      const n = state.conflicts.length;
+      const emptyHtml = `<div class="conflicts-empty">
+        <div class="conflicts-empty-icon">✅</div>
+        <div class="conflicts-empty-title">All synced</div>
+        <div class="conflicts-empty-sub">No conflicts across any section.</div>
+      </div>`;
+
+      const rowsHtml = state.conflicts.map(c => `
+        <div class="conflict-list-row" onclick="_openConflictModal('${esc(c.id)}')">
+          <span class="conflict-list-icon">${c.icon}</span>
+          <div class="conflict-list-meta">
+            <div class="conflict-list-section">${esc(c.section)}</div>
+            <div class="conflict-list-desc">${esc(c.description)}</div>
+            <div class="conflict-list-time">${_formatSnapTime(c.detectedAt).relative}</div>
+          </div>
+          <span class="conflict-list-badge">CONFLICT</span>
+          <span style="color:var(--text-muted);font-size:16px">›</span>
+        </div>`).join('');
+
+      const sectionLabelHtml = n > 0 ? `<div style="font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);padding:14px 16px 6px;background:var(--bg-card-alt);border-bottom:1px solid var(--border)">Unresolved — ${n} item${n > 1 ? 's' : ''}</div>` : '';
+
+      return `
+        <div style="background:var(--bg-card);border-bottom:1px solid var(--border);padding:14px 16px 12px;display:flex;align-items:center;gap:10px">
+          <button onclick="history.back ? history.back() : setView('week')" style="color:var(--accent);font-size:14px;font-weight:700;background:none;border:none;cursor:pointer;padding:4px 0">← Back</button>
+          <span style="font-size:17px;font-weight:800;flex:1;color:var(--text-primary)">Sync Conflicts</span>
+          ${n > 0 ? `<span style="background:#DC2626;color:#fff;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:800">${n}</span>` : ''}
+        </div>
+        ${n > 0 ? `<div style="padding:10px 16px 6px;font-size:12px;color:var(--text-secondary)">These items differ between this device and the cloud. Tap each to review and choose which version to keep.</div>` : ''}
+        ${sectionLabelHtml}
+        ${n > 0 ? rowsHtml : emptyHtml}`;
+    }
+
+    // Open resolution modal for a specific conflict
+    function _openConflictModal(id) {
+      const c = state.conflicts.find(x => x.id === id);
+      if (!c) return;
+
+      let versionsHtml = '';
+      if (c.displayType === 'split') {
+        versionsHtml = `<div class="conflict-split-grid">
+          <div class="conflict-split-pane local">
+            <div class="conflict-split-label">Your version</div>
+            <div class="conflict-split-time">${esc(c.localMeta?.time || 'This device')}</div>
+            <div class="conflict-split-content">${esc(c.localMeta?.content || '')}</div>
+          </div>
+          <div class="conflict-split-pane remote">
+            <div class="conflict-split-label">Cloud version</div>
+            <div class="conflict-split-time">${esc(c.remoteMeta?.time || 'Cloud')}</div>
+            <div class="conflict-split-content">${esc(c.remoteMeta?.content || '')}</div>
+          </div>
+        </div>`;
+      } else {
+        const makeCard = (label, cls, meta) => {
+          const rows = (meta.rows || []).map(r => `
+            <div class="conflict-data-row ${r.hi ? 'present' : 'missing'}">
+              <span class="conflict-data-code">${esc(r.code||'—')}</span>
+              <span class="conflict-data-val">${esc(r.val||'')}</span>
+              <span class="conflict-data-note">${esc(r.note||'')}</span>
+            </div>`).join('');
+          return `<div class="conflict-version-card ${cls}">
+            <div class="conflict-version-head">
+              <span>${cls === 'local' ? '💻' : '☁️'}</span>
+              <span class="conflict-version-label">${esc(label)}</span>
+              <span class="conflict-version-time">${esc(meta.time||'')}</span>
+            </div>
+            <div class="conflict-version-body">${rows}<div class="conflict-summary">${esc(meta.summary||'')}</div></div>
+          </div>`;
+        };
+        versionsHtml = makeCard('Your version (this device)', 'local', c.localMeta || {})
+                     + makeCard('Cloud version', 'remote', c.remoteMeta || {});
+      }
+
+      const modal = document.createElement('div');
+      modal.id = 'conflict-resolution-modal';
+      modal.className = 'conflict-modal-overlay';
+      modal.innerHTML = `
+        <div class="conflict-modal-sheet">
+          <div class="conflict-modal-handle"></div>
+          <div class="conflict-modal-title">⚠️ ${esc(c.section)} Conflict</div>
+          <div class="conflict-modal-sub">${esc(c.description)}</div>
+          ${versionsHtml}
+          <div class="conflict-action-row">
+            <button class="conflict-btn-later"  onclick="document.getElementById('conflict-resolution-modal').remove()">Later</button>
+            <button class="conflict-btn-cloud"  onclick="_resolveConflict('${esc(id)}','cloud')">Use Cloud</button>
+            <button class="conflict-btn-keep"   onclick="_resolveConflict('${esc(id)}','local')">Keep Mine ✓</button>
+          </div>
+        </div>`;
+      modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+      document.body.appendChild(modal);
+    }
+
+    // ── Test mode: inject synthetic conflicts ──────────────────────────────────
+    // Triggered by ?testConflict=1 in the URL — safe, memory-only, no Firestore writes.
+    function _injectTestConflicts() {
+      state.conflicts = []; // clear any previous test conflicts
+
+      // 1. Timesheet — take current week, simulate last 2 days wiped in remote
+      const localWeek = deepCopy(state.weekData);
+      const remoteWeek = deepCopy(state.weekData);
+      const nDays = (remoteWeek.days || []).length;
+      let wiped = 0;
+      for (let i = nDays - 1; i >= 0 && wiped < 2; i--) {
+        const day = remoteWeek.days[i];
+        const hasData = (day.activities || []).some(a =>
+          (parseFloat(a.ordinary)||0) > 0 || (parseFloat(a.codes?.join(''))||0) || (a.description||'').trim()
+        );
+        if (hasData) {
+          day.activities = day.activities.map(a => ({ ...a, ordinary:'', overtime:'', codes:[], description:'' }));
+          wiped++;
+        }
+      }
+      const wipedDayNames = (localWeek.days || []).filter((d,i) =>
+        (remoteWeek.days[i]?.activities||[]).every(a => !(parseFloat(a.ordinary)||0))
+        && (d.activities||[]).some(a => parseFloat(a.ordinary)||0)
+      ).map(d => d.date ? new Date(d.date).toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'}) : d.dayLabel || 'day').join(', ');
+      _registerConflict({
+        id: 'test_ts_' + state.weekStart,
+        section: 'Timesheet', icon: '📅',
+        description: wipedDayNames ? `${wipedDayNames} — entries present locally but missing in cloud.` : 'Current week entries differ between device and cloud.',
+        displayType: 'rows',
+        localData: localWeek, remoteData: remoteWeek,
+        localMeta: { time: 'Saved today (this device)', rows: [{code:'DT',val:'8h',note:'Thu — your entries',hi:true},{code:'DT',val:'8h',note:'Fri — your entries',hi:true}], summary: `Total local: ${_weekTotalHours(localWeek).toFixed(1)}h` },
+        remoteMeta: { time: 'Cloud version (stale)', rows: [{code:'—',val:'0h',note:'Thu — empty in cloud',hi:false},{code:'—',val:'0h',note:'Fri — empty in cloud',hi:false}], summary: `Total cloud: ${_weekTotalHours(remoteWeek).toFixed(1)}h` },
+      });
+
+      // 2. Notes
+      const sampleNote = (state.notes || []).find(n => (n.content||n.description||'').length > 20);
+      const noteContent = sampleNote ? (sampleNote.content || sampleNote.description || '') : 'Site visit notes with voltage readings and inspection details.';
+      _registerConflict({
+        id: 'test_notes',
+        section: 'Notes', icon: '📝',
+        description: sampleNote ? `"${(sampleNote.title||'Untitled').slice(0,40)}" has two versions.` : 'A note has two versions.',
+        displayType: 'split',
+        localData: null, remoteData: null,
+        localMeta: { time: 'Saved today (this device)', content: noteContent },
+        remoteMeta: { time: 'Cloud version (older)', content: noteContent.slice(0, Math.floor(noteContent.length / 2)) + '\n[truncated — older version]' },
+      });
+
+      // 3. Notebooks
+      const samplePage = (state.jPages || []).find(p => (p.noteContent||'').length > 10);
+      const pageContent = samplePage ? (samplePage.noteContent || '') : 'Voltage readings:\nL1=399V L2=401V L3=400V\nEarth continuity ✓\nAll within tolerance.';
+      _registerConflict({
+        id: 'test_notebooks',
+        section: 'Notebooks', icon: '📓',
+        description: samplePage ? `"${(samplePage.title||'Untitled page').slice(0,40)}" has two versions.` : 'A notebook page has two versions.',
+        displayType: 'split',
+        localData: null, remoteData: null,
+        localMeta: { time: 'This device', content: pageContent },
+        remoteMeta: { time: 'Cloud (older)', content: pageContent.slice(0, Math.floor(pageContent.length / 2)) + '\n[older cloud version]' },
+      });
+
+      // 4. Callouts
+      _registerConflict({
+        id: 'test_callouts',
+        section: 'Callouts', icon: '🔧',
+        description: 'A callout entry has missing hours and job details in the cloud version.',
+        displayType: 'rows',
+        localData: null, remoteData: null,
+        localMeta: { time: 'This device', rows:[{code:'Who',val:'R. Morrow',note:'',hi:true},{code:'Hrs',val:'6h',note:'callout',hi:true},{code:'Job',val:'HV fault — ESB Grid',note:'',hi:true}], summary:'1 callout entry' },
+        remoteMeta: { time: 'Cloud version', rows:[{code:'Who',val:'R. Morrow',note:'',hi:false},{code:'Hrs',val:'—',note:'missing in cloud',hi:false},{code:'Job',val:'—',note:'missing in cloud',hi:false}], summary:'Partial entry' },
+      });
+
+      // 5. Routines
+      _registerConflict({
+        id: 'test_routines',
+        section: 'Routines', icon: '📋',
+        description: 'A routine has steps missing from the cloud version.',
+        displayType: 'rows',
+        localData: null, remoteData: null,
+        localMeta: { time: 'This device', rows:[{code:'6.',val:'IR scan',note:'added step',hi:true},{code:'7.',val:'Log readings',note:'added step',hi:true},{code:'8.',val:'Sign off',note:'added step',hi:true}], summary:'8 steps total' },
+        remoteMeta: { time: 'Cloud version', rows:[{code:'6.',val:'—',note:'missing',hi:false},{code:'7.',val:'—',note:'missing',hi:false},{code:'8.',val:'—',note:'missing',hi:false}], summary:'5 steps total (cloud)' },
+      });
+
+      // 6. Note Tags
+      _registerConflict({
+        id: 'test_tags',
+        section: 'Note Tags', icon: '🏷️',
+        description: 'Your local tag list has a tag missing from the cloud version.',
+        displayType: 'rows',
+        localData: null, remoteData: null,
+        localMeta: { time: 'This device', rows:[{code:'New',val:'Inspection',note:'tag added locally',hi:true}], summary:'6 tags total' },
+        remoteMeta: { time: 'Cloud version', rows:[{code:'—',val:'missing',note:'"Inspection" not in cloud',hi:false}], summary:'5 tags total' },
+      });
+
+      showToast('⚠️ Test conflicts injected — 6 sections. Tap View all or ☰.');
+    }
+
     let _signingIn = false;
     async function signInWithGoogle() {
       if (_signingIn) return;
@@ -25188,6 +25580,11 @@ Rules:
 
         // Run daily cloud backup (silently, once per day, 8s after app load)
         checkAndRunDailyBackup(user.uid);
+
+        // Test mode — inject synthetic conflicts if ?testConflict=1 in URL
+        if (new URLSearchParams(location.search).get('testConflict') === '1') {
+          setTimeout(_injectTestConflicts, 1500); // slight delay so week data is loaded first
+        }
       });
     }
 
