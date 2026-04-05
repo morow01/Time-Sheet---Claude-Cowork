@@ -2232,12 +2232,27 @@
     /* Read-only note card inside conflict tab */
     .c-note-ro-field { font-size: 14px; color: var(--text-primary); background: var(--bg-input,#f8fafc); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; line-height: 1.5; word-break: break-word; }
     .c-note-ro-note-body { background: var(--bg-input,#f8fafc); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; min-height: 40px; font-size: 13px; line-height: 1.65; }
-    /* Conflict field highlight */
+    /* Conflict field highlight — Notes */
     .c-note-ro-diff .c-note-ro-field,
     .c-note-ro-diff .c-note-ro-note-body { border-color: #ef4444; background: rgba(239,68,68,0.05); }
     .c-note-ro-diff-label { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
     .c-note-ro-diff-label span { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
     .c-note-ro-diff-badge { font-size: 10px; font-weight: 700; color: #ef4444; background: rgba(239,68,68,0.1); border-radius: 4px; padding: 1px 5px; text-transform: uppercase; letter-spacing: 0.02em; }
+    /* Conflict field highlight — Timesheet activity card */
+    .c-act-diff .act-input,
+    .c-act-diff .act-codes-wrap,
+    .c-act-diff .hrs-stepper { border: 1.5px solid #ef4444 !important; background: rgba(239,68,68,0.05) !important; border-radius: 8px; }
+    .c-act-diff.notes-panel { border: 1.5px solid #ef4444 !important; background: rgba(239,68,68,0.05) !important; }
+    .c-act-diff .act-field-label,
+    .c-act-diff .act-field-label-ot { color: #ef4444 !important; }
+    /* Day diff Changes tab */
+    .c-day-diff-act { padding: 10px 14px 6px; border-bottom: 1px solid var(--border); }
+    .c-day-diff-act-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .c-day-diff-row { display: flex; flex-direction: column; gap: 2px; padding: 4px 0; }
+    .c-day-diff-key { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; }
+    .c-day-diff-vals { display: flex; align-items: baseline; gap: 6px; font-size: 13px; flex-wrap: wrap; }
+    .c-day-diff-mine   { color: #15803d; font-weight: 600; background: rgba(22,163,74,0.1); border-radius: 4px; padding: 1px 6px; }
+    .c-day-diff-theirs { color: #b91c1c; font-weight: 600; background: rgba(220,38,38,0.08); border-radius: 4px; padding: 1px 6px; }
     /* Diff view */
     .c-diff-wrap { padding: 10px 0; font-size: 13px; line-height: 1.7; }
     .c-diff-legend { display: flex; gap: 12px; padding: 8px 14px 10px; font-size: 11px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
@@ -11513,7 +11528,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.69';
+    const VERSION = '5.1.70';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21517,7 +21532,8 @@
     }
 
     // Render one activity as a read-only card using the exact same CSS as the real timesheet card
-    function _renderDayActFull(a, idx) {
+    function _renderDayActFull(a, idx, diffFields) {
+      diffFields = diffFields || new Set();
       // Normalise codes — stored as [{d,c}] objects in the real app, or strings in older data
       const codesArr = Array.isArray(a.codes)
         ? a.codes.filter(Boolean).map(c => typeof c === 'object' ? c : { d: String(c), c: '' })
@@ -21536,6 +21552,13 @@
       const codesHtml = codesArr.length
         ? codesArr.map(c => `<div class="act-code-chip" style="pointer-events:none">${esc(c.d)}<span class="act-code-mono">${esc(c.c)}</span></div>`).join('')
         : `<span style="color:var(--text-muted);font-size:13px">None</span>`;
+      const chBadge = '<span class="c-note-ro-diff-badge" style="margin-left:6px">Changed</span>';
+      const descDiff  = diffFields.has('description');
+      const notesDiff = diffFields.has('notes');
+      const locDiff   = diffFields.has('location');
+      const codesDiff = diffFields.has('codes');
+      const ordDiff   = diffFields.has('ordinary');
+      const otDiff    = diffFields.has('overtime');
       return `<div class="activity-card expanded c-ddf-readonly">
         <div class="flex items-center gap-3 px-3.5 py-3">
           <div class="task-num">${idx + 1}</div>
@@ -21552,15 +21575,16 @@
         </div>
         <div class="activity-detail open">
           <div class="act-detail-inner">
-            <div class="flex flex-col gap-1.5">
-              <span class="act-field-label">Description</span>
+            <div class="flex flex-col gap-1.5${descDiff ? ' c-act-diff' : ''}">
+              <span class="act-field-label">Description${descDiff ? chBadge : ''}</span>
               <div class="act-input" style="min-height:1.6em">${esc(desc) || '<span style="color:var(--text-muted)">—</span>'}</div>
             </div>
             ${notes ? `
-            <div class="notes-panel">
+            <div class="notes-panel${notesDiff ? ' c-act-diff' : ''}">
               <div class="notes-panel-header" style="pointer-events:none">
                 ${noteSvg}
                 <div class="notes-panel-preview has-note">${esc((notes.replace(/<[^>]+>/g,' ')).trim().slice(0,80))}${notes.length>80?'…':''}</div>
+                ${notesDiff ? chBadge : ''}
               </div>
               <div class="notes-panel-body open">
                 <div class="notes-ta-wrap">
@@ -21568,23 +21592,23 @@
                 </div>
               </div>
             </div>` : ''}
-            <div class="flex flex-col gap-1.5">
-              <span class="act-field-label">Location</span>
+            <div class="flex flex-col gap-1.5${locDiff ? ' c-act-diff' : ''}">
+              <span class="act-field-label">Location${locDiff ? chBadge : ''}</span>
               <div class="act-input" style="min-height:1.6em">${esc(loc) || '<span style="color:var(--text-muted)">—</span>'}</div>
             </div>
-            <div class="flex flex-col gap-1.5">
-              <span class="act-field-label">Work Codes</span>
+            <div class="flex flex-col gap-1.5${codesDiff ? ' c-act-diff' : ''}">
+              <span class="act-field-label">Work Codes${codesDiff ? chBadge : ''}</span>
               <div class="act-codes-wrap" style="pointer-events:none;min-height:42px">${codesHtml}</div>
             </div>
             <div class="flex gap-3">
-              <div class="hrs-box flex-1">
-                <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>
+              <div class="hrs-box flex-1${ordDiff ? ' c-act-diff' : ''}">
+                <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS${ordDiff ? chBadge : ''}</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button>−</button><span class="val">${ord}</span><button>+</button>
                 </div>
               </div>
-              <div class="hrs-box ot-box flex-1">
-                <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>
+              <div class="hrs-box ot-box flex-1${otDiff ? ' c-act-diff' : ''}">
+                <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS${otDiff ? chBadge : ''}</div>
                 <div class="hrs-stepper flex items-center justify-between">
                   <button>−</button><span class="val">${ot}</span><button>+</button>
                 </div>
@@ -21593,6 +21617,101 @@
           </div>
         </div>
       </div>`;
+    }
+
+    // Compute which fields differ between two activity objects
+    function _actDiffFields(lAct, rAct) {
+      const df = new Set();
+      if (!lAct || !rAct) return df;
+      if ((lAct.description || '') !== (rAct.description || '')) df.add('description');
+      if ((lAct.location    || '') !== (rAct.location    || '')) df.add('location');
+      if ((lAct.notes       || '') !== (rAct.notes       || '')) df.add('notes');
+      if ((parseFloat(lAct.ordinary) || 0) !== (parseFloat(rAct.ordinary) || 0)) df.add('ordinary');
+      if ((parseFloat(lAct.overtime) || 0) !== (parseFloat(rAct.overtime) || 0)) df.add('overtime');
+      const normCodes = act => JSON.stringify(
+        (Array.isArray(act.codes) ? act.codes.filter(Boolean).map(c => typeof c === 'object' ? (c.d + ':' + (c.c || '')) : String(c)) : []).sort()
+      );
+      if (normCodes(lAct) !== normCodes(rAct)) df.add('codes');
+      return df;
+    }
+
+    // Build the Changes tab HTML for a day detail overlay
+    function _buildDayDiffHtml(lActs, rActs) {
+      const maxLen = Math.max(lActs.length, rActs.length);
+      if (maxLen === 0)
+        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">No entries in either version.</div>';
+      const parts = [];
+      let anyDiff = false;
+      for (let i = 0; i < maxLen; i++) {
+        const l = lActs[i], r = rActs[i];
+        if (!l && r) {
+          anyDiff = true;
+          parts.push('<div class="c-day-diff-act">' +
+            '<div class="c-day-diff-act-title">Activity ' + (i + 1) + '</div>' +
+            '<div class="c-day-diff-row"><div class="c-day-diff-vals">' +
+            '<span class="c-day-diff-theirs">Cloud only \u2014 ' + esc(r.description || 'Untitled') + '</span>' +
+            '</div></div></div>');
+          continue;
+        }
+        if (l && !r) {
+          anyDiff = true;
+          parts.push('<div class="c-day-diff-act">' +
+            '<div class="c-day-diff-act-title">Activity ' + (i + 1) + '</div>' +
+            '<div class="c-day-diff-row"><div class="c-day-diff-vals">' +
+            '<span class="c-day-diff-mine">Your version only \u2014 ' + esc(l.description || 'Untitled') + '</span>' +
+            '</div></div></div>');
+          continue;
+        }
+        const df = _actDiffFields(l, r);
+        if (!df.size) continue;
+        anyDiff = true;
+        const actTitle = l.description || r.description || ('Activity ' + (i + 1));
+        const rows = [];
+        if (df.has('description')) rows.push(
+          '<div class="c-day-diff-row"><div class="c-day-diff-key">Description</div>' +
+          '<div class="c-day-diff-vals"><span class="c-day-diff-mine">' + esc(l.description || '\u2014') + '</span>' +
+          '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+          '<span class="c-day-diff-theirs">' + esc(r.description || '\u2014') + '</span></div></div>');
+        if (df.has('location')) rows.push(
+          '<div class="c-day-diff-row"><div class="c-day-diff-key">Location</div>' +
+          '<div class="c-day-diff-vals"><span class="c-day-diff-mine">' + esc(l.location || '\u2014') + '</span>' +
+          '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+          '<span class="c-day-diff-theirs">' + esc(r.location || '\u2014') + '</span></div></div>');
+        if (df.has('ordinary')) rows.push(
+          '<div class="c-day-diff-row"><div class="c-day-diff-key">Ordinary HRS</div>' +
+          '<div class="c-day-diff-vals"><span class="c-day-diff-mine">' + (parseFloat(l.ordinary) || 0) + 'h</span>' +
+          '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+          '<span class="c-day-diff-theirs">' + (parseFloat(r.ordinary) || 0) + 'h</span></div></div>');
+        if (df.has('overtime')) rows.push(
+          '<div class="c-day-diff-row"><div class="c-day-diff-key">Overtime HRS</div>' +
+          '<div class="c-day-diff-vals"><span class="c-day-diff-mine">' + (parseFloat(l.overtime) || 0) + 'h</span>' +
+          '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+          '<span class="c-day-diff-theirs">' + (parseFloat(r.overtime) || 0) + 'h</span></div></div>');
+        if (df.has('codes')) {
+          const lc = (Array.isArray(l.codes) ? l.codes.filter(Boolean).map(c => typeof c === 'object' ? c.d : String(c)) : []).join(', ') || '\u2014';
+          const rc = (Array.isArray(r.codes) ? r.codes.filter(Boolean).map(c => typeof c === 'object' ? c.d : String(c)) : []).join(', ') || '\u2014';
+          rows.push('<div class="c-day-diff-row"><div class="c-day-diff-key">Work Codes</div>' +
+            '<div class="c-day-diff-vals"><span class="c-day-diff-mine">' + esc(lc) + '</span>' +
+            '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+            '<span class="c-day-diff-theirs">' + esc(rc) + '</span></div></div>');
+        }
+        if (df.has('notes')) {
+          const ln = (l.notes || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 60) || '(empty)';
+          const rn = (r.notes || '').replace(/<[^>]+>/g, ' ').trim().slice(0, 60) || '(empty)';
+          rows.push('<div class="c-day-diff-row"><div class="c-day-diff-key">Notes</div>' +
+            '<div class="c-day-diff-vals"><span class="c-day-diff-mine">' + esc(ln) + '</span>' +
+            '<span style="color:var(--text-muted);font-size:11px">vs</span>' +
+            '<span class="c-day-diff-theirs">' + esc(rn) + '</span></div></div>');
+        }
+        parts.push('<div class="c-day-diff-act"><div class="c-day-diff-act-title">Activity ' + (i + 1) + (actTitle !== ('Activity ' + (i + 1)) ? ' \u2014 ' + esc(actTitle) : '') + '</div>' + rows.join('') + '</div>');
+      }
+      if (!anyDiff)
+        return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">Entries are identical in both versions.</div>';
+      return '<div>' +
+        '<div class="c-diff-legend" style="padding:10px 14px 6px">' +
+        '<span class="c-diff-legend-mine">\u258c Your version</span>' +
+        '<span class="c-diff-legend-theirs">\u258c Cloud version</span>' +
+        '</div>' + parts.join('') + '</div>';
     }
 
     // Render a read-only note card (Notes/Notebooks) using the real note card CSS classes
@@ -21666,11 +21785,15 @@
       const dayLabel = lDay.date
         ? new Date(lDay.date).toLocaleDateString('en-IE', { weekday:'long', day:'numeric', month:'long' })
         : (lDay.dayLabel || `Day ${dayIdx + 1}`);
-      const lHtml = lActs.length ? lActs.map((a,i) => _renderDayActFull(a, i)).join('') : '<p class="c-ddf-empty">No entries</p>';
-      const rHtml = rActs.length ? rActs.map((a,i) => _renderDayActFull(a, i)).join('') : '<p class="c-ddf-empty">No entries for this day in the cloud version.</p>';
+      // Compute per-activity diff fields and render with highlights
+      const maxActs = Math.max(lActs.length, rActs.length);
+      const lHtml = lActs.length ? lActs.map((a,i) => _renderDayActFull(a, i, rActs[i] ? _actDiffFields(a, rActs[i]) : new Set())).join('') : '<p class="c-ddf-empty">No entries</p>';
+      const rHtml = rActs.length ? rActs.map((a,i) => _renderDayActFull(a, i, lActs[i] ? _actDiffFields(lActs[i], a) : new Set())).join('') : '<p class="c-ddf-empty">No entries for this day in the cloud version.</p>';
+      const diffHtml = _buildDayDiffHtml(lActs, rActs);
       const existing = document.getElementById('conflict-fullview');
       if (existing) existing.remove();
       const xIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+      const diffTabIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
       const el = document.createElement('div');
       el.id = 'conflict-fullview';
       el.className = 'conflict-fullview-overlay';
@@ -21681,16 +21804,18 @@
             <button class="conflict-fullview-close" onclick="document.getElementById('conflict-fullview')?.remove()">${xIcon}</button>
           </div>
           <div class="conflict-tab-bar" id="cdd_bar">
-            <button class="conflict-tab active" id="cdd_btn_local"  onclick="_switchDayDetailTab('local')">${_cIcons.device} Your version</button>
-            <button class="conflict-tab"        id="cdd_btn_remote" onclick="_switchDayDetailTab('remote')">${_cIcons.cloud} Cloud version</button>
+            <button class="conflict-tab active" id="cdd_btn_local"  onclick="_switchDayDetailTab('local')">${_cIcons.device} Yours</button>
+            <button class="conflict-tab"        id="cdd_btn_remote" onclick="_switchDayDetailTab('remote')">${_cIcons.cloud} Cloud</button>
+            <button class="conflict-tab"        id="cdd_btn_diff"   onclick="_switchDayDetailTab('diff')">${diffTabIcon} Changes</button>
           </div>
           <div class="conflict-fullview-body" id="cdd_body"></div>
         </div>`;
       el.addEventListener('click', function(e) { if (e.target === el) el.remove(); });
       document.body.appendChild(el);
-      // Store both renders on the element for tab switching
+      // Store all three renders on the element for tab switching
       el._localHtml  = lHtml;
       el._remoteHtml = rHtml;
+      el._diffHtml   = diffHtml;
       document.getElementById('cdd_body').innerHTML = lHtml;
     }
 
@@ -21699,8 +21824,12 @@
       if (!el) return;
       document.getElementById('cdd_btn_local') ?.classList.toggle('active', side === 'local');
       document.getElementById('cdd_btn_remote')?.classList.toggle('active', side === 'remote');
+      document.getElementById('cdd_btn_diff')  ?.classList.toggle('active', side === 'diff');
       const body = document.getElementById('cdd_body');
-      if (body) body.innerHTML = side === 'local' ? el._localHtml : el._remoteHtml;
+      if (!body) return;
+      if (side === 'local')  body.innerHTML = el._localHtml;
+      else if (side === 'remote') body.innerHTML = el._remoteHtml;
+      else body.innerHTML = el._diffHtml;
     }
 
     // LCS diff on string arrays — returns [{type:'same'|'mine'|'theirs', text}]
