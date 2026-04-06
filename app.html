@@ -2172,10 +2172,21 @@
     .c-day-meta { font-size: 11px; color: var(--text-muted); text-align: right; }
     .c-day-meta.has-data { color: #16A34A; font-weight: 600; }
     .c-day-meta.no-data  { color: #DC2626; font-weight: 600; }
-    .c-day-chevron { transition: transform 0.2s; color: var(--text-muted); display: flex; }
+    .c-day-chevron { transition: transform 0.25s ease; color: var(--text-muted); display: flex; }
     .c-day-chevron.open { transform: rotate(90deg); }
-    .c-day-body { display: none; border-top: 1px solid var(--border); }
-    .c-day-body.open { display: block; }
+    .c-day-body {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      border-top: 0 solid var(--border);
+      transition: max-height 0.35s ease, opacity 0.25s ease, border-top-width 0s linear 0.35s;
+    }
+    .c-day-body.open {
+      max-height: 1400px;
+      opacity: 1;
+      border-top-width: 1px;
+      transition: max-height 0.35s ease, opacity 0.25s ease, border-top-width 0s linear 0s;
+    }
     /* Conflict list section-group expand animation (matches .sum-table-wrap) */
     .conflict-group-children {
       overflow: hidden;
@@ -2220,6 +2231,104 @@
     .c-act-row-badge.changed    { color: #ef4444; background: rgba(239,68,68,0.1); }
     /* Stacked activity-level detail overlay (sits on top of day overlay) */
     .conflict-actview-overlay { position: fixed; inset: 0; background: transparent; z-index: 310; display: flex; align-items: flex-end; justify-content: center; }
+
+    /* ── Side-by-side comparison view (replaces Yours/Cloud/Changes tabs) ── */
+    .csbs-wrap { padding: 12px; background: var(--bg-card-alt); }
+    .csbs-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .csbs-titlebar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; background: var(--bg-card-alt);
+      border-bottom: 1px solid var(--border);
+    }
+    .csbs-titlebar .task-num {
+      width: 30px; height: 30px; border-radius: 6px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text-secondary); font-weight: 700; font-size: 13px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .csbs-titlebar-body { flex: 1; min-width: 0; }
+    .csbs-titlebar-title { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .csbs-titlebar-sub   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .csbs-titlebar-pill {
+      font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0;
+    }
+    .csbs-titlebar-pill.only-yours { background: rgba(22,163,74,0.12); color: #15803d; }
+    .csbs-titlebar-pill.only-cloud { background: rgba(220,38,38,0.10); color: #b91c1c; }
+
+    /* Side header strip (Your version | Cloud version) */
+    .csbs-headers { display: grid; grid-template-columns: 1fr 1fr; }
+    .csbs-head {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 12px; font-size: 11px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+    .csbs-head.local  { background: rgba(22,163,74,0.06); color: #15803d; border-right: 1px solid var(--border); }
+    .csbs-head.remote { background: rgba(220,38,38,0.05); color: #b91c1c; }
+    .csbs-head-empty {
+      margin-left: auto; font-size: 9px; font-weight: 700;
+      padding: 2px 7px; border-radius: 999px;
+      background: var(--bg-card-alt); color: var(--text-muted);
+      border: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .csbs-head-meta { margin-left: auto; font-size: 10px; font-weight: 500; color: var(--text-muted); text-transform: none; letter-spacing: 0; }
+
+    /* Field rows */
+    .csbs-field { border-bottom: 1px solid var(--border); }
+    .csbs-field:last-child { border-bottom: none; }
+    .csbs-field-label-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px 2px;
+    }
+    .csbs-field-label {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .csbs-pill {
+      font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.04em; border: 1px solid;
+    }
+    .csbs-pill.same         { background: var(--bg-card-alt); color: var(--text-muted); border-color: var(--border); }
+    .csbs-pill.changed      { background: rgba(245,158,11,0.10); color: #b45309; border-color: rgba(245,158,11,0.35); }
+    .csbs-pill.only-yours   { background: rgba(22,163,74,0.12); color: #15803d; border-color: rgba(22,163,74,0.35); }
+    .csbs-pill.only-cloud   { background: rgba(220,38,38,0.10); color: #b91c1c; border-color: rgba(220,38,38,0.35); }
+
+    .csbs-field-vals { display: grid; grid-template-columns: 1fr 1fr; }
+    .csbs-cell {
+      padding: 6px 14px 10px; font-size: 13px; line-height: 1.4; color: var(--text-primary);
+      word-wrap: break-word; min-width: 0;
+    }
+    .csbs-cell.local  { border-right: 1px solid var(--border); }
+    .csbs-cell.local.diff  { background: rgba(22,163,74,0.05); }
+    .csbs-cell.remote.diff { background: rgba(220,38,38,0.04); }
+    .csbs-cell.local.diff  .csbs-val-text { color: #15803d; font-weight: 600; }
+    .csbs-cell.remote.diff .csbs-val-text { color: #b91c1c; font-weight: 600; }
+    .csbs-empty {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-style: italic; color: var(--text-muted);
+    }
+    .csbs-empty::before { content: '—'; font-style: normal; opacity: 0.6; }
+    .csbs-codes { display: flex; flex-wrap: wrap; gap: 4px; }
+    .csbs-code-chip {
+      display: inline-flex; align-items: center; padding: 2px 7px;
+      border-radius: 4px; font-size: 11px; font-weight: 700;
+      background: var(--bg-card-alt); border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    /* Bottom explanatory strip — only when one whole side is missing */
+    .csbs-summary {
+      padding: 11px 14px; font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px; line-height: 1.4;
+      border-top: 1px solid var(--border);
+    }
+    .csbs-summary.local  { background: rgba(22,163,74,0.08); color: #166534; }
+    .csbs-summary.remote { background: rgba(220,38,38,0.06); color: #991b1b; }
     .c-ddf-readonly .hrs-stepper button { opacity: 0.35; }
     .c-ddf-readonly .act-dictate-wrap,
     .c-ddf-readonly .act-suggest-btn,
@@ -11558,7 +11667,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.85';
+    const VERSION = '5.1.91';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -12400,6 +12509,53 @@
     async function fsSetWeek(weekStart, weekData) {
       const ref = userDoc(`weeks/${weekStart}`);
       if (!ref) return;
+
+      // ── Outbound HWM guard (added v5.1.89) ─────────────────────────────────
+      // Protects against this device wiping cloud data because of a stale or
+      // freshly-scaffolded in-memory state. Triggered when:
+      //   - we have a known HWM for this week (>HWM_THRESHOLD)
+      //   - and the data we're about to write is >HWM_THRESHOLD hours below it
+      // The guard does TWO things: (a) refuses the write, (b) raises a conflict
+      // so the user can decide whether to overwrite or refresh.
+      // The single-allow-list `_hwmAllowOutbound[weekStart]` lets a user-confirmed
+      // restore (e.g. after raising HWM intentionally) bypass the guard once.
+      try {
+        const hwm = _getHWM(weekStart);
+        const local = _weekTotalHours(weekData);
+        const allow = (window._hwmAllowOutbound || {})[weekStart];
+        if (allow) { delete window._hwmAllowOutbound[weekStart]; }
+        else if (hwm > HWM_THRESHOLD && local < hwm - HWM_THRESHOLD) {
+          console.warn('[Rian] BLOCKED outbound write — local hours regression:', local.toFixed(1), '< HWM', hwm.toFixed(1), 'for week', weekStart);
+          // Try to fetch the cloud version so the conflict has both sides
+          let remoteData = null;
+          try {
+            const cur = await ref.get();
+            if (cur.exists) remoteData = cur.data();
+          } catch (e) { /* ignore */ }
+          const remoteHrs = remoteData ? _weekTotalHours(remoteData) : hwm;
+          if (typeof _registerConflict === 'function') {
+            _registerConflict({
+              id: 'tsout_' + weekStart + '_' + Date.now(),
+              section: 'Timesheet', icon: '⚠️',
+              description: `Blocked overwrite of week ${weekStart} — this tab has ${local.toFixed(1)}h but cloud has ${remoteHrs.toFixed(1)}h. Refresh to pull cloud, or choose Keep Mine to overwrite.`,
+              displayType: 'rows',
+              localData: deepCopy(weekData),
+              remoteData: remoteData ? deepCopy(remoteData) : null,
+              localMeta:  { time: 'This tab (stale?)', rows: [{code:'Total',val:local.toFixed(1)+'h',note:'about to be written',hi:false}], summary: `${local.toFixed(1)}h vs HWM ${hwm.toFixed(1)}h` },
+              remoteMeta: { time: 'Cloud version (preserved)', rows: [{code:'Total',val:remoteHrs.toFixed(1)+'h',note:'cloud — kept',hi:true}], summary: `Cloud preserved` },
+            });
+          }
+          if (typeof showConflictBanner === 'function') showConflictBanner();
+          // Throw so the caller (scheduleAutoSave) does not assume success.
+          const err = new Error('OUTBOUND_HWM_BLOCK');
+          err.code = 'OUTBOUND_HWM_BLOCK';
+          throw err;
+        }
+      } catch (e) {
+        if (e && e.code === 'OUTBOUND_HWM_BLOCK') throw e;
+        console.warn('[Rian] outbound HWM check failed:', e);
+      }
+
       // IMPORTANT: use the client-side _updatedAt (Date.now()) set at edit time,
       // NOT serverTimestamp(). serverTimestamp() is assigned by Firestore when it
       // *processes* the write — so a stale offline write flushed later gets a brand-
@@ -13209,6 +13365,25 @@
         autoExpandToday();
         render();
 
+        // ── First-snapshot gate (added v5.1.90) ────────────────────────────────
+        // Prevents the scaffold-before-sync race that wiped Brave's data.
+        // If we have NO local cache for this week, mark it as "not ready" so
+        // scheduleAutoSave will not push the empty scaffold to Firestore until
+        // we've heard from the cloud at least once. After 5s without a snapshot
+        // (offline / slow network), we release the gate so edits can save.
+        window._firstSnapReceived = window._firstSnapReceived || {};
+        if (localIsOwn) {
+          window._firstSnapReceived[weekStart] = true;
+        } else {
+          window._firstSnapReceived[weekStart] = false;
+          setTimeout(() => {
+            if (window._firstSnapReceived[weekStart] === false) {
+              console.warn('[Rian] First-snapshot gate timeout for week', weekStart, '— releasing');
+              window._firstSnapReceived[weekStart] = true;
+            }
+          }, 5000);
+        }
+
         if (!state.currentUser) return;
 
         // Subscribe to Firestore real-time updates for this week
@@ -13216,6 +13391,14 @@
         weekUnsubscribe = ref.onSnapshot({ includeMetadataChanges: true }, snap => {
           // Ignore snapshots that are just echoing our own pending writes
           if (snap.metadata.hasPendingWrites) return;
+
+          // First-snapshot gate (v5.1.90 / v5.1.91): capture whether this is
+          // the very first snapshot for a freshly-scaffolded week BEFORE
+          // releasing the gate. When wasFirstSnap is true, local is just the
+          // empty scaffold and must NEVER be pushed back as "stale" or
+          // "regression" — the cloud version is the only truth.
+          const wasFirstSnap = !!(window._firstSnapReceived && window._firstSnapReceived[weekStart] === false);
+          if (window._firstSnapReceived) window._firstSnapReceived[weekStart] = true;
 
           if (!snap.exists) {
             // No data on server yet. We DO NOT push local data here anymore.
@@ -13241,7 +13424,10 @@
           // state, ignore it AND push our newer data back to Firestore to
           // restore the correct version (otherwise Firestore stays poisoned
           // with the stale data and other devices will receive it).
-          if (remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
+          // EXCEPTION (v5.1.91): if this is the first snapshot for a freshly
+          // scaffolded week, local is just the empty scaffold — never push
+          // it back, even if its _updatedAt is newer.
+          if (!wasFirstSnap && remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             return;
           }
@@ -13253,7 +13439,9 @@
           // this browser, reject and push local data back to restore Firestore.
           const _remoteHrs = _weekTotalHours(remote);
           const _hwm = _getHWM(weekStart);
-          if (_hwm > HWM_THRESHOLD && _remoteHrs < _hwm - HWM_THRESHOLD) {
+          // v5.1.91: skip HWM regression rejection on the first snapshot of a
+          // freshly-scaffolded week — local has no real data to compare against.
+          if (!wasFirstSnap && _hwm > HWM_THRESHOLD && _remoteHrs < _hwm - HWM_THRESHOLD) {
             console.warn('[Rian] Rejecting remote data — hours regression:', _remoteHrs.toFixed(1), '< HWM', _hwm.toFixed(1));
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             _registerConflict({
@@ -13273,7 +13461,8 @@
           // reject remote and push local data back to restore Firestore.
           const _localActCount = _weekNonEmptyActCount(state.weekData);
           const _remoteActCount = _weekNonEmptyActCount(remote);
-          if (_localActCount > 0 && _remoteActCount < _localActCount) {
+          // v5.1.91: same — first snapshot of a scaffolded week is always trusted.
+          if (!wasFirstSnap && _localActCount > 0 && _remoteActCount < _localActCount) {
             console.warn('[Rian] Rejecting remote data — entry regression (local:', _localActCount, 'acts, remote:', _remoteActCount, 'acts)');
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             _registerConflict({
@@ -13357,6 +13546,19 @@
         const dataToSave = (state.weekStart === capturedWeekStart) ? state.weekData : capturedWeekData;
         const uid = state.currentUser?.uid || null;
         await dbPut('weeks', { weekStart: capturedWeekStart, userId: uid, data: dataToSave, updatedAt: dataToSave._updatedAt });
+        // First-snapshot gate (v5.1.90) — if we haven't heard from Firestore
+        // yet for this freshly-scaffolded week, do NOT push to cloud. This
+        // prevents the scaffold-before-sync race that wiped Brave's data
+        // when a stale tab on another browser flushed an empty 7-day skeleton
+        // before its onSnapshot delivered the real cloud version.
+        // The edit is still saved to IDB above and will be pushed naturally
+        // on the next edit after the gate releases (or after the 5s timeout).
+        if (window._firstSnapReceived && window._firstSnapReceived[capturedWeekStart] === false) {
+          console.warn('[Rian] Skipping fsSetWeek — first snapshot not received yet for', capturedWeekStart);
+          state.syncStatus = 'pending';
+          updateHeaderStatus();
+          return;
+        }
         if (state.currentUser) {
           try {
             await fsSetWeek(capturedWeekStart, dataToSave);
@@ -21518,15 +21720,31 @@
         }
         // Multiple conflicts in this section — expandable group
         const groupId = 'cg_' + section.replace(/\s+/g, '_');
-        const subRows = items.map(c => `
+        const _fmtWeekRange = (ws) => {
+          try {
+            const s = new Date(ws);
+            const e = new Date(ws); e.setDate(e.getDate() + 6);
+            const fm = (d) => d.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
+            return `${fm(s)} – ${fm(e)}`;
+          } catch (err) { return ws || ''; }
+        };
+        const subRows = items.map(c => {
+          // For Timesheet conflicts show just the week date range, not the hours blurb
+          let label = c.description;
+          if (section === 'Timesheet') {
+            const ws = c.localData?.weekStart || c.remoteData?.weekStart;
+            if (ws) label = _fmtWeekRange(ws);
+          }
+          return `
           <div class="conflict-list-row conflict-list-subrow" onclick="event.stopPropagation();_openConflictModal('${esc(c.id)}')" style="padding-left:54px;background:var(--bg-card-alt);border-top:1px solid var(--border)">
             <div class="conflict-list-meta" style="flex:1">
-              <div class="conflict-list-desc" style="font-weight:600;color:var(--text-primary)">${esc(c.description)}</div>
+              <div class="conflict-list-desc" style="font-weight:600;color:var(--text-primary)">${esc(label)}</div>
               <div class="conflict-list-time">${_formatSnapTime(c.detectedAt).relative}</div>
             </div>
             <span class="conflict-list-badge">CONFLICT</span>
             ${_arrowSvg}
-          </div>`).join('');
+          </div>`;
+        }).join('');
         return `<div class="conflict-group" id="${groupId}">
           <div class="conflict-list-row" onclick="_toggleConflictGroup('${groupId}')">
             <span class="conflict-list-icon" style="color:#D97706">${_cIcon(section)}</span>
@@ -21942,7 +22160,119 @@
       document.body.appendChild(el);
     }
 
-    // Open a stacked activity-level detail overlay (Yours / Cloud / Changes tabs for one activity)
+    // ── Side-by-side activity comparison ────────────────────────────────────
+    // Renders the value for one field on one side of the comparison.
+    function _csbsRenderVal(act, field) {
+      if (!act) return '<span class="csbs-empty">Not set</span>';
+      if (field === 'codes') {
+        const arr = Array.isArray(act.codes)
+          ? act.codes.filter(Boolean).map(c => typeof c === 'object' ? c : { d: String(c), c: '' })
+          : [];
+        if (!arr.length) return '<span class="csbs-empty">Not set</span>';
+        return '<div class="csbs-codes">' + arr.map(c =>
+          '<span class="csbs-code-chip">' + esc(c.d) + (c.c ? ' <span style="opacity:0.55;font-weight:500">' + esc(c.c) + '</span>' : '') + '</span>'
+        ).join('') + '</div>';
+      }
+      if (field === 'ordinary' || field === 'overtime') {
+        const v = parseFloat(act[field]) || 0;
+        if (!v) return '<span class="csbs-empty">0h</span>';
+        return '<span class="csbs-val-text">' + v + 'h</span>';
+      }
+      const v = (act[field] || '').trim();
+      if (!v) return '<span class="csbs-empty">Not set</span>';
+      // Notes can contain HTML (TipTap)
+      if (field === 'notes' && v.startsWith('<')) {
+        return '<div class="csbs-val-text" style="font-size:12px">' + sanitizeHtml(v) + '</div>';
+      }
+      return '<span class="csbs-val-text">' + esc(v) + '</span>';
+    }
+
+    // Builds the side-by-side comparison card HTML for one activity pair.
+    function _buildSideBySideHtml(l, r, actIdx) {
+      const fields = [
+        { key: 'description', label: 'Description' },
+        { key: 'location',    label: 'Location'    },
+        { key: 'codes',       label: 'Work codes'  },
+        { key: 'ordinary',    label: 'Ordinary hrs'},
+        { key: 'overtime',    label: 'Overtime hrs'},
+        { key: 'notes',       label: 'Notes'       },
+      ];
+      const df = _actDiffFields(l, r);
+      const hasLocal  = !!l;
+      const hasRemote = !!r;
+      const titleText = esc((l || r)?.description || ('Activity ' + (actIdx + 1)));
+      // Headline pill for cases where one whole side is missing
+      let headPill = '';
+      if (!hasLocal)  headPill = '<span class="csbs-titlebar-pill only-cloud">Only in cloud</span>';
+      if (!hasRemote) headPill = '<span class="csbs-titlebar-pill only-yours">Only in yours</span>';
+
+      // Field rows
+      const rows = fields.map(f => {
+        // For "only one side" cases, the per-field status is just only-yours/only-cloud
+        let status;
+        if (!hasLocal && !hasRemote) return '';
+        if (!hasLocal)  status = 'only-cloud';
+        else if (!hasRemote) status = 'only-yours';
+        else status = df.has(f.key) ? 'changed' : 'same';
+        // Skip rows where both sides are empty
+        const lEmpty = !l || (Array.isArray(l[f.key]) ? !l[f.key].filter(Boolean).length : !((l[f.key] ?? '') + '').trim());
+        const rEmpty = !r || (Array.isArray(r[f.key]) ? !r[f.key].filter(Boolean).length : !((r[f.key] ?? '') + '').trim());
+        if (lEmpty && rEmpty) return '';
+        const pillText = { same: 'Same', changed: 'Changed', 'only-yours': 'Only yours', 'only-cloud': 'Only cloud' }[status];
+        const isDiff = status !== 'same';
+        return '<div class="csbs-field">' +
+          '<div class="csbs-field-label-row">' +
+            '<span class="csbs-field-label">' + f.label + '</span>' +
+            '<span class="csbs-pill ' + status + '">' + pillText + '</span>' +
+          '</div>' +
+          '<div class="csbs-field-vals">' +
+            '<div class="csbs-cell local'  + (isDiff ? ' diff' : '') + '">' + _csbsRenderVal(l, f.key) + '</div>' +
+            '<div class="csbs-cell remote' + (isDiff ? ' diff' : '') + '">' + _csbsRenderVal(r, f.key) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      // Bottom explanatory strip when one whole side is missing
+      let summary = '';
+      if (!hasRemote) {
+        summary = '<div class="csbs-summary local">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          'This activity is on this device but never made it to the cloud. <strong>Keep Mine</strong> uploads it; <strong>Use Cloud</strong> deletes it.' +
+        '</div>';
+      } else if (!hasLocal) {
+        summary = '<div class="csbs-summary remote">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          'This activity is on another device but missing from yours. <strong>Use Cloud</strong> downloads it here; <strong>Keep Mine</strong> deletes it from the cloud.' +
+        '</div>';
+      }
+
+      return '<div class="csbs-wrap"><div class="csbs-card">' +
+        '<div class="csbs-titlebar">' +
+          '<div class="task-num">' + (actIdx + 1) + '</div>' +
+          '<div class="csbs-titlebar-body">' +
+            '<div class="csbs-titlebar-title">' + titleText + '</div>' +
+            '<div class="csbs-titlebar-sub">' + (hasLocal && hasRemote ? (df.size + ' field' + (df.size === 1 ? '' : 's') + ' differ') : 'Activity exists on only one side') + '</div>' +
+          '</div>' +
+          headPill +
+        '</div>' +
+        '<div class="csbs-headers">' +
+          '<div class="csbs-head local">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' +
+            'Your version' +
+            (hasLocal ? '<span class="csbs-head-meta">This device</span>' : '<span class="csbs-head-empty">Empty</span>') +
+          '</div>' +
+          '<div class="csbs-head remote">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>' +
+            'Cloud version' +
+            (hasRemote ? '<span class="csbs-head-meta">From cloud</span>' : '<span class="csbs-head-empty">Empty</span>') +
+          '</div>' +
+        '</div>' +
+        rows +
+        summary +
+      '</div></div>';
+    }
+
+    // Open a stacked activity-level detail overlay (side-by-side comparison)
     function _openConflictActDetail(conflictId, dayIdx, actIdx) {
       const dayEl = document.getElementById('conflict-fullview');
       const c = (state.conflicts || []).find(x => x.id === conflictId);
@@ -21953,18 +22283,12 @@
       const lActs = dayEl?._lActs || filterActs((c.localData?.days  || [])[dayIdx]?.activities);
       const rActs = dayEl?._rActs || filterActs((c.remoteData?.days || [])[dayIdx]?.activities);
       const l = lActs[actIdx], r = rActs[actIdx];
-      const df = _actDiffFields(l, r);
-      const lHtml = l ? _renderDayActFull(l, actIdx, r ? df : new Set())
-        : '<p class="c-ddf-empty">This activity only exists in the cloud version.</p>';
-      const rHtml = r ? _renderDayActFull(r, actIdx, l ? df : new Set())
-        : '<p class="c-ddf-empty">This activity only exists in your local version.</p>';
-      const diffHtml = _buildDayDiffHtml(l ? [l] : [], r ? [r] : []);
       const actTitle = esc((l || r)?.description || ('Activity ' + (actIdx + 1)));
+      const bodyHtml = _buildSideBySideHtml(l, r, actIdx);
       const existing = document.getElementById('conflict-actview');
       if (existing) existing.remove();
       const xIcon    = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
       const backIcon  = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
-      const diffIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
       const el = document.createElement('div');
       el.id = 'conflict-actview';
       el.className = 'conflict-actview-overlay';
@@ -21975,31 +22299,9 @@
             <span class="conflict-fullview-title">Activity ${actIdx + 1} — ${actTitle}</span>
             <button class="conflict-fullview-close" onclick="document.getElementById('conflict-actview')?.remove();document.getElementById('conflict-fullview')?.remove()">${xIcon}</button>
           </div>
-          <div class="conflict-tab-bar">
-            <button class="conflict-tab active" id="cav_btn_local"  onclick="_switchActDetailTab('local')">${_cIcons.device} Yours</button>
-            <button class="conflict-tab"        id="cav_btn_remote" onclick="_switchActDetailTab('remote')">${_cIcons.cloud} Cloud</button>
-            <button class="conflict-tab"        id="cav_btn_diff"   onclick="_switchActDetailTab('diff')">${diffIcon} Changes</button>
-          </div>
-          <div class="conflict-fullview-body" id="cav_body" style="padding:0"></div>
+          <div class="conflict-fullview-body" id="cav_body" style="padding:0">${bodyHtml}</div>
         </div>`;
-      el._localHtml  = lHtml;
-      el._remoteHtml = rHtml;
-      el._diffHtml   = diffHtml;
       document.body.appendChild(el);
-      document.getElementById('cav_body').innerHTML = lHtml;
-    }
-
-    function _switchActDetailTab(side) {
-      const el = document.getElementById('conflict-actview');
-      if (!el) return;
-      document.getElementById('cav_btn_local') ?.classList.toggle('active', side === 'local');
-      document.getElementById('cav_btn_remote')?.classList.toggle('active', side === 'remote');
-      document.getElementById('cav_btn_diff')  ?.classList.toggle('active', side === 'diff');
-      const body = document.getElementById('cav_body');
-      if (!body) return;
-      if (side === 'local')  body.innerHTML = el._localHtml;
-      else if (side === 'remote') body.innerHTML = el._remoteHtml;
-      else body.innerHTML = el._diffHtml;
     }
 
     // LCS diff on string arrays — returns [{type:'same'|'mine'|'theirs', text}]
@@ -22193,30 +22495,40 @@
                   || (a.description||'') !== (b.description||'');
             });
           if (!differs) return ''; // only show days that differ
-          const lHrs = lActs.reduce((s,a)=>s+(parseFloat(a.ordinary)||0)+(parseFloat(a.overtime)||0),0);
-          const rHrs = rActs.reduce((s,a)=>s+(parseFloat(a.ordinary)||0)+(parseFloat(a.overtime)||0),0);
-          const dayLabel = lDay.date ? new Date(lDay.date).toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'}) : (lDay.dayLabel || `Day ${i+1}`);
+          const dayLabel = lDay.date ? new Date(lDay.date).toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'short'}) : (lDay.dayLabel || `Day ${i+1}`);
           const arrowSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+          // Build the activity rows that will live INSIDE the expanded day body
+          const maxLen = Math.max(lActs.length, rActs.length);
+          let bodyRows = '';
+          for (let k = 0; k < maxLen; k++) {
+            const l = lActs[k], r = rActs[k];
+            let badge = '';
+            if (l && !r) {
+              badge = '<span class="c-act-row-badge yours-only">Yours only</span>';
+            } else if (!l && r) {
+              badge = '<span class="c-act-row-badge cloud-only">Cloud only</span>';
+            } else {
+              const df = _actDiffFields(l, r);
+              if (df.size > 0) badge = '<span class="c-act-row-badge changed">' + df.size + ' field' + (df.size > 1 ? 's' : '') + ' changed</span>';
+            }
+            const desc = esc(((l || r).description || '').trim() || ('Activity ' + (k + 1)));
+            bodyRows += '<div class="c-act-row" onclick="event.stopPropagation();_openConflictActDetail(\'' + esc(c.id) + '\',' + i + ',' + k + ')">' +
+              '<div class="task-num">' + (k + 1) + '</div>' +
+              '<div class="c-act-row-body"><div class="c-act-row-desc">' + desc + '</div></div>' +
+              badge +
+              '<div class="c-day-chevron">' + arrowSvg + '</div></div>';
+          }
           return `<div class="c-day-block">
-            <div class="c-day-head" onclick="_openConflictDayDetail('${esc(c.id)}', ${i})" style="cursor:pointer">
-              <span class="c-day-label">${esc(dayLabel)}</span>
-              <span class="c-day-meta ${lHrs>0?'has-data':'no-data'}">You: ${lHrs.toFixed(1)}h</span>
-              <span class="c-day-meta" style="margin-left:6px;color:var(--text-muted)">|</span>
-              <span class="c-day-meta ${rHrs>0?'has-data':'no-data'}" style="margin-left:6px">Cloud: ${rHrs.toFixed(1)}h</span>
+            <div class="c-day-head" onclick="_toggleConflictDayRow(this)" style="cursor:pointer">
+              <span class="c-day-label" style="flex:1">${esc(dayLabel)}</span>
               <span class="c-day-chevron" style="color:var(--text-muted)">${arrowSvg}</span>
             </div>
+            <div class="c-day-body">${bodyRows}</div>
           </div>`;
         }).join('');
-        const totalLocal  = lDays.reduce((s,d)=>(d.activities||[]).reduce((ss,a)=>ss+(parseFloat(a.ordinary)||0)+(parseFloat(a.overtime)||0),s),0);
-        const totalRemote = rDays.reduce((s,d)=>(d.activities||[]).reduce((ss,a)=>ss+(parseFloat(a.ordinary)||0)+(parseFloat(a.overtime)||0),s),0);
         versionsHtml = `
-          <div style="padding:8px 12px 4px;font-size:11px;color:var(--text-muted)">Tap a day to compare your version vs cloud in detail</div>
-          ${dayBlocks || '<div style="padding:12px 16px;font-size:12px;color:var(--text-muted)">No differing days found.</div>'}
-          <div style="display:flex;gap:12px;padding:6px 12px 10px;font-size:12px;border-top:1px solid var(--border);margin-top:4px">
-            <span style="color:#16A34A;font-weight:700">Your total: ${totalLocal.toFixed(1)}h</span>
-            <span style="color:var(--text-muted)">·</span>
-            <span style="color:#DC2626;font-weight:700">Cloud total: ${totalRemote.toFixed(1)}h</span>
-          </div>`;
+          <div style="padding:8px 12px 4px;font-size:11px;color:var(--text-muted)">Tap a day to compare your version vs cloud</div>
+          ${dayBlocks || '<div style="padding:12px 16px;font-size:12px;color:var(--text-muted)">No differing days found.</div>'}`;
 
       // ── Notes / Notebooks: single tappable row → fullscreen note detail ──
       } else if (c.displayType === 'split') {
