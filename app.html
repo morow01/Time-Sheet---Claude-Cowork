@@ -11456,8 +11456,8 @@
               </svg>
               Cloud Backups
             </div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">Automatic daily snapshots — notes,
-              callouts, timesheets, routines, note tags</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">Automatic daily snapshots —
+              everything: timesheets, notes, callouts, routines, reminders, note tags, notebooks, settings</div>
           </div>
           <button onclick="document.getElementById('backup-modal').classList.add('hidden')"
             style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;padding:0 0 0 12px;line-height:1">✕</button>
@@ -11540,7 +11540,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.77';
+    const VERSION = '5.1.78';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22573,6 +22573,25 @@
         if (state.jPages && state.jPages.length > 0) {
           snapData._jPages = state.jPages;
         }
+        // Include routines backup
+        if (state.routines) {
+          snapData._routines = state.routines;
+        }
+        // Include note tags (categories) backup
+        if (state.customCategories && state.customCategories.length > 0) {
+          snapData._categories = {
+            categories: state.customCategories,
+            disabledCats: state.disabledCats || []
+          };
+        }
+        // Include settings backup (same keys as Cloud Backup / Export)
+        const _snapLsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
+          'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'];
+        const _snapSettings = {};
+        _snapLsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) _snapSettings[k] = v; });
+        if (Object.keys(_snapSettings).length > 0) {
+          snapData._settings = _snapSettings;
+        }
         await colRef.doc(String(ts)).set(snapData);
         // Prune oldest if over limit
         const all = await colRef.orderBy('_savedAt', 'asc').get();
@@ -22769,6 +22788,23 @@
               await dbPut('notes', { id: 'j_pages', userId: uid, data: state.jPages, updatedAt: Date.now() });
               await fsSetJPages(state.jPages).catch(e => console.warn('[Rian]', e));
             }
+            // Restore routines if included
+            if (snapData._routines) {
+              state.routines = deepCopy(snapData._routines);
+              await userDoc('data/routines')?.set({ ...state.routines, _updatedAt: Date.now() }).catch(e => console.warn('[Rian]', e));
+            }
+            // Restore note tags (categories) if included
+            if (snapData._categories) {
+              state.customCategories = deepCopy(snapData._categories.categories || []);
+              state.disabledCats = deepCopy(snapData._categories.disabledCats || []);
+              await saveCustomCategories();
+            }
+            // Restore settings if included
+            if (snapData._settings) {
+              Object.entries(snapData._settings).forEach(([k, v]) => {
+                if (v != null) localStorage.setItem(k, v);
+              });
+            }
             render();
             const _coInfo = snapData._callouts ? ' Callouts restored.' : ' (Callouts not in this snapshot — take a new one first)';
             const _jInfo = _journalRestored ? ' Journal restored.' : '';
@@ -22884,13 +22920,16 @@
       const uid = state.currentUser.uid;
       // Fetch all counts from Firestore (fall back to IndexedDB/state)
       let weekCount = 0, noteCount = 0, remCount = 0, coFaultCount = 0, coScheduleCount = 0, rtnCount = 0;
+      let tagCount = 0, notebookCount = 0;
       try {
-        const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc] = await Promise.all([
+        const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc, catsDoc, jnDoc] = await Promise.all([
           db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
           userDoc('data/notes')?.get().catch(() => null),
           userDoc('data/reminders')?.get().catch(() => null),
           userDoc('data/callouts')?.get().catch(() => null),
-          userDoc('data/routines')?.get({ source: 'server' }).catch(() => null)
+          userDoc('data/routines')?.get({ source: 'server' }).catch(() => null),
+          userDoc('data/categories')?.get().catch(() => null),
+          userDoc('data/jNotebooks')?.get().catch(() => null)
         ]);
         weekCount = weeksSnap?.size || 0;
         noteCount = notesDoc?.exists ? (notesDoc.data()?.notes?.length || 0) : 0;
@@ -22901,6 +22940,8 @@
           coScheduleCount = Object.keys(coDoc.data()?.onCall || {}).length;
         }
         if (rtnDoc?.exists) rtnCount = rtnDoc.data()?.selectedSites?.length || 0;
+        if (catsDoc?.exists) tagCount = catsDoc.data()?.categories?.length || 0;
+        if (jnDoc?.exists) notebookCount = jnDoc.data()?.notebooks?.length || 0;
       } catch (e) { /* offline — use in-memory state */ }
       if (!noteCount) noteCount = state.notes?.length || 0;
       if (!remCount) remCount = remindersData?.length || 0;
@@ -22909,12 +22950,16 @@
       if (!coScheduleCount && state.callouts?.onCall)
         coScheduleCount = Object.keys(state.callouts.onCall).length;
       if (!rtnCount) rtnCount = state.routines?.selectedSites?.length || 0;
+      if (!tagCount) tagCount = state.customCategories?.length || 0;
+      if (!notebookCount) notebookCount = state.jNotebooks?.length || 0;
       const settingsCount = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
         'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'].filter(k => localStorage.getItem(k) !== null).length;
       const list = document.getElementById('exp-list');
       list.innerHTML =
         _eiCheckboxRow('exp-weeks', _eiIcons.timesheet, 'Timesheet', weekCount ? weekCount + ' weeks' : '', true, false) +
         _eiCheckboxRow('exp-notes', _eiIcons.notes, 'Field Notes', noteCount ? noteCount + ' notes' : '', true, false) +
+        _eiCheckboxRow('exp-tags', _eiIcons.notes, 'Note Tags', tagCount ? tagCount + ' tags' : '', true, false) +
+        _eiCheckboxRow('exp-notebooks', _eiIcons.notes, 'Notebooks', notebookCount ? notebookCount + ' notebooks' : '', true, false) +
         _eiCheckboxRow('exp-reminders', _eiIcons.reminders, 'Reminders', remCount ? remCount + ' reminders' : '', true, false) +
         _eiCheckboxRow('exp-co-faults', _eiIcons.callouts, 'Callouts (Faults)', coFaultCount ? coFaultCount + ' incidents' : '', true, false) +
         _eiCheckboxRow('exp-co-schedule', _eiIcons.routines, 'Callouts (On-Call Schedule)', coScheduleCount ? coScheduleCount + ' weeks' : '', true, false) +
@@ -22928,13 +22973,15 @@
       const uid = state.currentUser.uid;
       const incWeeks = document.getElementById('exp-weeks')?.checked;
       const incNotes = document.getElementById('exp-notes')?.checked;
+      const incTags = document.getElementById('exp-tags')?.checked;
+      const incNotebooks = document.getElementById('exp-notebooks')?.checked;
       const incReminders = document.getElementById('exp-reminders')?.checked;
       const incCoFaults = document.getElementById('exp-co-faults')?.checked;
       const incCoSchedule = document.getElementById('exp-co-schedule')?.checked;
       const incRoutines = document.getElementById('exp-routines')?.checked;
       const incSettings = document.getElementById('exp-settings')?.checked;
 
-      if (!incWeeks && !incNotes && !incReminders && !incCoFaults && !incCoSchedule && !incRoutines && !incSettings) {
+      if (!incWeeks && !incNotes && !incTags && !incNotebooks && !incReminders && !incCoFaults && !incCoSchedule && !incRoutines && !incSettings) {
         showToast('Nothing selected to export'); return;
       }
       showToast('Exporting data…');
@@ -22954,6 +23001,20 @@
         if (incNotes) {
           const notesDoc = await userDoc('data/notes')?.get().catch(() => null);
           exp.notes = notesDoc?.exists ? notesDoc.data() : null;
+        }
+        if (incTags) {
+          const catsDoc = await userDoc('data/categories')?.get().catch(() => null);
+          exp.categories = catsDoc?.exists ? catsDoc.data() : null;
+        }
+        if (incNotebooks) {
+          const [jnDoc, jsDoc, jpDoc] = await Promise.all([
+            userDoc('data/jNotebooks')?.get().catch(() => null),
+            userDoc('data/jSections')?.get().catch(() => null),
+            userDoc('data/jPages')?.get().catch(() => null)
+          ]);
+          exp.jNotebooks = jnDoc?.exists ? jnDoc.data() : null;
+          exp.jSections = jsDoc?.exists ? jsDoc.data() : null;
+          exp.jPages = jpDoc?.exists ? jpDoc.data() : null;
         }
         if (incReminders) {
           const remDoc = await userDoc('data/reminders')?.get().catch(() => null);
@@ -23023,13 +23084,16 @@
         const existing = await backupRef.get().catch(() => null);
         if (existing?.exists) return; // already have one for this key
       }
-      const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc, catsDoc] = await Promise.all([
+      const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc, catsDoc, jnDoc, jsDoc, jpDoc] = await Promise.all([
         db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
         userDoc('data/notes')?.get().catch(() => null),
         userDoc('data/reminders')?.get().catch(() => null),
         userDoc('data/callouts')?.get().catch(() => null),
         userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null)),
-        userDoc('data/categories')?.get().catch(() => null)
+        userDoc('data/categories')?.get().catch(() => null),
+        userDoc('data/jNotebooks')?.get().catch(() => null),
+        userDoc('data/jSections')?.get().catch(() => null),
+        userDoc('data/jPages')?.get().catch(() => null)
       ]);
       const weeks = {};
       if (weeksSnap) weeksSnap.docs.forEach(d => { weeks[d.id] = d.data(); });
@@ -23038,12 +23102,17 @@
       const callouts = coDoc?.exists ? coDoc.data() : null;
       const routines = rtnDoc?.exists ? rtnDoc.data() : null;
       const categories = catsDoc?.exists ? catsDoc.data() : null;
+      const jNotebooks = jnDoc?.exists ? jnDoc.data() : null;
+      const jSections = jsDoc?.exists ? jsDoc.data() : null;
+      const jPages = jpDoc?.exists ? jpDoc.data() : null;
       const noteCount = notes?.notes?.length || 0;
       const weekCount = Object.keys(weeks).length;
       const calloutCount = callouts ? Object.values(callouts.weeks || {}).reduce((s, w) => s + (w.callouts?.length || 0), 0) : 0;
       const reminderCount = reminders?.reminders?.length || 0;
       const routineCount = routines?.selectedSites?.length || 0;
       const tagCount = categories?.categories?.length || 0;
+      const notebookCount = jNotebooks?.notebooks?.length || 0;
+      const pageCount = jPages?.pages?.length || 0;
       // Collect settings from localStorage (same as Export All Data)
       const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'layoutMode', 'headerExpanded',
         'rian_ai_scope', 'rian_ai_recent', 'exchangeTab', 'deviceName'];
@@ -23065,6 +23134,8 @@
         _reminderCount: reminderCount,
         _routineCount: routineCount,
         _tagCount: tagCount,
+        _notebookCount: notebookCount,
+        _pageCount: pageCount,
         // Data — same fields as export
         weeks,
         notes,
@@ -23072,6 +23143,9 @@
         callouts,
         routines,
         categories,
+        jNotebooks,
+        jSections,
+        jPages,
         settings
       });
       // Prune: keep only the 30 most recent backups
@@ -23122,7 +23196,8 @@
             b._calloutCount != null && b._calloutCount > 0 ? `${b._calloutCount} callouts` : '',
             b._reminderCount != null && b._reminderCount > 0 ? `${b._reminderCount} reminders` : '',
             b._routineCount != null && b._routineCount > 0 ? `${b._routineCount} routines` : '',
-            b._tagCount != null && b._tagCount > 0 ? `${b._tagCount} tags` : ''
+            b._tagCount != null && b._tagCount > 0 ? `${b._tagCount} tags` : '',
+            b._notebookCount != null && b._notebookCount > 0 ? `${b._notebookCount} notebooks` : ''
           ].filter(Boolean).join(' · ');
           const isLast = i === snap.docs.length - 1;
           return `<div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
@@ -23177,7 +23252,7 @@
         ? p[2].replace(/^0/, '') + ' ' + (MN[parseInt(p[1], 10) - 1] || '') + ' ' + p[0]
         : dateKey;
       const msgEl = document.getElementById('restore-confirm-msg');
-      if (msgEl) msgEl.innerHTML = `This will replace your current <strong>notes, callouts, timesheets, routines, reminders and note tags</strong> with the snapshot from <strong>${label}</strong>.<br><br>Your current data will be saved as a safety backup first.`;
+      if (msgEl) msgEl.innerHTML = `This will replace your current <strong>timesheets, notes, callouts, routines, reminders, note tags, notebooks and settings</strong> with the snapshot from <strong>${label}</strong>.<br><br>Your current data will be saved as a safety backup first.`;
       const btn = document.getElementById('restore-confirm-btn');
       if (btn) { btn.onclick = () => { document.getElementById('restore-confirm-modal').classList.add('hidden'); restoreFromBackup(dateKey); }; }
       document.getElementById('restore-confirm-modal').classList.remove('hidden');
@@ -23271,6 +23346,30 @@
           await saveCustomCategories();
         }
 
+        // 8. Notebooks (jNotebooks / jSections / jPages)
+        if (b.jNotebooks?.notebooks) {
+          state.jNotebooks = deepCopy(b.jNotebooks.notebooks);
+          await dbPut('notes', { id: 'j_notebooks', userId: uid, data: state.jNotebooks, updatedAt: now });
+          await fsSetJNotebooks(state.jNotebooks).catch(e => console.warn('[Rian]', e));
+        }
+        if (b.jSections?.sections) {
+          state.jSections = deepCopy(b.jSections.sections);
+          await dbPut('notes', { id: 'j_sections', userId: uid, data: state.jSections, updatedAt: now });
+          await fsSetJSections(state.jSections).catch(e => console.warn('[Rian]', e));
+        }
+        if (b.jPages?.pages) {
+          state.jPages = deepCopy(b.jPages.pages);
+          await dbPut('notes', { id: 'j_pages', userId: uid, data: state.jPages, updatedAt: now });
+          await fsSetJPages(state.jPages).catch(e => console.warn('[Rian]', e));
+        }
+
+        // 9. Settings
+        if (b.settings) {
+          Object.entries(b.settings).forEach(([k, v]) => {
+            if (v != null) localStorage.setItem(k, v);
+          });
+        }
+
         document.getElementById('backup-modal').classList.add('hidden');
         render();
         // Re-subscribe all onSnapshot listeners now that restore is done
@@ -23344,6 +23443,10 @@
       const weekCount = hasWeeks ? Object.keys(data.weeks).length + ' weeks' : '';
       const hasNotes = data.notes?.notes?.length > 0;
       const noteCount = hasNotes ? data.notes.notes.length + ' notes' : '';
+      const hasTags = data.categories?.categories?.length > 0;
+      const tagCount = hasTags ? data.categories.categories.length + ' tags' : '';
+      const hasNotebooks = data.jNotebooks?.notebooks?.length > 0;
+      const notebookCount = hasNotebooks ? data.jNotebooks.notebooks.length + ' notebooks' : '';
       const hasReminders = data.reminders?.reminders?.length > 0;
       const remCount = hasReminders ? data.reminders.reminders.length + ' reminders' : '';
       const hasCoFaults = data.callouts?.weeks && Object.keys(data.callouts.weeks).length > 0;
@@ -23358,6 +23461,8 @@
       list.innerHTML =
         _eiCheckboxRow('imp-weeks', _eiIcons.timesheet, 'Timesheet', hasWeeks ? weekCount : 'Not in file', hasWeeks, !hasWeeks) +
         _eiCheckboxRow('imp-notes', _eiIcons.notes, 'Field Notes', hasNotes ? noteCount : 'Not in file', hasNotes, !hasNotes) +
+        _eiCheckboxRow('imp-tags', _eiIcons.notes, 'Note Tags', hasTags ? tagCount : 'Not in file', hasTags, !hasTags) +
+        _eiCheckboxRow('imp-notebooks', _eiIcons.notes, 'Notebooks', hasNotebooks ? notebookCount : 'Not in file', hasNotebooks, !hasNotebooks) +
         _eiCheckboxRow('imp-reminders', _eiIcons.reminders, 'Reminders', hasReminders ? remCount : 'Not in file', hasReminders, !hasReminders) +
         _eiCheckboxRow('imp-co-faults', _eiIcons.callouts, 'Callouts (Faults)', hasCoFaults ? coFaultTotal + ' incidents' : 'Not in file', hasCoFaults, !hasCoFaults) +
         _eiCheckboxRow('imp-co-schedule', _eiIcons.routines, 'Callouts (On-Call Schedule)', hasCoSchedule ? coScheduleTotal + ' weeks' : 'Not in file', hasCoSchedule, !hasCoSchedule) +
@@ -23374,12 +23479,14 @@
       const data = _importParsedData;
       const incWeeks = document.getElementById('imp-weeks')?.checked;
       const incNotes = document.getElementById('imp-notes')?.checked;
+      const incTags = document.getElementById('imp-tags')?.checked;
+      const incNotebooks = document.getElementById('imp-notebooks')?.checked;
       const incReminders = document.getElementById('imp-reminders')?.checked;
       const incCoFaults = document.getElementById('imp-co-faults')?.checked;
       const incCoSchedule = document.getElementById('imp-co-schedule')?.checked;
       const incRoutines = document.getElementById('imp-routines')?.checked;
       const incSettings = document.getElementById('imp-settings')?.checked;
-      if (!incWeeks && !incNotes && !incReminders && !incCoFaults && !incCoSchedule && !incRoutines && !incSettings) {
+      if (!incWeeks && !incNotes && !incTags && !incNotebooks && !incReminders && !incCoFaults && !incCoSchedule && !incRoutines && !incSettings) {
         showToast('Nothing selected to import'); return;
       }
       document.getElementById('import-modal').classList.add('hidden');
@@ -23388,6 +23495,10 @@
         _format: data._format,
         weeks: incWeeks ? data.weeks : null,
         notes: incNotes ? data.notes : null,
+        categories: incTags ? data.categories : null,
+        jNotebooks: incNotebooks ? data.jNotebooks : null,
+        jSections: incNotebooks ? data.jSections : null,
+        jPages: incNotebooks ? data.jPages : null,
         reminders: incReminders ? data.reminders : null,
         callouts: (incCoFaults || incCoSchedule) ? {
           weeks: incCoFaults ? (data.callouts?.weeks || {}) : null,
@@ -23472,6 +23583,34 @@
           state.routines = { ...data.routines };
           parts.push(data.routines.selectedSites.length + ' routine sites');
           render();
+        }
+        // 5b. Import note tags (categories)
+        if (data.categories?.categories) {
+          const ref = userDoc('data/categories');
+          if (ref) await ref.set({ ...data.categories, _updatedAt: Date.now() });
+          state.customCategories = data.categories.categories;
+          state.disabledCats = data.categories.disabledCats || [];
+          parts.push(data.categories.categories.length + ' tags');
+        }
+        // 5c. Import notebooks (jNotebooks/jSections/jPages)
+        if (data.jNotebooks?.notebooks) {
+          const ref = userDoc('data/jNotebooks');
+          if (ref) await ref.set({ notebooks: data.jNotebooks.notebooks, _updatedAt: Date.now() });
+          state.jNotebooks = data.jNotebooks.notebooks;
+          await dbPut('notes', { id: 'j_notebooks', userId: uid, data: state.jNotebooks, updatedAt: Date.now() });
+          parts.push(data.jNotebooks.notebooks.length + ' notebooks');
+        }
+        if (data.jSections?.sections) {
+          const ref = userDoc('data/jSections');
+          if (ref) await ref.set({ sections: data.jSections.sections, _updatedAt: Date.now() });
+          state.jSections = data.jSections.sections;
+          await dbPut('notes', { id: 'j_sections', userId: uid, data: state.jSections, updatedAt: Date.now() });
+        }
+        if (data.jPages?.pages) {
+          const ref = userDoc('data/jPages');
+          if (ref) await ref.set({ pages: data.jPages.pages, _updatedAt: Date.now() });
+          state.jPages = data.jPages.pages;
+          await dbPut('notes', { id: 'j_pages', userId: uid, data: state.jPages, updatedAt: Date.now() });
         }
         // 6. Import settings
         if (data.settings) {
