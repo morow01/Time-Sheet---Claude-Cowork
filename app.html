@@ -11667,7 +11667,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.95';
+    const VERSION = '5.1.96';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22275,7 +22275,7 @@
       '</div></div>';
     }
 
-    // Open a stacked activity-level detail overlay (side-by-side comparison)
+    // Open a stacked activity-level detail overlay (Yours / Cloud stacked cards)
     function _openConflictActDetail(conflictId, dayIdx, actIdx) {
       const dayEl = document.getElementById('conflict-fullview');
       const c = (state.conflicts || []).find(x => x.id === conflictId);
@@ -22286,21 +22286,37 @@
       const lActs = dayEl?._lActs || filterActs((c.localData?.days  || [])[dayIdx]?.activities);
       const rActs = dayEl?._rActs || filterActs((c.remoteData?.days || [])[dayIdx]?.activities);
       const l = lActs[actIdx], r = rActs[actIdx];
-      const actTitle = esc((l || r)?.description || ('Activity ' + (actIdx + 1)));
-      const bodyHtml = _buildSideBySideHtml(l, r, actIdx);
+      const df = _actDiffFields(l, r);
       const existing = document.getElementById('conflict-actview');
       if (existing) existing.remove();
-      const xIcon    = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-      const backIcon  = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+      const backIcon   = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+      const deviceIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
+      const cloudIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`;
+      const emptyCard  = '<div style="padding:14px;color:var(--text-muted);font-style:italic;font-size:13px;text-align:center">Not present on this side</div>';
+      const localCard  = l ? _renderDayActFull(l, actIdx, df) : emptyCard;
+      const remoteCard = r ? _renderDayActFull(r, actIdx, df) : emptyCard;
+      const bodyHtml =
+        '<div style="padding:8px 12px 2px">' +
+          '<span style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em">' +
+            deviceIcon + 'Your version' +
+            (!l ? '<span style="margin-left:6px;font-weight:400;opacity:0.6">(not on device)</span>' : '') +
+          '</span>' +
+        '</div>' +
+        localCard +
+        '<div style="padding:12px 12px 2px;margin-top:4px">' +
+          '<span style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em">' +
+            cloudIcon + 'Cloud version' +
+            (!r ? '<span style="margin-left:6px;font-weight:400;opacity:0.6">(not in cloud)</span>' : '') +
+          '</span>' +
+        '</div>' +
+        remoteCard;
       const el = document.createElement('div');
       el.id = 'conflict-actview';
       el.className = 'conflict-actview-overlay';
       el.innerHTML = `
         <div class="conflict-fullview-sheet">
           <div class="conflict-fullview-header">
-            <button class="conflict-fullview-close" onclick="document.getElementById('conflict-actview')?.remove()" style="margin-right:2px">${backIcon}</button>
-            <span class="conflict-fullview-title">Activity ${actIdx + 1} — ${actTitle}</span>
-            <button class="conflict-fullview-close" onclick="document.getElementById('conflict-actview')?.remove();document.getElementById('conflict-fullview')?.remove()">${xIcon}</button>
+            <button class="conflict-fullview-close" onclick="document.getElementById('conflict-actview')?.remove()">${backIcon}</button>
           </div>
           <div class="conflict-fullview-body" id="cav_body" style="padding:0">${bodyHtml}</div>
         </div>`;
