@@ -2219,6 +2219,7 @@
     .c-ddf-empty { font-size: 13px; color: var(--text-muted); font-style: italic; padding: 16px 14px; text-align: center; }
     /* Disable all interactions in read-only card */
     .c-ddf-readonly { pointer-events: none; margin-bottom: 14px; }
+    .c-ddf-readonly::before, .c-ddf-readonly::after { display: none !important; }
     /* Tappable activity rows inside the day detail overlay */
     .c-act-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; background: var(--bg-card); -webkit-tap-highlight-color: transparent; user-select: none; }
     .c-act-row:active { opacity: 0.8; }
@@ -11667,7 +11668,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.98';
+    const VERSION = '5.1.99';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
