@@ -2224,7 +2224,7 @@
     .c-act-row:active { opacity: 0.8; }
     .c-act-row-body { flex: 1; min-width: 0; }
     .c-act-row-desc { font-size: 14px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .c-act-row-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .c-act-row-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
     .c-act-row-badge { font-size: 10px; font-weight: 700; border-radius: 4px; padding: 1px 6px; white-space: nowrap; flex-shrink: 0; }
     .c-act-row-badge.yours-only { color: #15803d; background: rgba(22,163,74,0.1); }
     .c-act-row-badge.cloud-only { color: #b91c1c; background: rgba(220,38,38,0.08); }
@@ -11667,7 +11667,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.91';
+    const VERSION = '5.1.95';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22111,6 +22111,7 @@
         : (lDay.dayLabel || `Day ${dayIdx + 1}`);
       const maxLen = Math.max(lActs.length, rActs.length);
       const chevron = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+      const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
       let rowsHtml = '';
       if (maxLen === 0) {
         rowsHtml = '<p class="c-ddf-empty">No entries for this day.</p>';
@@ -22131,12 +22132,14 @@
             badge = df.size > 0 ? '<span class="c-act-row-badge changed">' + df.size + ' field' + (df.size > 1 ? 's' : '') + ' changed</span>' : '';
           }
           const desc = esc((l || r).description || ('Activity ' + (i + 1)));
+          const loc1 = esc(((l || r).location || '').trim());
+          const locHtml1 = loc1 ? '<div class="act-loc-txt">' + pinSvg + loc1 + '</div>' : '<div class="act-loc-txt" style="opacity:0.4">No location</div>';
           rowsHtml += '<div class="c-act-row" onclick="_openConflictActDetail(\'' + esc(conflictId) + '\',' + dayIdx + ',' + i + ')">' +
             '<div class="task-num">' + (i + 1) + '</div>' +
             '<div class="c-act-row-body">' +
             '<div class="c-act-row-desc">' + desc + '</div>' +
-            (meta ? '<div class="c-act-row-meta">' + esc(meta) + '</div>' : '') +
-            '</div>' + badge +
+            '<div class="c-act-row-meta">' + locHtml1 + badge + '</div>' +
+            '</div>' +
             '<div class="c-day-chevron">' + chevron + '</div></div>';
         }
       }
@@ -22476,6 +22479,7 @@
 
       let versionsHtml = '';
 
+      const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
       // ── Timesheet: expandable day rows using actual localData/remoteData ──
       if (c.section === 'Timesheet' && c.localData?.days && c.remoteData?.days) {
         const lDays = c.localData.days;
@@ -22512,10 +22516,14 @@
               if (df.size > 0) badge = '<span class="c-act-row-badge changed">' + df.size + ' field' + (df.size > 1 ? 's' : '') + ' changed</span>';
             }
             const desc = esc(((l || r).description || '').trim() || ('Activity ' + (k + 1)));
+            const loc2 = esc(((l || r).location || '').trim());
+            const locHtml2 = loc2 ? '<div class="act-loc-txt">' + pinSvg + loc2 + '</div>' : '<div class="act-loc-txt" style="opacity:0.4">No location</div>';
             bodyRows += '<div class="c-act-row" onclick="event.stopPropagation();_openConflictActDetail(\'' + esc(c.id) + '\',' + i + ',' + k + ')">' +
               '<div class="task-num">' + (k + 1) + '</div>' +
-              '<div class="c-act-row-body"><div class="c-act-row-desc">' + desc + '</div></div>' +
-              badge +
+              '<div class="c-act-row-body">' +
+              '<div class="c-act-row-desc">' + desc + '</div>' +
+              '<div class="c-act-row-meta">' + locHtml2 + badge + '</div>' +
+              '</div>' +
               '<div class="c-day-chevron">' + arrowSvg + '</div></div>';
           }
           return `<div class="c-day-block">
@@ -22655,56 +22663,58 @@
       //    Each day demonstrates a different conflict scenario. Both sides
       //    are seeded explicitly so the test is independent of the real
       //    week data.
-      const localWeek = deepCopy(state.weekData);
+      // Use real week data as the base — local = exact copy of current state.
+      // Remote is mutated per-day to demonstrate each conflict scenario.
+      // This way the locations, descriptions and codes shown are real app data.
+      const localWeek  = deepCopy(state.weekData);
       const remoteWeek = deepCopy(state.weekData);
 
       const _seedDay = (d, ordinary, overtime, code, location, description) => {
-        d.activities = [{
-          ordinary: String(ordinary),
-          overtime: String(overtime),
-          codes: [code],
-          location, description,
-        }];
+        d.activities = [{ ordinary: String(ordinary), overtime: String(overtime), codes: [code], location, description }];
       };
+      const _cloneAct = (a, overrides) => Object.assign(deepCopy(a), overrides);
+      const _firstReal = (day) => (day?.activities || []).find(a =>
+        (a.description||'').trim() || (a.location||'').trim() ||
+        parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0);
 
-      // Day 0 — Cloud has MORE hours than local
-      if (localWeek.days[0]) {
-        _seedDay(localWeek.days[0],  8, 0, 'NT', 'Workshop', 'Routine maintenance');
-        _seedDay(remoteWeek.days[0], 10, 0, 'NT', 'Workshop (cloud edited)', 'Routine maintenance');
+      // Day 0 — Cloud has FEWER hours (e.g. overtime was stripped)
+      const d0local = _firstReal(localWeek.days[0]);
+      if (d0local) {
+        const ord = parseFloat(d0local.ordinary) || 8;
+        remoteWeek.days[0].activities = [_cloneAct(d0local, { ordinary: String(Math.max(0, ord - 2)), overtime: '0' })];
       }
-      // Day 1 — Local has MORE hours than cloud (cloud lost overtime)
-      if (localWeek.days[1]) {
-        _seedDay(localWeek.days[1],  8, 2, 'NT', 'Customer site A', 'Panel install + commissioning');
-        _seedDay(remoteWeek.days[1], 6, 0, 'NT', 'Customer site A', 'Panel install + commissioning');
+      // Day 1 — Description differs between devices
+      const d1local = _firstReal(localWeek.days[1]);
+      if (d1local) {
+        remoteWeek.days[1].activities = [_cloneAct(d1local, { description: (d1local.description || 'Activity') + ' [cloud edit]' })];
       }
-      // Day 2 — Local has entries, cloud is COMPLETELY EMPTY (Yours-only case)
-      if (localWeek.days[2]) {
-        _seedDay(localWeek.days[2], 8, 0, 'NT', 'Substation B', 'Maintenance + tests');
+      // Day 2 — Yours only: local has entry, cloud is empty
+      const d2local = _firstReal(localWeek.days[2]);
+      if (d2local) {
         remoteWeek.days[2].activities = [];
       }
-      // Day 3 — Cloud has an EXTRA activity that local doesn't have
-      if (localWeek.days[3]) {
-        _seedDay(localWeek.days[3], 8, 0, 'NT', 'Workshop', 'Bench work');
+      // Day 3 — Cloud only: cloud has an extra activity local doesn't have
+      const d3local = _firstReal(localWeek.days[3]);
+      if (d3local) {
+        // local stays real; cloud gets a second activity local doesn't have
         remoteWeek.days[3].activities = [
-          { ordinary:'8', overtime:'0', codes:['NT'], location:'Workshop', description:'Bench work' },
-          { ordinary:'4', overtime:'1', codes:['CO'], location:'Customer site B', description:'Emergency callout — added in cloud only' },
+          deepCopy(d3local),
+          _cloneAct(d3local, { description: 'Emergency callout — added in cloud only', overtime: '1' }),
         ];
       }
-      // Day 4 — Work CODES differ, hours unchanged
-      if (localWeek.days[4]) {
-        _seedDay(localWeek.days[4],  8, 0, 'NT', 'Site C', 'Routine work');
-        _seedDay(remoteWeek.days[4], 8, 0, 'DT', 'Site C', 'Routine work [code changed in cloud]');
+      // Day 4 — Work codes differ, hours unchanged
+      const d4local = _firstReal(localWeek.days[4]);
+      if (d4local) {
+        const remoteCodes = (d4local.codes || []).map(c => typeof c === 'string' ? c + '_DT' : Object.assign({}, c, {c: 'DT'}));
+        remoteWeek.days[4].activities = [_cloneAct(d4local, { codes: remoteCodes })];
       }
-      // Day 5 — LOCATION and DESCRIPTION differ, hours unchanged
-      if (localWeek.days[5]) {
-        _seedDay(localWeek.days[5],  8, 0, 'NT', 'Local site name',     'Local description of what was done today');
-        _seedDay(remoteWeek.days[5], 8, 0, 'NT', 'Different cloud site', 'Cloud version of description — totally different text');
+      // Day 5 — Location differs, everything else unchanged
+      const d5local = _firstReal(localWeek.days[5]);
+      if (d5local) {
+        remoteWeek.days[5].activities = [_cloneAct(d5local, { location: (d5local.location || 'Site') + ' [cloud version]' })];
       }
-      // Day 6 — IDENTICAL (no diff — should NOT show in drill-down)
-      if (localWeek.days[6]) {
-        _seedDay(localWeek.days[6],  7, 0, 'NT', 'Workshop', 'Identical entry');
-        _seedDay(remoteWeek.days[6], 7, 0, 'NT', 'Workshop', 'Identical entry');
-      }
+      // Day 6 — IDENTICAL (no diff — should NOT appear in drill-down)
+      // leave both sides as deepCopy of real data — no changes needed
 
       const _tLocal  = _weekTotalHours(localWeek).toFixed(1);
       const _tRemote = _weekTotalHours(remoteWeek).toFixed(1);
