@@ -11671,7 +11671,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.105';
+    const VERSION = '5.1.106';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22044,7 +22044,7 @@
     }
 
     // Render a read-only note card (Notes/Notebooks) using the real note card CSS classes
-    // diffFields: Set of field names ('description','noteContent','location','dueDate','priority') that differ from the other version
+    // diffFields: Set of field names ('description','noteContent','location','dueDate','priority','category','pinned','status') that differ
     function _renderNoteReadOnly(note, diffFields, opts) {
       if (!note) return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">(no data)</div>';
       diffFields = diffFields || new Set();
@@ -22068,6 +22068,30 @@
         `<div class="note-pri-dot pd-${p}${priority === p ? ' pd-active' : ''}"></div>`
       ).join('');
 
+      // Category badge
+      const noteCat = (typeof getCategories === 'function') ? getCategories().find(c => c.key === (note.category || '')) : null;
+      const catChanged = diffFields.has('category');
+      const catBadgeHtml = noteCat
+        ? `<span class="note-cat-badge" style="background:${noteCat.color};pointer-events:none">${getCatIconHtml(noteCat, 11)} ${esc(noteCat.label)}</span>${catChanged ? '<span class="c-note-ro-diff-badge" style="margin-left:5px">Changed</span>' : ''}`
+        : (catChanged ? '<span class="c-note-ro-diff-badge">Tag removed</span>' : '');
+
+      // Pin indicator
+      const pinHtml = note.pinned
+        ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);flex-shrink:0;margin-right:4px"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>`
+        : '';
+
+      // Due date status
+      const dueStatusHtml = due
+        ? `<span style="color:${(typeof isNoteOverdue === 'function' && isNoteOverdue(note)) ? '#ef4444' : '#64748b'};font-weight:500;font-size:12px;display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${typeof formatDueStatus === 'function' ? formatDueStatus(note) : esc(due)}</span>`
+        : '';
+
+      // Badges row (pin + tag + due date) — mirrors the real note card's second meta row
+      const badgesRowHtml = (pinHtml || catBadgeHtml || dueStatusHtml)
+        ? `<div class="note-row-meta" style="margin-top:4px;align-items:center">
+            ${pinHtml}${catBadgeHtml}<span style="flex:1"></span>${dueStatusHtml}
+           </div>`
+        : '';
+
       // Helper: wrap a field row, highlighting it if it's in diffFields
       const fldRow = (key, labelText, valueHtml) => {
         const diff = diffFields.has(key);
@@ -22087,6 +22111,7 @@
               <div class="note-row-title" style="flex:1;min-width:0">${esc(descRaw || 'Untitled')}</div>
             </div>
             ${metaItems.length ? `<div class="note-row-meta">${metaItems.join('')}</div>` : ''}
+            ${badgesRowHtml}
           </div>
           <div class="note-detail" style="max-height:none;overflow:visible;border-top-width:1px;padding:16px 16px 20px">
             ${descRaw ? fldRow('description', 'Description', `<div class="c-note-ro-field">${esc(descRaw)}</div>`) : ''}
@@ -22443,6 +22468,9 @@
         if ((lNote.location  || '') !== (rNote.location  || '')) diffFields.add('location');
         if ((lNote.dueDate   || '') !== (rNote.dueDate   || '')) diffFields.add('dueDate');
         if ((lNote.priority  || '') !== (rNote.priority  || '')) diffFields.add('priority');
+        if ((lNote.category  || '') !== (rNote.category  || '')) diffFields.add('category');
+        if (!!lNote.pinned       !== !!rNote.pinned            ) diffFields.add('pinned');
+        if ((lNote.status    || '') !== (rNote.status    || '')) diffFields.add('status');
       }
       const backIcon   = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
       const deviceIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
