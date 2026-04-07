@@ -11667,7 +11667,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.97';
+    const VERSION = '5.1.98';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -22302,14 +22302,14 @@
             (!l ? '<span style="margin-left:6px;font-weight:400;opacity:0.6">(not on device)</span>' : '') +
           '</span>' +
         '</div>' +
-        localCard +
+        '<div style="padding:0 12px">' + localCard + '</div>' +
         '<div style="padding:12px 12px 2px;margin-top:4px">' +
           '<span style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em">' +
             cloudIcon + 'Cloud version' +
             (!r ? '<span style="margin-left:6px;font-weight:400;opacity:0.6">(not in cloud)</span>' : '') +
           '</span>' +
         '</div>' +
-        remoteCard;
+        '<div style="padding:0 12px 16px">' + remoteCard + '</div>';
       const el = document.createElement('div');
       el.id = 'conflict-actview';
       el.className = 'conflict-actview-overlay';
