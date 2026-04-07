@@ -11668,7 +11668,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.1.100';
+    const VERSION = '5.1.101';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -21765,7 +21765,7 @@
 
       return `
         <div style="background:var(--bg-card);border-bottom:1px solid var(--border);padding:14px 16px 12px;display:flex;align-items:center;gap:10px">
-          <button onclick="history.back ? history.back() : setView('week')" style="color:var(--accent);font-size:14px;font-weight:700;background:none;border:none;cursor:pointer;padding:4px 0">← Back</button>
+          <button class="back-btn" onclick="history.back ? history.back() : setView('week')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
           <span style="font-size:17px;font-weight:800;flex:1;color:var(--text-primary)">Sync Conflicts</span>
           ${n > 0 ? `<span style="background:#DC2626;color:#fff;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:800">${n}</span>` : ''}
         </div>
@@ -22042,9 +22042,10 @@
 
     // Render a read-only note card (Notes/Notebooks) using the real note card CSS classes
     // diffFields: Set of field names ('description','noteContent','location','dueDate','priority') that differ from the other version
-    function _renderNoteReadOnly(note, diffFields) {
+    function _renderNoteReadOnly(note, diffFields, opts) {
       if (!note) return '<div style="padding:16px;color:var(--text-muted);font-style:italic;font-size:13px">(no data)</div>';
       diffFields = diffFields || new Set();
+      opts = opts || {};
       const dotCls = { high: 'note-dot-high', medium: 'note-dot-medium', low: 'note-dot-low' }[note.priority] || 'note-dot-none';
       const descRaw = ((note.description || note.title) || '').replace(/<[^>]*>/g, '').trim();
       const nc = note.noteContent || '';
@@ -22072,8 +22073,11 @@
         return `<div class="note-detail-row${diff ? ' c-note-ro-diff' : ''}">${label}${valueHtml}</div>`;
       };
 
+      const cardStyle = opts.cardMode
+        ? 'pointer-events:none;margin:0'
+        : 'pointer-events:none;margin:0;border-radius:0;border-left:none;border-right:none;border-top:none;box-shadow:none';
       return `
-        <div class="note-card expanded" style="pointer-events:none;margin:0;border-radius:0;border-left:none;border-right:none;border-top:none;box-shadow:none">
+        <div class="note-card expanded" style="${cardStyle}">
           <div class="note-row">
             <div class="note-row-top">
               <div class="note-dot ${dotCls}" style="flex-shrink:0;margin:0"></div>
@@ -22420,25 +22424,15 @@
         '</div>' + parts.join('') + '</div>';
     }
 
-    // Open fullscreen note detail overlay for Notes/Notebooks conflict
+    // Open fullscreen note detail overlay — stacked YOUR VERSION / CLOUD VERSION cards
     function _openConflictNoteDetail(conflictId) {
       const c = (state.conflicts || []).find(x => x.id === conflictId);
       if (!c) return;
       const existing = document.getElementById('conflict-fullview');
       if (existing) existing.remove();
-      // Populate cache from conflict meta if _openConflictModal hasn't run yet
-      const ckLocal = 'fv_' + c.id + '_local', ckRemote = 'fv_' + c.id + '_remote';
-      if (!_cFullViewCache[ckLocal]) {
-        const rawLocal  = c.localMeta?.content  || '';
-        const rawRemote = c.remoteMeta?.content || '';
-        const isHtml = /<[a-z][\s\S]*>/i.test(rawLocal + rawRemote);
-        _cFullViewCache[ckLocal]  = { title: 'Your version — '  + (c.localMeta?.time  || 'This device'), content: rawLocal,  isHtml, noteData: c.localMeta?.noteData  || null };
-        _cFullViewCache[ckRemote] = { title: 'Cloud version — ' + (c.remoteMeta?.time || 'Cloud'),       content: rawRemote, isHtml, noteData: c.remoteMeta?.noteData || null };
-      }
-      const localCached  = _cFullViewCache[ckLocal]  || {};
-      const remoteCached = _cFullViewCache[ckRemote] || {};
-      const lNote = localCached.noteData, rNote = remoteCached.noteData;
-      // Compute which fields differ between the two versions
+      const lNote = c.localMeta?.noteData  || null;
+      const rNote = c.remoteMeta?.noteData || null;
+      // Compute differing fields
       const diffFields = new Set();
       if (lNote && rNote) {
         if ((lNote.noteContent  || '') !== (rNote.noteContent  || '')) diffFields.add('noteContent');
@@ -22447,33 +22441,35 @@
         if ((lNote.dueDate   || '') !== (rNote.dueDate   || '')) diffFields.add('dueDate');
         if ((lNote.priority  || '') !== (rNote.priority  || '')) diffFields.add('priority');
       }
-      const lHtml    = _renderNoteReadOnly(lNote, diffFields);
-      const rHtml    = _renderNoteReadOnly(rNote, diffFields);
-      const diffHtml = _buildNoteDiffHtml(lNote, rNote);
-      const diffIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-      const xIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+      const backIcon   = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+      const deviceIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
+      const cloudIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>`;
+      const emptyCard  = '<div style="padding:14px;color:var(--text-muted);font-style:italic;font-size:13px;text-align:center">Not present on this side</div>';
+      const localCard  = lNote ? _renderNoteReadOnly(lNote, diffFields, {cardMode: true}) : emptyCard;
+      const remoteCard = rNote ? _renderNoteReadOnly(rNote, diffFields, {cardMode: true}) : emptyCard;
+      const sectionLabel = (icon, text, extra) =>
+        '<div style="padding:8px 12px 4px">' +
+          '<span style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em">' +
+            icon + text + (extra ? '<span style="margin-left:6px;font-weight:400;opacity:0.6">' + extra + '</span>' : '') +
+          '</span>' +
+        '</div>';
+      const bodyHtml =
+        sectionLabel(deviceIcon, 'Your version', lNote ? '' : '(not on device)') +
+        '<div style="padding:0 12px">' + localCard + '</div>' +
+        sectionLabel(cloudIcon, 'Cloud version', rNote ? '' : '(not in cloud)') +
+        '<div style="padding:0 12px 16px">' + remoteCard + '</div>';
       const el = document.createElement('div');
       el.id = 'conflict-fullview';
       el.className = 'conflict-fullview-overlay';
       el.innerHTML = `
         <div class="conflict-fullview-sheet">
           <div class="conflict-fullview-header">
-            <span class="conflict-fullview-title">${esc(c.localMeta?.noteTitle || c.description || 'Note')}</span>
-            <button class="conflict-fullview-close" onclick="document.getElementById('conflict-fullview')?.remove()">${xIcon}</button>
+            <button class="back-btn" onclick="document.getElementById('conflict-fullview')?.remove()">${backIcon}</button>
           </div>
-          <div class="conflict-tab-bar" id="cdd_bar" style="margin:0">
-            <button class="conflict-tab active" id="cdd_btn_local"  onclick="_switchNoteDetailTab('local')">${_cIcons.device} Yours</button>
-            <button class="conflict-tab"        id="cdd_btn_remote" onclick="_switchNoteDetailTab('remote')">${_cIcons.cloud} Cloud</button>
-            <button class="conflict-tab"        id="cdd_btn_diff"   onclick="_switchNoteDetailTab('diff')" style="gap:4px">${diffIcon} Changes</button>
-          </div>
-          <div class="conflict-fullview-body" id="cdd_body" style="padding:0"></div>
+          <div class="conflict-fullview-body" style="padding:0;padding-right:2px">${bodyHtml}</div>
         </div>`;
-      el._localHtml  = lHtml;
-      el._remoteHtml = rHtml;
-      el._diffHtml   = diffHtml;
       el.addEventListener('click', e => { if (e.target === el) el.remove(); });
       document.body.appendChild(el);
-      document.getElementById('cdd_body').innerHTML = lHtml;
     }
 
     function _switchNoteDetailTab(side) {
