@@ -11767,7 +11767,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.63';
+    const VERSION = '5.2.64';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -29697,26 +29697,38 @@ QUESTION: ${query}`;
       initTaskSortable();
       initImageDrag();
       // Global capture-phase pinch handler — intercepts 2-finger touches on images
-      // before TipTap's own listeners, so pinch reliably opens the lightbox.
+      // Global capture-phase pinch handler — fires before TipTap.
+      // Checks ALL touch points via elementFromPoint so it works even when
+      // one finger lands outside the image boundary.
       (function() {
         const _edEl = document.getElementById('note-fs-editor');
         if (!_edEl || _edEl._imgPinchBound) return;
         _edEl._imgPinchBound = true;
+        function _findWrap(ev) {
+          for (var i = 0; i < ev.touches.length; i++) {
+            var el = document.elementFromPoint(ev.touches[i].clientX, ev.touches[i].clientY);
+            while (el) {
+              if (el.classList && el.classList.contains('img-resize-wrap')) return el;
+              el = el.parentElement;
+            }
+          }
+          return null;
+        }
         _edEl.addEventListener('touchstart', function(ev) {
           if (ev.touches.length >= 2) {
-            const wrap = ev.target.closest('.img-resize-wrap');
+            var wrap = _findWrap(ev);
             if (wrap) {
               ev.preventDefault();
               ev.stopPropagation();
-              const imgEl = wrap.querySelector('img.tt-resizable-img');
+              var imgEl = wrap.querySelector('img.tt-resizable-img');
               if (imgEl && window.openLightbox) window.openLightbox(imgEl.src);
             }
           }
         }, { passive: false, capture: true });
         _edEl.addEventListener('touchmove', function(ev) {
-          if (ev.touches.length >= 2) {
-            const wrap = ev.target.closest('.img-resize-wrap');
-            if (wrap) { ev.preventDefault(); ev.stopPropagation(); }
+          if (ev.touches.length >= 2 && _findWrap(ev)) {
+            ev.preventDefault();
+            ev.stopPropagation();
           }
         }, { passive: false, capture: true });
       })();
