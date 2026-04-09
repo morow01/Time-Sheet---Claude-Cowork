@@ -11767,7 +11767,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.61';
+    const VERSION = '5.2.62';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -29523,16 +29523,24 @@ QUESTION: ${query}`;
               }
             }
 
+            let _pinchOpened = false;
+            const _openLightboxOnce = () => {
+              if (_pinchOpened) return; _pinchOpened = true;
+              _lpCancel();
+              if (window.openLightbox) window.openLightbox(img.src);
+              // reset flag after lightbox closes
+              setTimeout(() => { _pinchOpened = false; }, 600);
+            };
+
             container.addEventListener('touchstart', (e) => {
-              if (e.target.closest('.img-resize-presets')) return; // toolbar handles itself
-              // Two-finger touch = pinch-to-zoom → open lightbox immediately
+              if (e.target.closest('.img-resize-presets')) return;
               if (e.touches.length >= 2) {
                 e.preventDefault();
-                _lpCancel();
-                if (window.openLightbox) window.openLightbox(img.src);
+                _openLightboxOnce();
                 return;
               }
-              e.preventDefault(); // prevent keyboard + synthetic mouse events
+              // Single touch: do NOT preventDefault so scrolling still works.
+              // Only prevent default later if a long-press drag actually starts.
               const t = e.touches[0];
               _lpX0 = t.clientX; _lpY0 = t.clientY; _lpActive = false;
               _lpTimer = setTimeout(() => {
@@ -29542,10 +29550,16 @@ QUESTION: ${query}`;
             }, { passive: false });
 
             container.addEventListener('touchmove', (e) => {
+              // Second finger joined mid-gesture (common on Android) → pinch
+              if (e.touches.length >= 2) {
+                e.preventDefault();
+                _openLightboxOnce();
+                return;
+              }
               const t = e.touches[0];
               if (_lpTimer) {
                 if (Math.abs(t.clientX - _lpX0) > 8 || Math.abs(t.clientY - _lpY0) > 8) {
-                  clearTimeout(_lpTimer); _lpTimer = null; // moved — cancel long-press
+                  clearTimeout(_lpTimer); _lpTimer = null; // moved → cancel long-press, allow scroll
                 }
                 return;
               }
@@ -29555,7 +29569,7 @@ QUESTION: ${query}`;
             container.addEventListener('touchend', (e) => {
               if (_lpTimer) {
                 clearTimeout(_lpTimer); _lpTimer = null;
-                // Short tap: select image without opening keyboard
+                // Short tap: select image node
                 const pos = getPos();
                 if (typeof pos === 'number') editor.commands.setNodeSelection(pos);
               } else if (_lpActive) {
