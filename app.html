@@ -5345,6 +5345,15 @@
       border-radius: 8px;
     }
 
+    /* Suppress TipTap's default blue overlay/fade on selected image nodes */
+    #note-fs-editor .ProseMirror-selectednode {
+      outline: none !important;
+    }
+    #note-fs-editor .img-resize-wrap.ProseMirror-selectednode,
+    #note-fs-editor .ProseMirror-selectednode .tt-resizable-img {
+      opacity: 1 !important;
+    }
+
     /* Suppress Chrome's native embedded-object resize handle */
     .img-resize-wrap::after {
       display: none !important;
@@ -11758,7 +11767,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.60';
+    const VERSION = '5.2.61';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -30603,6 +30612,8 @@ QUESTION: ${query}`;
       if (_fsDictRecognition) { _fsDictRecognition.stop(); _fsDictRecognition = null; }
       const micBtn = document.getElementById('fs-mic-btn');
       if (micBtn) micBtn.classList.remove('fs-mic-listening');
+      // Clear TipTap selection so image outlines don't persist after closing
+      if (_tiptapEditor) { try { _tiptapEditor.commands.blur(); } catch(e) {} }
       _tiptapOnUpdate = null;
       // Dismiss any pending AI preview + floating bubble
       _ttHideAiFab();
