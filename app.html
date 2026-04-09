@@ -11771,7 +11771,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.66';
+    const VERSION = '5.2.67';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -29700,41 +29700,43 @@ QUESTION: ${query}`;
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
-      // Global capture-phase pinch handler — intercepts 2-finger touches on images
-      // Global capture-phase pinch handler — fires before TipTap.
-      // Checks ALL touch points via elementFromPoint so it works even when
-      // one finger lands outside the image boundary.
+      // Pinch-to-lightbox via Pointer Events — more reliable than Touch Events
+      // across PWA, Chrome, Firefox, Samsung Internet on Android.
+      // Track active pointers on img-resize-wrap; when 2 land on same wrap → open lightbox.
       (function() {
-        const _edEl = document.getElementById('note-fs-editor');
-        if (!_edEl || _edEl._imgPinchBound) return;
-        _edEl._imgPinchBound = true;
-        function _findWrap(ev) {
-          for (var i = 0; i < ev.touches.length; i++) {
-            var el = document.elementFromPoint(ev.touches[i].clientX, ev.touches[i].clientY);
-            while (el) {
-              if (el.classList && el.classList.contains('img-resize-wrap')) return el;
-              el = el.parentElement;
-            }
+        if (window._imgPinchPointerBound) return;
+        window._imgPinchPointerBound = true;
+        var _ptrs = new Map(); // pointerId → wrap element
+        function _wrapFromPoint(x, y) {
+          var el = document.elementFromPoint(x, y);
+          while (el) {
+            if (el.classList && el.classList.contains('img-resize-wrap')) return el;
+            el = el.parentElement;
           }
           return null;
         }
-        _edEl.addEventListener('touchstart', function(ev) {
-          if (ev.touches.length >= 2) {
-            var wrap = _findWrap(ev);
-            if (wrap) {
-              ev.preventDefault();
-              ev.stopPropagation();
-              var imgEl = wrap.querySelector('img.tt-resizable-img');
-              if (imgEl && window.openLightbox) window.openLightbox(imgEl.src);
-            }
-          }
-        }, { passive: false, capture: true });
-        _edEl.addEventListener('touchmove', function(ev) {
-          if (ev.touches.length >= 2 && _findWrap(ev)) {
+        document.addEventListener('pointerdown', function(ev) {
+          var modal = document.getElementById('note-fs-modal');
+          if (!modal || modal.classList.contains('hidden')) return;
+          var wrap = _wrapFromPoint(ev.clientX, ev.clientY);
+          if (!wrap) { return; }
+          _ptrs.set(ev.pointerId, wrap);
+          if (_ptrs.size >= 2) {
             ev.preventDefault();
-            ev.stopPropagation();
+            var imgEl = wrap.querySelector('img.tt-resizable-img');
+            // also check first pointer's wrap in case pointers landed on different parts
+            if (!imgEl) {
+              for (var w of _ptrs.values()) {
+                imgEl = w.querySelector('img.tt-resizable-img');
+                if (imgEl) break;
+              }
+            }
+            _ptrs.clear();
+            if (imgEl && window.openLightbox) window.openLightbox(imgEl.src);
           }
         }, { passive: false, capture: true });
+        document.addEventListener('pointerup',     function(ev) { _ptrs.delete(ev.pointerId); }, true);
+        document.addEventListener('pointercancel', function(ev) { _ptrs.delete(ev.pointerId); }, true);
       })();
       // openOnClick:false means clicking a link places the cursor and the link
       // bubble appears (via onSelectionUpdate → _ttUpdateLinkBubble). The user
