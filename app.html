@@ -5333,8 +5333,7 @@
       /* space for toolbar above */
       line-height: 0;
       overflow: visible;
-      /* none: all touch on images goes to JS, guarantees pointerdown fires for both fingers */
-      touch-action: none;
+      touch-action: pan-y;
     }
 
     .img-resize-wrap .tt-resizable-img {
@@ -11771,7 +11770,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.72';
+    const VERSION = '5.2.73';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -20167,6 +20166,7 @@
         }
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
+      document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -26401,6 +26401,7 @@
       if (titleEl) titleEl.textContent = 'Callout Note';
       if (subEl) { subEl.textContent = ''; subEl.style.display = 'none'; }
       document.getElementById('note-fs-modal').classList.remove('hidden');
+      document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -29700,53 +29701,6 @@ QUESTION: ${query}`;
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
-      // Pinch-to-lightbox via Touch Events.
-      // Touch Events (touchstart) ALWAYS fire regardless of touch-action — unlike
-      // Pointer Events which get pointercancel when touch-action:pan-y is in effect.
-      (function() {
-        if (window._imgPinchTouchBound) return;
-        window._imgPinchTouchBound = true;
-        function _wrapFromPoint(x, y) {
-          var el = document.elementFromPoint(x, y);
-          while (el) {
-            if (el.classList && el.classList.contains('img-resize-wrap')) return el;
-            el = el.parentElement;
-          }
-          return null;
-        }
-        document.addEventListener('touchstart', function(ev) {
-          var modal = document.getElementById('note-fs-modal');
-          if (!modal || modal.classList.contains('hidden')) return;
-          if (ev.touches.length < 2) return;
-          // Try exact hit first
-          var targetWrap = null;
-          for (var i = 0; i < ev.touches.length; i++) {
-            var w = _wrapFromPoint(ev.touches[i].clientX, ev.touches[i].clientY);
-            if (w) { targetWrap = w; break; }
-          }
-          // Fallback: find closest wrap to the midpoint of all touches
-          if (!targetWrap) {
-            var editorEl = document.getElementById('note-fs-editor');
-            if (!editorEl) return;
-            var wraps = editorEl.querySelectorAll('.img-resize-wrap');
-            if (!wraps.length) return;
-            var cx = 0, cy = 0;
-            for (var i = 0; i < ev.touches.length; i++) { cx += ev.touches[i].clientX; cy += ev.touches[i].clientY; }
-            cx /= ev.touches.length; cy /= ev.touches.length;
-            var minDist = Infinity;
-            wraps.forEach(function(w) {
-              var r = w.getBoundingClientRect();
-              var wx = r.left + r.width / 2, wy = r.top + r.height / 2;
-              var d = (wx - cx) * (wx - cx) + (wy - cy) * (wy - cy);
-              if (d < minDist) { minDist = d; targetWrap = w; }
-            });
-          }
-          if (!targetWrap) return;
-          ev.preventDefault();
-          var imgEl = targetWrap.querySelector('img.tt-resizable-img');
-          if (imgEl && window.openLightbox) window.openLightbox(imgEl.src);
-        }, { passive: false, capture: true });
-      })();
       // openOnClick:false means clicking a link places the cursor and the link
       // bubble appears (via onSelectionUpdate → _ttUpdateLinkBubble). The user
       // then taps ↗ Open in the bubble to navigate — routed via _openUrl() for
@@ -30652,6 +30606,7 @@ QUESTION: ${query}`;
         subEl.style.display = loc ? 'block' : 'none';
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
+      document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes';
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -30679,6 +30634,11 @@ QUESTION: ${query}`;
       if (_aiP) _aiP.style.display = 'none';
       const _fsMod = document.getElementById('note-fs-modal');
       _fsMod.classList.add('hidden');
+      // Re-lock zoom now that editor is closed, and snap scale back to 1
+      const _vp = document.querySelector('meta[name=viewport]');
+      _vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+      // Force reset to scale=1 (some browsers need a flicker to honour the new constraint)
+      _vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
       // Reset any visualViewport-driven sizing so next open starts clean
       _fsMod.style.height = '';
       _fsMod.style.top = '';
