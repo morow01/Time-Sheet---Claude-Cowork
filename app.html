@@ -11712,7 +11712,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.55';
+    const VERSION = '5.2.56';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -11811,11 +11811,12 @@
       throw new Error('Rian cleanup mode active');
     }
 
-    let db_fs, auth_fb;
+    let db_fs, auth_fb, storage_fb;
     try {
       firebase.initializeApp(firebaseConfig);
       db_fs = firebase.firestore();
       auth_fb = firebase.auth();
+      storage_fb = firebase.storage();
       // FCM removed — using raw Web Push API
       // v5.1.79: switched from multi-tab ({synchronizeTabs:true}) to single-tab
       // persistence. Multi-tab uses localStorage to coordinate mutations between
@@ -12573,6 +12574,83 @@
         }
       }
       return { notes: out, didCompress: compressedIds.length > 0, compressedIds: compressedIds };
+    }
+    // ── Firebase Storage helpers for note images ──────────────────
+    // Upload a compressed data URL to Storage. Returns the public download URL.
+    // Path: users/{uid}/noteImages/{noteId}/{imgId}.jpg
+    async function _uploadNoteImage(dataUrl, noteId) {
+      if (!storage_fb || !state.currentUser) throw new Error('Storage not ready');
+      const blob = await fetch(dataUrl).then(r => r.blob());
+      const imgId = uid();
+      const path = 'users/' + state.currentUser.uid + '/noteImages/' + noteId + '/' + imgId + '.jpg';
+      const ref = storage_fb.ref(path);
+      await ref.put(blob, { contentType: 'image/jpeg' });
+      return await ref.getDownloadURL();
+    }
+
+    // Delete all Storage images for a note (called on permanent delete).
+    async function _deleteNoteImages(noteId) {
+      if (!storage_fb || !state.currentUser) return;
+      try {
+        const folder = storage_fb.ref('users/' + state.currentUser.uid + '/noteImages/' + noteId);
+        const list = await folder.listAll();
+        await Promise.all(list.items.map(item => item.delete()));
+      } catch(e) {
+        console.warn('[Rian] Storage cleanup failed for note', noteId, e);
+      }
+    }
+
+    // One-time migration: upload all base64 images in notes to Storage, replace with URLs.
+    async function _migrateNoteImagesToStorage() {
+      if (!state.currentUser || !storage_fb) return 0;
+      let migrated = 0;
+      for (var i = 0; i < state.notes.length; i++) {
+        var note = state.notes[i];
+        if (!note.noteContent || note.noteContent.indexOf('data:image') === -1) continue;
+        var doc = new DOMParser().parseFromString('<div>' + note.noteContent + '</div>', 'text/html');
+        var imgs = doc.querySelectorAll('img[src^="data:image"]');
+        if (!imgs.length) continue;
+        var changed = false;
+        for (var j = 0; j < imgs.length; j++) {
+          try {
+            var compressed = await _compressDataUrl(imgs[j].src, 1400, 0.75);
+            imgs[j].src = await _uploadNoteImage(compressed, note.id);
+            changed = true; migrated++;
+          } catch(e) {
+            console.warn('[Rian] Migration upload failed for note', note.id, e);
+          }
+        }
+        if (changed) {
+          note.noteContent = doc.querySelector('div').innerHTML;
+          note.updatedAt = Date.now();
+          _setNoteHWMExplicit(note.id, (note.noteContent || '').length);
+        }
+      }
+      if (migrated > 0) scheduleNotesSave();
+      return migrated;
+    }
+
+    // Run migration once per user if any base64 images still exist in notes.
+    async function _maybeRunStorageMigration() {
+      if (!state.currentUser || !storage_fb) return;
+      const _migKey = 'rian_img_migrated_' + state.currentUser.uid;
+      if (localStorage.getItem(_migKey) === '1') return;
+      const hasBase64 = state.notes.some(function(n) { return n.noteContent && n.noteContent.indexOf('data:image') !== -1; });
+      if (!hasBase64) { localStorage.setItem(_migKey, '1'); return; }
+      const count = state.notes.reduce(function(s, n) {
+        return s + (n.noteContent ? (n.noteContent.match(/data:image/g) || []).length : 0);
+      }, 0);
+      showToast('🔄 Moving ' + count + ' image' + (count !== 1 ? 's' : '') + ' to Storage…');
+      try {
+        const n = await _migrateNoteImagesToStorage();
+        if (n >= 0) {
+          localStorage.setItem(_migKey, '1');
+          if (n > 0) showToast('✅ ' + n + ' image' + (n !== 1 ? 's' : '') + ' moved to Storage');
+        }
+      } catch(e) {
+        console.warn('[Rian] Storage migration error:', e);
+        showToast('⚠️ Image migration incomplete — will retry next session');
+      }
     }
     // ─────────────────────────────────────────────────────────────
     let notesUnsubscribe = null;
@@ -17559,6 +17637,8 @@
 
         state.notesSyncStatus = 'synced';
         updateHeaderStatus();
+        // Run one-time Storage migration after first successful sync (non-blocking)
+        setTimeout(_maybeRunStorageMigration, 3000);
       }, () => {
         state.notesSyncStatus = 'error';
         updateHeaderStatus();
@@ -19803,7 +19883,7 @@
       showConfirm('Delete notes?', `Delete ${count} selected ${count === 1 ? 'note' : 'notes'}?`, () => {
         const toDelete = Array.from(state.selectedNotes);
         state.notes = state.notes.filter(n => !toDelete.includes(n.id));
-        toDelete.forEach(id => state.expandedNotes.delete(id));
+        toDelete.forEach(id => { state.expandedNotes.delete(id); _deleteNoteImages(id); });
         state.selectedNotes.clear();
         state.selectionMode = false;
         scheduleNotesSave();
@@ -29356,7 +29436,7 @@ QUESTION: ${query}`;
         content: '',
         editorProps: {
           handlePaste(view, event) {
-            // Intercept raw image paste (e.g. screenshot from clipboard) and compress
+            // Intercept raw image paste (screenshot from clipboard) — compress + upload to Storage
             const items = event.clipboardData && event.clipboardData.items;
             if (!items) return false;
             for (let i = 0; i < items.length; i++) {
@@ -29367,10 +29447,20 @@ QUESTION: ${query}`;
                 const reader = new FileReader();
                 reader.onload = async function(ev) {
                   const dataUrl = await _compressDataUrl(ev.target.result, 1400, 0.75);
-                  if (_tiptapEditor) _tiptapEditor.chain().focus().setImage({ src: dataUrl }).run();
+                  let src = dataUrl;
+                  if (state.currentUser && storage_fb && _fnFsNoteId) {
+                    try {
+                      showToast('⬆️ Uploading…');
+                      src = await _uploadNoteImage(dataUrl, _fnFsNoteId);
+                    } catch(e) {
+                      console.warn('[Rian] Storage paste upload failed, using base64:', e);
+                      showToast('⚠️ Upload failed — image stored locally');
+                    }
+                  }
+                  if (_tiptapEditor) _tiptapEditor.chain().focus().setImage({ src }).run();
                 };
                 reader.readAsDataURL(file);
-                return true; // handled — don't let TipTap insert uncompressed
+                return true;
               }
             }
             return false;
@@ -30233,11 +30323,11 @@ QUESTION: ${query}`;
       ev.target.value = '';
       if (!file) return;
 
-      // Compress: max 900px, JPEG 0.75 → ~80-120KB inline base64
+      // Compress: max 1400px, JPEG 0.75
       const dataUrl = await new Promise((resolve) => {
         const img = new window.Image();
         img.onload = () => {
-          const MAX = 900;
+          const MAX = 1400;
           let w = img.width, h = img.height;
           if (w > MAX || h > MAX) {
             if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -30251,7 +30341,19 @@ QUESTION: ${query}`;
         img.src = URL.createObjectURL(file);
       });
 
-      _tiptapEditor.chain().focus().setImage({ src: dataUrl }).run();
+      // Upload to Firebase Storage if signed in, else fall back to base64
+      let src = dataUrl;
+      if (state.currentUser && storage_fb && _fnFsNoteId) {
+        try {
+          showToast('⬆️ Uploading…');
+          src = await _uploadNoteImage(dataUrl, _fnFsNoteId);
+        } catch(e) {
+          console.warn('[Rian] Storage upload failed, using base64:', e);
+          showToast('⚠️ Upload failed — image stored locally');
+          src = dataUrl;
+        }
+      }
+      _tiptapEditor.chain().focus().setImage({ src }).run();
     }
 
     function _ttSetContent(html) {
