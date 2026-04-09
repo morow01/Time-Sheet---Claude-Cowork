@@ -11767,7 +11767,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.62';
+    const VERSION = '5.2.63';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -29523,24 +29523,13 @@ QUESTION: ${query}`;
               }
             }
 
-            let _pinchOpened = false;
-            const _openLightboxOnce = () => {
-              if (_pinchOpened) return; _pinchOpened = true;
-              _lpCancel();
-              if (window.openLightbox) window.openLightbox(img.src);
-              // reset flag after lightbox closes
-              setTimeout(() => { _pinchOpened = false; }, 600);
-            };
+            let _lpLastTap = 0;
 
             container.addEventListener('touchstart', (e) => {
               if (e.target.closest('.img-resize-presets')) return;
-              if (e.touches.length >= 2) {
-                e.preventDefault();
-                _openLightboxOnce();
-                return;
-              }
-              // Single touch: do NOT preventDefault so scrolling still works.
-              // Only prevent default later if a long-press drag actually starts.
+              // Pinch is handled by the global capture listener on the editor element.
+              // Here we only handle single-touch: no preventDefault so scroll works.
+              if (e.touches.length >= 2) return;
               const t = e.touches[0];
               _lpX0 = t.clientX; _lpY0 = t.clientY; _lpActive = false;
               _lpTimer = setTimeout(() => {
@@ -29550,16 +29539,11 @@ QUESTION: ${query}`;
             }, { passive: false });
 
             container.addEventListener('touchmove', (e) => {
-              // Second finger joined mid-gesture (common on Android) → pinch
-              if (e.touches.length >= 2) {
-                e.preventDefault();
-                _openLightboxOnce();
-                return;
-              }
+              if (e.touches.length >= 2) return; // global handler covers pinch
               const t = e.touches[0];
               if (_lpTimer) {
                 if (Math.abs(t.clientX - _lpX0) > 8 || Math.abs(t.clientY - _lpY0) > 8) {
-                  clearTimeout(_lpTimer); _lpTimer = null; // moved → cancel long-press, allow scroll
+                  clearTimeout(_lpTimer); _lpTimer = null; // moved → cancel, allow scroll
                 }
                 return;
               }
@@ -29569,9 +29553,18 @@ QUESTION: ${query}`;
             container.addEventListener('touchend', (e) => {
               if (_lpTimer) {
                 clearTimeout(_lpTimer); _lpTimer = null;
-                // Short tap: select image node
-                const pos = getPos();
-                if (typeof pos === 'number') editor.commands.setNodeSelection(pos);
+                e.preventDefault(); // prevents synthetic click + keyboard popup
+                const now = Date.now();
+                if (now - _lpLastTap < 350) {
+                  // Double-tap → open lightbox
+                  _lpLastTap = 0;
+                  if (window.openLightbox) window.openLightbox(img.src);
+                } else {
+                  _lpLastTap = now;
+                  // Single tap → select node
+                  const pos = getPos();
+                  if (typeof pos === 'number') editor.commands.setNodeSelection(pos);
+                }
               } else if (_lpActive) {
                 _lpActive = false; _lpEnd();
               }
@@ -29703,6 +29696,30 @@ QUESTION: ${query}`;
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
+      // Global capture-phase pinch handler — intercepts 2-finger touches on images
+      // before TipTap's own listeners, so pinch reliably opens the lightbox.
+      (function() {
+        const _edEl = document.getElementById('note-fs-editor');
+        if (!_edEl || _edEl._imgPinchBound) return;
+        _edEl._imgPinchBound = true;
+        _edEl.addEventListener('touchstart', function(ev) {
+          if (ev.touches.length >= 2) {
+            const wrap = ev.target.closest('.img-resize-wrap');
+            if (wrap) {
+              ev.preventDefault();
+              ev.stopPropagation();
+              const imgEl = wrap.querySelector('img.tt-resizable-img');
+              if (imgEl && window.openLightbox) window.openLightbox(imgEl.src);
+            }
+          }
+        }, { passive: false, capture: true });
+        _edEl.addEventListener('touchmove', function(ev) {
+          if (ev.touches.length >= 2) {
+            const wrap = ev.target.closest('.img-resize-wrap');
+            if (wrap) { ev.preventDefault(); ev.stopPropagation(); }
+          }
+        }, { passive: false, capture: true });
+      })();
       // openOnClick:false means clicking a link places the cursor and the link
       // bubble appears (via onSelectionUpdate → _ttUpdateLinkBubble). The user
       // then taps ↗ Open in the bubble to navigate — routed via _openUrl() for
