@@ -4455,7 +4455,7 @@
 
     #note-fs-editor {
       flex: 1;
-      overflow-y: auto;
+      overflow: auto; /* both axes — allows panning when content is zoomed */
       background: var(--bg-card);
     }
 
@@ -4468,8 +4468,8 @@
       /* clearfix: contains floated images */
       color: #3A3836;
       min-height: 200px;
-      /* manipulation = pan-x + pan-y + pinch-zoom; allows scroll and pan after zoom */
-      touch-action: manipulation;
+      touch-action: pan-y; /* vertical scroll native; pinch intercepted by JS */
+      transform-origin: 0 0; /* zoom anchors to top-left */
     }
 
     .tt-prose {
@@ -11770,7 +11770,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.78';
+    const VERSION = '5.2.79';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -20158,7 +20158,6 @@
         }
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
-      document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -26393,7 +26392,6 @@
       if (titleEl) titleEl.textContent = 'Callout Note';
       if (subEl) { subEl.textContent = ''; subEl.style.display = 'none'; }
       document.getElementById('note-fs-modal').classList.remove('hidden');
-      document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -29715,6 +29713,56 @@ QUESTION: ${query}`;
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
+      // Content-only pinch-zoom: scales ProseMirror via CSS zoom, toolbar unaffected.
+      // Touch Events always fire regardless of touch-action, so this is reliable.
+      (function() {
+        if (window._edPinchBound) return;
+        window._edPinchBound = true;
+        var _scale = 1, _lastDist = 0, _pinching = false;
+        function _dist(t) {
+          var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+          return Math.sqrt(dx * dx + dy * dy);
+        }
+        function _apply() {
+          var pm = document.querySelector('#note-fs-editor .ProseMirror');
+          if (!pm) return;
+          if (_scale <= 1.02) { pm.style.transform = ''; _scale = 1; }
+          else { pm.style.transform = 'scale(' + _scale + ')'; }
+        }
+        window._edZoomReset = function() {
+          _scale = 1; _pinching = false; _lastDist = 0;
+          var pm = document.querySelector('#note-fs-editor .ProseMirror');
+          if (pm) pm.style.transform = '';
+        };
+        function _modalOpen() {
+          var m = document.getElementById('note-fs-modal');
+          return m && !m.classList.contains('hidden');
+        }
+        function _inEditor(x, y) {
+          var ed = document.getElementById('note-fs-editor');
+          if (!ed) return false;
+          var r = ed.getBoundingClientRect();
+          return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+        }
+        document.addEventListener('touchstart', function(ev) {
+          if (!_modalOpen() || ev.touches.length !== 2) return;
+          var t0 = ev.touches[0], t1 = ev.touches[1];
+          if (!_inEditor(t0.clientX, t0.clientY) && !_inEditor(t1.clientX, t1.clientY)) return;
+          ev.preventDefault();
+          _pinching = true;
+          _lastDist = _dist(ev.touches);
+        }, { passive: false, capture: true });
+        document.addEventListener('touchmove', function(ev) {
+          if (!_pinching || ev.touches.length !== 2) return;
+          ev.preventDefault();
+          var d = _dist(ev.touches);
+          if (_lastDist > 0) { _scale = Math.min(5, Math.max(1, _scale * (d / _lastDist))); _apply(); }
+          _lastDist = d;
+        }, { passive: false, capture: true });
+        document.addEventListener('touchend', function(ev) {
+          if (ev.touches.length < 2) _pinching = false;
+        }, true);
+      })();
       // openOnClick:false means clicking a link places the cursor and the link
       // bubble appears (via onSelectionUpdate → _ttUpdateLinkBubble). The user
       // then taps ↗ Open in the bubble to navigate — routed via _openUrl() for
@@ -30620,7 +30668,6 @@ QUESTION: ${query}`;
         subEl.style.display = loc ? 'block' : 'none';
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
-      document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -30648,9 +30695,7 @@ QUESTION: ${query}`;
       if (_aiP) _aiP.style.display = 'none';
       const _fsMod = document.getElementById('note-fs-modal');
       _fsMod.classList.add('hidden');
-      // Re-lock zoom now that editor is closed, and snap scale back to 1
-      const _vp = document.querySelector('meta[name=viewport]');
-      _vp.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      if (window._edZoomReset) window._edZoomReset(); // reset content-only zoom
       // Reset any visualViewport-driven sizing so next open starts clean
       _fsMod.style.height = '';
       _fsMod.style.top = '';
