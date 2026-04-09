@@ -11771,7 +11771,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.71';
+    const VERSION = '5.2.72';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -29718,17 +29718,31 @@ QUESTION: ${query}`;
           var modal = document.getElementById('note-fs-modal');
           if (!modal || modal.classList.contains('hidden')) return;
           if (ev.touches.length < 2) return;
-          showToast('👆 ' + ev.touches.length + ' fingers detected');
-          // Check if any touch is on an image wrap
+          // Try exact hit first
           var targetWrap = null;
           for (var i = 0; i < ev.touches.length; i++) {
-            var t = ev.touches[i];
-            var w = _wrapFromPoint(t.clientX, t.clientY);
+            var w = _wrapFromPoint(ev.touches[i].clientX, ev.touches[i].clientY);
             if (w) { targetWrap = w; break; }
           }
-          if (!targetWrap) { showToast('❌ no image wrap found'); return; }
-          showToast('✅ wrap found — opening');
-          ev.preventDefault(); // stop browser scroll/zoom
+          // Fallback: find closest wrap to the midpoint of all touches
+          if (!targetWrap) {
+            var editorEl = document.getElementById('note-fs-editor');
+            if (!editorEl) return;
+            var wraps = editorEl.querySelectorAll('.img-resize-wrap');
+            if (!wraps.length) return;
+            var cx = 0, cy = 0;
+            for (var i = 0; i < ev.touches.length; i++) { cx += ev.touches[i].clientX; cy += ev.touches[i].clientY; }
+            cx /= ev.touches.length; cy /= ev.touches.length;
+            var minDist = Infinity;
+            wraps.forEach(function(w) {
+              var r = w.getBoundingClientRect();
+              var wx = r.left + r.width / 2, wy = r.top + r.height / 2;
+              var d = (wx - cx) * (wx - cx) + (wy - cy) * (wy - cy);
+              if (d < minDist) { minDist = d; targetWrap = w; }
+            });
+          }
+          if (!targetWrap) return;
+          ev.preventDefault();
           var imgEl = targetWrap.querySelector('img.tt-resizable-img');
           if (imgEl && window.openLightbox) window.openLightbox(imgEl.src);
         }, { passive: false, capture: true });
