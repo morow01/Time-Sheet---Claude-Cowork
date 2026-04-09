@@ -11770,7 +11770,26 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.75';
+    const VERSION = '5.2.76';
+
+    // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
+    // The network-first SW already delivers new app.html; this clears the old SW so it
+    // doesn't keep intercepting requests with stale logic.
+    (function() {
+      const _sv = localStorage.getItem('rian_sw_version');
+      if (_sv && _sv !== VERSION && 'serviceWorker' in navigator) {
+        localStorage.setItem('rian_sw_version', VERSION);
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          Promise.all(regs.map(function(r) { return r.unregister(); })).then(function() {
+            caches.keys().then(function(keys) {
+              return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+            }).then(function() { location.reload(true); });
+          });
+        });
+        return; // skip rest of app init — reload is coming
+      }
+      localStorage.setItem('rian_sw_version', VERSION);
+    })();
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
