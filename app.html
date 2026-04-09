@@ -11770,7 +11770,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.82';
+    const VERSION = '5.2.83';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29734,10 +29734,12 @@ QUESTION: ${query}`;
           var ed = document.getElementById('note-fs-editor');
           var pm = document.querySelector('#note-fs-editor .ProseMirror');
           if (!ed||!pm) return;
-          var minTx = Math.min(0, ed.clientWidth  - pm.offsetWidth  * _s);
-          var minTy = Math.min(0, ed.clientHeight - pm.offsetHeight * _s);
-          _tx = Math.max(minTx, Math.min(0, _tx));
-          _ty = Math.max(minTy, Math.min(0, _ty));
+          var edST = ed.scrollTop || 0, edSL = ed.scrollLeft || 0;
+          var maxTx = edSL, maxTy = edST;
+          var minTx = Math.min(maxTx, edSL + ed.clientWidth  - pm.offsetWidth  * _s);
+          var minTy = Math.min(maxTy, edST + ed.clientHeight - pm.offsetHeight * _s);
+          _tx = Math.max(minTx, Math.min(maxTx, _tx));
+          _ty = Math.max(minTy, Math.min(maxTy, _ty));
         }
         function _apply() {
           var pm = document.querySelector('#note-fs-editor .ProseMirror');
