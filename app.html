@@ -11770,7 +11770,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.85';
+    const VERSION = '5.2.86';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29856,6 +29856,15 @@ QUESTION: ${query}`;
         }, {passive:false, capture:true});
         document.addEventListener('touchend', function(ev) {
           if (ev.touches.length<2) _pinching=false;
+          // 2→1 transition: reset pan anchor so the remaining finger
+          // doesn't produce a huge delta against stale _panStartX/Y
+          if (ev.touches.length===1 && _s>1.02) {
+            var tr=ev.touches[0];
+            _panStartX=tr.clientX; _panStartY=tr.clientY;
+            _lastPanX=tr.clientX; _lastPanY=tr.clientY;
+            _lastPanTime=Date.now();
+            _panMoved=false; _velSamples=[];
+          }
           if (ev.touches.length===0) {
             if (_panMoved) _startMomentum();
             _panMoved=false;
