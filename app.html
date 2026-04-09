@@ -11758,7 +11758,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.57';
+    const VERSION = '5.2.58';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -12785,7 +12785,10 @@
         if (changed) {
           note.noteContent = doc.querySelector('div').innerHTML;
           note.updatedAt = Date.now();
+          // Mark as intentionally migrated so other devices bypass HWM guard
+          note._compressedAt = note.updatedAt;
           _setNoteHWMExplicit(note.id, (note.noteContent || '').length);
+          _setNoteHWMCat(note.id, note._compressedAt);
         }
       }
       if (migrated > 0) scheduleNotesSave();
@@ -12796,7 +12799,7 @@
     async function _maybeRunStorageMigration() {
       if (!state.currentUser || !storage_fb) return;
       const _migKey = 'rian_img_migrated_' + state.currentUser.uid;
-      if (localStorage.getItem(_migKey) === '1') return;
+      if (localStorage.getItem(_migKey) === '2') return; // v2 = complete with _compressedAt fix
       const hasBase64 = state.notes.some(function(n) { return n.noteContent && n.noteContent.indexOf('data:image') !== -1; });
       if (!hasBase64) { localStorage.setItem(_migKey, '1'); return; }
       const count = state.notes.reduce(function(s, n) {
@@ -12806,7 +12809,7 @@
       try {
         const n = await _migrateNoteImagesToStorage();
         if (n >= 0) {
-          localStorage.setItem(_migKey, '1');
+          localStorage.setItem(_migKey, '2'); // v2 = migration includes _compressedAt fix
           if (n > 0) showToast('✅ ' + n + ' image' + (n !== 1 ? 's' : '') + ' moved to Storage');
         }
       } catch(e) {
@@ -29614,16 +29617,25 @@ QUESTION: ${query}`;
                 reader.onload = async function(ev) {
                   const dataUrl = await _compressDataUrl(ev.target.result, 1400, 0.75);
                   let src = dataUrl;
+                  let _uploadedToStorage = false;
                   if (state.currentUser && storage_fb && _fnFsNoteId) {
                     try {
                       showToast('⬆️ Uploading…');
                       src = await _uploadNoteImage(dataUrl, _fnFsNoteId);
+                      _uploadedToStorage = true;
                     } catch(e) {
                       console.warn('[Rian] Storage paste upload failed, using base64:', e);
                       showToast('⚠️ Upload failed — image stored locally');
                     }
                   }
                   if (_tiptapEditor) _tiptapEditor.chain().focus().setImage({ src }).run();
+                  // Flag the note so other devices bypass HWM guard for this smaller content
+                  if (_uploadedToStorage && _fnFsNoteId) {
+                    const _ts = Date.now();
+                    const _n = state.notes.find(function(x) { return x.id === _fnFsNoteId; });
+                    if (_n) { _n._compressedAt = _ts; }
+                    _setNoteHWMCat(_fnFsNoteId, _ts);
+                  }
                 };
                 reader.readAsDataURL(file);
                 return true;
@@ -30509,10 +30521,12 @@ QUESTION: ${query}`;
 
       // Upload to Firebase Storage if signed in, else fall back to base64
       let src = dataUrl;
+      let _uploadedToStorage = false;
       if (state.currentUser && storage_fb && _fnFsNoteId) {
         try {
           showToast('⬆️ Uploading…');
           src = await _uploadNoteImage(dataUrl, _fnFsNoteId);
+          _uploadedToStorage = true;
         } catch(e) {
           console.warn('[Rian] Storage upload failed, using base64:', e);
           showToast('⚠️ Upload failed — image stored locally');
@@ -30520,6 +30534,13 @@ QUESTION: ${query}`;
         }
       }
       _tiptapEditor.chain().focus().setImage({ src }).run();
+      // Flag the note so other devices bypass HWM guard for this smaller content
+      if (_uploadedToStorage && _fnFsNoteId) {
+        const _ts = Date.now();
+        const _n = state.notes.find(function(x) { return x.id === _fnFsNoteId; });
+        if (_n) { _n._compressedAt = _ts; }
+        _setNoteHWMCat(_fnFsNoteId, _ts);
+      }
     }
 
     function _ttSetContent(html) {
