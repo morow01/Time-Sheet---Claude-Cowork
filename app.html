@@ -11770,7 +11770,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.81';
+    const VERSION = '5.2.82';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29774,8 +29774,8 @@ QUESTION: ${query}`;
             _p0midY=(t0.clientY+t1.clientY)/2;
             var ed=document.getElementById('note-fs-editor');
             var r=ed?ed.getBoundingClientRect():{left:0,top:0};
-            _p0pivX=_p0midX-r.left;   // editor-local pivot
-            _p0pivY=_p0midY-r.top;
+            _p0pivX=_p0midX-r.left+(ed?ed.scrollLeft:0);
+            _p0pivY=_p0midY-r.top+(ed?ed.scrollTop:0);
           } else if (ev.touches.length===1 && _s>1.02) {
             var t=ev.touches[0];
             if (!_inEditor(t.clientX,t.clientY)) return;
