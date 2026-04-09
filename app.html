@@ -11770,7 +11770,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.73';
+    const VERSION = '5.2.74';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -17556,6 +17556,11 @@
                 showToast('📦 Images compressed — notes syncing');
                 console.log('[Rian] Notes after compression:', JSON.stringify(_notesToFs).length, 'bytes');
               }
+            }
+            // Explicit save: lower HWM to current sizes so intentional deletions
+            // aren't blocked by the guard when the Firestore echo arrives
+            for (const _n of _notesToFs) {
+              _setNoteHWMExplicit(_n.id, (_n.noteContent || '').length);
             }
             await fsSetNotes(_notesToFs);
             state.notesSyncStatus = 'synced';
