@@ -4468,8 +4468,8 @@
       /* clearfix: contains floated images */
       color: #3A3836;
       min-height: 200px;
-      /* pan-y + pinch-zoom: scroll vertically, native pinch-to-zoom */
-      touch-action: pan-y pinch-zoom;
+      /* manipulation = pan-x + pan-y + pinch-zoom; allows scroll and pan after zoom */
+      touch-action: manipulation;
     }
 
     .tt-prose {
@@ -11770,7 +11770,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.77';
+    const VERSION = '5.2.78';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
