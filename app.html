@@ -11758,7 +11758,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.58';
+    const VERSION = '5.2.59';
 
     // ── Notes categories ──
     const DEFAULT_NOTE_CATEGORIES = [
@@ -29273,10 +29273,6 @@ QUESTION: ${query}`;
             if (node.attrs.alt) img.alt = node.attrs.alt;
             if (node.attrs.title) img.title = node.attrs.title;
             img.classList.add('tt-resizable-img');
-            // Tap image to open fullscreen lightbox with pinch-to-zoom
-            img.addEventListener('click', function(e) {
-              if (window.openLightbox) window.openLightbox(img.src);
-            });
 
             // Apply width + alignment.
             // wrap-left / wrap-right: float container so text wraps alongside.
@@ -29377,6 +29373,13 @@ QUESTION: ${query}`;
               <button data-size="50%">M</button>
               <button data-size="75%">L</button>
               <button data-size="100%">XL</button>
+              <span class="preset-divider"></span>
+              <button data-action="zoom" title="View fullscreen">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+                  <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+                </svg>
+              </button>
             `;
 
             // Highlight active layout button
@@ -29391,9 +29394,13 @@ QUESTION: ${query}`;
 
             presets.addEventListener('mousedown', e => e.preventDefault()); // prevent editor blur on desktop
             presets.addEventListener('click', (e) => {
-              const btn = e.target.closest('button[data-size], button[data-align]');
+              const btn = e.target.closest('button[data-size], button[data-align], button[data-action]');
               if (!btn) return;
               e.stopPropagation();
+              if (btn.dataset.action === 'zoom') {
+                if (window.openLightbox) window.openLightbox(img.src);
+                return;
+              }
               const pos = getPos();
               if (btn.dataset.size) {
                 editor.chain().command(({ tr }) => {
