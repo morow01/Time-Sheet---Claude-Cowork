@@ -11794,7 +11794,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.19';
+    const VERSION = '5.3.20';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -22199,6 +22199,11 @@
             state.weekData._updatedAt = Date.now();
             const uid = state.currentUser?.uid || null;
             await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: state.weekData, updatedAt: state.weekData._updatedAt });
+            // Allow outbound HWM guard to pass — user explicitly chose cloud.
+            // Also update HWM so future writes aren't blocked by the old high-water-mark.
+            window._hwmAllowOutbound = window._hwmAllowOutbound || {};
+            window._hwmAllowOutbound[state.weekStart] = true;
+            _setHWM(state.weekStart, _weekTotalHours(state.weekData));
             await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
           } else if (conflict.section === 'Notes' && conflict.remoteData) {
             state.notes = deepCopy(conflict.remoteData);
@@ -22241,6 +22246,10 @@
               state.weekData._updatedAt = Date.now();
               const uid = state.currentUser?.uid || null;
               await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: state.weekData, updatedAt: state.weekData._updatedAt });
+              // Allow outbound HWM guard and update HWM — user explicitly chose cloud.
+              window._hwmAllowOutbound = window._hwmAllowOutbound || {};
+              window._hwmAllowOutbound[state.weekStart] = true;
+              _setHWM(state.weekStart, _weekTotalHours(state.weekData));
               await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             } else if (conflict.section === 'Notes' && conflict.remoteData) {
               state.notes = deepCopy(conflict.remoteData);
