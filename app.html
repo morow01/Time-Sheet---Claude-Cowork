@@ -11953,7 +11953,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.48';
+    const VERSION = '5.3.49';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -30486,18 +30486,25 @@ QUESTION: ${query}`;
         }
         function _apply() {
           var pm=document.querySelector('#note-fs-editor .ProseMirror');
+          var ed=document.getElementById('note-fs-editor');
           if (!pm) return;
           var lbl=document.getElementById('tt-zoom-label');
           if (_s<=0.98){
-            // zoom-out: CSS zoom affects layout so wide tables shrink to fit
-            pm.style.transform=''; pm.style.zoom=String(_s);
+            // zoom-out: widen ProseMirror so tables/images spread, then scale down
+            pm.style.zoom='';
+            pm.style.width=(100/_s)+'%';
+            pm.style.transform='scale('+_s+')';
+            pm.style.transformOrigin='0 0';
+            if (ed) ed.style.overflow='hidden';
             _tx=0; _ty=0;
           } else if (_s>=1.02){
             // zoom-in: transform+translate allows panning
-            pm.style.zoom='';
+            pm.style.zoom=''; pm.style.width='';
             pm.style.transform='translate('+_tx+'px,'+_ty+'px) scale('+_s+')';
+            if (ed) ed.style.overflow='auto';
           } else {
-            pm.style.transform=''; pm.style.zoom='';
+            pm.style.transform=''; pm.style.zoom=''; pm.style.width='';
+            if (ed) ed.style.overflow='auto';
             _s=1; _tx=0; _ty=0;
           }
           if (lbl) lbl.textContent=Math.round(_s*100)+'%';
@@ -30535,7 +30542,9 @@ QUESTION: ${query}`;
           _stopMomentum();
           _s=1;_tx=0;_ty=0;_pinching=false;_panMoved=false;
           var pm=document.querySelector('#note-fs-editor .ProseMirror');
-          if (pm){pm.style.transform='';pm.style.zoom='';}
+          if (pm){pm.style.transform='';pm.style.zoom='';pm.style.width='';}
+          var ed=document.getElementById('note-fs-editor');
+          if (ed) ed.style.overflow='auto';
           var lbl=document.getElementById('tt-zoom-label');
           if (lbl) lbl.textContent='100%';
         };
