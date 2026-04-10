@@ -4707,9 +4707,11 @@
     /* Selection action bar — sticky at bottom of editor, appears when text is selected */
     #tt-sel-bar {
       display: none;
-      position: sticky;
+      position: fixed;
       bottom: 0;
-      z-index: 201;
+      left: 0;
+      right: 0;
+      z-index: 10001;
       align-items: center;
       justify-content: flex-start;
       gap: 8px;
@@ -11791,7 +11793,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.1';
+    const VERSION = '5.3.2';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29809,6 +29811,7 @@ QUESTION: ${query}`;
           const hasNative = nativeSel && !nativeSel.isCollapsed && (nativeSel.toString().trim().length > 0);
           const hasTiptap = _tiptapEditor && !_tiptapEditor.state.selection.empty;
           if ((hasNative || hasTiptap) && !aiOpen) {
+            bar.style.bottom = (_ttKbH || 0) + 'px';
             bar.style.display = 'flex';
           } else if (!hasNative && !hasTiptap) {
             bar.style.display = 'none';
@@ -30208,14 +30211,18 @@ QUESTION: ${query}`;
     // and keyboard top). Instead, the modal stays fixed inset-0 and we add
     // bottom padding to the editor equal to the keyboard height, so the text
     // area can scroll above the keyboard. Zoom level is preserved.
+    let _ttKbH = 0;
     function _ttAdjustForKeyboard() {
       const modal = document.getElementById('note-fs-modal');
       if (!modal || modal.classList.contains('hidden')) return;
       const vv = window.visualViewport;
       if (!vv) return;
-      const kbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      _ttKbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
       const ed = document.getElementById('note-fs-editor');
-      if (ed) ed.style.paddingBottom = kbH + 'px';
+      if (ed) ed.style.paddingBottom = _ttKbH + 'px';
+      // Keep selection bar above keyboard
+      const bar = document.getElementById('tt-sel-bar');
+      if (bar) bar.style.bottom = _ttKbH + 'px';
     }
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', _ttAdjustForKeyboard);
@@ -30648,9 +30655,10 @@ QUESTION: ${query}`;
       if (show) {
         // Snapshot selection now — before any blur event can clear it
         _ttAiSavedSel = { from, to, empty };
+        bar.style.bottom = (_ttKbH || 0) + 'px';
         bar.style.display = 'flex';
         const hint = document.getElementById('tt-sel-bar-hint');
-        if (hint) setTimeout(() => { hint.style.display = 'none'; }, 4000);
+        if (hint) { hint.style.display = ''; setTimeout(() => { hint.style.display = 'none'; }, 4000); }
       } else {
         bar.style.display = 'none';
       }
