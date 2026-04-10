@@ -11953,7 +11953,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.51';
+    const VERSION = '5.3.52';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -30484,24 +30484,38 @@ QUESTION: ${query}`;
           _tx=Math.max(minTx,Math.min(maxTx,_tx));
           _ty=Math.max(minTy,Math.min(maxTy,_ty));
         }
+        function _setTableClip(unclip) {
+          // When zoomed out, remove tableWrapper horizontal clipping
+          // so full-width tables are visible and scaled by the transform
+          var ws=document.querySelectorAll('#note-fs-editor .ProseMirror .tableWrapper');
+          for (var i=0;i<ws.length;i++) ws[i].style.overflowX=unclip?'visible':'';
+        }
         function _apply() {
           var pm=document.querySelector('#note-fs-editor .ProseMirror');
           var ed=document.getElementById('note-fs-editor');
           if (!pm||!ed) return;
           var lbl=document.getElementById('tt-zoom-label');
           if (_s<=0.98){
-            // zoom-out: CSS zoom on the EDITOR container (not ProseMirror)
-            // so everything inside — tables, images, scrollbars — zooms uniformly
-            pm.style.transform='';
-            ed.style.zoom=String(_s);
+            // zoom-out: transform:scale — visually shrinks everything uniformly
+            // (no width changes, no reflow — layout stays identical, just smaller)
+            pm.style.transform='scale('+_s+')';
+            pm.style.transformOrigin='0 0';
+            pm.style.overflow='visible';
+            ed.style.zoom='';
+            ed.style.overflow='hidden';
+            _setTableClip(true);
             _tx=0; _ty=0;
           } else if (_s>=1.02){
-            // zoom-in: transform on ProseMirror for pan support
-            ed.style.zoom='';
+            // zoom-in: transform+translate for panning
             pm.style.transform='translate('+_tx+'px,'+_ty+'px) scale('+_s+')';
-          } else {
-            pm.style.transform='';
+            pm.style.overflow='';
             ed.style.zoom='';
+            ed.style.overflow='auto';
+            _setTableClip(false);
+          } else {
+            pm.style.transform=''; pm.style.overflow='';
+            ed.style.zoom=''; ed.style.overflow='auto';
+            _setTableClip(false);
             _s=1; _tx=0; _ty=0;
           }
           if (lbl) lbl.textContent=Math.round(_s*100)+'%';
@@ -30539,9 +30553,10 @@ QUESTION: ${query}`;
           _stopMomentum();
           _s=1;_tx=0;_ty=0;_pinching=false;_panMoved=false;
           var pm=document.querySelector('#note-fs-editor .ProseMirror');
-          if (pm) pm.style.transform='';
+          if (pm){pm.style.transform='';pm.style.overflow='';}
           var ed=document.getElementById('note-fs-editor');
-          if (ed) ed.style.zoom='';
+          if (ed){ed.style.zoom='';ed.style.overflow='auto';}
+          _setTableClip(false);
           var lbl=document.getElementById('tt-zoom-label');
           if (lbl) lbl.textContent='100%';
         };
