@@ -11793,7 +11793,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.11';
+    const VERSION = '5.3.12';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -20195,6 +20195,7 @@
         }
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -26428,6 +26429,7 @@
       if (titleEl) titleEl.textContent = 'Callout Note';
       if (subEl) { subEl.textContent = ''; subEl.style.display = 'none'; }
       document.getElementById('note-fs-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -30999,6 +31001,7 @@ QUESTION: ${query}`;
         subEl.style.display = loc ? 'block' : 'none';
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -31027,6 +31030,7 @@ QUESTION: ${query}`;
       if (_aiP) _aiP.style.display = 'none';
       const _fsMod = document.getElementById('note-fs-modal');
       _fsMod.classList.add('hidden');
+      document.body.style.overflow = ''; // restore body scroll
       if (window._edZoomReset) window._edZoomReset(); // reset content-only zoom
       // Clear any keyboard-offset padding so next open starts clean
       const _edReset = document.getElementById('note-fs-editor');
