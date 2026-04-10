@@ -11953,7 +11953,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.38';
+    const VERSION = '5.3.39';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -14888,7 +14888,7 @@
         <div class="theme-dropdown ${state.isMenuOpen ? 'open' : ''}" id="theme-dropdown" onclick="event.stopPropagation()">
           ${(() => {
           const u = state.currentUser;
-          const displayName = u ? (u.displayName || u.email || 'there') : 'there';
+          const displayName = u ? (u.displayName || u.email || localStorage.getItem('rian_user_name') || localStorage.getItem('rian_user_email')?.split('@')[0] || 'there') : 'there';
           const photoURL = u ? (u.photoURL || '') : '';
           const initial = displayName[0].toUpperCase();
           const avatarHtml = photoURL
@@ -14904,7 +14904,7 @@
                 <div class="menu-avatar-wrap">${avatarHtml}</div>
                 <div class="menu-signed-in-label">Signed in as</div>
                 <div class="menu-display-name">${esc(displayName)}</div>
-                ${u && u.email ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;word-break:break-all;">${esc(u.email)}</div>` : ''}
+                ${(() => { const _e = u ? (u.email || localStorage.getItem('rian_user_email') || '') : ''; return _e ? '<div style="font-size:11px;color:#94a3b8;margin-top:2px;word-break:break-all;">' + esc(_e) + '</div>' : ''; })()}
                 <button class="menu-signout-btn" onclick="signOutUser()">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                   Sign Out
@@ -28773,8 +28773,13 @@ Rules:
       auth_fb.onAuthStateChanged(async user => {
         console.log('[Rian Debug] onAuthStateChanged fired. User:', user ? user.uid : 'null');
         state.currentUser = user;
-        if (user) localStorage.setItem('rian_last_uid', user.uid);
-        else localStorage.removeItem('rian_last_uid');
+        if (user) {
+          localStorage.setItem('rian_last_uid', user.uid);
+          if (user.displayName) localStorage.setItem('rian_user_name', user.displayName);
+          if (user.email) localStorage.setItem('rian_user_email', user.email);
+        } else {
+          localStorage.removeItem('rian_last_uid');
+        }
         if (!user) {
           // Signed out — tear down listeners and show login
           if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
