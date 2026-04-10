@@ -11793,7 +11793,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.2';
+    const VERSION = '5.3.3';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -30940,7 +30940,8 @@ QUESTION: ${query}`;
           const mainTa = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
           if (mainTa) { mainTa.value = html; updateField(mainTa); }
         };
-        _tiptapEditor.commands.focus();
+        // Don't auto-focus — user may just want to read, not edit
+        // Keyboard opens on first tap in the editor
         _ttUpdateToolbar(_tiptapEditor);
       }, 80);
     }
