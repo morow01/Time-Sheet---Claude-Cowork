@@ -11953,7 +11953,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.35';
+    const VERSION = '5.3.36';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -28775,19 +28775,17 @@ Rules:
         let user = rawUser;
         console.log('[Rian Debug] onAuthStateChanged fired. User:', user ? user.uid : 'null');
 
-        // If user exists but email is missing, the session may be a stale cached credential
-        // that hasn't fully hydrated yet. Call reload() to force a fresh profile fetch.
+        // After a browser restart, Firebase may restore a cached session with
+        // user.email temporarily null. Call reload() to hydrate the profile,
+        // then re-render so the display name updates from UID → real name.
         if (user && !user.email) {
-          try { await user.reload(); } catch(e) { console.warn('[Rian] user.reload() failed:', e); }
-          user = auth_fb.currentUser;
-          if (!user || !user.email) {
-            // Still no email after reload — genuinely invalid session, sign out
-            console.warn('[Rian] Account has no email after reload — signing out.');
-            await auth_fb.signOut();
-            return;
+          try {
+            await user.reload();
+            user = auth_fb.currentUser || user;
+            console.log('[Rian] Profile reloaded. Email:', user.email || '(still empty)');
+          } catch(e) {
+            console.warn('[Rian] user.reload() failed — continuing with stale profile:', e);
           }
-          console.log('[Rian] Email resolved after reload:', user.email);
-          // Fall through with the refreshed user object
         }
 
         state.currentUser = user;
