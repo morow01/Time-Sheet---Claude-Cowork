@@ -11791,7 +11791,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.97';
+    const VERSION = '5.2.98';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29706,7 +29706,7 @@ QUESTION: ${query}`;
       _tiptapEditor = new Editor({
         element: document.getElementById('note-fs-editor'),
         extensions: [
-          StarterKit.configure({ history: true }),
+          StarterKit.configure({ history: { depth: 20, newGroupDelay: 300 } }),
           Underline,
           TextStyle,
           Color,
@@ -30836,6 +30836,8 @@ QUESTION: ${query}`;
       // instead, so the anchor target attribute is unused and kept clean in storage.
       const cleaned = (html || '').replace(/\s+target="_blank"/g, '');
       _tiptapEditor.commands.setContent(cleaned || '', false);
+      // Clear undo history so you can't undo back into a previous note's changes
+      _tiptapEditor.commands.clearHistory?.();
     }
 
     function _ttGetHTML() {
