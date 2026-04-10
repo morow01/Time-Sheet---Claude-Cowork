@@ -5107,7 +5107,32 @@
       min-width: 60px;
       vertical-align: middle;
       position: relative;
-      /* required for selectedCell::after overlay */
+      /* required for selectedCell::after overlay and column-resize-handle */
+      overflow: hidden; /* contain the resize handle so it never affects row height */
+    }
+
+    /* Column resize handle — always absolute, never in flow */
+    #note-fs-editor .ProseMirror .column-resize-handle {
+      position: absolute !important;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #818cf8;
+      opacity: 0;
+      pointer-events: none;
+      will-change: opacity;
+      transition: opacity 0.15s;
+      z-index: 20;
+    }
+    #note-fs-editor .ProseMirror td:hover .column-resize-handle,
+    #note-fs-editor .ProseMirror th:hover .column-resize-handle {
+      opacity: 0.6;
+      pointer-events: auto;
+      cursor: col-resize;
+    }
+    #note-fs-editor .ProseMirror.resize-cursor {
+      cursor: col-resize;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) th {
@@ -11769,7 +11794,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.17';
+    const VERSION = '5.3.18';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29793,7 +29818,7 @@ QUESTION: ${query}`;
           TextAlign.configure({ types: ['heading', 'paragraph'] }),
           TaskList,
           TaskItemWithHandle,
-          Table.configure({ resizable: false }),
+          Table.configure({ resizable: true }),
           TableRow,
           TableHeaderWithBg,
           TableCellWithBg,
