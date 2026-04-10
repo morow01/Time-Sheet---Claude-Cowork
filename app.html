@@ -11953,7 +11953,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.52';
+    const VERSION = '5.3.53';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -30501,20 +30501,22 @@ QUESTION: ${query}`;
             pm.style.transform='scale('+_s+')';
             pm.style.transformOrigin='0 0';
             pm.style.overflow='visible';
+            // allow vertical scroll, hide horizontal overflow from unclipped tables
+            ed.style.overflowY='auto'; ed.style.overflowX='hidden';
             ed.style.zoom='';
-            ed.style.overflow='hidden';
             _setTableClip(true);
             _tx=0; _ty=0;
           } else if (_s>=1.02){
             // zoom-in: transform+translate for panning
             pm.style.transform='translate('+_tx+'px,'+_ty+'px) scale('+_s+')';
             pm.style.overflow='';
-            ed.style.zoom='';
-            ed.style.overflow='auto';
+            ed.style.overflowY=''; ed.style.overflowX='';
+            ed.style.overflow='auto'; ed.style.zoom='';
             _setTableClip(false);
           } else {
             pm.style.transform=''; pm.style.overflow='';
-            ed.style.zoom=''; ed.style.overflow='auto';
+            ed.style.overflowY=''; ed.style.overflowX='';
+            ed.style.overflow='auto'; ed.style.zoom='';
             _setTableClip(false);
             _s=1; _tx=0; _ty=0;
           }
@@ -30555,7 +30557,7 @@ QUESTION: ${query}`;
           var pm=document.querySelector('#note-fs-editor .ProseMirror');
           if (pm){pm.style.transform='';pm.style.overflow='';}
           var ed=document.getElementById('note-fs-editor');
-          if (ed){ed.style.zoom='';ed.style.overflow='auto';}
+          if (ed){ed.style.zoom='';ed.style.overflow='auto';ed.style.overflowX='';ed.style.overflowY='';}
           _setTableClip(false);
           var lbl=document.getElementById('tt-zoom-label');
           if (lbl) lbl.textContent='100%';
