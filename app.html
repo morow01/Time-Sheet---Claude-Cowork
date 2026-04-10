@@ -11793,7 +11793,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.12';
+    const VERSION = '5.3.13';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29577,7 +29577,15 @@ QUESTION: ${query}`;
             // ── Drag-to-resize handle ────────────────────────────────────
             const handle = document.createElement('div');
             handle.classList.add('img-resize-handle');
-            let _rzActive = false, _rzStartX = 0, _rzStartW = 0;
+            let _rzActive = false, _rzStartX = 0, _rzStartY = 0, _rzStartW = 0, _rzAspect = 1;
+
+            const _rzCalcW = (ex, ey) => {
+              // Use the larger of horizontal or diagonal delta so dragging in any direction resizes
+              const dx = ex - _rzStartX;
+              const dy = ey - _rzStartY;
+              const delta = Math.abs(dx) >= Math.abs(dy) ? dx : dy * _rzAspect;
+              return Math.max(60, _rzStartW + delta);
+            };
 
             handle.addEventListener('pointerdown', (e) => {
               e.preventDefault();
@@ -29585,14 +29593,17 @@ QUESTION: ${query}`;
               handle.setPointerCapture(e.pointerId);
               _rzActive = true;
               _rzStartX = e.clientX;
-              _rzStartW = img.getBoundingClientRect().width;
+              _rzStartY = e.clientY;
+              const rect = img.getBoundingClientRect();
+              _rzStartW = rect.width;
+              _rzAspect = rect.width / (rect.height || 1); // w/h ratio for vertical drag
             });
 
             handle.addEventListener('pointermove', (e) => {
               if (!_rzActive) return;
               const pm = container.closest('.ProseMirror');
               const edW = pm ? pm.offsetWidth : 300;
-              const newW = Math.max(60, _rzStartW + (e.clientX - _rzStartX));
+              const newW = _rzCalcW(e.clientX, e.clientY);
               const pct = Math.min(100, Math.max(10, Math.round(newW / edW * 100)));
               const isFloat = currentAttrs.align === 'wrap-left' || currentAttrs.align === 'wrap-right';
               if (isFloat) { container.style.width = pct + '%'; }
@@ -29604,7 +29615,7 @@ QUESTION: ${query}`;
               _rzActive = false;
               const pm = container.closest('.ProseMirror');
               const edW = pm ? pm.offsetWidth : 300;
-              const newW = Math.max(60, _rzStartW + (e.clientX - _rzStartX));
+              const newW = _rzCalcW(e.clientX, e.clientY);
               const pct = Math.min(100, Math.max(10, Math.round(newW / edW * 100)));
               const pos = getPos();
               editor.chain().command(({ tr }) => {
@@ -30689,10 +30700,12 @@ QUESTION: ${query}`;
     function _ttUpdateAiFab(editor) {
       const bar = document.getElementById('tt-sel-bar');
       if (!bar) return;
-      const { from, to, empty } = editor.state.selection;
+      const sel = editor.state.selection;
+      const { from, to, empty } = sel;
+      const isNodeSel = sel.node != null; // image or other node selection — not text
       const aiPanel = document.getElementById('tt-ai-preview');
       const aiOpen = aiPanel && aiPanel.style.display !== 'none';
-      const show = !empty && !aiOpen;
+      const show = !empty && !isNodeSel && !aiOpen;
       if (show) {
         // Snapshot selection now — before any blur event can clear it
         _ttAiSavedSel = { from, to, empty };
