@@ -11791,7 +11791,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.2.96';
+    const VERSION = '5.2.97';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29655,6 +29655,27 @@ QUESTION: ${query}`;
               if (window.openLightbox) window.openLightbox(img.src);
             });
 
+            // Make container focusable so it can receive keydown events
+            container.tabIndex = 0;
+            container.style.outline = 'none'; // selection ring comes from .selected class
+
+            // Delete/Backspace removes image; Enter inserts paragraph after it
+            container.addEventListener('keydown', (e) => {
+              if (e.key === 'Delete' || e.key === 'Backspace') {
+                e.preventDefault();
+                editor.chain().focus().deleteSelection().run();
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const pos = getPos();
+                editor.chain().command(({ tr, dispatch }) => {
+                  if (dispatch) tr.insert(pos + 1, editor.schema.nodes.paragraph.create());
+                  return true;
+                }).focus().run();
+              } else if (e.key === 'Escape') {
+                editor.commands.focus();
+              }
+            });
+
             container.append(img, presets, handle);
 
             return {
@@ -29669,12 +29690,11 @@ QUESTION: ${query}`;
               },
               selectNode() {
                 container.classList.add('selected');
-                // Dismiss Android keyboard when image is tapped
-                if (document.activeElement?.blur) {
-                  const sx = window.scrollX, sy = window.scrollY;
-                  document.activeElement.blur();
-                  requestAnimationFrame(() => window.scrollTo(sx, sy));
-                }
+                // Focus the container div (not a text input — won't trigger mobile keyboard)
+                // This lets keydown events (Delete, Enter) reach our handler above
+                const sx = window.scrollX, sy = window.scrollY;
+                container.focus({ preventScroll: true });
+                window.scrollTo(sx, sy);
               },
               deselectNode() { container.classList.remove('selected'); },
               destroy() { container._imgGetPos = null; },
