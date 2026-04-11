@@ -6444,14 +6444,20 @@
 
     /* hide in read-only previews */
 
-    /* Tables — shrink-wrap to content by default, expand only if needed */
+    /* Tables — shrink-wrap to content. !important overrides TipTap's resizing plugin
+       which injects inline style="min-width:Xpx" and col style="width:Xpx" via JS. */
     :is(#note-fs-editor .ProseMirror, .tt-prose) table {
       border-collapse: collapse;
-      width: auto;
-      min-width: 0;
+      width: auto !important;
+      min-width: 0 !important;
+      table-layout: auto !important;
       margin: 10px 0;
       font-size: 14px;
       font-family: 'DM Sans', sans-serif;
+    }
+
+    :is(#note-fs-editor .ProseMirror, .tt-prose) col {
+      width: auto !important;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) td,
@@ -13965,7 +13971,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.72';
+    const VERSION = '5.3.73';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
