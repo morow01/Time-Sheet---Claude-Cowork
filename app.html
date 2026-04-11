@@ -4538,19 +4538,9 @@
       text-transform: uppercase; color: #94A3B8;
     }
     .tt-hdg-para { font-size: 13px; color: var(--text-secondary); }
-    .tt-hdg-thr { font-size: 12px; font-weight: 500; color: var(--text-secondary); gap: 7px; }
-    .tt-th-badge {
-      background: #F5F4F0; border: 1px solid #ddd; border-radius: 3px;
-      padding: 1px 5px; font-size: 10px; font-weight: 700; color: #6B6860;
-      flex-shrink: 0; font-family: var(--font-mono);
-    }
     .tt-menu-div { height: 1px; background: var(--border); margin: 3px 4px; }
 
     /* Font size dropdown */
-    #tt-fs-menu { min-width: 80px; }
-    #tt-fs-btn { min-width: 36px; font-size: 11px; font-weight: 700; font-family: var(--font-mono); letter-spacing: -0.5px; }
-    .tt-fs-item { font-size: 13px; font-family: var(--font-mono); padding: 6px 14px; }
-    .tt-fs-item-def { font-size: 12px; color: var(--text-muted); padding: 6px 14px; }
 
     .tt-list-item svg {
       width: 15px;
@@ -11980,7 +11970,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.59';
+    const VERSION = '5.3.60';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29772,7 +29762,7 @@ QUESTION: ${query}`;
     async function _loadTipTapModules() {
       if (_tiptapModules) return _tiptapModules;
       const [
-        { Editor, Extension, NodeSelection, DOMParser: PmDOMParser },
+        { Editor, NodeSelection, DOMParser: PmDOMParser },
         { default: StarterKit },
         { default: Underline },
         { TextStyle },
@@ -29810,27 +29800,6 @@ QUESTION: ${query}`;
         import('https://esm.sh/@tiptap/extension-superscript@2.4.0'),
         import('https://esm.sh/@tiptap/extension-image@2.4.0'),
       ]);
-      // Custom FontSize extension (font-size is TipTap Pro; build inline instead)
-      const FontSize = Extension.create({
-        name: 'fontSize',
-        addOptions() { return { types: ['textStyle'] }; },
-        addGlobalAttributes() {
-          return [{ types: this.options.types, attributes: {
-            fontSize: {
-              default: null,
-              parseHTML: el => el.style.fontSize || null,
-              renderHTML: attrs => attrs.fontSize ? { style: `font-size:${attrs.fontSize}` } : {},
-            },
-          }}];
-        },
-        addCommands() {
-          return {
-            setFontSize: sz => ({ chain }) => chain().setMark('textStyle', { fontSize: sz }).run(),
-            unsetFontSize: () => ({ chain }) => chain().setMark('textStyle', { fontSize: null }).removeEmptyTextStyle().run(),
-          };
-        },
-      });
-
       // Extend TableCell to support per-cell background colour
       const TableCellWithBg = TableCell.extend({
         addAttributes() {
@@ -29925,7 +29894,7 @@ QUESTION: ${query}`;
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItem, TaskItemWithHandle, Table, TableRow, TableHeader, TableCell,
         TableCellWithBg, TableHeaderWithBg,
-        Link, Subscript, Superscript, Image, FontSize,
+        Link, Subscript, Superscript, Image,
         PmDOMParser,
       };
       return _tiptapModules;
@@ -29937,7 +29906,7 @@ QUESTION: ${query}`;
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItemWithHandle, Table, TableRow,
         TableCellWithBg, TableHeaderWithBg,
-        Link, Subscript, Superscript, Image, FontSize,
+        Link, Subscript, Superscript, Image,
       } = await _loadTipTapModules();
 
       // Custom resizable image extension
@@ -30390,7 +30359,6 @@ QUESTION: ${query}`;
           StarterKit.configure({ history: { depth: 20, newGroupDelay: 300 } }),
           Underline,
           TextStyle,
-          FontSize,
           Color,
           Highlight.configure({ multicolor: true }),
           Placeholder.configure({ placeholder: 'Start typing your note…' }),
@@ -30707,7 +30675,6 @@ QUESTION: ${query}`;
           // Close all toolbar dropdowns first
           document.getElementById('tt-hdg-menu')?.classList.remove('tt-open');
           document.getElementById('tt-list-menu')?.classList.remove('tt-open');
-          document.getElementById('tt-fs-menu')?.classList.remove('tt-open');
           if (!wasOpen) {
             const r = btn.getBoundingClientRect();
             menu.style.position = 'fixed';
@@ -30719,7 +30686,6 @@ QUESTION: ${query}`;
       };
       _openToolbarDrop('tt-hdg-btn', 'tt-hdg-menu');
       _openToolbarDrop('tt-list-btn', 'tt-list-menu');
-      _openToolbarDrop('tt-fs-btn', 'tt-fs-menu');
       // Always read live editor at call time via getter
       const e = {
         get chain() { return _tiptapEditor?.chain.bind(_tiptapEditor); },
@@ -30765,19 +30731,6 @@ QUESTION: ${query}`;
       on('tt-ul', () => { e.chain().focus().toggleBulletList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
       on('tt-ol', () => { e.chain().focus().toggleOrderedList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
       on('tt-tasklist', () => { e.chain().focus().toggleTaskList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
-      // Font size
-      const _closeFsMenu = () => document.getElementById('tt-fs-menu')?.classList.remove('tt-open');
-      const _setFs = (sz) => { const ed=_tiptapEditor; if (!ed) return; ed.chain().focus().setFontSize(sz).run(); _closeFsMenu(); _ttUpdateToolbar(ed); };
-      on('tt-fs-def', () => { const ed=_tiptapEditor; if (!ed) return; ed.chain().focus().unsetFontSize().run(); _closeFsMenu(); _ttUpdateToolbar(ed); });
-      on('tt-fs-10', () => _setFs('10px'));
-      on('tt-fs-11', () => _setFs('11px'));
-      on('tt-fs-12', () => _setFs('12px'));
-      on('tt-fs-13', () => _setFs('13px'));
-      on('tt-fs-14', () => _setFs('14px'));
-      on('tt-fs-16', () => _setFs('16px'));
-      on('tt-fs-18', () => _setFs('18px'));
-      on('tt-fs-20', () => _setFs('20px'));
-      on('tt-fs-24', () => _setFs('24px'));
       // Block elements
       on('tt-blockquote', () => { e.chain().focus().toggleBlockquote().run(); _ttUpdateToolbar(e); });
       on('tt-code', () => { e.chain().focus().toggleCode().run(); _ttUpdateToolbar(e); });
@@ -31124,14 +31077,7 @@ QUESTION: ${query}`;
         if (editor.isActive('heading', { level: 1 })) _hdgLabel.textContent = 'H1';
         else if (editor.isActive('heading', { level: 2 })) _hdgLabel.textContent = 'H2';
         else if (editor.isActive('heading', { level: 3 })) _hdgLabel.textContent = 'H3';
-        else if (editor.isActive('tableHeader')) _hdgLabel.textContent = 'TH';
         else _hdgLabel.textContent = 'H';
-      }
-      // Update font size dropdown label
-      const _fsLabel = document.getElementById('tt-fs-label');
-      if (_fsLabel) {
-        const fsAttr = editor.getAttributes('textStyle')?.fontSize;
-        _fsLabel.textContent = fsAttr ? fsAttr.replace('px', '') : 'Ts';
       }
       // Update list dropdown button active state + icon
       const _listIsActive = editor.isActive('bulletList') || editor.isActive('orderedList') || editor.isActive('taskList');
@@ -31385,12 +31331,6 @@ QUESTION: ${query}`;
       const hdgDrop = document.getElementById('tt-hdg-drop');
       const hdgMenu = document.getElementById('tt-hdg-menu');
       if (hdgMenu && hdgDrop && !hdgDrop.contains(ev.target)) hdgMenu.classList.remove('tt-open');
-    });
-    // Close font size dropdown when clicking outside it
-    document.addEventListener('click', (ev) => {
-      const fsDrop = document.getElementById('tt-fs-drop');
-      const fsMenu = document.getElementById('tt-fs-menu');
-      if (fsMenu && fsDrop && !fsDrop.contains(ev.target)) fsMenu.classList.remove('tt-open');
     });
 
     function _ttHideLinkBubble() {
@@ -32581,10 +32521,6 @@ QUESTION: ${query}`;
               <button class="tt-list-item tt-hdg-h3" id="tt-h3">Heading 3</button>
               <div class="tt-menu-div"></div>
               <button class="tt-list-item tt-hdg-para" id="tt-hdg-para">Paragraph</button>
-              <div class="tt-menu-div"></div>
-              <button class="tt-list-item tt-hdg-thr" id="tt-thr">
-                <span class="tt-th-badge">TH</span>Header Row
-              </button>
             </div>
           </div>
           <div class="tt-sep"></div>
@@ -32636,30 +32572,6 @@ QUESTION: ${query}`;
                 </svg>
                 Task List
               </button>
-            </div>
-          </div>
-          <div class="tt-sep"></div>
-          <!-- Font size dropdown -->
-          <div class="tt-list-drop" id="tt-fs-drop">
-            <button class="tt-btn tt-list-btn" id="tt-fs-btn" title="Font size">
-              <span id="tt-fs-label">Ts</span>
-              <svg class="tt-list-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            <div class="tt-list-menu" id="tt-fs-menu">
-              <button class="tt-list-item tt-fs-item-def" id="tt-fs-def">Default</button>
-              <div class="tt-menu-div"></div>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-10">10</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-11">11</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-12">12</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-13">13</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-14">14</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-16">16</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-18">18</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-20">20</button>
-              <button class="tt-list-item tt-fs-item" id="tt-fs-24">24</button>
             </div>
           </div>
           <div class="tt-sep"></div>
@@ -32829,6 +32741,11 @@ QUESTION: ${query}`;
               <line x1="2" y1="10" x2="10" y2="10" />
               <polyline points="15,7 10,10 15,13" />
             </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Toggle header row -->
+          <button class="tt-btn" id="tt-thr" title="Toggle header row">
+            <span style="font-size:10px;font-weight:700;font-family:var(--font-mono);letter-spacing:-0.5px">TH</span>
           </button>
           <div class="tt-sep"></div>
           <!-- Cell background colour -->
