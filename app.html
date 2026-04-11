@@ -5883,7 +5883,7 @@
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) li {
-      margin-bottom: 2px;
+      margin-bottom: 0px;
       line-height: 1.9;
       padding-left: 3px;
     }
@@ -6444,10 +6444,11 @@
 
     /* hide in read-only previews */
 
-    /* Tables */
+    /* Tables — shrink-wrap to content by default, expand only if needed */
     :is(#note-fs-editor .ProseMirror, .tt-prose) table {
       border-collapse: collapse;
-      width: 100%;
+      width: auto;
+      min-width: 0;
       margin: 10px 0;
       font-size: 14px;
       font-family: 'DM Sans', sans-serif;
@@ -6549,6 +6550,8 @@
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) .tableWrapper {
       overflow-x: auto;
+      display: inline-block;
+      max-width: 100%;
     }
 
 
@@ -13955,7 +13958,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.67';
+    const VERSION = '5.3.68';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -34815,8 +34818,8 @@ QUESTION: ${query}`;
               </svg>Delete</button>
           </div>
           <div class="tcp-grid" style="grid-template-columns:1fr;margin-top:5px">
-            <button id="tcp-thr-btn" class="tcp-btn" style="justify-content:center" onmousedown="event.preventDefault()" onclick="_ttCellAct('thr')"><svg
-                viewBox="0 0 20 20">
+            <button id="tcp-thr-btn" class="tcp-btn" style="justify-content:center" onmousedown="event.preventDefault()"
+              onclick="_ttCellAct('thr')"><svg viewBox="0 0 20 20">
                 <rect x="2" y="2" width="16" height="7" rx="1.5" />
                 <rect x="2" y="11" width="16" height="7" rx="1.5" fill="none" />
               </svg>Toggle header row</button>
@@ -34922,12 +34925,23 @@ QUESTION: ${query}`;
       <div id="note-fs-editor"></div>
       <!-- Selection action bar: shown when text is selected -->
       <div id="tt-sel-bar">
-        <button id="tt-sel-more-btn" onclick="_ttExpandSelection()" style="display:flex;align-items:center;gap:6px;background:#e0e7ff;color:#4338ca;border:none;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <button id="tt-sel-more-btn" onclick="_ttExpandSelection()"
+          style="display:flex;align-items:center;gap:6px;background:#e0e7ff;color:#4338ca;border:none;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+            <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+            <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+          </svg>
           Select More
         </button>
         <button id="tt-sel-bar-ai" onclick="_ttDoAiRephrase()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path
+              d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+          </svg>
           AI Rephrase
         </button>
         <span id="tt-sel-bar-hint" style="font-size:12px;color:var(--text-muted);margin-left:4px;">tap to expand</span>
@@ -34969,5 +34983,3 @@ QUESTION: ${query}`;
       </svg>
     </button>
     <button class="tt-link-bbl-btn" id="tt-link-bbl-remove" title="Remove link" onmousedown="event.preventDefault()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-        stroke-linejoin="round
