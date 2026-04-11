@@ -13971,7 +13971,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.73';
+    const VERSION = '5.3.74';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -34879,6 +34879,13 @@ QUESTION: ${query}`;
         <!-- Cell actions popup -->
         <div id="tt-cell-popup">
           <div class="tcp-section">Row</div>
+          <div class="tcp-grid" style="grid-template-columns:1fr;margin-bottom:5px">
+            <button id="tcp-thr-btn" class="tcp-btn" style="justify-content:center" onmousedown="event.preventDefault()"
+              onclick="_ttCellAct('thr')"><svg viewBox="0 0 20 20">
+                <rect x="2" y="2" width="16" height="7" rx="1.5" />
+                <rect x="2" y="11" width="16" height="7" rx="1.5" fill="none" />
+              </svg>Toggle header row</button>
+          </div>
           <div class="tcp-grid">
             <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-before')"><svg
                 viewBox="0 0 20 20">
@@ -34898,13 +34905,6 @@ QUESTION: ${query}`;
                 <line x1="7.5" y1="9.5" x2="12.5" y2="10.5" />
                 <line x1="12.5" y1="9.5" x2="7.5" y2="10.5" />
               </svg>Delete</button>
-          </div>
-          <div class="tcp-grid" style="grid-template-columns:1fr;margin-top:5px">
-            <button id="tcp-thr-btn" class="tcp-btn" style="justify-content:center" onmousedown="event.preventDefault()"
-              onclick="_ttCellAct('thr')"><svg viewBox="0 0 20 20">
-                <rect x="2" y="2" width="16" height="7" rx="1.5" />
-                <rect x="2" y="11" width="16" height="7" rx="1.5" fill="none" />
-              </svg>Toggle header row</button>
           </div>
           <div class="tcp-sep"></div>
           <div class="tcp-section">Column</div>
