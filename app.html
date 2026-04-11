@@ -11953,7 +11953,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.54';
+    const VERSION = '5.3.55';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -30469,13 +30469,18 @@ QUESTION: ${query}`;
         var _velX = 0, _velY = 0;
         var _rafId = null;
         var _velSamples = []; // rolling window for velocity calc
+        // Cache DOM refs — avoid querySelector on every touchmove
+        var _cachedEd = null, _cachedPm = null;
+        function _getEd() { return _cachedEd || (_cachedEd = document.getElementById('note-fs-editor')); }
+        function _getPm() { return _cachedPm || (_cachedPm = document.querySelector('#note-fs-editor .ProseMirror')); }
+        // Invalidate cache when editor might be recreated
+        window._edPinchInvalidate = function() { _cachedEd = null; _cachedPm = null; };
         function _dist(t) {
           var dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY;
           return Math.sqrt(dx*dx+dy*dy);
         }
         function _clamp() {
-          var ed=document.getElementById('note-fs-editor');
-          var pm=document.querySelector('#note-fs-editor .ProseMirror');
+          var ed=_getEd(), pm=_getPm();
           if (!ed||!pm) return;
           var edST=ed.scrollTop||0, edSL=ed.scrollLeft||0;
           var maxTx=edSL, maxTy=edST;
@@ -30484,14 +30489,26 @@ QUESTION: ${query}`;
           _tx=Math.max(minTx,Math.min(maxTx,_tx));
           _ty=Math.max(minTy,Math.min(maxTy,_ty));
         }
+        var _applyRaf = null;
         function _apply() {
-          var pm=document.querySelector('#note-fs-editor .ProseMirror');
+          var pm=_getPm();
           if (!pm) return;
-          if (_s<=1.02){pm.style.transform='';_s=1;_tx=0;_ty=0;}
-          else{pm.style.transform='translate('+_tx+'px,'+_ty+'px) scale('+_s+')';}
+          if (_s<=1.02){
+            pm.style.transform=''; pm.style.willChange='';
+            _s=1;_tx=0;_ty=0;
+          } else {
+            pm.style.willChange='transform';
+            pm.style.transform='translate('+_tx+'px,'+_ty+'px) scale('+_s+')';
+          }
+        }
+        // Throttled apply — batches multiple touchmove updates per frame
+        function _applyThrottled() {
+          if (_applyRaf) return;
+          _applyRaf = requestAnimationFrame(function() { _applyRaf = null; _apply(); });
         }
         function _stopMomentum() {
           if (_rafId){cancelAnimationFrame(_rafId);_rafId=null;}
+          if (_applyRaf){cancelAnimationFrame(_applyRaf);_applyRaf=null;}
           _velX=0; _velY=0; _velSamples=[];
         }
         function _startMomentum() {
@@ -30522,8 +30539,9 @@ QUESTION: ${query}`;
         window._edZoomReset = function() {
           _stopMomentum();
           _s=1;_tx=0;_ty=0;_pinching=false;_panMoved=false;
+          _cachedEd=null; _cachedPm=null;
           var pm=document.querySelector('#note-fs-editor .ProseMirror');
-          if (pm) pm.style.transform='';
+          if (pm) { pm.style.transform=''; pm.style.willChange=''; }
         };
         function _modalOpen(){
           var m=document.getElementById('note-fs-modal');
@@ -30574,7 +30592,7 @@ QUESTION: ${query}`;
             var ratio=_s/_p0s;
             _tx=_p0pivX*(1-ratio)+_p0tx*ratio+(midX-_p0midX);
             _ty=_p0pivY*(1-ratio)+_p0ty*ratio+(midY-_p0midY);
-            _clamp(); _apply();
+            _clamp(); _applyThrottled();
           } else if (ev.touches.length===1 && _s>1.02) {
             var t=ev.touches[0];
             var dx=t.clientX-_panStartX, dy=t.clientY-_panStartY;
@@ -30589,7 +30607,7 @@ QUESTION: ${query}`;
             // Push to rolling window; trim entries older than 100ms
             _velSamples.push({t:now,x:t.clientX,y:t.clientY});
             while (_velSamples.length>1 && now-_velSamples[0].t>100) _velSamples.shift();
-            _clamp(); _apply();
+            _clamp(); _applyThrottled();
           }
         }, {passive:false, capture:true});
         document.addEventListener('touchend', function(ev) {
