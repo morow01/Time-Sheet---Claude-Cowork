@@ -4528,14 +4528,17 @@
     /* Heading dropdown — visual style previews */
     #tt-hdg-menu { min-width: 174px; }
     .tt-hdg-h1 {
-      font-size: 17px; font-weight: 700; color: #0F172A;
+      font-size: 16px; font-weight: 800; color: #1C1917;
       letter-spacing: -0.02em; padding-top: 9px; padding-bottom: 9px;
-      border-bottom: 1.5px solid #E2E8F0;
+      border-left: 3px solid #D97706; padding-left: 10px;
     }
-    .tt-hdg-h2 { font-size: 14px; font-weight: 600; color: #a85e5e; }
+    .tt-hdg-h2 {
+      font-size: 13px; font-weight: 600; color: #92400E;
+      border-bottom: 1px solid #FDE68A; padding-bottom: 2px;
+    }
     .tt-hdg-h3 {
-      font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: #94A3B8;
+      font-size: 11px; font-weight: 600; color: #78716C;
+      font-style: italic;
     }
     .tt-menu-div { height: 1px; background: var(--border); margin: 3px 4px; }
 
@@ -4593,34 +4596,35 @@
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) h1 {
-      font-size: 24px;
-      font-weight: 700;
+      font-size: 21px;
+      font-weight: 800;
       letter-spacing: -0.03em;
-      line-height: 1.2;
-      color: #0F172A;
-      border-bottom: 2px solid #E2E8F0;
-      padding-bottom: 7px;
-      margin-bottom: 12px;
+      line-height: 1.25;
+      color: #1C1917;
+      border-left: 4px solid #D97706;
+      padding-left: 12px;
+      margin-bottom: 14px;
       display: block;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) h2 {
-      font-size: 17px;
+      font-size: 15px;
       font-weight: 600;
-      letter-spacing: -0.01em;
       line-height: 1.3;
-      color: #a85e5e;
+      color: #92400E;
+      border-bottom: 1.5px solid #FDE68A;
+      padding-bottom: 3px;
       margin-bottom: 8px;
       display: block;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) h3 {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      font-style: italic;
       line-height: 1.4;
-      color: #94A3B8;
+      color: #78716C;
       margin-bottom: 6px;
       display: block;
     }
@@ -11969,7 +11973,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.62';
+    const VERSION = '5.3.63';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
