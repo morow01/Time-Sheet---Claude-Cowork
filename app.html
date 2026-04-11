@@ -13961,7 +13961,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.83';
+    const VERSION = '5.3.84';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -32452,6 +32452,11 @@ QUESTION: ${query}`;
         onUpdate({ editor }) {
           if (_tiptapOnUpdate) _tiptapOnUpdate(editor);
           _scheduleTaskSortableInit(); // also calls initImageDrag via shared timer
+          // Strip bloated default min-width from tables without user-set colwidths.
+          // The columnResizing plugin sets inline min-width = 100px × N cols on every
+          // table.  For tables where the user hasn't manually resized (no col width set),
+          // this is wasteful.  We run on rAF after the plugin's decorations are applied.
+          requestAnimationFrame(_ttStripDefaultTableWidths);
         },
         onSelectionUpdate({ editor }) {
           _ttUpdateToolbar(editor);
@@ -32471,34 +32476,6 @@ QUESTION: ${query}`;
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
-      // Table size guard — the columnResizing plugin sets inline min-width on
-      // every table = sum of column default widths (100px × N cols).  For tables
-      // without user-set colwidths this is bloated.  We watch for style changes
-      // and strip the min-width on tables whose cols have no explicit width.
-      // Tables where the user has dragged a column (col width set) keep theirs.
-      (function _initTableSizeGuard() {
-        const pm = document.querySelector('#note-fs-editor .ProseMirror');
-        if (!pm) return;
-        let _g = false;
-        new MutationObserver(function(ms) {
-          if (_g) return;
-          _g = true;
-          for (var i = 0; i < ms.length; i++) {
-            var t = ms[i].target;
-            if (t.tagName === 'TABLE' && ms[i].attributeName === 'style') {
-              var cols = t.querySelectorAll('colgroup col');
-              var hasW = false;
-              for (var j = 0; j < cols.length; j++) {
-                if (cols[j].style.width) { hasW = true; break; }
-              }
-              if (!hasW && t.style.minWidth && t.style.minWidth !== '0px') {
-                t.style.minWidth = '0';
-              }
-            }
-          }
-          _g = false;
-        }).observe(pm, { attributes: true, attributeFilter: ['style'], subtree: true });
-      })();
       // Android: native long-press selection fires selectionchange but TipTap's
       // internal state may not be synced yet. Check window.getSelection() directly.
       document.addEventListener('selectionchange', () => {
@@ -33753,6 +33730,24 @@ QUESTION: ${query}`;
       }
     }
 
+    // Strip the columnResizing plugin's bloated default min-width from tables
+    // whose columns haven't been manually resized.  The plugin sets min-width =
+    // 100px × N cols even when no colwidths are stored.  Tables where the user
+    // has dragged a column (col elements get width) are left alone.
+    function _ttStripDefaultTableWidths() {
+      var tables = document.querySelectorAll('#note-fs-editor .ProseMirror table');
+      for (var i = 0; i < tables.length; i++) {
+        var t = tables[i];
+        if (!t.style.minWidth || t.style.minWidth === '0px') continue;
+        var cols = t.querySelectorAll('colgroup col');
+        var hasW = false;
+        for (var j = 0; j < cols.length; j++) {
+          if (cols[j].style.width) { hasW = true; break; }
+        }
+        if (!hasW) t.style.minWidth = '0';
+      }
+    }
+
     function _ttSetContent(html) {
       if (!_tiptapEditor) return;
       // Strip target="_blank" from stored links, then clean table sizing
@@ -33770,6 +33765,7 @@ QUESTION: ${query}`;
           tr.replaceWith(0, _tiptapEditor.state.doc.content.size, parsedDoc.content);
           tr.setMeta('addToHistory', false);
           _tiptapEditor.view.dispatch(tr);
+          requestAnimationFrame(_ttStripDefaultTableWidths);
           return;
         }
       } catch (e) {
@@ -33778,6 +33774,7 @@ QUESTION: ${query}`;
       // Fallback: use commands API + attempt clearHistory
       _tiptapEditor.commands.setContent(cleaned || '', false);
       _tiptapEditor.commands.clearHistory?.();
+      requestAnimationFrame(_ttStripDefaultTableWidths);
     }
 
     function _ttGetHTML() {
