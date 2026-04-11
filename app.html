@@ -11980,7 +11980,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.58';
+    const VERSION = '5.3.59';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -29772,7 +29772,7 @@ QUESTION: ${query}`;
     async function _loadTipTapModules() {
       if (_tiptapModules) return _tiptapModules;
       const [
-        { Editor, NodeSelection, DOMParser: PmDOMParser },
+        { Editor, Extension, NodeSelection, DOMParser: PmDOMParser },
         { default: StarterKit },
         { default: Underline },
         { TextStyle },
@@ -29790,7 +29790,6 @@ QUESTION: ${query}`;
         { default: Subscript },
         { default: Superscript },
         { default: Image },
-        { default: FontSize },
       ] = await Promise.all([
         import('https://esm.sh/@tiptap/core@2.4.0'),
         import('https://esm.sh/@tiptap/starter-kit@2.4.0'),
@@ -29810,8 +29809,28 @@ QUESTION: ${query}`;
         import('https://esm.sh/@tiptap/extension-subscript@2.4.0'),
         import('https://esm.sh/@tiptap/extension-superscript@2.4.0'),
         import('https://esm.sh/@tiptap/extension-image@2.4.0'),
-        import('https://esm.sh/@tiptap/extension-font-size@2.4.0'),
       ]);
+      // Custom FontSize extension (font-size is TipTap Pro; build inline instead)
+      const FontSize = Extension.create({
+        name: 'fontSize',
+        addOptions() { return { types: ['textStyle'] }; },
+        addGlobalAttributes() {
+          return [{ types: this.options.types, attributes: {
+            fontSize: {
+              default: null,
+              parseHTML: el => el.style.fontSize || null,
+              renderHTML: attrs => attrs.fontSize ? { style: `font-size:${attrs.fontSize}` } : {},
+            },
+          }}];
+        },
+        addCommands() {
+          return {
+            setFontSize: sz => ({ chain }) => chain().setMark('textStyle', { fontSize: sz }).run(),
+            unsetFontSize: () => ({ chain }) => chain().setMark('textStyle', { fontSize: null }).removeEmptyTextStyle().run(),
+          };
+        },
+      });
+
       // Extend TableCell to support per-cell background colour
       const TableCellWithBg = TableCell.extend({
         addAttributes() {
