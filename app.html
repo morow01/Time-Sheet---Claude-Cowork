@@ -13955,7 +13955,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.66';
+    const VERSION = '5.3.67';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
@@ -34809,4 +34809,165 @@ QUESTION: ${query}`;
               </svg>Below</button>
             <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('row-del')"><svg
                 viewBox="0 0 20 20">
-                <
+                <rect x="2" y="6" width="16" height="8" rx="1.5" />
+                <line x1="7.5" y1="9.5" x2="12.5" y2="10.5" />
+                <line x1="12.5" y1="9.5" x2="7.5" y2="10.5" />
+              </svg>Delete</button>
+          </div>
+          <div class="tcp-grid" style="grid-template-columns:1fr;margin-top:5px">
+            <button id="tcp-thr-btn" class="tcp-btn" style="justify-content:center" onmousedown="event.preventDefault()" onclick="_ttCellAct('thr')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="2" width="16" height="7" rx="1.5" />
+                <rect x="2" y="11" width="16" height="7" rx="1.5" fill="none" />
+              </svg>Toggle header row</button>
+          </div>
+          <div class="tcp-sep"></div>
+          <div class="tcp-section">Column</div>
+          <div class="tcp-grid">
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-before')"><svg
+                viewBox="0 0 20 20">
+                <rect x="10" y="2" width="8" height="16" rx="1.5" />
+                <line x1="2" y1="10" x2="7" y2="10" />
+                <line x1="4.5" y1="7" x2="4.5" y2="13" />
+              </svg>Left</button>
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-after')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="2" width="8" height="16" rx="1.5" />
+                <line x1="13" y1="10" x2="18" y2="10" />
+                <line x1="15.5" y1="7" x2="15.5" y2="13" />
+              </svg>Right</button>
+            <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('col-del')"><svg
+                viewBox="0 0 20 20">
+                <rect x="6" y="2" width="8" height="16" rx="1.5" />
+                <line x1="9" y1="8.5" x2="11" y2="11.5" />
+                <line x1="11" y1="8.5" x2="9" y2="11.5" />
+              </svg>Delete</button>
+          </div>
+          <div class="tcp-sep"></div>
+          <div class="tcp-section">Merge &amp; Split</div>
+          <div class="tcp-grid" style="grid-template-columns:1fr">
+            <!-- Selection mode buttons -->
+            <button id="tcp-sel-start-btn" class="tcp-btn" style="justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-start')"><svg viewBox="0 0 20 20">
+                <rect x="3" y="3" width="14" height="14" rx="1.5" stroke-dasharray="3 2" />
+                <line x1="10" y1="6.5" x2="10" y2="13.5" />
+                <line x1="6.5" y1="10" x2="13.5" y2="10" />
+              </svg>Start selection</button>
+            <button id="tcp-sel-extend-btn" class="tcp-btn" style="display:none;justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-extend')"><svg viewBox="0 0 20 20">
+                <rect x="3" y="3" width="14" height="14" rx="1.5" stroke-dasharray="3 2" />
+                <line x1="10" y1="6.5" x2="10" y2="13.5" />
+                <polyline points="7,11 10,14 13,11" />
+              </svg>Extend here</button>
+            <button id="tcp-sel-clear-btn" class="tcp-btn tcp-del" style="display:none;justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('sel-clear')"><svg viewBox="0 0 20 20">
+                <line x1="5" y1="5" x2="15" y2="15" />
+                <line x1="15" y1="5" x2="5" y2="15" />
+              </svg>Cancel</button>
+            <!-- Shown when ≥2 cells are selected -->
+            <button id="tcp-merge-sel-btn" class="tcp-btn tcp-merge" style="display:none;justify-content:center;"
+              onmousedown="event.preventDefault()" onclick="_ttCellAct('merge-sel')"><svg viewBox="0 0 20 20">
+                <rect x="2" y="4" width="6" height="12" rx="1" />
+                <rect x="12" y="4" width="6" height="12" rx="1" />
+                <line x1="8" y1="10" x2="12" y2="10" />
+                <polyline points="9.5,7.5 12,10 9.5,12.5" />
+              </svg>Merge cells</button>
+          </div>
+          <!-- Split + Delete always visible, side by side -->
+          <div class="tcp-grid" style="grid-template-columns:1fr 1fr;margin-top:5px">
+            <button class="tcp-btn" onmousedown="event.preventDefault()" onclick="_ttCellAct('split')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="2" width="16" height="16" rx="1.5" />
+                <line x1="10" y1="2" x2="10" y2="18" />
+                <line x1="2" y1="10" x2="18" y2="10" />
+              </svg>Split cell</button>
+            <button class="tcp-btn tcp-del" onmousedown="event.preventDefault()" onclick="_ttCellAct('table-del')"><svg
+                viewBox="0 0 20 20">
+                <rect x="2" y="2" width="16" height="16" rx="1.5" />
+                <line x1="2" y1="7" x2="18" y2="7" />
+                <line x1="2" y1="13" x2="18" y2="13" />
+                <line x1="7" y1="2" x2="7" y2="18" />
+                <line x1="13" y1="2" x2="13" y2="18" />
+                <line x1="5" y1="5" x2="15" y2="15" />
+                <line x1="15" y1="5" x2="5" y2="15" />
+              </svg>Delete table</button>
+          </div>
+        </div>
+        <!-- Hidden image file input -->
+        <input type="file" id="tt-image-input" accept="image/*" style="display:none">
+        <!-- TipTap colour picker (inside wrapper for absolute positioning) -->
+        <div id="note-fs-tt-colors">
+          <span class="tt-colors-label">A</span>
+          <button class="tt-swatch" id="tt-col-black" style="background:#1e293b" title="Black"></button>
+          <button class="tt-swatch" id="tt-col-red" style="background:#e53935" title="Red"></button>
+          <button class="tt-swatch" id="tt-col-orange" style="background:#f57c00" title="Orange"></button>
+          <button class="tt-swatch" id="tt-col-green" style="background:#2e7d32" title="Green"></button>
+          <button class="tt-swatch" id="tt-col-blue" style="background:#1565c0" title="Blue"></button>
+          <button class="tt-swatch" id="tt-col-purple" style="background:#6a1b9a" title="Purple"></button>
+          <button class="tt-swatch" id="tt-col-reset" style="background:#94a3b8;border-color:#cbd5e1"
+            title="Default colour"></button>
+          <div class="tt-sep"></div>
+          <span class="tt-colors-label">🖊</span>
+          <button class="tt-swatch" id="tt-hl-yellow" style="background:#fef08a" title="Yellow"></button>
+          <button class="tt-swatch" id="tt-hl-green" style="background:#bbf7d0" title="Green"></button>
+          <button class="tt-swatch" id="tt-hl-red" style="background:#fecaca" title="Red"></button>
+          <button class="tt-swatch" id="tt-hl-blue" style="background:#bfdbfe" title="Blue"></button>
+          <button class="tt-swatch" id="tt-hl-purple" style="background:#e9d5ff" title="Purple"></button>
+          <button class="tt-swatch" id="tt-hl-orange" style="background:#fed7aa" title="Orange"></button>
+          <button class="tt-swatch" id="tt-hl-reset" style="background:#f1f5f9;border-color:#cbd5e1"
+            title="Remove highlight"></button>
+        </div>
+      </div><!-- end tt-toolbar-wrap -->
+      <!-- TipTap editor area -->
+      <div id="note-fs-editor"></div>
+      <!-- Selection action bar: shown when text is selected -->
+      <div id="tt-sel-bar">
+        <button id="tt-sel-more-btn" onclick="_ttExpandSelection()" style="display:flex;align-items:center;gap:6px;background:#e0e7ff;color:#4338ca;border:none;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          Select More
+        </button>
+        <button id="tt-sel-bar-ai" onclick="_ttDoAiRephrase()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          AI Rephrase
+        </button>
+        <span id="tt-sel-bar-hint" style="font-size:12px;color:var(--text-muted);margin-left:4px;">tap to expand</span>
+      </div>
+      <!-- AI rephrase preview panel (hidden until AI returns a suggestion) -->
+      <div id="tt-ai-preview" style="display:none;">
+        <div style="font-size:11px;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:0.5px;">✦ AI
+          Suggestions — tap one to select</div>
+        <div id="tt-ai-loading" style="display:none;">
+          <div class="tt-ai-dots"><span></span><span></span><span></span></div>
+          Generating suggestions…
+        </div>
+        <div id="tt-ai-versions"></div>
+        <div style="display:flex;gap:8px;">
+          <button id="tt-ai-accept" disabled>Replace</button>
+          <button id="tt-ai-discard">Discard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Link bubble: manually positioned via _ttUpdateLinkBubble() -->
+  <div id="tt-link-bubble" style="display:none;position:fixed;z-index:10020">
+    <input id="tt-link-bubble-input" type="text" placeholder="Paste or type URL…" autocomplete="off" spellcheck="false">
+    <div class="tt-sep" style="height:16px;margin:0 4px;"></div>
+    <button class="tt-link-bbl-btn" id="tt-link-bbl-confirm" title="Apply URL (Enter)"
+      onmousedown="event.preventDefault()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </button>
+    <button class="tt-link-bbl-btn" id="tt-link-bbl-open" title="Open link in new tab"
+      onmousedown="event.preventDefault()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+        <polyline points="15 3 21 3 21 9" />
+        <line x1="10" y1="14" x2="21" y2="3" />
+      </svg>
+    </button>
+    <button class="tt-link-bbl-btn" id="tt-link-bbl-remove" title="Remove link" onmousedown="event.preventDefault()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round
