@@ -6511,7 +6511,7 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
       color: #6B6860;
-      padding: 8px 8px;
+      padding: 6px 6px;
       border-bottom: 2px solid #E2E0DA;
       border-right: 1px solid #E2E0DA;
     }
@@ -6521,7 +6521,7 @@
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) td {
-      padding: 8px 8px;
+      padding: 6px 6px;
       color: #3A3836;
       border-bottom: 1px solid #F0EFEB;
       border-right: 1px solid #F0EFEB;
@@ -6534,6 +6534,13 @@
     :is(#note-fs-editor .ProseMirror, .tt-prose) td:first-child {
       font-weight: 500;
       color: #1A1917;
+    }
+
+    /* Kill paragraph margins inside cells — TipTap wraps cell text in <p> */
+    :is(#note-fs-editor .ProseMirror, .tt-prose) td p,
+    :is(#note-fs-editor .ProseMirror, .tt-prose) th p {
+      margin: 0;
+      padding: 0;
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) tbody tr:hover td {
@@ -13958,7 +13965,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.69';
+    const VERSION = '5.3.70';
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
