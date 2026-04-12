@@ -13962,7 +13962,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.91';
+    const VERSION = '5.3.92';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21706,7 +21706,7 @@
         + '<div class="j-sheet">'
         + '<div class="j-sheet-title" style="font-size:15px;padding-bottom:0;">' + esc(nb.title || 'Untitled') + '</div>'
         + '<div class="j-action-list">'
-        + '<button class="j-action-btn" onclick="state.jNbActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=' + JSON.stringify(nb.title || '') + ';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
+        + '<button class="j-action-btn" onclick="state.jNbActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=\'' + (nb.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
         + '</div>'
         + '<div class="j-sheet-btns" style="margin-top:12px;">'
         + '<button class="j-sheet-btn cancel" style="flex:none;width:100%;" onclick="jCloseNbAction()">Cancel</button>'
@@ -21729,7 +21729,7 @@
         + '<div class="j-sheet">'
         + '<div class="j-sheet-title" style="font-size:15px;padding-bottom:0;">' + esc(sec.title || 'Untitled') + '</div>'
         + '<div class="j-action-list">'
-        + '<button class="j-action-btn" onclick="state.jSecActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=' + JSON.stringify(sec.title || '') + ';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
+        + '<button class="j-action-btn" onclick="state.jSecActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=\'' + (sec.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
         + '<button class="j-action-btn" onclick="state.jSecActionId=null;_renderNow();jOpenColorPick(\'' + id + '\')">' + colorIcon + 'Change Colour\u2026</button>'
         + '</div>'
         + '<div class="j-sheet-btns" style="margin-top:12px;">'
