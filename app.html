@@ -13962,7 +13962,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.96';
+    const VERSION = '5.3.97';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20217,6 +20217,10 @@
         localStorage.setItem('jNotebookId', state.jNotebookId || '');
         localStorage.setItem('jSectionId', state.jSectionId || '');
       } catch (e) { }
+      // Push history so phone back button steps back through journal levels
+      if (screen === 'sections' || screen === 'pages') {
+        history.pushState({ jScreen: screen }, '');
+      }
       render();
     }
     function navJBack() {
@@ -24511,6 +24515,8 @@
         ocCloseSchedule();
       } else if (state.view === 'callouts' && state.calloutsView === 'week') {
         coBack();
+      } else if (state.view === 'journal' && (state.jScreen === 'sections' || state.jScreen === 'pages')) {
+        navJBack();
       }
     });
 
