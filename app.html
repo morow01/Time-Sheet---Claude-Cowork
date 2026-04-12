@@ -23557,11 +23557,32 @@
       }
     }
 
-    // Capacitor native back button (more reliable than popstate on Android)
-    if (IS_NATIVE && window.Capacitor?.Plugins?.App) {
-      window.Capacitor.Plugins.App.addListener('backButton', (ev) => {
+    // Capacitor native back button — try multiple approaches
+    if (IS_NATIVE) {
+      // Method 1: Capacitor App plugin (requires @capacitor/app)
+      try {
+        if (window.Capacitor?.Plugins?.App?.addListener) {
+          window.Capacitor.Plugins.App.addListener('backButton', () => _handleBackButton());
+          console.log('[Rian] backButton: Capacitor App plugin registered');
+        }
+      } catch (e) { console.warn('[Rian] Capacitor App plugin failed:', e); }
+
+      // Method 2: document 'backbutton' event (Capacitor/Cordova compatible)
+      document.addEventListener('backbutton', (e) => {
+        e.preventDefault();
         _handleBackButton();
-      });
+      }, false);
+      console.log('[Rian] backButton: document backbutton listener registered');
+
+      // Method 3: delayed registration in case bridge isn't ready yet
+      setTimeout(() => {
+        try {
+          if (window.Capacitor?.Plugins?.App?.addListener) {
+            window.Capacitor.Plugins.App.addListener('backButton', () => _handleBackButton());
+            console.log('[Rian] backButton: delayed Capacitor App plugin registered');
+          }
+        } catch (e) {}
+      }, 2000);
     }
 
     // Fallback: browser popstate for PWA / desktop
@@ -23570,9 +23591,8 @@
       // Always re-push so we stay in the app
       history.pushState({ app: true }, '');
     });
-    // Push multiple initial states so the WebView has a buffer before exiting
-    // (without @capacitor/app plugin, the WebView pops history on back press)
-    for (let _hi = 0; _hi < 5; _hi++) history.pushState({ app: true }, '');
+    // Push initial history states as buffer
+    for (let _hi = 0; _hi < 10; _hi++) history.pushState({ app: true }, '');
 
     // Online / offline handling — Firestore reconnects automatically
     window.addEventListener('online', () => {
