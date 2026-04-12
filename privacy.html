@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Rian</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg-card: #1a1f2e;
+      --border: rgba(255,255,255,0.08);
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #2D6BE4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      padding: 32px 16px 80px;
+    }
+    .wrap {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo span {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 40px;
+    }
+    h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 32px 0 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    p {
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    ul {
+      color: var(--text-muted);
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-weight: 700;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    .card p {
+      margin: 0;
+      font-size: 13px;
+    }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-top: 48px;
+    }
+    .back:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <a class="logo" href="index.html">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2D6BE4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+      <span>Rian</span>
+    </a>
+
+    <h1>Privacy Policy</h1>
+    <p class="subtitle">Last updated: April 2026</p>
+
+    <p>Rian is a field technician app for logging timesheets, site notes, callouts, and work routines. This policy explains what data we collect, why, and how it is protected.</p>
+
+    <h2>Who is responsible for your data</h2>
+    <p>Rian is operated as a personal tool. The data controller is the developer (Rob Morrow, <a href="mailto:morow01@gmail.com">morow01@gmail.com</a>). If you have any questions or requests about your data, contact that address.</p>
+
+    <h2>What data we collect</h2>
+    <p>When you sign in with Google, we store the following:</p>
+    <ul>
+      <li><strong>Google account email and display name</strong> — used to identify your account</li>
+      <li><strong>Timesheet data</strong> — work codes, hours, activity descriptions, locations</li>
+      <li><strong>Notes</strong> — field site notes you create in the app</li>
+      <li><strong>Notebooks / Journal entries</strong> — any pages you write in the Journal section</li>
+      <li><strong>Callouts</strong> — on-call incident records you log</li>
+      <li><strong>Routines</strong> — recurring site visit templates</li>
+      <li><strong>Reminders</strong> — reminder entries you set</li>
+      <li><strong>Last seen timestamp</strong> — when your account last synced</li>
+    </ul>
+    <p>We do not collect location data automatically. Any location recorded in notes or timesheets is entered manually by you.</p>
+
+    <h2>Why we collect it</h2>
+    <p>All data is collected solely to provide the app's functionality — syncing your work records across your devices. We do not use your data for advertising, analytics, profiling, or any other purpose.</p>
+
+    <h2>Where data is stored</h2>
+    <p>Your data is stored in <strong>Google Firebase Firestore</strong>, a cloud database service operated by Google LLC. Data is stored in Google's European data centres where possible. Google's privacy policy applies to their infrastructure: <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a>.</p>
+    <p>A local copy is also cached in your browser's IndexedDB for offline use. This stays on your device only.</p>
+
+    <h2>Third-party services used</h2>
+
+    <div class="card">
+      <div class="card-title">Google Firebase (Auth + Firestore)</div>
+      <p>Used for sign-in and cloud data storage. Google may process data in connection with providing these services.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Google Maps</div>
+      <p>Used in the Finder view to display maps and search for sites. Google Maps loads only when you open the Finder. Google's Maps terms apply.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Google Gemini API (optional)</div>
+      <p>If you choose to enter a Gemini API key, the AI Assistant feature sends your queries to Google's Gemini API. This is entirely optional. No data is sent unless you have entered a key and actively use the AI Assistant.</p>
+    </div>
+
+    <h2>Your rights under GDPR</h2>
+    <p>If you are based in the EU or EEA you have the following rights regarding your personal data:</p>
+    <ul>
+      <li><strong>Right of access</strong> — you can export all your data at any time via ☰ → Data Management → Export All Data</li>
+      <li><strong>Right to erasure</strong> — you can permanently delete all your data and your account via ☰ → Data Management → Delete Account</li>
+      <li><strong>Right to rectification</strong> — you can edit or delete any data you have entered at any time within the app</li>
+      <li><strong>Right to portability</strong> — your export is provided in JSON format</li>
+      <li><strong>Right to object</strong> — contact <a href="mailto:morow01@gmail.com">morow01@gmail.com</a> for any other requests</li>
+    </ul>
+    <p>We will respond to data requests within 30 days.</p>
+
+    <h2>Data retention</h2>
+    <p>Your data is retained for as long as your account exists. When you delete your account via the app, all your data is permanently removed from Firestore. Automatic cloud backups (snapshots) are also deleted as part of this process.</p>
+
+    <h2>Data security</h2>
+    <p>Access to your data is restricted by Firestore security rules — each user can only read and write their own documents. No other user of the app can access your data. The app requires Google authentication to access any data.</p>
+
+    <h2>Children</h2>
+    <p>Rian is intended for use by adults in a professional capacity. We do not knowingly collect data from anyone under 18.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If this policy changes materially, the "Last updated" date above will be updated. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
+
+    <h2>Contact</h2>
+    <p>For any privacy-related questions or requests: <a href="mailto:morow01@gmail.com">morow01@gmail.com</a></p>
+
+    <a class="back" href="index.html">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Rian
+    </a>
+
+  </div>
+</body>
+</html>
