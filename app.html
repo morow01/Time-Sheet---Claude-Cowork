@@ -13961,14 +13961,18 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.86';
+    const VERSION = '5.3.87';
+
+    // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
+    const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
+      navigator.userAgent.includes('Rian-Android');
 
     // Auto-update: if stored version differs, wipe SW caches and reload for fresh code.
     // The network-first SW already delivers new app.html; this clears the old SW so it
     // doesn't keep intercepting requests with stale logic.
     (function () {
       const _sv = localStorage.getItem('rian_sw_version');
-      if (_sv && _sv !== VERSION && 'serviceWorker' in navigator) {
+      if (_sv && _sv !== VERSION && 'serviceWorker' in navigator && !IS_NATIVE) {
         localStorage.setItem('rian_sw_version', VERSION);
         navigator.serviceWorker.getRegistrations().then(function (regs) {
           Promise.all(regs.map(function (r) { return r.unregister(); })).then(function () {
@@ -30714,7 +30718,7 @@ Rules:
     async function init() {
       try { initTheme(); } catch (e) { console.warn('[Rian] Theme blocked by browser:', e); }
 
-      if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator && !IS_NATIVE) {
         navigator.serviceWorker.register(`sw.js?v=${VERSION}`).catch(e => console.warn('[Rian]', e));
         // Note: no controllerchange reload needed — fetch strategy is network-first,
         // so app.html is always served fresh from the network on page load.
