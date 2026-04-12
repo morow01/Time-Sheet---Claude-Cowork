@@ -9628,19 +9628,6 @@
       transition: background 0.15s, border-color 0.15s;
     }
     .add-note-dashed:active { background: rgba(45,107,228,0.06); border-color: var(--accent); color: var(--accent); }
-    .docx-import-import-btn {
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      width: calc(100% - 32px); margin: 0 16px 12px;
-      padding: 10px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text-muted);
-      font-size: 12px; font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .docx-import-import-btn:active { background: rgba(45,107,228,0.06); color: var(--accent); }
     .notes-selection-banner {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 16px; margin: 0 16px 8px;
@@ -20465,11 +20452,7 @@
         : `<div class="add-note-dashed" onclick="addNote()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Note
-          </div>
-          <button class="docx-import-import-btn" onclick="openDocxImport()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Import from DOCX
-          </button>`;
+          </div>`;
 
       const noSel = state.selectedNotes.size === 0;
       const bulkBar = `
@@ -21706,159 +21689,6 @@
         if (ta) ta.focus();
       }, 80);
     }
-
-    // ── DOCX Import ──────────────────────────────────────────────────────────
-    let _docxImportFiles = [];   // Array of { file, name, title, date, status, html }
-    let _docxImportRunning = false;
-
-    const _DATE_RE_IMPORT = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})$/i;
-    const _MONTH_MAP = { january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12 };
-
-    function _parseImportDate(str) {
-      const m = _DATE_RE_IMPORT.exec(str.trim());
-      if (!m) return null;
-      return `${m[4]}-${String(_MONTH_MAP[m[3].toLowerCase()]).padStart(2, '0')}-${String(m[2]).padStart(2, '0')}`;
-    }
-
-    function _titleFromFilename(stem) {
-      // "01 - Title - Weekday DD Month YYYY" → "Title"
-      const parts = stem.split(' - ');
-      if (parts.length >= 3) {
-        const candidate = parts.slice(1, parts.length - 1).join(' - ');
-        return candidate.replace(/^[=\-\s]+|[=\-\s]+$/g, '').trim() || stem;
-      }
-      if (parts.length === 2) return parts[1].replace(/^[=\-\s]+|[=\-\s]+$/g, '').trim();
-      return stem;
-    }
-
-    function _dateFromFilename(stem) {
-      const parts = stem.split(' - ');
-      const last = parts[parts.length - 1];
-      return _parseImportDate(last);
-    }
-
-    function openDocxImport() {
-      _docxImportFiles = [];
-      _docxImportRunning = false;
-      document.getElementById('docx-import-section-name').value = '';
-      document.getElementById('docx-import-file-list').innerHTML = '';
-      document.getElementById('docx-import-file-input').value = '';
-      document.getElementById('docx-import-run-btn').disabled = true;
-      document.getElementById('docx-import-run-btn').textContent = 'Import';
-      document.getElementById('docx-import-overlay').classList.remove('hidden');
-      _docxImportSetupDrag();
-    }
-
-    function closeDocxImport() {
-      if (_docxImportRunning) return;
-      document.getElementById('docx-import-overlay').classList.add('hidden');
-    }
-
-    function _docxImportSetupDrag() {
-      const dz = document.getElementById('docx-import-dropzone');
-      if (!dz || dz._dragSetup) return;
-      dz._dragSetup = true;
-      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
-      dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-      dz.addEventListener('drop', e => {
-        e.preventDefault(); dz.classList.remove('drag-over');
-        const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.docx'));
-        _docxImportHandleFiles(files);
-      });
-    }
-
-    function _docxImportHandleFiles(filesOrList) {
-      const files = Array.from(filesOrList).filter(f => f.name.endsWith('.docx'));
-      if (!files.length) return;
-      _docxImportFiles = files.map(f => {
-        const stem = f.name.replace(/\.docx$/i, '');
-        return { file: f, name: f.name, title: _titleFromFilename(stem), date: _dateFromFilename(stem) || dateToStr(new Date()), status: 'pending', html: null };
-      });
-      // Auto-fill section name from first file's date if blank
-      const secInput = document.getElementById('docx-import-section-name');
-      if (!secInput.value.trim() && files.length) {
-        const m = files[0].name.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})/i);
-        if (m) secInput.value = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase() + ' ' + m[2];
-      }
-      _docxImportRenderList();
-      document.getElementById('docx-import-run-btn').disabled = false;
-      document.getElementById('docx-import-run-btn').textContent = `Import ${files.length} Note${files.length === 1 ? '' : 's'}`;
-    }
-
-    function _docxImportRenderList() {
-      const list = document.getElementById('docx-import-file-list');
-      if (!list) return;
-      const statusLabel = { pending: 'Pending', working: 'Converting…', done: 'Done', error: 'Error' };
-      const statusCls = { pending: 'docx-status-pending', working: 'docx-status-working', done: 'docx-status-done', error: 'docx-status-error' };
-      list.innerHTML = _docxImportFiles.map(f => `
-        <div class="docx-import-file-row">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span class="docx-import-file-name" title="${esc(f.name)}">${esc(f.title || f.name)}</span>
-          <span class="docx-import-file-status ${statusCls[f.status] || ''}">${statusLabel[f.status] || f.status}</span>
-        </div>`).join('');
-    }
-
-    async function _docxImportRun() {
-      if (_docxImportRunning || !_docxImportFiles.length) return;
-      if (typeof mammoth === 'undefined') { alert('mammoth.js not loaded — check your internet connection.'); return; }
-      _docxImportRunning = true;
-      const btn = document.getElementById('docx-import-run-btn');
-      btn.disabled = true;
-
-      // Create or reuse section
-      const sectionName = (document.getElementById('docx-import-section-name').value.trim()) || 'Imported Notes';
-      const section = createSection(sectionName, 'folder', null, null, '');
-      const now = Date.now();
-
-      // Convert each file
-      for (let i = 0; i < _docxImportFiles.length; i++) {
-        const entry = _docxImportFiles[i];
-        entry.status = 'working';
-        _docxImportRenderList();
-        try {
-          const buf = await entry.file.arrayBuffer();
-          const result = await mammoth.convertToHtml({ arrayBuffer: buf }, {
-            convertImage: mammoth.images.imgElement(img =>
-              img.read('base64').then(b64 => ({ src: `data:${img.contentType};base64,${b64}`, style: 'max-width:100%' }))
-            )
-          });
-          // Clean up: strip empty consecutive paragraphs
-          let html = result.value.replace(/(<p>\s*<\/p>\s*){3,}/g, '<p></p><p></p>').trim();
-          entry.html = html;
-          entry.status = 'done';
-        } catch (e) {
-          entry.status = 'error';
-          entry.html = `<p><em>Failed to convert: ${e.message}</em></p>`;
-        }
-        btn.textContent = `Importing ${i + 1}/${_docxImportFiles.length}…`;
-        _docxImportRenderList();
-      }
-
-      // Build note objects and prepend section + notes to state
-      const noteItems = _docxImportFiles.map((entry, idx) => ({
-        id: uid(),
-        description: entry.title,
-        noteContent: entry.html || '',
-        location: '',
-        date: entry.date || dateToStr(new Date()),
-        priority: 'medium',
-        status: 'open',
-        category: '',
-        sectionId: section.id,
-        displayOrder: idx,
-        createdAt: now + idx,
-        updatedAt: now + idx,
-      }));
-
-      state.notes = [section, ...noteItems, ...state.notes];
-      scheduleNotesSave();
-      render();
-
-      _docxImportRunning = false;
-      btn.textContent = '✓ Done';
-      setTimeout(closeDocxImport, 800);
-    }
-    // ── end DOCX Import ───────────────────────────────────────────────────────
 
     // ── Field Note panel (inside Notes section cards) ──
     let _fnFsNoteId = null;
@@ -33739,52 +33569,6 @@ QUESTION: ${query}`;
       <div id="ai-fault-body" class="flex-1 overflow-y-auto" style="background:var(--bg-page)"></div>
     </div>
   </div>
-
-  <!-- ===== DOCX IMPORT MODAL ===== -->
-  <div id="docx-import-overlay" class="hidden" onclick="if(event.target===this&&!_docxImportRunning)closeDocxImport()">
-    <div class="docx-import-sheet">
-      <div class="docx-import-title">
-        <span>Import DOCX Notes</span>
-        <button onclick="closeDocxImport()"
-          style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;line-height:1;font-size:20px;"
-          aria-label="Close">×</button>
-      </div>
-
-      <!-- Section name -->
-      <div>
-        <div class="docx-import-label">Section name</div>
-        <input id="docx-import-section-name" class="docx-import-input" type="text" placeholder="e.g. March 2026" />
-      </div>
-
-      <!-- Drop zone -->
-      <div class="docx-import-dropzone" id="docx-import-dropzone">
-        <input type="file" id="docx-import-file-input" accept=".docx" multiple
-          onchange="_docxImportHandleFiles(this.files)" />
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-          stroke-linecap="round" stroke-linejoin="round"
-          style="color:var(--text-muted);margin:0 auto 8px;display:block">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-        <div class="docx-import-dropzone-label">
-          Drop <strong>.docx</strong> files here or <span style="color:var(--accent);font-weight:600">browse</span>
-        </div>
-      </div>
-
-      <!-- File list -->
-      <div class="docx-import-file-list" id="docx-import-file-list"></div>
-
-      <!-- Footer -->
-      <div class="docx-import-footer">
-        <button class="docx-import-cancel-btn" onclick="closeDocxImport()">Cancel</button>
-        <button class="docx-import-run-btn" id="docx-import-run-btn" onclick="_docxImportRun()" disabled>
-          Import
-        </button>
-      </div>
-    </div>
-  </div>
-  <!-- ===== END DOCX IMPORT MODAL ===== -->
 
   <!-- ===== NOTE FULLSCREEN MODAL ===== -->
   <!-- DOCX → Notebooks import overlay -->
