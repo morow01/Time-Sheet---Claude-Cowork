@@ -13962,7 +13962,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.97';
+    const VERSION = '5.3.98';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22729,6 +22729,7 @@
       const note = arr.find(n => n.id === noteId);
       if (!note) return;
       _fnFsNoteId = noteId;
+      history.pushState({ noteFs: true }, '');
       // Record the note's updatedAt at open time so the sync merge can tell
       // whether the user actually edited, vs just opened stale cached content
       window._tiptapNoteOpenTs = note.updatedAt || 0;
@@ -24510,15 +24511,47 @@
     });
 
     // Browser / phone back button — navigate within app instead of closing
+    var _backExitTimer = null;
     window.addEventListener('popstate', (e) => {
+      // 1. Note fullscreen editor (both timesheet notes and journal pages)
+      const noteFsOpen = !document.getElementById('note-fs-modal')?.classList.contains('hidden');
+      if (noteFsOpen) {
+        closeNoteFullscreen();
+        return;
+      }
+      // 2. On-call schedule overlay
       if (state.coScheduleOpen) {
         ocCloseSchedule();
-      } else if (state.view === 'callouts' && state.calloutsView === 'week') {
+        return;
+      }
+      // 3. Callouts week detail
+      if (state.view === 'callouts' && state.calloutsView === 'week') {
         coBack();
-      } else if (state.view === 'journal' && (state.jScreen === 'sections' || state.jScreen === 'pages')) {
+        return;
+      }
+      // 4. Journal drill-down
+      if (state.view === 'journal' && (state.jScreen === 'sections' || state.jScreen === 'pages')) {
         navJBack();
+        return;
+      }
+      // 5. Nothing left to handle — exit confirmation
+      history.pushState({ app: true }, ''); // re-push so we stay in app
+      if (_backExitTimer) {
+        // Second back press within 2s — exit
+        clearTimeout(_backExitTimer);
+        _backExitTimer = null;
+        if (IS_NATIVE && window.Capacitor?.Plugins?.App) {
+          window.Capacitor.Plugins.App.exitApp();
+        } else {
+          window.close();
+        }
+      } else {
+        showToast('Press back again to exit', 2000);
+        _backExitTimer = setTimeout(() => { _backExitTimer = null; }, 2000);
       }
     });
+    // Push initial state so first back press is catchable
+    history.pushState({ app: true }, '');
 
     // Online / offline handling — Firestore reconnects automatically
     window.addEventListener('online', () => {
@@ -33800,6 +33833,7 @@ QUESTION: ${query}`;
     }
     function openNoteFullscreen(actId, di) {
       _noteFsActId = actId; _noteFsDi = di;
+      history.pushState({ noteFs: true }, '');
       const ta = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
       const currentValue = ta ? ta.value : '';
       // Populate header with description + location context
