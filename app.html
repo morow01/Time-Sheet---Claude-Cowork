@@ -13962,7 +13962,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.3.95';
+    const VERSION = '5.3.96';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16977,18 +16977,6 @@
                 </div>
               </div>
 
-              <!-- Snapshots section -->
-              <div class="menu-section-wrap">
-                <div class="menu-section-label">Recovery</div>
-                <div class="menu-card">
-                  <button class="menu-row" onclick="openSnapshotModal()">
-                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg></span>
-                    <span class="menu-row-body"><span class="menu-row-label">Snapshots / Recover</span><span class="menu-row-sub">Browse and restore saved versions</span></span>
-                    ${chev}
-                  </button>
-                </div>
-              </div>
-
               <!-- Data Management section -->
               <div class="menu-section-wrap">
                 <div class="menu-section-label">AI Settings</div>
@@ -17033,6 +17021,11 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Data Management</div>
                 <div class="menu-card">
+                  <button class="menu-row" onclick="openSnapshotModal()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Snapshots / Recover</span><span class="menu-row-sub">Browse and restore saved versions</span></span>
+                    ${chev}
+                  </button>
                   <button class="menu-row" onclick="openBackupsModal();closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Cloud Backups</span><span class="menu-row-sub">View &amp; restore daily snapshots</span></span>
