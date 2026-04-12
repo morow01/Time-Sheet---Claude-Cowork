@@ -5511,6 +5511,40 @@
       border: 1px solid var(--border);
     }
 
+    /* ===== PRIVACY BANNER ===== */
+    #privacy-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 9999;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 16px 20px 24px;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    #privacy-banner p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    #privacy-banner a { color: var(--accent); }
+    #privacy-banner button {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     /* ===== AI FAULT ASSISTANT ===== */
     .ai-view {
       padding: 0 0 80px;
@@ -13962,7 +13996,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.0';
+    const VERSION = '5.4.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24646,6 +24680,15 @@
       }, 120);
     }, { passive: true });
 
+    function maybeShowPrivacyBanner() {
+      try { if (localStorage.getItem('rian_privacy_v1')) return; } catch (e) { return; }
+      const el = document.createElement('div');
+      el.id = 'privacy-banner';
+      el.innerHTML = '<p>We store your work data (timesheets, notes, callouts) in Firebase to sync across your devices. No ads, no data sharing. See our <a href="privacy.html" target="_blank">Privacy Policy</a> for full details.</p>'
+        + '<button onclick="document.getElementById(\'privacy-banner\').remove();try{localStorage.setItem(\'rian_privacy_v1\',\'1\');}catch(e){}">Got it</button>';
+      document.body.appendChild(el);
+    }
+
     function renderLogin() {
       document.getElementById('app').innerHTML = `
         <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-page);">
@@ -30905,6 +30948,9 @@ Rules:
         if (user.displayName) _prof.displayName = user.displayName;
         if (user.email) _prof.email = user.email;
         db_fs.doc(`users/${user.uid}`).set(_prof, { merge: true }).catch(e => console.warn('[Rian]', e));
+
+        // Show one-time privacy notice to existing users who bypassed login screen
+        setTimeout(maybeShowPrivacyBanner, 1500);
 
         // Signed in — load local data first for instant display
         // Only use cached notes if they belong to this user
