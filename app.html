@@ -23497,9 +23497,35 @@
       flushPendingSaves();
     });
 
+    // Exit app — try every known method
+    function _exitApp() {
+      try { if (window.Capacitor?.Plugins?.App?.exitApp) { window.Capacitor.Plugins.App.exitApp(); return; } } catch(e){}
+      try { if (navigator.app?.exitApp) { navigator.app.exitApp(); return; } } catch(e){}
+      try { window.close(); } catch(e){}
+    }
+
+    // Exit confirmation dialog
+    function _showExitDialog() {
+      if (document.getElementById('exit-dialog')) return;
+      const overlay = document.createElement('div');
+      overlay.id = 'exit-dialog';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn 0.15s ease';
+      overlay.innerHTML = '<div style="background:var(--bg-card);border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 16px 48px rgba(0,0,0,0.3);">'
+        + '<div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Exit Rian?</div>'
+        + '<div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px;">Are you sure you want to close the app?</div>'
+        + '<div style="display:flex;gap:10px;justify-content:flex-end;">'
+        + '<button onclick="document.getElementById(\'exit-dialog\').remove()" style="padding:10px 20px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Cancel</button>'
+        + '<button onclick="_exitApp()" style="padding:10px 20px;border-radius:10px;border:none;background:#ef4444;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">Exit</button>'
+        + '</div></div>';
+      overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+    }
+
     // Browser / phone back button — navigate within app instead of closing
-    var _backExitTimer = null;
     function _handleBackButton() {
+      // 0. Exit dialog open — dismiss it
+      var exitDlg = document.getElementById('exit-dialog');
+      if (exitDlg) { exitDlg.remove(); return; }
       // 1. Any open bottom sheet / action sheet
       const sheets = document.querySelectorAll('.btm-sheet.open, .bottom-sheet.open');
       if (sheets.length) {
@@ -23542,19 +23568,8 @@
         setView(state.prevView || 'week');
         return;
       }
-      // 8. Already on week — exit confirmation (double-tap)
-      if (_backExitTimer) {
-        clearTimeout(_backExitTimer);
-        _backExitTimer = null;
-        if (IS_NATIVE && window.Capacitor?.Plugins?.App) {
-          window.Capacitor.Plugins.App.exitApp();
-        } else {
-          window.close();
-        }
-      } else {
-        showToast('Press back again to exit', 2000);
-        _backExitTimer = setTimeout(() => { _backExitTimer = null; }, 2000);
-      }
+      // 8. Already on week — show exit confirmation dialog
+      _showExitDialog();
     }
 
     // Capacitor native back button — try multiple approaches
