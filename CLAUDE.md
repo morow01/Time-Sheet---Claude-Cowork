@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 13965). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.3.92**
+Current version: **5.4.10**
 
 ## Git
 - Remote: `https://github.com/morow01/rian.git`, branch: `main`
@@ -162,20 +162,38 @@ If auth or maps breaks after a URL/hostname change → check BOTH the Firebase a
 - `android/app/src/main/res/values/colors.xml` has `<color name="ic_launcher_background">#FFFFFF</color>`
 - All mipmap densities regenerated via Python/Pillow from `icon-192.png`
 
-### TipTap Table CSS Fix (for Android WebView)
+### Native Exit Bridge (v5.4.6)
+Capacitor's `App.exitApp()` plugin doesn't work when loading from a remote URL (GitHub Pages). Instead, `MainActivity.java` exposes a `RianNative` JavaScript interface:
+```java
+wv.addJavascriptInterface(new Object() {
+    @JavascriptInterface
+    public void exitApp() { runOnUiThread(() -> finishAffinity()); }
+}, "RianNative");
+```
+In `app.html`, `_exitApp()` tries `window.RianNative.exitApp()` first, then falls back to Capacitor and `window.close()`. Any change to exit behavior requires an APK rebuild.
+
+### TipTap Table CSS (v5.4.7–5.4.9)
+Tables shrink-wrap to content (not 100% width). Column resizing is enabled via `Table.configure({ resizable: true })`. The `_ttStripDefaultTableWidths()` function strips the columnResizing plugin's bloated default `min-width` from tables without user-set column widths. CSS uses `!important` to override the columnResizing plugin's inline styles that re-expand tables on click/blur.
 ```css
 :is(#note-fs-editor .ProseMirror, .tt-prose) .tableWrapper {
-  overflow-x: auto; display: block; width: 100%; max-width: 100%;
+  overflow-x: auto; display: inline-block; max-width: 100%;
 }
 :is(#note-fs-editor .ProseMirror, .tt-prose) table {
-  border-collapse: collapse; width: 100%; min-width: 100%;
+  border-collapse: collapse; width: auto !important; min-width: unset !important;
 }
 :is(#note-fs-editor .ProseMirror, .tt-prose) td,
 :is(#note-fs-editor .ProseMirror, .tt-prose) th { min-width: 60px; }
 ```
+`_ttStripDefaultTableWidths()` runs on both `onUpdate` and `onSelectionUpdate` to catch the plugin re-applying styles.
+
+### WebView Microphone Permission (v5.4.10)
+`MainActivity.java` sets a custom `WebChromeClient` that auto-grants `onPermissionRequest` — required for mic access when loading from a remote URL. The Android manifest declares `RECORD_AUDIO`. Without the WebChromeClient override, the WebView silently blocks mic requests.
+
+### PWA Back Button (v5.4.10)
+On Android standalone PWA, the system back gesture exits the app if the history stack empties. The app traps `popstate` and re-pushes a history entry *before* calling `_handleBackButton()`, so the stack never runs dry. Only one seed entry is needed at init since popstate always replenishes.
 
 ### Building the APK
-From `C:\Users\morow\Documents\Claude\TimeSheet\` (the project root):
+From the project root (`C:\Users\morow\OneDrive\Vibe Code\TimeSheet\`):
 ```powershell
 node scripts/build-www.js          # copy app files into android assets
 npx cap sync android               # sync Capacitor plugins
