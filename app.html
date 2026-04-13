@@ -13363,7 +13363,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.7';
+    const VERSION = '5.4.8';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -31584,6 +31584,7 @@ QUESTION: ${query}`;
         onSelectionUpdate({ editor }) {
           _ttUpdateToolbar(editor);
           _ttUpdateAiFab(editor);
+          requestAnimationFrame(_ttStripDefaultTableWidths);
         },
         onBlur({ editor, event }) {
           // Keep link bubble visible if focus moved into it
@@ -32397,6 +32398,8 @@ QUESTION: ${query}`;
           }
         });
         e.view.dispatch(tr);
+        // Strip inline min-width the columnResizing plugin re-applies after dispatch
+        requestAnimationFrame(_ttStripDefaultTableWidths);
         if (typeof scheduleNotesSave === 'function') scheduleNotesSave();
         showToast('Table widths reset');
       }
