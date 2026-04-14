@@ -1523,6 +1523,7 @@
     /* Custom rounded scrollbar indicator */
     .note-inline-thumb {
       position: absolute;
+      top: 0;
       right: 4px;
       width: 5px;
       background: rgba(0,0,0,0.35);
@@ -1531,6 +1532,7 @@
       transition: opacity 0.8s ease;
       pointer-events: none;
       z-index: 2;
+      will-change: transform, opacity;
     }
     .note-inline-thumb.show {
       opacity: 1;
@@ -13486,7 +13488,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.27';
+    const VERSION = '5.4.28';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
