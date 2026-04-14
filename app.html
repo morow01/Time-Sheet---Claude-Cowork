@@ -13449,7 +13449,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.18';
+    const VERSION = '5.4.19';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16253,6 +16253,7 @@
     // RENDER (debounced via rAF to coalesce rapid calls)
     // ============================================================
     let _renderRAF = null;
+    let _lastRenderedView = null;
     function render() {
       if (_renderRAF) return; // already scheduled
       _renderRAF = requestAnimationFrame(() => {
@@ -16271,14 +16272,14 @@
       const activeNav = document.getElementById('nav-' + (state.view === 'notes' ? 'history' : state.view));
       if (activeNav) activeNav.classList.add('active');
 
-      // Capture current scroll position before DOM wipe so we can restore it.
-      // Use live window.scrollY rather than sessionStorage — the debounced save
-      // is stale during active scrolling, causing the page to jump back.
-      // Fall back to sessionStorage only if current scroll is 0 (fresh load / view change).
-      const liveScroll = window.scrollY;
-      const savedScroll = liveScroll > 0
-        ? liveScroll
-        : parseInt(sessionStorage.getItem('scrollPos_' + state.view) || '0');
+      // Only restore scroll when the view has changed since the last render.
+      // For same-view re-renders (Firestore sync, field edits) leave scroll alone
+      // — calling scrollTo during active momentum scroll causes jitter.
+      const viewChanged = _lastRenderedView !== state.view;
+      _lastRenderedView = state.view;
+      const savedScroll = viewChanged
+        ? parseInt(sessionStorage.getItem('scrollPos_' + state.view) || '0')
+        : 0;
 
       let viewBody = '';
       if (state.view === 'conflicts') {
