@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 13965). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.5.24**
+Current version: **5.5.28**
 
 ## Git
 - Remote: `https://github.com/morow01/rian.git`, branch: `main`
@@ -99,7 +99,16 @@ Or use the existing pattern: `esc(value).replace(/'/g, "\\'")`  and wrap in `\'.
 Notebooks state keys: `jNotebooks`, `jSections`, `jPages`, `jEditId`, `jRenameTitle`, `jNbActionId`, `jSecActionId`, `jPageActionId`, `jDatePickId`, `jCopyMovePgId`, `jCopyMoveMode`, `jCopyMoveTargetSecId`.
 
 ## CSS Variables
-`--accent: #2D6BE4`, `--bg-card`, `--bg-card-alt`, `--border`, `--text-primary`, `--text-secondary`, `--text-muted`, `--font-mono` (DM Mono).
+`--accent: #2D6BE4`, `--bg-card`, `--bg-card-alt`, `--bg-input: #F4F7FA`, `--border`, `--text-primary`, `--text-secondary`, `--text-muted`, `--font-mono` (DM Mono). One alt theme exists today: `[data-theme="claude"]` (see app.html ~line 1736).
+
+## Planned: Theming Refactor
+Rob plans multiple themes (dark, Gameboy, Win 3.1, B&W, iOS). App has ~985 hex colors hardcoded; ~20-30% are structural (backgrounds, borders, text) and will break under non-default themes. Brand accents + status colors can stay hardcoded.
+
+**Approach when asked to start themeing**:
+1. Expand CSS variable palette in `:root` (backgrounds page/card/card-alt/input/header, text primary/secondary/muted, borders default/strong, shadows). Keep the `--accent`, status colors (red/green/amber) out of themes — those stay fixed.
+2. Search & replace structural hex literals (e.g. `#f8fafc`, `#ffffff` on backgrounds) with `var(--bg-input, #f8fafc)` style fallback syntax.
+3. Only THEN add new theme blocks that override variables.
+Do it in small committed steps; don't try to migrate everything in one commit.
 
 ## About Rob (the developer)
 - Field technician who built Rian for his own use
