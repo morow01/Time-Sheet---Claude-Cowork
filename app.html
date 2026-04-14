@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.16';
+    const VERSION = '5.5.17';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33359,9 +33359,18 @@ QUESTION: ${query}`;
         const blob = new Blob([wav], { type: 'audio/wav' });
         const audio = new Audio(URL.createObjectURL(blob));
         _batteryChat._currentAudio = audio;
-        audio.onended = () => { URL.revokeObjectURL(audio.src); afterSpeak(); };
-        audio.onerror = () => { URL.revokeObjectURL(audio.src); afterSpeak(); };
-        await audio.play();
+        let finished = false;
+        const finish = () => { if (finished) return; finished = true; try { URL.revokeObjectURL(audio.src); } catch {} afterSpeak(); };
+        audio.onended = finish;
+        audio.onerror = () => { console.log('[Battery] audio error'); finished = true; try { URL.revokeObjectURL(audio.src); } catch {} useBrowserTTS(); };
+        try {
+          await audio.play();
+        } catch (playErr) {
+          console.log('[Battery] audio.play rejected:', playErr?.message);
+          finished = true;
+          try { URL.revokeObjectURL(audio.src); } catch {}
+          useBrowserTTS();
+        }
       } catch (e) {
         clearTimeout(tmo);
         console.log('[Battery] Gemini TTS failed, falling back:', e.message);
