@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.18';
+    const VERSION = '5.5.19';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33199,6 +33199,14 @@ QUESTION: ${query}`;
       }
       // Stop any audio from a previous session BEFORE reassigning _batteryChat
       _batteryStopSpeaking();
+      // Unlock AudioContext while we still have the user-gesture context from the tap
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+          if (!_batteryAudioCtx) _batteryAudioCtx = new AC();
+          if (_batteryAudioCtx.state === 'suspended') _batteryAudioCtx.resume();
+        }
+      } catch {}
       _batteryChat = {
         history: [],
         mode: null,            // 'battery' or 'generic'
@@ -33358,22 +33366,8 @@ QUESTION: ${query}`;
         const b64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (!b64) throw new Error('no audio data');
         const pcm = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-        const wav = _pcmToWav(pcm, 24000, 1, 16);
-        const blob = new Blob([wav], { type: 'audio/wav' });
-        const audio = new Audio(URL.createObjectURL(blob));
-        _batteryCurrentAudio = audio;
-        let finished = false;
-        const finish = () => { if (finished) return; finished = true; try { URL.revokeObjectURL(audio.src); } catch {} afterSpeak(); };
-        audio.onended = finish;
-        audio.onerror = () => { console.log('[Battery] audio error'); finished = true; try { URL.revokeObjectURL(audio.src); } catch {} useBrowserTTS(); };
-        try {
-          await audio.play();
-        } catch (playErr) {
-          console.log('[Battery] audio.play rejected:', playErr?.message);
-          finished = true;
-          try { URL.revokeObjectURL(audio.src); } catch {}
-          useBrowserTTS();
-        }
+        // Play via Web Audio API — more reliable in Android WebView than <audio> blobs
+        await _batteryPlayPCM(pcm, 24000, afterSpeak, useBrowserTTS);
       } catch (e) {
         clearTimeout(tmo);
         console.log('[Battery] Gemini TTS failed, falling back:', e.message);
@@ -33390,6 +33384,47 @@ QUESTION: ${query}`;
         try { _batteryCurrentAudio.pause(); } catch {}
         try { _batteryCurrentAudio.src = ''; } catch {}
         _batteryCurrentAudio = null;
+      }
+      if (_batteryCurrentSource) {
+        try { _batteryCurrentSource.stop(); } catch {}
+        _batteryCurrentSource = null;
+      }
+    }
+
+    // Play raw 16-bit signed little-endian mono PCM via Web Audio API
+    let _batteryAudioCtx = null;
+    let _batteryCurrentSource = null;
+    async function _batteryPlayPCM(pcmBytes, sampleRate, onEnd, onFail) {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) { console.log('[Battery] no AudioContext'); onFail(); return; }
+        if (!_batteryAudioCtx) _batteryAudioCtx = new AC();
+        if (_batteryAudioCtx.state === 'suspended') {
+          try { await _batteryAudioCtx.resume(); } catch {}
+        }
+        // Decode 16-bit signed LE PCM → Float32
+        const samples = pcmBytes.byteLength / 2;
+        const float32 = new Float32Array(samples);
+        const dv = new DataView(pcmBytes.buffer, pcmBytes.byteOffset, pcmBytes.byteLength);
+        for (let i = 0; i < samples; i++) {
+          const int16 = dv.getInt16(i * 2, true);
+          float32[i] = int16 / 32768;
+        }
+        const buffer = _batteryAudioCtx.createBuffer(1, samples, sampleRate);
+        buffer.copyToChannel(float32, 0);
+        // Stop any currently-playing source
+        if (_batteryCurrentSource) { try { _batteryCurrentSource.stop(); } catch {} _batteryCurrentSource = null; }
+        const source = _batteryAudioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(_batteryAudioCtx.destination);
+        _batteryCurrentSource = source;
+        let finished = false;
+        source.onended = () => { if (finished) return; finished = true; _batteryCurrentSource = null; onEnd(); };
+        source.start(0);
+        console.log('[Battery] playing', samples, 'samples @', sampleRate, 'Hz');
+      } catch (e) {
+        console.log('[Battery] PCM play error:', e?.message);
+        onFail();
       }
     }
 
