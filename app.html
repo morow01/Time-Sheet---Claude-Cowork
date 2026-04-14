@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.11';
+    const VERSION = '5.5.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33486,10 +33486,16 @@ RULES:
 - If user corrects a cell ("cell 3 was 2.28"), update that cell.
 
 OUTPUT FORMAT — always end your response with a state block:
-<state>{"totalCells": N, "readings": {"1": 2.28, "2": 2.15}, "overall": null, "nextAsk": "cell 3" | "overall" | "complete"}</state>
+<state>{"totalCells": N, "readings": {"1": 2.28, "2": 2.15}, "overall": null, "nextAsk": "cell 3" | "overall" | "confirm" | "complete"}</state>
 
-When ALL cells AND overall are captured, set nextAsk to "complete" and your visible message is just "All done!".
-The state block is invisible to the user — only include in your response so the system can track progress.`;
+IMPORTANT — nextAsk values:
+- "cell N" when waiting for a specific cell reading
+- "overall" when all cells captured but need overall voltage
+- "confirm" when asking user to confirm a value you are unsure about
+- "complete" ONLY when ALL cells confirmed, overall captured, and you have NO more questions
+
+When nextAsk is "complete", your visible message MUST be exactly "All done!" (nothing else).
+The state block is invisible to the user.`;
 
       try {
         const model = state.geminiModel || 'gemini-2.0-flash';
@@ -33514,8 +33520,7 @@ The state block is invisible to the user — only include in your response so th
         let visible = reply.replace(/<state>[\s\S]+?<\/state>/g, '').trim();
         thinkingEl.remove();
         if (!visible) visible = '…';
-        const isWarn = /right\?|did you mean|correct\?/i.test(visible);
-        _batteryAddMsg('ai', visible, { warn: isWarn });
+        _batteryAddMsg('ai', visible);
 
         if (stateMatch) {
           try {
@@ -33523,7 +33528,10 @@ The state block is invisible to the user — only include in your response so th
             if (s.totalCells != null) _batteryChat.totalCells = s.totalCells;
             if (s.readings && typeof s.readings === 'object') _batteryChat.readings = s.readings;
             if (s.overall != null) _batteryChat.overallV = s.overall;
-            if (s.nextAsk === 'complete') _batteryChat.complete = true;
+            // Only mark complete when AI explicitly says it, not just because data is present
+            if (s.nextAsk === 'complete' && /all done|complete|finished/i.test(visible)) {
+              _batteryChat.complete = true;
+            }
             _batteryUpdateProgress();
           } catch (e) { console.warn('[Battery] state parse error', e); }
         }
