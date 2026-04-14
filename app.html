@@ -1527,7 +1527,7 @@
       right: 4px;
       width: 10px;
       height: 10px;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0,0,0,0.22);
       border-radius: 50%;
       opacity: 0;
       transition: opacity 0.8s ease;
@@ -13486,7 +13486,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.29';
+    const VERSION = '5.4.30';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -15563,9 +15563,9 @@
       const sh = scrollEl.scrollHeight;
       if (sh <= h + 2) { thumb.classList.remove('show'); return; }
       const thumbSize = 10;
-      const trackH = h - thumbSize - 8; // inset 4px top + 4px bottom
-      const ratio = scrollEl.scrollTop / (sh - h);
-      const thumbY = 4 + ratio * trackH;
+      const trackH = h - thumbSize - 4; // 2px inset top + 2px bottom
+      const ratio = Math.min(1, Math.max(0, scrollEl.scrollTop / (sh - h)));
+      const thumbY = 2 + ratio * trackH;
       thumb.style.transform = `translateY(${thumbY}px)`;
       thumb.classList.add('show');
       clearTimeout(wrap._thumbHideT);
