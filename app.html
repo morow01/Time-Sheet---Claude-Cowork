@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.14';
+    const VERSION = '5.5.15';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33316,11 +33316,15 @@ QUESTION: ${query}`;
           afterSpeak();
         }
       };
-      // If Gemini TTS already failed once this session, skip straight to browser
-      if (_batteryChat?.ttsBroken) { useBrowserTTS(); return; }
-      // 6-second timeout so we don't hang forever on slow networks
+      // Backoff if a recent attempt just failed — retry Gemini after 30s gap
+      const now = Date.now();
+      if (_batteryChat && _batteryChat._ttsBackoffUntil && now < _batteryChat._ttsBackoffUntil) {
+        useBrowserTTS();
+        return;
+      }
+      // 5-second timeout so we don't hang too long on failures
       const ctrl = new AbortController();
-      const tmo = setTimeout(() => ctrl.abort(), 6000);
+      const tmo = setTimeout(() => ctrl.abort(), 5000);
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${state.geminiKey}`;
         const resp = await fetch(url, {
@@ -33354,9 +33358,10 @@ QUESTION: ${query}`;
         await audio.play();
       } catch (e) {
         clearTimeout(tmo);
-        console.log('[Battery] Gemini TTS failed, using browser TTS:', e.message);
-        // Mark broken so the rest of this session uses browser TTS consistently
-        if (_batteryChat) _batteryChat.ttsBroken = true;
+        console.log('[Battery] Gemini TTS failed, falling back:', e.message);
+        // Short 30s backoff — next attempt within that window skips Gemini.
+        // After that, try again so transient errors don't lock us out.
+        if (_batteryChat) _batteryChat._ttsBackoffUntil = Date.now() + 30000;
         useBrowserTTS();
       }
     }
@@ -33398,15 +33403,17 @@ QUESTION: ${query}`;
       try {
         const voices = speechSynthesis.getVoices() || [];
         if (!voices.length) return null;
-        // Priority: natural-sounding English voices
+        // Prefer male English voices to match the Gemini "Puck" default
         const wantOrder = [
-          v => /Google UK English Female/i.test(v.name),
-          v => /Google US English/i.test(v.name) && /female|zira/i.test(v.name + (v.voiceURI||'')),
-          v => /Microsoft Aria/i.test(v.name),
-          v => /Microsoft Jenny/i.test(v.name),
-          v => /Samantha/i.test(v.name),
+          v => /Google UK English Male/i.test(v.name),
+          v => /Google US English.*Male/i.test(v.name),
+          v => /Microsoft Ryan/i.test(v.name),
+          v => /Microsoft David/i.test(v.name),
+          v => /Microsoft Guy/i.test(v.name),
+          v => /Daniel/i.test(v.name) && /en/i.test(v.lang),
+          v => /Alex/i.test(v.name) && /en/i.test(v.lang),
+          v => /male/i.test(v.name) && /en/i.test(v.lang),
           v => /Natural/i.test(v.name) && /en/i.test(v.lang),
-          v => /Google/i.test(v.name) && /en/i.test(v.lang),
           v => /^en-GB/i.test(v.lang),
           v => /^en/i.test(v.lang),
         ];
