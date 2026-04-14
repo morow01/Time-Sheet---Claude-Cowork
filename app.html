@@ -13449,7 +13449,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.17';
+    const VERSION = '5.4.18';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16271,8 +16271,14 @@
       const activeNav = document.getElementById('nav-' + (state.view === 'notes' ? 'history' : state.view));
       if (activeNav) activeNav.classList.add('active');
 
-      // Capture scroll position before DOM wipe so we can restore it
-      const savedScroll = parseInt(sessionStorage.getItem('scrollPos_' + state.view) || '0');
+      // Capture current scroll position before DOM wipe so we can restore it.
+      // Use live window.scrollY rather than sessionStorage — the debounced save
+      // is stale during active scrolling, causing the page to jump back.
+      // Fall back to sessionStorage only if current scroll is 0 (fresh load / view change).
+      const liveScroll = window.scrollY;
+      const savedScroll = liveScroll > 0
+        ? liveScroll
+        : parseInt(sessionStorage.getItem('scrollPos_' + state.view) || '0');
 
       let viewBody = '';
       if (state.view === 'conflicts') {
