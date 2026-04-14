@@ -1505,7 +1505,8 @@
       padding: 12px 14px;
       background: var(--bg-card);
       cursor: pointer;
-      overflow: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       max-height: 140px;
       transition: border-color 0.15s;
       font-size: 12px;
@@ -13449,7 +13450,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.19';
+    const VERSION = '5.4.20';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20314,11 +20315,13 @@
             </div>
             <div class="note-detail-row">
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Location</span>
-              <input type="search" data-note-id="${note.id}" data-note-field="location"
+              <input type="text" data-note-id="${note.id}" data-note-field="location"
+                name="rian-loc-${note.id}"
                 value="${esc(note.location)}"
                 placeholder="Town name or code…"
                 readonly style="cursor:pointer;width:100%"
-                autocomplete="new-password" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                data-lpignore="true" data-form-type="other" data-1p-ignore="true"
                 onclick="openLocationModal(null, null, '${note.id}')" />
             </div>
             <div class="note-detail-row">
