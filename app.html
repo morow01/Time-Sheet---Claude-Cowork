@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.10';
+    const VERSION = '5.5.11';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33203,7 +33203,8 @@ QUESTION: ${query}`;
         overallV: null,
         complete: false,
         listening: false,
-        recognition: null
+        recognition: null,
+        voice: localStorage.getItem('rian_bat_voice') || 'Puck'
       };
       document.getElementById('battery-transcript').innerHTML = '';
       document.getElementById('battery-results').style.display = 'none';
@@ -33212,8 +33213,53 @@ QUESTION: ${query}`;
       document.getElementById('battery-subtitle').textContent = 'Tell me the battery setup';
       document.getElementById('battery-progress-txt').textContent = '0 cells';
       document.getElementById('battery-progress-fill').style.width = '0%';
+      _batteryUpdateVoiceBadge();
+      // Pre-warm SpeechRecognition so auto-mic works after first AI reply.
+      // Briefly start & stop a recognition — satisfies mobile user-gesture rule
+      // for subsequent programmatic start() calls within this modal session.
+      try {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SR) {
+          const warm = new SR();
+          warm.lang = 'en-IE';
+          warm.continuous = false;
+          warm.interimResults = false;
+          warm.onstart = () => { try { warm.stop(); } catch {} };
+          warm.onerror = () => {};
+          try { warm.start(); } catch {}
+        }
+      } catch {}
       _batteryAddMsg('ai', 'Ready. How many cells does this battery have?');
       document.getElementById('battery-modal').classList.remove('hidden');
+    }
+
+    function _batteryUpdateVoiceBadge() {
+      const el = document.getElementById('battery-voice-name');
+      if (el && _batteryChat) el.textContent = _batteryChat.voice;
+    }
+
+    // Voice picker — cycle through preset Gemini voices
+    const _BATTERY_VOICES = [
+      { name: 'Puck', desc: 'Upbeat (male)' },
+      { name: 'Charon', desc: 'Informative (male)' },
+      { name: 'Orus', desc: 'Firm (male)' },
+      { name: 'Fenrir', desc: 'Excitable (male)' },
+      { name: 'Iapetus', desc: 'Clear (male)' },
+      { name: 'Aoede', desc: 'Breezy (female)' },
+      { name: 'Kore', desc: 'Firm (female)' },
+      { name: 'Leda', desc: 'Youthful (female)' },
+      { name: 'Callirrhoe', desc: 'Easy-going (female)' },
+    ];
+
+    function _batteryCycleVoice() {
+      if (!_batteryChat) return;
+      const idx = _BATTERY_VOICES.findIndex(v => v.name === _batteryChat.voice);
+      const next = _BATTERY_VOICES[(idx + 1) % _BATTERY_VOICES.length];
+      _batteryChat.voice = next.name;
+      localStorage.setItem('rian_bat_voice', next.name);
+      _batteryUpdateVoiceBadge();
+      showToast('Voice: ' + next.name + ' — ' + next.desc);
+      _batterySpeak('Hello, this is ' + next.name + '.');
     }
 
     function closeBatteryRecorder() {
@@ -33264,7 +33310,7 @@ QUESTION: ${query}`;
               responseModalities: ['AUDIO'],
               speechConfig: {
                 voiceConfig: {
-                  prebuiltVoiceConfig: { voiceName: 'Aoede' }
+                  prebuiltVoiceConfig: { voiceName: _batteryChat?.voice || 'Puck' }
                 }
               }
             }
@@ -34668,6 +34714,10 @@ The state block is invisible to the user — only include in your response so th
           <div style="font-size:15px;font-weight:700;">Battery Recorder</div>
           <div id="battery-subtitle" style="font-size:12px;color:var(--text-secondary);">Tell me the battery setup</div>
         </div>
+        <button onclick="_batteryCycleVoice()" title="Change voice" style="background:transparent;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <span id="battery-voice-name">Puck</span>
+        </button>
         <button onclick="closeBatteryRecorder()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;padding:6px;font-size:18px;">✕</button>
       </div>
 
@@ -34685,21 +34735,17 @@ The state block is invisible to the user — only include in your response so th
         <div id="battery-results-inner"></div>
       </div>
 
-      <div id="battery-mic-bar" style="padding:12px 18px;border-top:1px solid var(--border);background:var(--bg-card-alt);display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <button id="battery-mic-btn" onclick="_batteryMicToggle()" style="width:48px;height:48px;border-radius:50%;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(45,107,228,0.3);flex-shrink:0;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" fill="none"/></svg>
-          </button>
-          <div id="battery-mic-hint" style="flex:1;font-size:13px;color:var(--text-secondary);">Tap to talk</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <input id="battery-text-input" type="text" placeholder="…or type a reply"
-            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-            data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-            onkeydown="if(event.key==='Enter'){event.preventDefault();_batteryTextSubmit();}"
-            style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg-card);outline:none;font-family:inherit;">
-          <button id="battery-send-btn" onclick="_batteryTextSubmit()" style="padding:9px 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">Send</button>
-        </div>
+      <div id="battery-mic-bar" style="padding:12px 14px;border-top:1px solid var(--border);background:var(--bg-card-alt);display:flex;align-items:center;gap:8px;">
+        <button id="battery-mic-btn" onclick="_batteryMicToggle()" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(45,107,228,0.3);flex-shrink:0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </button>
+        <input id="battery-text-input" type="text" placeholder="Tap mic or type…"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();_batteryTextSubmit();}"
+          style="flex:1;min-width:0;padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg-card);outline:none;font-family:inherit;">
+        <button id="battery-send-btn" onclick="_batteryTextSubmit()" style="padding:9px 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">Send</button>
+        <span id="battery-mic-hint" style="display:none;"></span>
       </div>
 
       <div id="battery-actions" style="display:none;gap:10px;padding:12px 18px;background:var(--bg-card);border-top:1px solid var(--border);">
