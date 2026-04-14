@@ -1525,9 +1525,10 @@
       position: absolute;
       top: 0;
       right: 4px;
-      width: 5px;
-      background: rgba(0,0,0,0.35);
-      border-radius: 999px;
+      width: 10px;
+      height: 10px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 50%;
       opacity: 0;
       transition: opacity 0.8s ease;
       pointer-events: none;
@@ -1561,19 +1562,16 @@
     .note-inline-scroll ol { font-size: 12px; padding-left: 16px !important; margin-bottom: 4px !important; }
     .note-inline-scroll li { margin-bottom: 2px; }
     .note-inline-scroll img {
-      max-height: 80px !important;
       max-width: 100% !important;
-      width: auto !important;
       height: auto !important;
-      object-fit: contain !important;
       pointer-events: none;
     }
-    /* Image wrappers inside preview should not force width */
-    .note-inline-scroll .img-resize-wrap,
-    .note-inline-scroll .tableWrapper {
-      width: auto !important;
+    /* Preserve image wrapper widths so images render proportional to fullscreen */
+    .note-inline-scroll .img-resize-wrap {
       max-width: 100% !important;
-      display: inline-block !important;
+    }
+    .note-inline-scroll .tableWrapper {
+      max-width: 100% !important;
     }
 
     .notes-panel-header {
@@ -13488,7 +13486,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.28';
+    const VERSION = '5.4.29';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -15555,7 +15553,7 @@
       </div>`;
     }
 
-    // Custom rounded scrollbar indicator for note preview
+    // Custom circular scroll indicator for note preview
     function _updateInlineNoteThumb(scrollEl) {
       const wrap = scrollEl.parentNode;
       if (!wrap) return;
@@ -15564,10 +15562,10 @@
       const h = scrollEl.clientHeight;
       const sh = scrollEl.scrollHeight;
       if (sh <= h + 2) { thumb.classList.remove('show'); return; }
-      const trackH = h - 4; // small inset top/bottom
-      const thumbH = Math.max(24, trackH * (h / sh));
-      const thumbY = 2 + (scrollEl.scrollTop / (sh - h)) * (trackH - thumbH);
-      thumb.style.height = thumbH + 'px';
+      const thumbSize = 10;
+      const trackH = h - thumbSize - 8; // inset 4px top + 4px bottom
+      const ratio = scrollEl.scrollTop / (sh - h);
+      const thumbY = 4 + ratio * trackH;
       thumb.style.transform = `translateY(${thumbY}px)`;
       thumb.classList.add('show');
       clearTimeout(wrap._thumbHideT);
