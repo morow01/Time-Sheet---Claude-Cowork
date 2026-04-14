@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.3';
+    const VERSION = '5.5.4';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33283,40 +33283,50 @@ QUESTION: ${query}`;
       const r = new SR();
       r.lang = 'en-IE';
       r.interimResults = false;
-      r.continuous = false;
+      r.continuous = true;
       r.maxAlternatives = 1;
       _batteryChat.recognition = r;
       _batteryChat.listening = true;
       document.getElementById('battery-mic-btn').classList.add('listening');
       document.getElementById('battery-mic-hint').textContent = 'Listening…';
-      let gotResult = false;
+      let collected = '';
       r.onresult = (e) => {
-        const transcript = e.results[0]?.[0]?.transcript || '';
-        gotResult = true;
-        _batteryStopListening();
-        if (transcript) _batterySendToAI(transcript);
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) collected += e.results[i][0].transcript;
+        }
+        console.log('[Battery] onresult:', collected);
       };
       r.onerror = (e) => {
-        _batteryStopListening();
-        if (e.error !== 'aborted' && e.error !== 'no-speech') showToast('Speech error: ' + e.error);
+        console.log('[Battery] onerror:', e.error);
         if (e.error === 'no-speech') {
           const hint = document.getElementById('battery-mic-hint');
-          if (hint) hint.textContent = 'No speech detected — tap to try again';
+          if (hint) hint.textContent = 'No speech heard — tap to retry';
+        } else if (e.error !== 'aborted') {
+          showToast('Speech error: ' + e.error);
         }
       };
       r.onend = () => {
+        console.log('[Battery] onend, collected:', collected);
         _batteryChat.listening = false;
+        _batteryChat.recognition = null;
         const btn = document.getElementById('battery-mic-btn');
         if (btn) btn.classList.remove('listening');
-        if (!gotResult) {
-          const hint = document.getElementById('battery-mic-hint');
-          if (hint && hint.textContent === 'Listening…') hint.textContent = 'Tap to talk';
+        const hint = document.getElementById('battery-mic-hint');
+        if (collected.trim()) {
+          _batterySendToAI(collected.trim());
+          if (hint) hint.textContent = 'Tap to talk';
+        } else if (hint && hint.textContent === 'Listening…') {
+          hint.textContent = 'Tap to talk';
         }
       };
-      // Small delay gives TTS time to fully stop on Android
-      setTimeout(() => {
-        try { r.start(); } catch (e) { _batteryStopListening(); showToast('Mic error: ' + e.message); }
-      }, 150);
+      try {
+        r.start();
+        console.log('[Battery] recognition started');
+      } catch (e) {
+        console.log('[Battery] start error:', e);
+        _batteryStopListening();
+        showToast('Mic error: ' + e.message);
+      }
       if (navigator.vibrate) navigator.vibrate(30);
     }
 
