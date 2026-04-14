@@ -1474,6 +1474,96 @@
       background: var(--bg-card);
     }
 
+    /* ─── Inline note preview (tap → fullscreen) ─── */
+    .note-inline-empty {
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      background: transparent;
+      transition: border-color 0.15s, background 0.15s;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-style: italic;
+    }
+    .note-inline-empty:hover,
+    .note-inline-empty:active {
+      border-color: var(--accent);
+      background: rgba(45,107,228,0.04);
+      color: var(--accent);
+    }
+    .note-inline-empty svg { flex-shrink: 0; }
+
+    .note-inline-preview {
+      position: relative;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: var(--bg-card);
+      cursor: pointer;
+      overflow: hidden;
+      max-height: 110px;
+      transition: border-color 0.15s;
+    }
+    .note-inline-preview:hover,
+    .note-inline-preview:active {
+      border-color: var(--accent);
+    }
+    .note-inline-preview::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 30px;
+      background: linear-gradient(to bottom, rgba(255,255,255,0), var(--bg-card));
+      pointer-events: none;
+    }
+    /* Style nested content like the fullscreen editor */
+    .note-inline-preview h1,
+    .note-inline-preview h2,
+    .note-inline-preview h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .note-inline-preview p {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      margin: 0 0 6px;
+    }
+    .note-inline-preview ul,
+    .note-inline-preview ol {
+      margin: 0 0 6px;
+      padding-left: 20px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .note-inline-preview img {
+      max-width: 100%;
+      max-height: 60px;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      vertical-align: middle;
+    }
+    .note-inline-preview table {
+      font-size: 12px;
+      border-collapse: collapse;
+      margin: 4px 0;
+    }
+    .note-inline-preview table td,
+    .note-inline-preview table th {
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+    }
+
     .notes-panel-header {
       display: flex;
       align-items: center;
@@ -13386,7 +13476,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.4.14';
+    const VERSION = '5.4.15';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -15434,6 +15524,22 @@
         .replace(/javascript\s*:/gi, 'void:');
     }
 
+    // Render the inline note preview (empty dashed box OR medium HTML preview).
+    // onclickAttr: raw onclick attribute string (e.g. `openNoteFullscreen('abc',1)`)
+    // dataAttr: optional data-* attributes for state updates (e.g. `data-notes-preview="abc"`)
+    function renderNoteInline(noteContent, onclickAttr, dataAttr = '') {
+      const nc = (noteContent || '').trim();
+      const hasContent = !!nc;
+      if (!hasContent) {
+        return `<div class="note-inline-empty" onclick="event.stopPropagation();${onclickAttr}" ${dataAttr}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Add a note…</span>
+        </div>`;
+      }
+      const html = nc.startsWith('<') ? sanitizeHtml(nc) : esc(nc).replace(/\n/g, '<br>');
+      return `<div class="note-inline-preview" onclick="event.stopPropagation();${onclickAttr}" ${dataAttr}>${html}</div>`;
+    }
+
     async function loadWeek(weekStart) {
       // Race condition guard: prevent overlapping async operations from corrupting state
       if (_loadWeekInProgress) return;
@@ -17331,44 +17437,9 @@
                 data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
             </div>
 
-            <div class="notes-panel">
-              <div class="notes-panel-header" onclick="event.stopPropagation(); toggleNotes('${act.id}')">
-                <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
-                  <path d="M2 10.5L3.5 9H11V1H2v9.5z" stroke="#BBBBB8" stroke-width="1.4" stroke-linejoin="round"/>
-                  <path d="M4 4.5h5M4 6.5h3" stroke="#BBBBB8" stroke-width="1.3" stroke-linecap="round"/>
-                </svg>
-                <div class="notes-panel-preview ${act.notes && act.notes.trim() ? 'has-note' : ''}" data-notes-header="${act.id}">
-                  ${act.notes && act.notes.trim() ? esc(stripHtml(act.notes)).replace(/\n/g, ' ') : 'Add a note…'}
-                </div>
-                <svg class="notes-chevron" data-notes-btn="${act.id}" width="12" height="12" viewBox="0 0 12 12" fill="none"
-                  style="flex-shrink:0; transition: transform 0.25s ease; transform: ${notesOpen ? 'rotate(90deg)' : 'rotate(0deg)'}">
-                  <path d="M4.5 3l3 3-3 3" stroke="#D0D0CE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div class="notes-panel-body ${notesOpen ? 'open' : ''}" data-notes-wrap="${act.id}">
-                <div class="notes-ta-wrap" onclick="event.stopPropagation();openNoteFullscreen('${act.id}',${di})">
-                  <div class="act-notes-rich-preview" data-notes-preview="${act.id}">
-                    ${act.notes && act.notes.trim()
-          ? (act.notes.trim().startsWith('<') ? sanitizeHtml(act.notes) : esc(act.notes).replace(/\n/g, '<br>'))
-          : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
-                  </div>
-                  <textarea class="act-notes-area"
-                    data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes || '')}</textarea>
-                </div>
-                <div class="act-dictate-wrap">
-                  <button class="act-dictate-bar" id="act-mic-note-${act.id}" onclick="startActFieldVoice('${act.id}',${di},'notes')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-                    Tap to dictate
-                  </button>
-                  <button class="act-expand-note-btn" onclick="event.stopPropagation();openNoteFullscreen('${act.id}',${di})" title="Full screen">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                      <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+            ${renderNoteInline(act.notes, `openNoteFullscreen('${act.id}',${di})`, `data-notes-inline="${act.id}"`)}
+            <textarea class="act-notes-area" style="display:none"
+              data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes || '')}</textarea>
 
             <div class="flex flex-col gap-1.5">
               <span class="act-field-label">Location</span>
@@ -17514,19 +17585,13 @@
           : '<span style="opacity:0.4">No location</span>';
       }
 
-      // Live-update note preview divs when notes change
+      // Live-update note inline preview when notes change
       if (field === 'notes') {
-        const richPreview = document.querySelector(`[data-notes-preview="${actId}"]`);
-        if (richPreview) {
-          richPreview.innerHTML = val && val.trim()
-            ? (val.trim().startsWith('<') ? sanitizeHtml(val) : esc(val).replace(/\n/g, '<br>'))
-            : '<span class="notes-rich-placeholder">Tap to add a note…</span>';
-        }
-        const headerPreview = document.querySelector(`[data-notes-header="${actId}"]`);
-        if (headerPreview) {
-          const plain = stripHtml(val);
-          headerPreview.innerHTML = plain ? esc(plain) : 'Add a note…';
-          headerPreview.classList.toggle('has-note', !!plain);
+        const inline = document.querySelector(`[data-notes-inline="${actId}"]`);
+        if (inline && inline.parentNode) {
+          const wrapper = document.createElement('div');
+          wrapper.innerHTML = renderNoteInline(val, `openNoteFullscreen('${actId}',${di})`, `data-notes-inline="${actId}"`);
+          inline.parentNode.replaceChild(wrapper.firstElementChild, inline);
         }
       }
 
@@ -20264,44 +20329,8 @@
                 oninput="updateNoteField(this);autoGrow(this)">${esc(note.description)}</textarea>
             </div>
             <div class="note-detail-row">
-              <div class="notes-panel">
-                <div class="notes-panel-header" onclick="event.stopPropagation(); toggleFieldNotePanel('${note.id}')">
-                  <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
-                    <path d="M2 10.5L3.5 9H11V1H2v9.5z" stroke="#BBBBB8" stroke-width="1.4" stroke-linejoin="round"/>
-                    <path d="M4 4.5h5M4 6.5h3" stroke="#BBBBB8" stroke-width="1.3" stroke-linecap="round"/>
-                  </svg>
-                  <div class="notes-panel-preview ${ncHasContent ? 'has-note' : ''}" data-fn-header="${note.id}">
-                    ${ncText ? esc(ncText).replace(/\n/g, ' ') : (ncHasContent ? '🖼 Image' : 'Add a note…')}
-                  </div>
-                  <svg class="notes-chevron" data-fn-btn="${note.id}" width="12" height="12" viewBox="0 0 12 12" fill="none"
-                    style="flex-shrink:0; transition: transform 0.25s ease; transform: ${fnOpen ? 'rotate(90deg)' : 'rotate(0deg)'}">
-                    <path d="M4.5 3l3 3-3 3" stroke="#D0D0CE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-                <div class="notes-panel-body ${fnOpen ? 'open' : ''}" data-fn-wrap="${note.id}">
-                  <div class="notes-ta-wrap" onclick="event.stopPropagation();openFieldNoteFullscreen('${note.id}')">
-                    <div class="act-notes-rich-preview tt-prose" data-fn-preview="${note.id}">
-                      ${ncHasContent
-            ? (nc.trim().startsWith('<') ? sanitizeHtml(nc) : esc(nc).replace(/\n/g, '<br>'))
-            : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
-                    </div>
-                    <textarea class="act-notes-area"
-                      data-fn-area="${note.id}" style="display:none">${esc(nc)}</textarea>
-                  </div>
-                  <div class="act-dictate-wrap">
-                    <button class="act-dictate-bar" id="fn-mic-${note.id}" onclick="startFieldNoteDictation('${note.id}')">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-                      Tap to dictate
-                    </button>
-                    <button class="act-expand-note-btn" onclick="event.stopPropagation();openFieldNoteFullscreen('${note.id}')" title="Full screen">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                        <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              ${renderNoteInline(nc, `openFieldNoteFullscreen('${note.id}')`, `data-fn-inline="${note.id}"`)}
+              <textarea class="act-notes-area" data-fn-area="${note.id}" style="display:none">${esc(nc)}</textarea>
             </div>
             <div class="note-detail-row">
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Location</span>
@@ -21813,24 +21842,14 @@
           note.noteContent = existing ? existing + '\n' + transcript : transcript;
           note.updatedAt = Date.now();
 
-          // Update DOM in-place (same pattern as processActFieldText for timesheet)
+          // Update inline preview
           const nc = note.noteContent;
-          const ncHtml = nc.trim().startsWith('<') ? sanitizeHtml(nc) : esc(nc).replace(/\n/g, '<br>');
-
-          // Update the rich preview inside the notes panel
-          const preview = document.querySelector(`[data-fn-preview="${noteId}"]`);
-          if (preview) preview.innerHTML = ncHtml;
-
-          // Update the collapsed header preview text
-          const hdr = document.querySelector(`[data-fn-header="${noteId}"]`);
-          if (hdr) { hdr.textContent = nc.replace(/\n/g, ' '); hdr.classList.add('has-note'); }
-
-          // Open the notes panel
-          const wrap = document.querySelector(`[data-fn-wrap="${noteId}"]`);
-          const chevron = document.querySelector(`[data-fn-btn="${noteId}"]`);
-          if (wrap) wrap.classList.add('open');
-          if (chevron) chevron.style.transform = 'rotate(90deg)';
-          state.notesOpen.set(noteId, true);
+          const inline = document.querySelector(`[data-fn-inline="${noteId}"]`);
+          if (inline && inline.parentNode) {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = renderNoteInline(nc, `openFieldNoteFullscreen('${noteId}')`, `data-fn-inline="${noteId}"`);
+            inline.parentNode.replaceChild(wrapper.firstElementChild, inline);
+          }
 
           // Expand the note card
           const card = document.querySelector(`.note-card[data-note-id="${noteId}"]`);
@@ -27881,42 +27900,9 @@
               oninput="autoGrow(this);updateCoField('fault', this.value.trim())">${esc(fault)}</textarea>
           </div>
           <!-- Notes — moved below Fault Description -->
-          <div class="notes-panel">
-            <div class="notes-panel-header" onclick="event.stopPropagation(); coToggleNotes()">
-              <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
-                <path d="M2 10.5L3.5 9H11V1H2v9.5z" stroke="#BBBBB8" stroke-width="1.4" stroke-linejoin="round"/>
-                <path d="M4 4.5h5M4 6.5h3" stroke="#BBBBB8" stroke-width="1.3" stroke-linecap="round"/>
-              </svg>
-              <div class="notes-panel-preview ${notes ? 'has-note' : ''}" data-co-notes-header>${notes ? esc(stripHtml(notes)).replace(/\n/g, ' ') : 'Add a note…'}</div>
-              <svg data-co-notes-chev class="notes-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"
-                style="flex-shrink:0; transition: transform 0.25s ease; transform: ${notesOpen ? 'rotate(90deg)' : 'rotate(0deg)'}">
-                <path d="M4.5 3l3 3-3 3" stroke="#D0D0CE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="notes-panel-body ${notesOpen ? 'open' : ''}" data-co-notes-wrap>
-              <div class="notes-ta-wrap" onclick="event.stopPropagation(); openCoNoteFullscreen()">
-                <div class="act-notes-rich-preview" data-co-notes-preview>
-                  ${notes && notes.trim()
-            ? (notes.trim().startsWith('<') ? sanitizeHtml(notes) : esc(notes).replace(/\n/g, '<br>'))
-            : '<span class="notes-rich-placeholder">Tap to add a note…</span>'}
-                </div>
-                <textarea class="act-notes-area" id="co-notes-ta" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-                  oninput="coAutoSave()">${esc(notes)}</textarea>
-              </div>
-              <div class="act-dictate-wrap">
-                <button class="act-dictate-bar" id="co-mic-note" onclick="event.stopPropagation(); startCoNoteDictation()">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-                  Tap to dictate
-                </button>
-                <button class="act-expand-note-btn" onclick="event.stopPropagation(); openCoNoteFullscreen()" title="Full screen">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
-                    <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
+          ${renderNoteInline(notes, `openCoNoteFullscreen()`, `data-co-notes-inline`)}
+          <textarea class="act-notes-area" id="co-notes-ta" style="display:none" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+            oninput="coAutoSave()">${esc(notes)}</textarea>
           <!-- On-Site Time -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Engineer On Site</span>
@@ -28080,8 +28066,12 @@
           if (l) l.innerHTML = value ? `${pinSvg}${esc(value)}` : '<span style="opacity:0.4">No site</span>';
         }
         if (field === 'notes') {
-          const h = document.querySelector('[data-co-notes-header]');
-          if (h) { h.textContent = value ? stripHtml(value) : 'Add a note…'; h.classList.toggle('has-note', !!value); }
+          const inline = document.querySelector('[data-co-notes-inline]');
+          if (inline && inline.parentNode) {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = renderNoteInline(value, `openCoNoteFullscreen()`, `data-co-notes-inline`);
+            inline.parentNode.replaceChild(wrapper.firstElementChild, inline);
+          }
         }
       }
       _coScheduleSave();
@@ -28093,8 +28083,12 @@
       if (!co) return;
       const notes = document.getElementById('co-notes-ta')?.value?.trim() || '';
       co.notes = notes;
-      const h = document.querySelector('[data-co-notes-header]');
-      if (h) { h.textContent = notes ? stripHtml(notes) : 'Add a note…'; h.classList.toggle('has-note', !!notes); }
+      const inline = document.querySelector('[data-co-notes-inline]');
+      if (inline && inline.parentNode) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = renderNoteInline(notes, `openCoNoteFullscreen()`, `data-co-notes-inline`);
+        inline.parentNode.replaceChild(wrapper.firstElementChild, inline);
+      }
       _coScheduleSave();
     }
 
