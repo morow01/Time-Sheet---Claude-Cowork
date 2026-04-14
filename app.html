@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.0';
+    const VERSION = '5.5.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33218,6 +33218,7 @@ QUESTION: ${query}`;
 
     function closeBatteryRecorder() {
       if (_batteryChat?.listening) _batteryStopListening();
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
       document.getElementById('battery-modal').classList.add('hidden');
     }
 
@@ -33233,6 +33234,18 @@ QUESTION: ${query}`;
       msg.innerHTML = `<div class="bat-avatar">${who === 'ai' ? 'AI' : 'U'}</div><div class="${bubbleCls}">${esc(text)}</div>`;
       tr.appendChild(msg);
       tr.scrollTop = tr.scrollHeight;
+      // Speak AI replies aloud (skip the "Thinking…" placeholder)
+      if (who === 'ai' && !opts.thinking && 'speechSynthesis' in window) {
+        try {
+          speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.rate = 1.05;
+          u.pitch = 1;
+          u.volume = 1;
+          u.lang = 'en-GB';
+          speechSynthesis.speak(u);
+        } catch (e) { /* ignore */ }
+      }
       return msg;
     }
 
