@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.12';
+    const VERSION = '5.5.13';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33289,7 +33289,6 @@ QUESTION: ${query}`;
 
     // Speak with Gemini TTS (natural voice) or fall back to browser TTS
     async function _batterySpeak(text) {
-      // Stop any ongoing speech
       _batteryStopSpeaking();
       const afterSpeak = () => {
         if (!_batteryChat || _batteryChat.complete || _batteryChat.listening) return;
@@ -33299,39 +33298,7 @@ QUESTION: ${query}`;
           }
         }, 250);
       };
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${state.geminiKey}`;
-        const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text }] }],
-            generationConfig: {
-              responseModalities: ['AUDIO'],
-              speechConfig: {
-                voiceConfig: {
-                  prebuiltVoiceConfig: { voiceName: _batteryChat?.voice || 'Puck' }
-                }
-              }
-            }
-          })
-        });
-        if (!resp.ok) throw new Error('TTS ' + resp.status);
-        const data = await resp.json();
-        const b64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-        if (!b64) throw new Error('no audio data');
-        // Gemini returns PCM 24kHz mono 16-bit LE; wrap in WAV header and play
-        const pcm = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-        const wav = _pcmToWav(pcm, 24000, 1, 16);
-        const blob = new Blob([wav], { type: 'audio/wav' });
-        const audio = new Audio(URL.createObjectURL(blob));
-        _batteryChat._currentAudio = audio;
-        audio.onended = () => { URL.revokeObjectURL(audio.src); afterSpeak(); };
-        audio.onerror = () => { URL.revokeObjectURL(audio.src); afterSpeak(); };
-        await audio.play();
-      } catch (e) {
-        console.log('[Battery] Gemini TTS failed, using browser TTS:', e.message);
-        // Fallback to browser TTS
+      const useBrowserTTS = () => {
         if ('speechSynthesis' in window) {
           try {
             const u = new SpeechSynthesisUtterance(text);
@@ -33344,6 +33311,49 @@ QUESTION: ${query}`;
         } else {
           afterSpeak();
         }
+      };
+      // If Gemini TTS already failed once this session, skip straight to browser
+      if (_batteryChat?.ttsBroken) { useBrowserTTS(); return; }
+      // 6-second timeout so we don't hang forever on slow networks
+      const ctrl = new AbortController();
+      const tmo = setTimeout(() => ctrl.abort(), 6000);
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${state.geminiKey}`;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: ctrl.signal,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text }] }],
+            generationConfig: {
+              responseModalities: ['AUDIO'],
+              speechConfig: {
+                voiceConfig: {
+                  prebuiltVoiceConfig: { voiceName: _batteryChat?.voice || 'Puck' }
+                }
+              }
+            }
+          })
+        });
+        clearTimeout(tmo);
+        if (!resp.ok) throw new Error('TTS ' + resp.status);
+        const data = await resp.json();
+        const b64 = data.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!b64) throw new Error('no audio data');
+        const pcm = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+        const wav = _pcmToWav(pcm, 24000, 1, 16);
+        const blob = new Blob([wav], { type: 'audio/wav' });
+        const audio = new Audio(URL.createObjectURL(blob));
+        _batteryChat._currentAudio = audio;
+        audio.onended = () => { URL.revokeObjectURL(audio.src); afterSpeak(); };
+        audio.onerror = () => { URL.revokeObjectURL(audio.src); afterSpeak(); };
+        await audio.play();
+      } catch (e) {
+        clearTimeout(tmo);
+        console.log('[Battery] Gemini TTS failed, using browser TTS:', e.message);
+        // Mark broken so the rest of this session uses browser TTS consistently
+        if (_batteryChat) _batteryChat.ttsBroken = true;
+        useBrowserTTS();
       }
     }
 
