@@ -13529,7 +13529,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.20';
+    const VERSION = '5.5.21';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33304,21 +33304,15 @@ QUESTION: ${query}`;
       return msg;
     }
 
-    // Shown as a small debug line below the mic hint on APK for 2 seconds
+    // Visible debug — uses showToast so it appears in both APK and PWA
     function _batteryDbg(msg) {
-      try {
-        const hint = document.getElementById('battery-mic-hint');
-        if (!hint) return;
-        const prev = hint.textContent;
-        hint.textContent = '[' + msg + ']';
-        clearTimeout(hint._dbgT);
-        hint._dbgT = setTimeout(() => { if (hint.textContent.startsWith('[')) hint.textContent = prev; }, 2500);
-      } catch {}
+      try { showToast('TTS: ' + msg); } catch {}
       console.log('[Battery]', msg);
     }
 
     // Speak with Gemini TTS (natural voice) or fall back to browser TTS
     async function _batterySpeak(text) {
+      _batteryDbg('speak start');
       _batteryStopSpeaking();
       const afterSpeak = () => {
         if (!_batteryChat || _batteryChat.complete || _batteryChat.listening) return;
