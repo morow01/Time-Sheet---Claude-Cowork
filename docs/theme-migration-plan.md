@@ -106,21 +106,43 @@ Gaps found during audit that should become themable:
 - **v5.6.15** — Day/task pills theme-aware. `.pill-slate`, `.pill-blue`, `.pill-amber`, `.pill-hrs`, `.pill-ot` migrated to variables. Added `--pill-slate-bg/-color` and `--pill-amber-color` (others already had variables via `--accent-chip-bg/-text`, `--accent`, `--bg-ot`). Dark overrides: slate pill `#273449`/`#cbd5e1`, amber text `#fbbf24`. Blue/hrs pills automatically adapt via accent-chip vars.
 - **v5.6.16** — Day number badge + task number badge theme-aware. `.date-badge` (showing 10/11/12…) and `.task-num` (showing 1/2/3…) both migrated from hardcoded slate colours to new `--date-badge-bg/-color` and `--task-num-bg/-color` variables. Dark overrides use slate-600/200 instead of slate-300/white. `.task-num.ot` now uses `--bg-ot` + `--text-ot`.
 - **v5.6.17** — First inline-style pill fix. Line 17487 had `<span class="pill-hrs" style="background:#EDF1F5;color:#5A7289">3 tasks</span>` — the inline style beat the `.pill-slate` CSS rule, so the pill stayed light even in dark theme. Swapped inline hex for `var(--pill-slate-bg/-color)`. Also fixed Sync Conflicts menu row (amber + red badge hardcodes → theme vars).
+- **v5.6.18** — (Cowork) Day-card border-bottom + weekend bg + sum-table divider migrated to `var(--border-subtle)` and `var(--bg-weekend)`.
+- **v5.6.19** — `.week-list`, `.group-card`, `.bat-result-table`, `.note-preview-body` table styling migrated to `--border-medium`, `--bg-card`, `--table-header-bg/-text/-border`.
+- **v5.6.20** — Inline JS template-literal sweep: ~60 hex literals inside `style="..."` attributes swapped to `var(--text-dim/-slate/-secondary, --border-strong, --priority-high/-low/-medium, --text-ot)`. Done via Python regex restricted to `style="..."` boundaries.
+- **v5.6.21** — Bug fix: `.note-card.expanded.selected` rule added so blue selection ring shows through expanded state.
+- **v5.6.22** — OT/stepper subsystem themable. Added `--stepper-bg/-border/-text/-btn-color`, `--ot-stepper-bg/-border/-text`, `--code-text/-del-text/-add-text`, `--section-divider`. Migrated `.hrs-stepper`, `.ot-box .hrs-stepper`, `.act-code-chip`, `.act-code-del`, `.act-add-code`, `.notes-panel-body.open` border. Dark overrides give amber-on-dark for OT and slate for default stepper.
+- **v5.6.23** — Massive CSS sweep: 24 white CSS backgrounds (`#fff/#ffffff/white`) → `var(--bg-card)`; 29 black overlays (`rgba(0,0,0,X)`) → `rgba(var(--shadow-rgb),X)`; 111 colour-tint rgbas migrated using new RGB-triple variables (`--accent-rgb: 45,107,228`, `--priority-high-rgb`, `--priority-low-rgb`, `--priority-medium-rgb`, `--amber-rgb`). Existing alpha variants (`--accent-alpha-*`, `--priority-high-bg`, etc.) updated to reference the RGB triples so they auto-theme.
+- **v5.6.24** — Final hex sweep: 42 more CSS-rule hex → var migrations. `color/background: #ef4444` → `var(--priority-high)`, `#DC2626` → `var(--priority-high-dark)`, `#475569` → `var(--text-secondary)`, `#EBF1FD` → `var(--accent-chip-bg)`, `#FEF3DC` → `var(--bg-ot)`, `#FDECEA` → `var(--btn-danger-bg)`.
 
-## Still to do — inline-style sweep
+## Status as of v5.6.24
 
-**The CSS-block migration is 90% done.** The remaining dark-mode issues are **inline `style="..."` attributes inside JavaScript template literals**. Examples:
-- `style="background:#FEF3DC"` for warn-coloured menu rows
-- `style="color:#D97706"` for warn icon text
-- `style="background:rgba(45,107,228,0.1)"` for chip backgrounds
-- `style="background:#DC2626;color:#fff"` for badge counters
-- `style="color:#94a3b8"` for muted text in dynamically-rendered rows
+**Theme migration is essentially complete** for structural colours. ~217 hardcoded values migrated in the v5.6.22-24 sweep alone, on top of the ~80+ targeted migrations in v5.6.1-21.
 
-To find them all: grep for `style="[^"]*#[0-9a-fA-F]` or `style="[^"]*rgba(` across the file. Then for each:
-1. Decide if the colour is structural (needs migration) or brand/status (stays hardcoded)
-2. If structural, swap `#HEX` for the appropriate `var(--name)`
-3. Test in both themes
+**What still appears hardcoded — and why it should stay:**
+- `color: #fff` (~105 occurrences): white text on coloured buttons/badges/pills. Themes adjust the *background* colour; the text on top stays white regardless.
+- Brand purples/indigos: `#818cf8`, `#7c3aed`. Brand identity colours used for remedy flags, AI features, etc. Should be consistent across themes.
+- Status dark-text variants: `#15803d` (success), `#b91c1c` (danger), `#854d0e` (warn), `#D97706`/`#F59E0B` (amber). These are semantic — keep them readable as status indicators in any theme.
+- SVG icon paths (`fill="#..."`, `stroke="#..."`): part of icon visual identity.
+- Email/preview HTML builders (`buildEmailHtml`, `buildPreviewHtml` ~line 16142, 16371): rendered as fixed-palette HTML for external mail clients.
 
-Chrome DevTools with the live app is the fastest way to find what's still hardcoded — hover over any spot that looks wrong in dark mode and inspect the element.
+## Adding new themes
 
-Target for the next pass: scan the top ~10 most-visible views (week/timesheet, notes, journal, routines, callouts, search, AI assistant, reminder modal, note fullscreen, battery recorder) and fix their inline styles.
+To add e.g. Gameboy:
+
+1. Copy the `[data-theme="dark"]` block (~line 1857), rename selector to `[data-theme="gameboy"]`.
+2. Override the variables you want changed (e.g. `--bg-page: #9bbc0f` for that classic green).
+3. Add to the `THEME_META` registry near `setTheme`:
+   ```js
+   gameboy: { label: 'Gameboy', metaColor: '#9bbc0f' },
+   ```
+4. The picker in ☰ → Display will show it automatically. No JS changes needed.
+
+If a theme needs different "intentional" colours (e.g. status greens that don't fit the palette), prefer adding a NEW variable to `:root` and overriding it per theme over hunting hardcodes.
+
+## Verifying coverage
+
+Quickest sanity check: open the app, switch to dark theme, scroll through every view (week/timesheet, notes, journal, routines, callouts, finder, AI assistant, fullscreen note editor, battery recorder, settings menu). Anything that looks white/light is either:
+- An inline `style="..."` we missed (rare after v5.6.20, but possible)
+- An intentional hardcode (verify against the "should stay" list above)
+
+Use Chrome DevTools to inspect any suspect element. The `style` attribute will tell you immediately if it's an inline override; the matched CSS rule will show the CSS-block source.

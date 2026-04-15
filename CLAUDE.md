@@ -16,11 +16,22 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 13965). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.6.17**
+Current version: **5.6.24**
 
-**Theme migration in progress** — see [`docs/theme-migration-plan.md`](docs/theme-migration-plan.md) for the completed steps and remaining work. Two themes are active: `claude` (default light) and `dark` (slate-based). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
+**Theme migration largely complete** — see [`docs/theme-migration-plan.md`](docs/theme-migration-plan.md) for the full log. Two themes registered: `claude` (default light) and `dark` (slate-based). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
-**Known remaining dark-theme gaps** (as of 5.6.17): scattered inline `style="..."` attributes in JS template literals still carry hardcoded hex colors for pill backgrounds, menu rows, chips, and various dynamically-rendered elements. Fixing these requires finding each occurrence in the JS render code (not the CSS blocks) and swapping the hex for the appropriate CSS variable. The "3 tasks" pill (line 17487) was one example — it had `style="background:#EDF1F5;color:#5A7289"` that beat the `.pill-slate` CSS rule. Future work: a sweep of all inline `style="background:#..."` / `style="color:#..."` occurrences to replace with `var(--...)`.
+**Variable system** (after sweep): `:root` defines all structural tokens; `[data-theme="dark"]` overrides them. Includes RGB triples (`--accent-rgb`, `--priority-high-rgb`, `--priority-low-rgb`, `--priority-medium-rgb`, `--amber-rgb`, `--shadow-rgb`, `--shadow-brand-rgb`) so any opacity tint becomes themable via `rgba(var(--X-rgb), opacity)`.
+
+**Remaining hardcoded values** (intentional — should stay):
+- `color: #fff` (~105 occurrences) — white text on coloured buttons
+- Brand indigo/purple `#818cf8`, `#7c3aed` — accent colours
+- Status dark-text variants `#15803d`, `#b91c1c`, `#854d0e`, `#D97706`, `#F59E0B` — semantic colours
+- SVG `fill=`/`stroke=` inside icons — visual identity
+- Email/preview HTML (`buildEmailHtml`, `buildPreviewHtml`) — sent to external mail clients with fixed palette
+
+If a new theme needs different values for those "intentional" hardcodes (e.g. a Gameboy theme wanting greenish status colours), introduce a variable per case rather than mass refactor.
+
+**Adding new themes**: copy the `[data-theme="dark"]` block, rename, change variable values, register in `THEME_META`. No code changes needed in switcher.
 
 ## Git
 - Remote: `https://github.com/morow01/rian.git`, branch: `main`
