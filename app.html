@@ -4115,7 +4115,7 @@
       font-weight: 700;
       letter-spacing: 0.09em;
       text-transform: uppercase;
-      color: #0F1C2E;
+      color: var(--text-primary);
     }
 
     .sum-hdr-right {
@@ -4133,7 +4133,7 @@
     .sum-num {
       font-size: 15px;
       font-weight: 700;
-      color: #0F1C2E;
+      color: var(--text-primary);
       font-family: var(--font-mono);
     }
 
@@ -4144,7 +4144,7 @@
     .sum-lbl {
       font-size: 10px;
       font-weight: 600;
-      color: #8BA5BE;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -4157,7 +4157,7 @@
 
     .sum-chevron {
       font-size: 11px;
-      color: #8BA5BE;
+      color: var(--text-muted);
       margin-left: 2px;
     }
 
@@ -4177,7 +4177,7 @@
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #8BA5BE;
+      color: var(--text-muted);
       text-align: left;
     }
 
@@ -4204,7 +4204,7 @@
       font-weight: 700;
       letter-spacing: 0.13em;
       text-transform: uppercase;
-      color: #8BA5BE;
+      color: var(--text-muted);
     }
 
     /* ── Summary card wrapper ── */
@@ -5374,7 +5374,7 @@
       line-height: 1.7;
       overflow: hidden;
       /* clearfix: contains floated images */
-      color: #3A3836;
+      color: var(--text-warm);
       min-height: 200px;
       touch-action: pan-y;
       /* vertical scroll native; pinch intercepted by JS */
@@ -5383,7 +5383,7 @@
     }
 
     .tt-prose {
-      color: #3A3836;
+      color: var(--text-warm);
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) p {
@@ -5881,7 +5881,7 @@
       border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 5px;
       padding: 2px 7px;
-      color: #3A3836;
+      color: var(--text-warm);
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) mark {
@@ -6111,7 +6111,7 @@
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) td {
       padding: 6px 6px !important;
-      color: #3A3836;
+      color: var(--text-warm);
       border-bottom: 1px solid #dcdad4;
       border-right: 1px solid #dcdad4;
     }
@@ -12918,7 +12918,7 @@
 
     .vl-btn.done {
       background: #fff;
-      color: #0F1C2E;
+      color: var(--text-primary);
     }
 
     .vl-btn.cancel {
@@ -13566,7 +13566,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.4';
+    const VERSION = '5.6.5';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
