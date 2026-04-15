@@ -131,7 +131,7 @@
 
     /* ===== SHARED LAYOUT (Phase 2) ===== */
     .week-list {
-      background: #FFFFFF;
+      background: var(--bg-card);
       border-top: 1px solid #E0E8F0;
       border-bottom: 1px solid #E0E8F0;
     }
@@ -139,7 +139,7 @@
     /* ── Day Card ── */
     .day-card {
       margin: 0;
-      background: #FFFFFF;
+      background: var(--bg-card);
       border-radius: 0;
       border: none;
       border-bottom: 1px solid #EAEFF5;
@@ -156,7 +156,7 @@
     }
 
     .day-card.expanded {
-      background: #FFFFFF;
+      background: var(--bg-card);
     }
 
     /* ── Day Header ── */
@@ -1455,7 +1455,7 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: #FFFFFF;
+      background: var(--bg-card);
       border: 2px solid #c4d0e1;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       z-index: 3;
@@ -1680,7 +1680,7 @@
     }
 
     .notes-panel-body {
-      background: #ffffff;
+      background: var(--bg-card);
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.25s ease;
@@ -1810,7 +1810,7 @@
     }
 
     [data-theme="claude"] .day-header {
-      background: #FFFFFF;
+      background: var(--bg-card);
     }
 
 
@@ -4167,7 +4167,7 @@
     }
 
     .sum-table thead tr {
-      background: #F4F7FA;
+      background: var(--bg-card-alt);
       border-bottom: 1px solid #EAEFF5;
     }
 
@@ -13566,7 +13566,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.3';
+    const VERSION = '5.6.4';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
