@@ -16,7 +16,9 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 13965). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.5.28**
+Current version: **5.6.0**
+
+**Theme migration in progress** — see [`docs/theme-migration-plan.md`](docs/theme-migration-plan.md) for the step-by-step plan (v5.6.0–5.6.13).
 
 ## Git
 - Remote: `https://github.com/morow01/rian.git`, branch: `main`
