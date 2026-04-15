@@ -88,6 +88,9 @@
       /* Text shades */
       --text-display: #1F2937;           /* heading-level display text */
       --text-warm: #3A3836;              /* warm body text used in tt-prose */
+      --text-slate: #64748b;             /* neutral slate body (not blue-tinted) */
+      --text-dim: #94a3b8;               /* neutral muted gray (not blue-tinted) */
+      --text-ink: #1e293b;               /* near-black text used by some buttons/labels */
       /* Borders */
       --border-strong: #e2e8f0;          /* darker divider */
       --border-warm: #E2E0DA;            /* warm table / divider border */
@@ -869,13 +872,13 @@
     .note-confirm-title {
       font-size: 15px;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-ink);
       margin-bottom: 4px;
     }
 
     .note-confirm-sub {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-slate);
       margin-bottom: 14px;
     }
 
@@ -890,7 +893,7 @@
     .note-confirm-preview-label {
       font-size: 10px;
       font-weight: 700;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-bottom: 6px;
@@ -899,12 +902,12 @@
     .note-confirm-preview-title {
       font-size: 14px;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-ink);
     }
 
     .note-confirm-preview-meta {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-slate);
       margin-top: 4px;
       display: flex;
       align-items: center;
@@ -919,7 +922,7 @@
       display: block;
       font-size: 11px;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-slate);
       margin-bottom: 4px;
     }
 
@@ -930,7 +933,7 @@
       border-radius: 8px;
       font-size: 13px;
       font-family: inherit;
-      color: #1e293b;
+      color: var(--text-ink);
       background: #fff;
     }
 
@@ -947,7 +950,7 @@
       background: #fff;
       font-size: 13px;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-slate);
       cursor: pointer;
       font-family: inherit;
     }
@@ -1122,13 +1125,13 @@
     .copy-picker-title {
       font-size: 15px;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-ink);
       padding: 14px 16px 2px;
     }
 
     .copy-picker-sub {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-slate);
       padding: 0 16px 8px;
     }
 
@@ -1164,7 +1167,7 @@
     .copy-picker-weeknav-label {
       font-size: 13px;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-ink);
     }
 
     .copy-picker-weeknav-badge {
@@ -1229,13 +1232,13 @@
     .copy-picker-day-name {
       font-size: 13px;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-ink);
       flex: 1;
     }
 
     .copy-picker-day-date {
       font-size: 11px;
-      color: #94a3b8;
+      color: var(--text-dim);
     }
 
     .copy-picker-actions {
@@ -1252,7 +1255,7 @@
       background: #fff;
       font-size: 13px;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-slate);
       cursor: pointer;
       font-family: inherit;
     }
@@ -3448,7 +3451,7 @@
     .c-note-ro-diff-label span {
       font-size: 11px;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-transform: uppercase;
     }
 
@@ -3505,7 +3508,7 @@
     .c-day-diff-key {
       font-size: 10px;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-transform: uppercase;
       margin-bottom: 2px;
     }
@@ -5455,7 +5458,7 @@
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) li::marker {
-      color: #64748b;
+      color: var(--text-slate);
     }
 
     :is(#note-fs-editor .ProseMirror, .tt-prose) blockquote {
@@ -5799,7 +5802,7 @@
 
     .rdn-msg {
       font-size: 13px;
-      color: #64748b;
+      color: var(--text-slate);
       margin-bottom: 16px;
       line-height: 1.5;
     }
@@ -6979,7 +6982,7 @@
       align-items: center;
       font-size: 12px;
       font-weight: 500;
-      color: #94a3b8;
+      color: var(--text-dim);
       margin-bottom: 8px;
       gap: 13px;
     }
@@ -7921,7 +7924,7 @@
     .notes-chip.done {
       background: rgba(100, 116, 139, 0.10);
       border-color: rgba(100, 116, 139, 0.40);
-      color: #64748b;
+      color: var(--text-slate);
     }
 
     /* ── Category chip – active state uses the category's colour ── */
@@ -8684,7 +8687,7 @@
       font-size: 11px;
       padding: 16px 16px 8px;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -9655,7 +9658,7 @@
 
     .jdocx-badge.pending {
       background: #e2e8f0;
-      color: #64748b;
+      color: var(--text-slate);
     }
 
     .jdocx-badge.working {
@@ -10169,7 +10172,7 @@
     .note-pri-dots-label {
       font-size: 10px;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.6px;
       margin-right: 2px;
@@ -10285,7 +10288,7 @@
       border-radius: 12px;
       padding: 10px 12px;
       font-size: 13px;
-      color: #94a3b8;
+      color: var(--text-dim);
       cursor: pointer;
       transition: background 0.15s;
     }
@@ -10408,11 +10411,11 @@
     }
 
     .note-reminder-fired .note-rem-info-label {
-      color: #94a3b8;
+      color: var(--text-dim);
     }
 
     .note-reminder-fired .note-rem-info-dt {
-      color: #94a3b8;
+      color: var(--text-dim);
     }
 
     /* ===== Mockup J: Done + Delete buttons ===== */
@@ -10660,13 +10663,13 @@
     .remind-title {
       font-size: 15px;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-ink);
       padding: 14px 16px 2px;
     }
 
     .remind-sub {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-slate);
       padding: 0 16px 10px;
     }
 
@@ -10678,12 +10681,12 @@
       border: 1px solid #e2e8f0;
       font-size: 13px;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--text-ink);
     }
 
     .remind-preview-meta {
       font-size: 11px;
-      color: #64748b;
+      color: var(--text-slate);
       margin-top: 4px;
       display: flex;
       align-items: center;
@@ -10705,7 +10708,7 @@
       background: #fff;
       font-size: 11px;
       font-weight: 600;
-      color: #64748b;
+      color: var(--text-slate);
       cursor: pointer;
       font-family: inherit;
     }
@@ -10737,7 +10740,7 @@
       display: block;
       font-size: 11px;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-transform: uppercase;
       margin-bottom: 5px;
     }
@@ -10749,7 +10752,7 @@
       border: 1px solid #e2e8f0;
       font-family: inherit;
       font-size: 14px;
-      color: #1e293b;
+      color: var(--text-ink);
       background: #fff;
     }
 
@@ -10767,7 +10770,7 @@
       background: #fff;
       font-size: 13px;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-slate);
       cursor: pointer;
       font-family: inherit;
     }
@@ -10841,13 +10844,13 @@
     .task-picker-title {
       font-size: 15px;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-ink);
       padding: 14px 16px 2px;
     }
 
     .task-picker-sub {
       font-size: 12px;
-      color: #64748b;
+      color: var(--text-slate);
       padding: 0 16px 8px;
     }
 
@@ -10862,7 +10865,7 @@
     .task-picker-preview-label {
       font-size: 10px;
       font-weight: 800;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin-bottom: 6px;
@@ -10871,12 +10874,12 @@
     .task-picker-preview-title {
       font-size: 14px;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-ink);
     }
 
     .task-picker-preview-meta {
       font-size: 11px;
-      color: #64748b;
+      color: var(--text-slate);
       margin-top: 4px;
       display: flex;
       align-items: center;
@@ -10939,13 +10942,13 @@
     .task-picker-day-name {
       font-size: 13px;
       font-weight: 700;
-      color: #1e293b;
+      color: var(--text-ink);
       flex: 1;
     }
 
     .task-picker-day-date {
       font-size: 11px;
-      color: #94a3b8;
+      color: var(--text-dim);
     }
 
     .task-picker-day-today {
@@ -10973,7 +10976,7 @@
       background: #fff;
       font-size: 13px;
       font-weight: 700;
-      color: #64748b;
+      color: var(--text-slate);
       cursor: pointer;
       font-family: inherit;
     }
@@ -12473,7 +12476,7 @@
     .suggest-panel-empty {
       padding: 12px;
       font-size: 12px;
-      color: #94a3b8;
+      color: var(--text-dim);
       text-align: center;
       font-style: italic;
     }
@@ -12648,7 +12651,7 @@
       padding: 9px 14px;
       border-bottom: 1px solid #fde8cf;
       font-size: 12.5px;
-      color: #1e293b;
+      color: var(--text-ink);
     }
 
     .anomaly-item:last-child {
@@ -13566,7 +13569,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.6';
+    const VERSION = '5.6.7';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
