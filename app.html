@@ -1820,6 +1820,105 @@
       background: var(--bg-card);
     }
 
+    /* ===== DARK THEME (v5.6.12) ===== */
+    /* Dark but not black — slate family for softer contrast. Status/brand
+       colours (red/green/amber/accent blue) stay semantic. */
+    [data-theme="dark"] {
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+
+      /* Backgrounds */
+      --bg-page: #0f172a;                /* slate-900 */
+      --bg-header: #0a0f1a;              /* slightly darker than page */
+      --bg-header-tab: #1e293b;
+      --bg-card: #1e293b;                /* slate-800 */
+      --bg-card-alt: #273449;            /* between 800 and 700 */
+      --bg-day-header: #1e293b;
+      --bg-day-header-we: #172030;
+      --bg-weekend: #172030;
+      --bg-section-muted: #1e293b;
+      --bg-input: #0f172a;               /* darker than card for field contrast */
+      --bg-modal: #1e293b;
+      --bg-modal-search: #0f172a;
+      --bg-code-btn: #1e3a8a;            /* dark blue accent tint */
+      --bg-code-group: #1e293b;
+      --bg-code-item: #273449;
+      --bg-code-item-sel: #1e3a8a;
+      --bg-ot: #3a2d00;                  /* dark amber tint */
+      --summary-even: #273449;
+
+      /* Text */
+      --text-header: #f1f5f9;
+      --text-header-sub: rgba(255, 255, 255, 0.6);
+      --text-primary: #f1f5f9;           /* slate-100 */
+      --text-secondary: #cbd5e1;         /* slate-300 */
+      --text-muted: #94a3b8;             /* slate-400 */
+      --text-input: #f1f5f9;
+      --text-day: #f1f5f9;
+      --text-day-we: #94a3b8;
+      --text-hours: #60a5fa;             /* lighter blue for contrast on dark */
+      --text-ot: #fbbf24;                /* amber for OT */
+      --text-display: #f1f5f9;
+      --text-warm: #e2e8f0;
+      --text-slate: #94a3b8;
+      --text-dim: #64748b;
+      --text-ink: #f1f5f9;
+
+      /* Borders */
+      --border: #334155;                 /* slate-700 */
+      --border-input: #475569;
+      --border-strong: #475569;          /* slate-600 — visible field borders */
+      --border-warm: #475569;
+      --border-warm-light: #334155;
+      --border-subtle: #1e293b;
+      --border-medium: #334155;
+
+      /* Accent stays brand-ish but bumped lighter for contrast */
+      --accent: #3b82f6;                 /* blue-500 */
+      --accent-light: #1e3a8a;           /* deep blue bg for tints */
+      --accent-chip-bg: #1e3a8a;
+      --accent-chip-text: #93c5fd;
+
+      /* Danger */
+      --btn-danger-bg: #3a0e0e;
+      --btn-danger-color: #fca5a5;
+      --btn-danger-border: rgba(252, 165, 165, 0.35);
+
+      /* Shadows — on dark, keep black but less opacity is already baked in */
+      --shadow-rgb: 0, 0, 0;
+      --shadow-brand-rgb: 0, 0, 0;
+
+      /* Overlay a bit stronger on dark */
+      --overlay: rgba(0, 0, 0, 0.75);
+
+      /* Tab/active colour stays brand amber */
+      --tab-active: #F5A623;
+
+      /* Accent alpha tints (chip/pill backgrounds) — slightly brighter because
+         dark theme needs more opacity to be visible */
+      --accent-alpha-06: rgba(59, 130, 246, 0.12);
+      --accent-alpha-10: rgba(59, 130, 246, 0.18);
+      --accent-alpha-30: rgba(59, 130, 246, 0.35);
+      --amber-alpha-10: rgba(245, 166, 35, 0.18);
+      --amber-alpha-40: rgba(245, 166, 35, 0.40);
+      --slate-alpha-10: rgba(148, 163, 184, 0.18);
+      --slate-alpha-40: rgba(148, 163, 184, 0.40);
+      --blue-alpha-10: rgba(96, 165, 250, 0.18);
+      --blue-alpha-40: rgba(96, 165, 250, 0.40);
+    }
+
+    [data-theme="dark"] body {
+      font-family: var(--font-body);
+      background-color: var(--bg-page);
+    }
+
+    [data-theme="dark"] .font-mono,
+    [data-theme="dark"] .t-code,
+    [data-theme="dark"] .task-hours,
+    [data-theme="dark"] .val {
+      font-family: var(--font-mono) !important;
+    }
+
 
     /* ===== COLLAPSIBLE HEADER METRIC TILES ===== */
     .hdr-metrics {
@@ -13573,7 +13672,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.11';
+    const VERSION = '5.6.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23837,6 +23936,7 @@
     //   metaColor — address-bar colour on mobile (matches header bg)
     const THEME_META = {
       claude: { label: 'Claude (default)', metaColor: '#0F1C2E' },
+      dark: { label: 'Dark', metaColor: '#0a0f1a' },
     };
     const DEFAULT_THEME = 'claude';
 
