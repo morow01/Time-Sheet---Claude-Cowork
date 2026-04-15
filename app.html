@@ -1559,7 +1559,7 @@
 
     /* ─── Inline note preview (tap → fullscreen) ─── */
     .note-inline-empty {
-      border: 1px dashed var(--border);
+      border: 1px dashed var(--border-strong);
       border-radius: 12px;
       padding: 12px 14px;
       display: flex;
@@ -1583,7 +1583,7 @@
 
     .note-inline-preview {
       position: relative;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-strong);
       border-radius: 12px;
       padding: 8px 6px 8px 14px;
       background: var(--bg-input, #f8fafc);
@@ -10074,7 +10074,7 @@
     .note-detail input[type="date"] {
       width: 100%;
       background: var(--bg-input);
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border-strong);
       border-radius: 12px;
       padding: 12px 14px;
       font-size: 14px;
@@ -13566,7 +13566,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.2';
+    const VERSION = '5.6.3';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20479,7 +20479,6 @@
             <div class="note-detail-row">
               <span class="field-label" style="display:block; margin-bottom: 6px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Due Date</span>
               <input type="date" data-note-id="${note.id}" data-note-field="dueDate" value="${note.dueDate || ''}"
-                style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;background:var(--bg-input)"
                 autocomplete="off" data-lpignore="true"
                 onchange="updateNoteField(this)">
             </div>
