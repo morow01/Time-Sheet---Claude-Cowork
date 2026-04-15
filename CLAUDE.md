@@ -15,21 +15,35 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 - `scripts/build-www.js` — copies app files into `android/app/src/main/assets/public/`
 
 ## Version
-`const VERSION = 'x.y.z'` in `app.html` (~line 13965). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.6.24**
+`const VERSION = 'x.y.z'` in `app.html` (~line 13799). Bump on every change. Only location that needs updating (index.html version references are static).
+Current version: **5.6.40**
 
-**Theme migration largely complete** — see [`docs/theme-migration-plan.md`](docs/theme-migration-plan.md) for the full log. Two themes registered: `claude` (default light) and `dark` (slate-based). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
+**Two themes active**: `claude` (default light) and `dark` (slate-based). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
-**Variable system** (after sweep): `:root` defines all structural tokens; `[data-theme="dark"]` overrides them. Includes RGB triples (`--accent-rgb`, `--priority-high-rgb`, `--priority-low-rgb`, `--priority-medium-rgb`, `--amber-rgb`, `--shadow-rgb`, `--shadow-brand-rgb`) so any opacity tint becomes themable via `rgba(var(--X-rgb), opacity)`.
+**Variable system**: `:root` defines all structural tokens; `[data-theme="dark"]` overrides them. Includes RGB triples (`--accent-rgb`, `--priority-high-rgb`, `--priority-low-rgb`, `--priority-medium-rgb`, `--amber-rgb`, `--shadow-rgb`, `--shadow-brand-rgb`) so any opacity tint becomes themable via `rgba(var(--X-rgb), opacity)`.
+
+**Dark theme palette** (key values):
+- `--bg-page: #0f1624` / `--bg-header: #090e1c`
+- `--bg-card: #1e293b` / `--bg-card-alt: #273449`
+- `--bg-input: #171f2d` / `--bg-code-group: #141c2b`
+- `--bg-segment-active: #273449` (active pill in segmented controls — light: `#fff`, dark: `#273449`)
+- `--accent: #4d94ff` in dark
+- `color-scheme: dark` applied to `input[type="date/time/datetime-local"]` for visible calendar icon
+
+**Segmented control pattern** (`--bg-code-group` container + `--bg-segment-active` active pill):
+- Used in Notes tab bar (Active | Archive | Bin) and Finder tab bar (Exchanges | Cabinets)
+- Previously `--bg-card` was used for active pill — caused invisible pill in dark mode since both were `#1e293b`
+
+**Border standard** (enforced v5.6.40): ALL borders and outlines throughout the app are `1px`. There are zero `1.5px` borders remaining. Do not introduce `1.5px` for new elements.
+
+**Border-radius standard** for activity card fields: `12px` on `.act-textarea`, `.act-input`, `.act-codes-wrap`. Chips/pills inside containers use `8px`.
 
 **Remaining hardcoded values** (intentional — should stay):
-- `color: #fff` (~105 occurrences) — white text on coloured buttons
+- `color: #fff` — white text on coloured buttons
 - Brand indigo/purple `#818cf8`, `#7c3aed` — accent colours
 - Status dark-text variants `#15803d`, `#b91c1c`, `#854d0e`, `#D97706`, `#F59E0B` — semantic colours
 - SVG `fill=`/`stroke=` inside icons — visual identity
 - Email/preview HTML (`buildEmailHtml`, `buildPreviewHtml`) — sent to external mail clients with fixed palette
-
-If a new theme needs different values for those "intentional" hardcodes (e.g. a Gameboy theme wanting greenish status colours), introduce a variable per case rather than mass refactor.
 
 **Adding new themes**: copy the `[data-theme="dark"]` block, rename, change variable values, register in `THEME_META`. No code changes needed in switcher.
 
@@ -116,17 +130,18 @@ Notebooks state keys: `jNotebooks`, `jSections`, `jPages`, `jEditId`, `jRenameTi
 ## CSS Variables
 `--accent: #2D6BE4`, `--bg-card`, `--bg-card-alt`, `--bg-input: #F4F7FA`, `--border`, `--text-primary`, `--text-secondary`, `--text-muted`, `--font-mono` (DM Mono).
 
-**Theme state**: `[data-theme="claude"]` (app.html ~line 1736) is the ONLY theme currently defined, and `initTheme()` at ~line 23781 **force-sets it on every load**. `setTheme()` is a stub that reads `/* themes removed */`. So the app always runs claude theme. Rob had a theme switcher with Gameboy/Retro/Win 3.1/B&W/iOS in earlier versions but removed the selector — the blocks were deleted too.
+**Theme state**: Both `claude` and `dark` themes are fully working. `initTheme()` reads localStorage and applies the saved theme on load. Theme picker in ☰ → Display.
 
-## Planned: Theming Refactor
-Rob plans to bring back multiple themes (dark, Gameboy, Win 3.1, B&W, iOS). App has ~985 hex colors; ~20-30% are structural (backgrounds, borders, text) and will break under themes with dramatically different palettes. Brand accents + status colors (red/green/amber) can stay hardcoded.
+## Notes Section — UX decisions
+- **Tab bar** uses a pill/segmented control (not underline tabs): `Active | Archive 3 | Bin 22`
+  - "Active" (not "Notes") avoids the duplicate "Notes" label — top nav already says NOTES
+  - Archive count badge: amber. Bin count badge: red.
+- **Notes icon** in top nav: folded-corner document with 3 content lines (not the old bookmark/tag shape)
+- **NOTES field label** added in activity card above the TipTap inline note (`+ Add a note…`)
+- All field labels use `.act-field-label` class (10px, 800 weight, uppercase, `--text-muted`)
 
-**Approach when asked to start themeing**:
-1. **Restore the theme switcher UI** (settings menu option to pick theme, persist to localStorage). Update `setTheme()` to actually set `data-theme`.
-2. **Expand the variable palette** — define all structural tokens in the `claude` block first: page/card/card-alt/input/header/accent backgrounds, text primary/secondary/muted, borders default/strong, shadows. Status/brand stay out of theming.
-3. **Search & replace** structural hex literals (e.g. `#f8fafc`, `#ffffff` backgrounds, `#e2e8f0` borders) with `var(--bg-input, #f8fafc)` syntax (variable with hardcoded fallback).
-4. **Then** add new theme blocks that override only the variables.
-Do it in small committed steps; don't try to migrate everything in one commit.
+## Planned: Additional Themes
+Rob wants to add Gameboy, Win 3.1, B&W, iOS themes. Dark theme is done. To add more: copy `[data-theme="dark"]` block, rename, change variable values, register in `THEME_META`.
 
 ## About Rob (the developer)
 - Field technician who built Rian for his own use

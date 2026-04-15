@@ -59,6 +59,7 @@
       --bg-modal: #FFFFFF;
       --bg-modal-search: #F4F7FA;
       --bg-code-group: #F4F7FA;
+      --bg-segment-active: #FFFFFF;
       --bg-code-item: #FFFFFF;
       --bg-code-item-sel: #EBF1FD;
       --text-input: #0F1C2E;
@@ -526,8 +527,8 @@
 
     .act-codes-wrap {
       background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 10px 12px;
       display: flex;
       flex-wrap: wrap;
@@ -573,8 +574,8 @@
 
     .act-add-code {
       background: none;
-      border: 1.5px dashed var(--border);
-      border-radius: 7px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
       padding: 4px 10px;
       font-family: inherit;
       font-size: 12px;
@@ -666,8 +667,8 @@
     .act-textarea {
       width: 100%;
       background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 10px 12px;
       font-size: 14px;
       font-family: inherit;
@@ -680,8 +681,8 @@
     .act-input {
       width: 100%;
       background: var(--bg-input);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 10px 12px;
       font-size: 14px;
       font-family: inherit;
@@ -764,7 +765,7 @@
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      border: 1.5px solid transparent;
+      border: 1px solid transparent;
       font-family: inherit;
     }
 
@@ -791,8 +792,8 @@
       width: 42px;
       height: 42px;
       flex: none;
-      border-radius: 10px;
-      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      border: 1px solid var(--border);
       background: var(--bg-input);
       color: var(--text-muted);
       cursor: pointer;
@@ -983,7 +984,7 @@
     .note-confirm-field select {
       width: 100%;
       padding: 8px 12px;
-      border: 1.5px solid #e2e8f0;
+      border: 1px solid #e2e8f0;
       border-radius: 8px;
       font-size: 13px;
       font-family: inherit;
@@ -1000,7 +1001,7 @@
       flex: 1;
       padding: 12px;
       border-radius: 10px;
-      border: 1.5px solid #e2e8f0;
+      border: 1px solid #e2e8f0;
       background: var(--bg-card);
       font-size: 13px;
       font-weight: 700;
@@ -1072,8 +1073,8 @@
       flex: 1;
       background: var(--bg-card-alt);
       color: var(--text-muted);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 11px 8px;
       font-size: 13px;
       font-weight: 700;
@@ -1305,7 +1306,7 @@
       flex: 1;
       padding: 12px;
       border-radius: 10px;
-      border: 1.5px solid #e2e8f0;
+      border: 1px solid #e2e8f0;
       background: var(--bg-card);
       font-size: 13px;
       font-weight: 700;
@@ -1380,7 +1381,7 @@
     .cna-btn {
       padding: 6px 13px;
       border-radius: 8px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: transparent;
       color: var(--text-muted);
       font-size: 12px;
@@ -1478,7 +1479,7 @@
       background: var(--bg-card);
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(var(--shadow-brand-rgb), 0.06);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       margin: 0 14px 10px 0;
       /* Removed left margin to use parent padding */
       overflow: visible;
@@ -1545,7 +1546,7 @@
 
     .activity-detail {
       background: var(--bg-card);
-      border-top: 1.5px solid var(--border);
+      border-top: 1px solid var(--border);
       border-bottom-left-radius: 12px;
       border-bottom-right-radius: 12px;
       padding: 16px;
@@ -1565,7 +1566,7 @@
 
     /* Notes panel inside activity-detail */
     .notes-panel {
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
       background: var(--bg-card);
@@ -1616,7 +1617,7 @@
 
     /* ─── Inline note preview (tap → fullscreen) ─── */
     .note-inline-empty {
-      border: 1px dashed var(--border-strong);
+      border: 1px dashed var(--border);
       border-radius: 12px;
       padding: 10px 12px;
       display: flex;
@@ -1640,10 +1641,10 @@
 
     .note-inline-preview {
       position: relative;
-      border: 1px solid var(--border-strong);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 10px 6px 10px 12px;
-      background: var(--bg-input, #f8fafc);
+      background: var(--bg-card-alt, #f8fafc);
       cursor: pointer;
       max-height: 140px;
       overflow: hidden;
@@ -1745,7 +1746,7 @@
 
     .notes-panel-body.open {
       max-height: 400px;
-      border-top: 1.5px solid var(--section-divider);
+      border-top: 1px solid var(--section-divider);
     }
 
     .notes-ta-wrap {
@@ -1761,7 +1762,7 @@
       display: flex;
       align-items: center;
       background: var(--stepper-bg);
-      outline: 1.5px solid var(--stepper-border);
+      outline: 1px solid var(--stepper-border);
       border-radius: 10px;
       overflow: hidden;
       height: 40px;
@@ -1769,7 +1770,7 @@
 
     .ot-box .hrs-stepper {
       background: var(--ot-stepper-bg);
-      outline: 1.5px solid var(--ot-stepper-border);
+      outline: 1px solid var(--ot-stepper-border);
     }
 
     .hrs-stepper button {
@@ -1878,22 +1879,23 @@
       --font-mono: 'DM Mono', monospace;
 
       /* Backgrounds */
-      --bg-page: #0f172a;                /* slate-900 */
-      --bg-header: #0a0f1a;              /* slightly darker than page */
+      --bg-page: #0f1624;                /* dark navy, slight warmth vs pure slate */
+      --bg-header: #090e1c;              /* slightly darker than page */
       --bg-header-tab: #1e293b;
       --bg-card: #1e293b;                /* slate-800 */
       --bg-card-alt: #273449;            /* between 800 and 700 */
       --bg-day-header: #1e293b;
-      --bg-day-header-we: #172030;
-      --bg-weekend: #172030;
+      --bg-day-header-we: #1a2538;       /* purple-tinted weekend */
+      --bg-weekend: #1a2538;             /* distinctly different from weekday */
       --bg-section-muted: #1e293b;
-      --bg-input: #0f172a;               /* darker than card for field contrast */
+      --bg-input: #171f2d;               /* slightly lighter than page — visible field contrast */
       --bg-modal: #1e293b;
-      --bg-modal-search: #0f172a;
-      --bg-code-btn: #1e3a8a;            /* dark blue accent tint */
-      --bg-code-group: #1e293b;
+      --bg-modal-search: #171f2d;
+      --bg-code-btn: #1a3272;            /* accent tint, slightly richer */
+      --bg-code-group: #141c2b;
+      --bg-segment-active: #273449;
       --bg-code-item: #273449;
-      --bg-code-item-sel: #1e3a8a;
+      --bg-code-item-sel: #1a3272;
       --bg-ot: #3a2d00;                  /* dark amber tint */
       --summary-even: #273449;
 
@@ -1920,13 +1922,13 @@
       --border-strong: #475569;          /* slate-600 — visible field borders */
       --border-warm: #475569;
       --border-warm-light: #334155;
-      --border-subtle: #1e293b;
+      --border-subtle: #253347;          /* slightly visible — separates day rows */
       --border-medium: #334155;
 
-      /* Accent stays brand-ish but bumped lighter for contrast */
-      --accent: #3b82f6;                 /* blue-500 */
-      --accent-light: #1e3a8a;           /* deep blue bg for tints */
-      --accent-chip-bg: #1e3a8a;
+      /* Accent — brighter electric blue for dark backgrounds */
+      --accent: #4d94ff;                 /* vivid blue, more pop than blue-500 */
+      --accent-light: #1a3272;           /* deep blue bg for tints */
+      --accent-chip-bg: #1a3272;
       --accent-chip-text: #93c5fd;
 
       /* Danger */
@@ -1944,11 +1946,10 @@
       /* Tab/active colour stays brand amber */
       --tab-active: #F5A623;
 
-      /* Accent alpha tints (chip/pill backgrounds) — slightly brighter because
-         dark theme needs more opacity to be visible */
-      --accent-alpha-06: rgba(59, 130, 246, 0.12);
-      --accent-alpha-10: rgba(59, 130, 246, 0.18);
-      --accent-alpha-30: rgba(59, 130, 246, 0.35);
+      /* Accent alpha tints — updated to match new accent #4d94ff */
+      --accent-alpha-06: rgba(77, 148, 255, 0.12);
+      --accent-alpha-10: rgba(77, 148, 255, 0.18);
+      --accent-alpha-30: rgba(77, 148, 255, 0.35);
       --amber-alpha-10: rgba(var(--amber-rgb), 0.18);
       --amber-alpha-40: rgba(var(--amber-rgb), 0.40);
       --slate-alpha-10: rgba(148, 163, 184, 0.18);
@@ -2011,6 +2012,12 @@
     [data-theme="dark"] body {
       font-family: var(--font-body);
       background-color: var(--bg-page);
+    }
+
+    [data-theme="dark"] input[type="date"],
+    [data-theme="dark"] input[type="time"],
+    [data-theme="dark"] input[type="datetime-local"] {
+      color-scheme: dark;
     }
 
     [data-theme="dark"] .font-mono,
@@ -2334,7 +2341,7 @@
       gap: 7px;
       padding: 10px 16px;
       border-radius: 10px;
-      border: 1.5px solid rgba(var(--priority-high-rgb), 0.35);
+      border: 1px solid rgba(var(--priority-high-rgb), 0.35);
       background: rgba(var(--priority-high-rgb), 0.08);
       color: #ff7070;
       font-size: 13px;
@@ -2697,7 +2704,7 @@
 
     .c-tag-diff-row {
       border-left: 3px solid #D97706 !important;
-      background: #FFFBEB !important;
+      background: rgba(217, 119, 6, 0.08) !important;
     }
 
     .c-tag-only-local {
@@ -2840,7 +2847,7 @@
       flex: 1;
       background: var(--bg-card-alt);
       color: var(--text-muted);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 11px 6px;
       font-size: 13px;
@@ -2862,7 +2869,7 @@
       flex: 1;
       background: rgba(var(--accent-rgb), 0.08);
       color: var(--accent);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.25);
+      border: 1px solid rgba(var(--accent-rgb), 0.25);
       border-radius: 12px;
       padding: 11px 6px;
       font-size: 13px;
@@ -2884,7 +2891,7 @@
       flex: 1;
       background: var(--priority-low-bg);
       color: var(--priority-low-dark, #34a853);
-      border: 1.5px solid var(--priority-low-border, #d4edda);
+      border: 1px solid var(--priority-low-border, #d4edda);
       border-radius: 12px;
       padding: 11px 6px;
       font-size: 13px;
@@ -3028,7 +3035,7 @@
 
     .c-day-col.local {
       border-right: 1px solid var(--border);
-      background: #F0F5FF;
+      background: rgba(45, 107, 228, 0.08);
     }
 
     .c-day-col.remote {
@@ -3674,13 +3681,13 @@
     .c-act-diff .act-input,
     .c-act-diff .act-codes-wrap,
     .c-act-diff .hrs-stepper {
-      border: 1.5px solid #ef4444 !important;
+      border: 1px solid #ef4444 !important;
       background: rgba(var(--priority-high-rgb), 0.05) !important;
       border-radius: 8px;
     }
 
     .c-act-diff.notes-panel {
-      border: 1.5px solid #ef4444 !important;
+      border: 1px solid #ef4444 !important;
       background: rgba(var(--priority-high-rgb), 0.05) !important;
     }
 
@@ -3994,7 +4001,7 @@
       box-sizing: border-box;
       padding: 10px 40px 10px 12px;
       border-radius: 10px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg-card);
       color: var(--text-primary);
       font-size: 13px;
@@ -4043,7 +4050,7 @@
       border-radius: 10px;
       background: transparent;
       color: var(--accent);
-      border: 1.5px solid var(--accent);
+      border: 1px solid var(--accent);
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -4603,7 +4610,7 @@
     .sum-grid-total {
       padding: 11px 14px;
       background: var(--bg-card-alt);
-      border-top: 1.5px solid var(--border);
+      border-top: 1px solid var(--border);
       align-items: center;
     }
 
@@ -5143,7 +5150,7 @@
       align-items: stretch;
       border-radius: 12px;
       overflow: hidden;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg-input);
     }
 
@@ -5311,7 +5318,7 @@
       padding: 10px 42px 10px 14px;
       border-radius: 12px;
       font-size: 14px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg-input);
       color: var(--text-primary);
       outline: none;
@@ -5618,7 +5625,7 @@
       font-weight: 600;
       line-height: 1.3;
       color: var(--prose-h2-color);
-      border-bottom: 1.5px solid var(--prose-h2-underline);
+      border-bottom: 1px solid var(--prose-h2-underline);
       padding-bottom: 3px;
       margin-bottom: 8px;
       display: inline-block;
@@ -5762,7 +5769,7 @@
       color: var(--text-primary);
       white-space: normal;
       background: var(--bg-page);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 9px 11px;
       cursor: pointer;
@@ -5841,7 +5848,7 @@
       gap: 8px;
       padding: 8px 14px 10px;
       background: var(--bg-card);
-      border-top: 1.5px solid var(--tt-sel-bar-border);
+      border-top: 1px solid var(--tt-sel-bar-border);
       animation: ttAiSlideUp 0.18s ease;
     }
 
@@ -6014,7 +6021,7 @@
     .rdn-input {
       width: 100%;
       box-sizing: border-box;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 11px;
       padding: 11px 13px;
       font-size: 14px;
@@ -6180,7 +6187,7 @@
       cursor: pointer;
       appearance: none;
       -webkit-appearance: none;
-      border: 1.5px solid var(--border, #cbd5e1);
+      border: 1px solid var(--border, #cbd5e1);
       border-radius: 3px;
       background: transparent;
       flex-shrink: 0;
@@ -6444,7 +6451,7 @@
       padding: 8px 4px;
       border: 1px solid var(--border);
       border-radius: 9px;
-      background: #fafafa;
+      background: var(--bg-card-alt, #fafafa);
       cursor: pointer;
       font-size: 10px;
       color: var(--text-secondary);
@@ -6454,7 +6461,7 @@
     }
 
     .tcp-btn:active {
-      background: #ede9fe;
+      background: rgba(124, 58, 237, 0.12);
     }
 
     .tcp-btn svg {
@@ -6690,7 +6697,7 @@
       height: 36px;
       border-radius: 50%;
       background: rgba(var(--shadow-rgb), 0.55);
-      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.35);
       color: #fff;
       font-size: 20px;
       line-height: 36px;
@@ -6959,7 +6966,7 @@
     }
 
     .ai-answer-card {
-      background: #f3f2ff;
+      background: rgba(129, 140, 248, 0.08);
       border-radius: 12px;
       padding: 14px;
       border-left: 3px solid #818cf8;
@@ -7373,7 +7380,7 @@
       padding: 10px 12px;
       border-radius: 10px;
       font-size: 12px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg-input);
       color: var(--text-primary);
       outline: none;
@@ -7462,7 +7469,7 @@
     }
 
     .ai-error-card {
-      background: #fff1f2;
+      background: rgba(239, 68, 68, 0.08);
       border-radius: 12px;
       padding: 12px 14px;
       border-left: 3px solid var(--priority-high);
@@ -7500,7 +7507,7 @@
 
     .notes-tab-bar {
       display: flex;
-      border-bottom: 1.5px solid var(--border);
+      border-bottom: 1px solid var(--border);
       margin: 0 16px;
       gap: 0;
     }
@@ -7911,7 +7918,7 @@
       white-space: nowrap;
       flex-shrink: 0;
       cursor: pointer;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg-card);
       color: var(--text-secondary);
       transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
@@ -8167,7 +8174,7 @@
       align-items: center;
       gap: 8px;
       padding: 7px 12px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 10px;
       cursor: pointer;
       font-size: 13px;
@@ -8209,7 +8216,7 @@
       border-radius: 999px;
       font-size: 12px;
       font-weight: 500;
-      border: 1.5px solid transparent;
+      border: 1px solid transparent;
     }
 
     .note-cat-menu {
@@ -8243,7 +8250,7 @@
       font-weight: 500;
       white-space: nowrap;
       cursor: pointer;
-      border: 1.5px solid transparent;
+      border: 1px solid transparent;
       transition: all 0.15s;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -8322,7 +8329,7 @@
     .ncm-action-remove {
       background: rgba(var(--priority-high-rgb), 0.08);
       color: var(--priority-high);
-      border: 1.5px solid rgba(var(--priority-high-rgb), 0.35);
+      border: 1px solid rgba(var(--priority-high-rgb), 0.35);
     }
 
     .ncm-action-remove:active {
@@ -8332,7 +8339,7 @@
     .ncm-action-edit {
       background: var(--bg-card);
       color: var(--text-secondary);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
     }
 
     .ncm-action-edit:active {
@@ -8349,7 +8356,7 @@
       font-size: 11px;
       font-weight: 500;
       color: var(--text-muted);
-      border: 1.5px dashed var(--border);
+      border: 1px dashed var(--border);
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
@@ -8447,7 +8454,7 @@
     .ncf-input {
       width: 100%;
       padding: 8px 10px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
       font-weight: 500;
@@ -8505,7 +8512,7 @@
       align-items: center;
       justify-content: center;
       background: var(--bg-card);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       color: var(--text-secondary);
       transition: all 0.15s;
     }
@@ -8574,7 +8581,7 @@
     .ncf-btn-cancel {
       background: transparent;
       color: var(--text-muted);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
     }
 
     .ncf-btn-save {
@@ -8647,7 +8654,7 @@
     }
 
     .te-add-form.te-open {
-      border: 1.5px solid var(--accent);
+      border: 1px solid var(--accent);
       padding: 14px;
       background: var(--bg-card);
     }
@@ -8660,7 +8667,7 @@
       width: 100%;
       padding: 12px;
       border-radius: 10px;
-      border: 1.5px dashed var(--border);
+      border: 1px dashed var(--border);
       background: var(--bg-card);
       font-size: 13px;
       font-weight: 700;
@@ -8673,7 +8680,7 @@
       width: 100%;
       padding: 9px 12px;
       border-radius: 8px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       font-size: 13px;
       font-family: inherit;
       background: var(--bg);
@@ -8797,7 +8804,7 @@
       border-radius: 10px;
       padding: 12px;
       margin-bottom: 6px;
-      border: 1.5px solid var(--accent);
+      border: 1px solid var(--accent);
     }
 
     /* Pill-style tags */
@@ -8872,7 +8879,7 @@
       gap: 5px;
       padding: 10px 4px;
       border-radius: 12px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg-card);
       cursor: pointer;
       font-size: 11px;
@@ -8889,11 +8896,16 @@
 
     .notes-section-label {
       font-size: 11px;
-      padding: 16px 16px 8px;
+      padding: 14px 16px 6px;
       font-weight: 800;
       color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 4px 0 0;
+      opacity: 0.75;
     }
 
     /* ── Section headers (v5.0.0) ───────────────────────────────── */
@@ -9340,7 +9352,7 @@
     .j-search-input {
       flex: 1;
       padding: 9px 12px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 10px;
       font-size: 15px;
       font-family: inherit;
@@ -9704,7 +9716,7 @@
       margin: 8px 16px 0;
       background: var(--bg-card);
       color: var(--text-secondary);
-      border: 1.5px dashed var(--border);
+      border: 1px dashed var(--border);
       border-radius: 14px;
       padding: 14px 18px;
       font-size: 14px;
@@ -9789,7 +9801,7 @@
       width: 100%;
       box-sizing: border-box;
       background: var(--bg-card-alt);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 10px;
       padding: 10px 12px;
       font-size: 15px;
@@ -9888,7 +9900,7 @@
     .jdocx-cancel {
       flex: 1;
       background: var(--bg-card-alt);
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 13px;
       font-size: 15px;
@@ -9946,7 +9958,7 @@
       width: 100%;
       box-sizing: border-box;
       padding: 12px 14px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 12px;
       background: var(--bg-card-alt);
       color: var(--text-primary);
@@ -10341,7 +10353,7 @@
       cursor: pointer;
       text-transform: uppercase;
       letter-spacing: 0.03em;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       background: var(--bg-input);
       color: var(--text-muted);
     }
@@ -10494,7 +10506,7 @@
       align-items: center;
       gap: 8px;
       background: var(--bg-input);
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 10px 12px;
       font-size: 13px;
@@ -10504,7 +10516,7 @@
     }
 
     .note-reminder-unset:active {
-      background: #eef0f3;
+      background: var(--bg-card-alt);
     }
 
     .note-reminder-unset svg {
@@ -10529,10 +10541,10 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: #fef8ee;
+      background: rgba(245, 166, 35, 0.08);
       border-radius: 12px;
       padding: 10px 12px;
-      border: 1.5px solid #F5A623;
+      border: 1px solid rgba(245, 166, 35, 0.4);
     }
 
     .note-rem-bell {
@@ -10581,6 +10593,11 @@
       color: #d4900a;
     }
 
+    .note-rem-badge.reschedule {
+      background: var(--bg-card-alt);
+      color: var(--text-slate);
+    }
+
     .note-rem-x {
       width: 22px;
       height: 22px;
@@ -10598,7 +10615,7 @@
     }
 
     .note-rem-x:hover {
-      background: #fde6c4;
+      background: rgba(212, 144, 10, 0.15);
     }
 
     .note-reminder-fired {
@@ -10608,12 +10625,12 @@
       background: var(--bg-input);
       border-radius: 12px;
       padding: 10px 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border);
       opacity: 0.55;
     }
 
     .note-reminder-fired .note-rem-bell {
-      background: #eef0f3;
+      background: var(--bg-card-alt);
     }
 
     .note-reminder-fired .note-rem-bell svg {
@@ -10646,7 +10663,7 @@
       border-radius: 12px;
       background: var(--priority-low-bg);
       color: var(--priority-low-dark, #34a853);
-      border: 1.5px solid var(--priority-low-border, #d4edda);
+      border: 1px solid var(--priority-low-border, #d4edda);
       font-size: 13px;
       font-weight: 700;
       font-family: inherit;
@@ -10673,7 +10690,7 @@
       border-radius: 12px;
       background: var(--btn-danger-bg, #fef2f1);
       color: var(--btn-danger-color, #e8453c);
-      border: 1.5px solid var(--btn-danger-border, #f5c6c2);
+      border: 1px solid var(--btn-danger-border, #f5c6c2);
       font-size: 13px;
       font-weight: 700;
       font-family: inherit;
@@ -10976,7 +10993,7 @@
       flex: 1;
       padding: 12px;
       border-radius: 10px;
-      border: 1.5px solid #e2e8f0;
+      border: 1px solid #e2e8f0;
       background: var(--bg-card);
       font-size: 13px;
       font-weight: 700;
@@ -11116,12 +11133,12 @@
     }
 
     .task-picker-day:hover {
-      background: #fff7ed;
+      background: rgba(249, 115, 22, 0.08);
       border-color: #fdba74;
     }
 
     .task-picker-day.selected {
-      background: #fff7ed;
+      background: rgba(249, 115, 22, 0.1);
       border-color: #f97316;
     }
 
@@ -11182,7 +11199,7 @@
       flex: 1;
       padding: 12px;
       border-radius: 10px;
-      border: 1.5px solid #e2e8f0;
+      border: 1px solid #e2e8f0;
       background: var(--bg-card);
       font-size: 13px;
       font-weight: 700;
@@ -11281,7 +11298,7 @@
       position: absolute;
       top: 10px;
       right: calc(50% - 14px);
-      border: 1.5px solid var(--bg-header);
+      border: 1px solid var(--bg-header);
     }
 
     .notes-empty {
@@ -12452,7 +12469,7 @@
       height: 7px;
       border-radius: 50%;
       background: var(--accent);
-      border: 1.5px solid var(--bg-page);
+      border: 1px solid var(--bg-page);
     }
 
     /* ===== ON-CALL SCHEDULE GRID ===== */
@@ -12475,7 +12492,7 @@
       width: 38px;
       height: 38px;
       border-radius: 10px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
@@ -12626,8 +12643,8 @@
       font-size: 11px;
       font-weight: 700;
       color: #7c3aed;
-      background: #faf5ff;
-      border: 1.5px solid #ddd6fe;
+      background: rgba(124, 58, 237, 0.07);
+      border: 1px solid rgba(124, 58, 237, 0.25);
       border-radius: 20px;
       padding: 3px 9px;
       cursor: pointer;
@@ -12637,13 +12654,13 @@
     }
 
     .act-suggest-btn:active {
-      background: #ede9fe;
+      background: rgba(124, 58, 237, 0.15);
     }
 
     .act-suggest-panel {
       margin-top: 6px;
-      background: #faf5ff;
-      border: 1.5px solid #ddd6fe;
+      background: rgba(124, 58, 237, 0.07);
+      border: 1px solid rgba(124, 58, 237, 0.25);
       border-radius: 10px;
       overflow: hidden;
     }
@@ -12652,7 +12669,7 @@
       display: flex;
       align-items: center;
       padding: 7px 10px;
-      background: #ede9fe;
+      background: rgba(124, 58, 237, 0.12);
       gap: 6px;
     }
 
@@ -12736,7 +12753,7 @@
       font-weight: 700;
       color: #6d28d9;
       background: var(--bg-card);
-      border: 1.5px solid #ddd6fe;
+      border: 1px solid #ddd6fe;
       border-radius: 20px;
       padding: 3px 10px;
       cursor: pointer;
@@ -12784,14 +12801,14 @@
       margin: 0 0 10px;
       border-radius: 12px;
       overflow: hidden;
-      border: 1.5px solid #fed7aa;
-      background: #fff7ed;
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      background: rgba(249, 115, 22, 0.07);
       box-shadow: 0 1px 6px rgba(234, 88, 12, 0.08);
     }
 
     .anomaly-banner.all-ok {
-      border-color: #bbf7d0;
-      background: #f0fdf4;
+      border-color: rgba(34, 197, 94, 0.4);
+      background: rgba(34, 197, 94, 0.07);
     }
 
     .anomaly-banner-head {
@@ -12889,7 +12906,7 @@
       font-weight: 700;
       color: #ea580c;
       background: none;
-      border: 1.5px solid #fb923c;
+      border: 1px solid #fb923c;
       border-radius: 999px;
       padding: 2px 10px;
       cursor: pointer;
@@ -13024,7 +13041,7 @@
 
     .nvc-cat-btn {
       padding: 7px 12px;
-      border: 1.5px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--bg-page);
       color: var(--text-secondary);
@@ -13437,7 +13454,7 @@
       <div style="font-size:14px;color:var(--text-muted);margin-bottom:20px" id="confirm-message">Are you sure?</div>
       <div style="display:flex;gap:12px;justify-content:flex-end">
         <button onclick="closeConfirmModal()"
-          style="padding:10px 20px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);font-weight:600;cursor:pointer;font-size:13px">Cancel</button>
+          style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-weight:600;cursor:pointer;font-size:13px">Cancel</button>
         <button id="confirm-btn" onclick="executeConfirmAction()"
           style="padding:10px 20px;border-radius:8px;border:none;background:var(--priority-high);color:#fff;font-weight:600;cursor:pointer;font-size:13px">Confirm</button>
       </div>
@@ -13744,7 +13761,7 @@
         <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Copy the email body from Gmail and paste
           it below.</p>
         <textarea id="paste-ticket-input" rows="6" placeholder="Paste email text here…"
-          style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:vertical;background:var(--bg-card);color:var(--text-primary);font-family:inherit"></textarea>
+          style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:vertical;background:var(--bg-card);color:var(--text-primary);font-family:inherit"></textarea>
         <div class="flex gap-3" style="margin-top:16px">
           <button onclick="closePasteTicket()" class="flex-1 py-3 rounded-xl font-medium"
             style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
@@ -13779,7 +13796,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.24';
+    const VERSION = '5.6.40';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16418,7 +16435,7 @@
         dayBg: '#4A6580', dayTxt: '#ffffff', dayDate: '#D4E0EC', cardBg: '#ffffff',
       };
 
-      const cpStyle = `cursor:pointer;border-bottom:1.5px dotted #93c5fd;color:inherit;display:inline;padding:1px 2px;border-radius:3px;transition:background 0.15s;`;
+      const cpStyle = `cursor:pointer;border-bottom:1px dotted #93c5fd;color:inherit;display:inline;padding:1px 2px;border-radius:3px;transition:background 0.15s;`;
 
       function cpSpan(val, extraStyle) {
         const v = val.replace(/'/g, "\\'");
@@ -16892,7 +16909,7 @@
                         <span class="menu-row-body" style="flex:1;"><span class="menu-row-label">Theme</span><span class="menu-row-sub">${esc(THEME_META[cur].label)}</span></span>
                       </div>
                       <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                        ${keys.map(k => `<button type="button" onclick="setTheme('${k}')" style="padding:6px 12px;border-radius:999px;border:1.5px solid ${cur === k ? 'var(--accent)' : 'var(--border)'};background:${cur === k ? 'var(--accent)' : 'var(--bg-card)'};color:${cur === k ? '#fff' : 'var(--text-primary)'};font-size:12px;font-weight:600;cursor:pointer;">${esc(THEME_META[k].label)}</button>`).join('')}
+                        ${keys.map(k => `<button type="button" onclick="setTheme('${k}')" style="padding:6px 12px;border-radius:999px;border:1px solid ${cur === k ? 'var(--accent)' : 'var(--border)'};background:${cur === k ? 'var(--accent)' : 'var(--bg-card)'};color:${cur === k ? '#fff' : 'var(--text-primary)'};font-size:12px;font-weight:600;cursor:pointer;">${esc(THEME_META[k].label)}</button>`).join('')}
                       </div>
                     </div>`;
                   })()}
@@ -16966,7 +16983,7 @@
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Timesheet</span>
       </button>
       <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? 'var(--text-ot)' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid var(--text-ot)' : ''}">
-        <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Notes</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>Notes</span>
         ${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus]}"></span>` : ''}
       </button>
       <button onclick="setView('journal')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'journal' ? 'var(--text-ot)' : 'var(--text-header-sub)'};${state.view === 'journal' ? 'border-bottom:2.5px solid var(--text-ot)' : ''}">
@@ -17543,7 +17560,7 @@
   </div>
   <div class="day-activities ${isExpanded ? 'active' : 'hidden'}" id="day-${di}-activities" style="${isExpanded ? '' : 'display:none'}">
       ${activitiesHtml}
-      <button onclick="addActivity(${di})" class="add-task-btn" style="margin: 4px 14px 14px 0; width: calc(100% - 14px); display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 10px; border: 1.5px dashed var(--border); background: var(--bg-card); font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;">
+      <button onclick="addActivity(${di})" class="add-task-btn" style="margin: 4px 14px 14px 0; width: calc(100% - 14px); display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 10px; border: 1px dashed var(--border); background: var(--bg-card); font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Task
       </button>
@@ -17797,7 +17814,10 @@
                 data-field="description" data-act="${act.id}" data-day="${di}" oninput="updateField(this);autoGrow(this)">${esc(act.description)}</textarea>
             </div>
 
-            ${renderNoteInline(act.notes, `openNoteFullscreen('${act.id}',${di})`, `data-notes-inline="${act.id}"`)}
+            <div class="flex flex-col gap-1.5">
+              <span class="act-field-label">Notes</span>
+              ${renderNoteInline(act.notes, `openNoteFullscreen('${act.id}',${di})`, `data-notes-inline="${act.id}"`)}
+            </div>
             <textarea class="act-notes-area" style="display:none"
               data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes || '')}</textarea>
 
@@ -18754,7 +18774,7 @@
           <div class="note-reminder-fired" onclick="openNoteReminder('${noteId}')" style="cursor:pointer" title="Tap to reschedule">
             <div class="note-rem-bell"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
             <div class="note-rem-info"><div class="note-rem-info-label">Reminded</div><div class="note-rem-info-dt">${dateStr}</div></div>
-            <span class="note-rem-badge" style="background:#f0f2f5;color:var(--text-slate);">+ Reschedule</span>
+            <span class="note-rem-badge reschedule">+ Reschedule</span>
             <button class="note-rem-x" onclick="event.stopPropagation();removeNoteReminder('${noteId}')" title="Remove">✕</button>
           </div>
         </div>`;
@@ -20784,20 +20804,29 @@
 
       const binCount = binNotes.length;
       const notesTab = state.notesTab || 'notes';
+      const _ntActive = 'background:var(--bg-segment-active);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.12)';
+      const _ntInactive = 'color:var(--text-muted)';
       const tabBar = `
-  <div class="notes-tab-bar">
-    <div class="notes-tab ${notesTab === 'notes' ? 'active' : ''}" onclick="switchNotesTab('notes')">
-      <span>Notes</span>
-    </div>
-    <div class="notes-tab ${notesTab === 'archive' ? 'active' : ''}" onclick="switchNotesTab('archive')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-      <span>Archive</span>
-      ${archiveNotes.length > 0 ? `<span class="tab-count archive-count">${archiveNotes.length}</span>` : ''}
-    </div>
-    <div class="notes-tab ${notesTab === 'bin' ? 'active' : ''}" onclick="switchNotesTab('bin')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-      <span>Bin</span>
-      ${binCount > 0 ? `<span class="tab-count bin-count">${binCount}</span>` : ''}
+  <div style="padding:10px 16px 2px">
+    <div style="display:flex;padding:3px;border-radius:14px;background:var(--bg-code-group);gap:2px">
+      <button onclick="switchNotesTab('notes')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;${notesTab === 'notes' ? _ntActive : _ntInactive}">
+        <span style="display:inline-flex;align-items:center;gap:5px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          Active
+        </span>
+      </button>
+      <button onclick="switchNotesTab('archive')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;${notesTab === 'archive' ? _ntActive : _ntInactive}">
+        <span style="display:inline-flex;align-items:center;gap:5px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          Archive${archiveNotes.length > 0 ? ` <span style="background:#f59e0b;color:#fff;border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${archiveNotes.length}</span>` : ''}
+        </span>
+      </button>
+      <button onclick="switchNotesTab('bin')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;${notesTab === 'bin' ? _ntActive : _ntInactive}">
+        <span style="display:inline-flex;align-items:center;gap:5px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Bin${binCount > 0 ? ` <span style="background:#ef4444;color:#fff;border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${binCount}</span>` : ''}
+        </span>
+      </button>
     </div>
   </div>`;
       const searchBar = `
@@ -20811,7 +20840,7 @@
       <div id="notes-search-input" contenteditable="true" role="searchbox" spellcheck="false"
         data-placeholder="Search ${notesTab === 'archive' ? 'archive' : notesTab === 'bin' ? 'bin' : 'notes'}…"
         oninput="notesSearchInput(this.textContent)"
-        style="width:100%;box-sizing:border-box;padding:9px 34px 9px 34px;border-radius:12px;border:1.5px solid var(--border);
+        style="width:100%;box-sizing:border-box;padding:9px 34px 9px 34px;border-radius:12px;border:1px solid var(--border);
           background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;
           white-space:nowrap;overflow:hidden;line-height:1.4;">${esc(state.notesSearch)}</div>
       ${state.notesSearch ? `<button onclick="notesSearchInput('');const _si=document.getElementById('notes-search-input');if(_si){_si.textContent='';_si.focus();}" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px;line-height:1">×</button>` : ''}
@@ -22599,7 +22628,7 @@
           <span class="note-cat-badge" id="${idPrefix}Preview" style="background:${color}">${previewIconHtml} Tag Name</span>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px">
-          <button style="flex:1;padding:11px 8px;border-radius:12px;font-size:14px;font-weight:600;border:1.5px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer" onclick="${onCancel}">Cancel</button>
+          <button style="flex:1;padding:11px 8px;border-radius:12px;font-size:14px;font-weight:600;border:1px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer" onclick="${onCancel}">Cancel</button>
           <button id="${idPrefix}SaveBtn" class="te-primary-btn" onclick="${onSave}" disabled>${saveLbl}</button>
         </div>`;
     }
@@ -23126,7 +23155,7 @@
         <div class="flex p-1 rounded-xl mb-3" style="background:var(--bg-code-group)">
           <button onclick="setExchangeTab('exchanges')"
             class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200"
-            style="${isEx ? 'background:var(--bg-card);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.08)' : 'color:var(--text-muted);'}">
+            style="${isEx ? 'background:var(--bg-segment-active);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.12)' : 'color:var(--text-muted);'}">
             <span class="inline-flex items-center gap-1.5">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
               Exchanges
@@ -23134,7 +23163,7 @@
           </button>
           <button onclick="setExchangeTab('cabinets')"
             class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200"
-            style="${!isEx ? 'background:var(--bg-card);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.08)' : 'color:var(--text-muted);'}">
+            style="${!isEx ? 'background:var(--bg-segment-active);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.12)' : 'color:var(--text-muted);'}">
             <span class="inline-flex items-center gap-1.5">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg>
               Cabinets
@@ -24510,8 +24539,8 @@
 
       // Bulk resolve buttons — only when unresolved conflicts remain
       const bulkActionsHtml = n > 0 ? `<div class="c-bulk-actions">
-        <button onclick="_resolveAllConflicts('cloud')" style="flex:1;padding:9px 10px;border-radius:10px;font-size:13px;font-weight:700;border:1.5px solid var(--accent);color:var(--accent);background:rgba(var(--accent-rgb), 0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit">${_cIcons.cloudDown} Use Cloud All</button>
-        <button onclick="_resolveAllConflicts('keep')" style="flex:1;padding:9px 10px;border-radius:10px;font-size:13px;font-weight:700;border:1.5px solid var(--priority-low-dark);color:var(--priority-low-dark);background:rgba(var(--priority-low-rgb), 0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit">${_cIcons.check} Keep All Mine</button>
+        <button onclick="_resolveAllConflicts('cloud')" style="flex:1;padding:9px 10px;border-radius:10px;font-size:13px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:rgba(var(--accent-rgb), 0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit">${_cIcons.cloudDown} Use Cloud All</button>
+        <button onclick="_resolveAllConflicts('keep')" style="flex:1;padding:9px 10px;border-radius:10px;font-size:13px;font-weight:700;border:1px solid var(--priority-low-dark);color:var(--priority-low-dark);background:rgba(var(--priority-low-rgb), 0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit">${_cIcons.check} Keep All Mine</button>
       </div>` : '';
 
       return `
@@ -26604,7 +26633,7 @@
     // ── Section icons for export/import dialogs ──
     const _eiIcons = {
       timesheet: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
-      notes: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
+      notes: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
       reminders: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
       callouts: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
       settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
@@ -28073,7 +28102,7 @@
         const badgeHtml = ocType === 'extra'
           ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
           : '';
-        html += `<div style="margin:0 14px 10px;background:var(--bg-card);border-radius:14px;border:1.5px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
+        html += `<div style="margin:0 14px 10px;background:var(--bg-card);border-radius:14px;border:1px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
           <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
             <div class="task-num" style="background:${badgeBg};color:${badgeColor}">${cnt}</div>
             <div style="flex:1;min-width:0">
@@ -28163,7 +28192,7 @@
           <div style="font-size:15px;font-weight:700;color:var(--text-primary)">${esc(rangeStr)}</div>
           <div style="font-size:12px;color:var(--text-muted)">${allCallouts.length} callout${allCallouts.length !== 1 ? 's' : ''}</div>
         </div>
-        <button onclick="openPasteTicket()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:var(--bg-card);color:var(--accent);border:1.5px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" title="Paste ticket email">
+        <button onclick="openPasteTicket()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:var(--bg-card);color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" title="Paste ticket email">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg> Paste Fault
           </button>
       </div>`;
@@ -28216,7 +28245,7 @@
       }
       // Add button at bottom — same dashed style as "Add Task"
       if (state.calloutsExpandedId !== '__new__') {
-        html += `<button onclick="coOpenAdd()" style="margin:8px 14px 14px;width:calc(100% - 28px);display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1.5px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">
+        html += `<button onclick="coOpenAdd()" style="margin:8px 14px 14px;width:calc(100% - 28px);display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Callout
         </button>`;
@@ -29012,7 +29041,7 @@
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:3px">${label}</div>
           <input id="pt-${id}" type="text" value="${escAttr(value)}" class="act-input"
-            style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary)">
+            style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary)">
         </div>`;
       previewEl.innerHTML =
         row('Ticket Number', p.ticket, 'ticket') +
@@ -29021,12 +29050,12 @@
         `<div>
           <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:3px">Date</div>
           <input id="pt-date" type="date" value="${p.date}" class="act-input"
-            style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary)">
+            style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary)">
         </div>` +
         `<div>
           <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:3px">Notes</div>
           <textarea id="pt-notes" rows="3" class="act-input"
-            style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);resize:vertical;font-family:inherit">${esc(p.notes)}</textarea>
+            style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);resize:vertical;font-family:inherit">${esc(p.notes)}</textarea>
         </div>`;
 
       // Switch to preview step
@@ -34327,7 +34356,7 @@ The state block is invisible to the user.`;
         <div class="ai-scope-bar" style="margin-bottom:10px;">
         ${[
           { key: 'tasks', label: 'Tasks', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
-          { key: 'savedNotes', label: 'Notes', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>' }
+          { key: 'savedNotes', label: 'Notes', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>' }
         ].map(({ key, label, icon }) => {
           const on = key === 'tasks' ? (state.aiScope.timesheet || state.aiScope.taskNotes) : state.aiScope[key];
           return `<button class="ai-scope-seg${on ? ' active' : ''}" onclick="toggleAIScope('${key}')">${icon}${label}</button>`;
@@ -34481,7 +34510,7 @@ The state block is invisible to the user.`;
               onclick="_coSiteCallback=(name)=>{document.getElementById('vc-loc').value=name;}; openLocationModal();">
             <button type="button"
               onclick="_coSiteCallback=(name)=>{document.getElementById('vc-loc').value=name;}; openLocationModal();"
-              style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+              style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
                 style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
                 <path
@@ -34547,7 +34576,7 @@ The state block is invisible to the user.`;
               onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;};openLocationModal();">
             <button type="button"
               onclick="_coSiteCallback=(name)=>{document.getElementById('nvc-loc').value=name;};openLocationModal();"
-              style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+              style="flex-shrink:0;height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
                 style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
                 <path
@@ -35236,7 +35265,7 @@ The state block is invisible to the user.`;
 
       <div id="battery-transcript" style="padding:14px 18px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;min-height:200px;"></div>
 
-      <div id="battery-results" style="display:none;padding:14px 18px;background:#FAFAFA;border-top:1px solid var(--border);max-height:300px;overflow-y:auto;">
+      <div id="battery-results" style="display:none;padding:14px 18px;background:var(--bg-card-alt);border-top:1px solid var(--border);max-height:300px;overflow-y:auto;">
         <div id="battery-results-inner"></div>
       </div>
 
