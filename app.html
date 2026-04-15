@@ -10028,6 +10028,12 @@
       box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.06);
     }
 
+    /* Selected state must keep blue ring even when also expanded */
+    .note-card.expanded.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
     /* Straight divider line when note is expanded — remove border-radius so border-bottom stays flat */
     .note-card.expanded .note-row {
       border-radius: 0;
@@ -13735,7 +13741,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.20';
+    const VERSION = '5.6.21';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
