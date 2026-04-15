@@ -89,3 +89,4 @@ Gaps found during audit that should become themable:
 ## Progress log
 
 - **v5.6.0** — Plan doc committed (this file).
+- **v5.6.1** — Added new CSS variables to `:root`: bg-section-muted, bg-weekend, text-display, text-warm, border-strong/-warm/-warm-light/-subtle/-medium, shadow-sm/-md/-lg/-brand-sm/-brand-md, gradient-success-from/-to, gradient-brand-from/-to, gradient-warn-from/-to, accent-alpha-06/-10/-30, amber-alpha-10/-40, slate-alpha-10/-40, blue-alpha-10/-40. Values match current hardcodes. No visual change — nothing consumes the new vars yet.
