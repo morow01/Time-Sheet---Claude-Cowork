@@ -13735,7 +13735,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.16';
+    const VERSION = '5.6.17';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16761,10 +16761,10 @@
                 <div class="menu-section-label">Navigation</div>
                 <div class="menu-card">
                   ${state.conflicts.length > 0 ? `
-                  <button class="menu-row" onclick="setView('conflicts');closeThemeMenu()" style="background:#FEF3DC">
-                    <span class="menu-row-icon" style="color:#D97706">${_cIcons.warning}</span>
-                    <span class="menu-row-body"><span class="menu-row-label" style="color:#D97706">Sync Conflicts</span><span class="menu-row-sub">${state.conflicts.length} item${state.conflicts.length > 1 ? 's' : ''} need attention</span></span>
-                    <span style="background:#DC2626;color:#fff;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:800;margin-right:4px">${state.conflicts.length}</span>
+                  <button class="menu-row" onclick="setView('conflicts');closeThemeMenu()" style="background:var(--bg-ot)">
+                    <span class="menu-row-icon" style="color:var(--pill-amber-color)">${_cIcons.warning}</span>
+                    <span class="menu-row-body"><span class="menu-row-label" style="color:var(--pill-amber-color)">Sync Conflicts</span><span class="menu-row-sub">${state.conflicts.length} item${state.conflicts.length > 1 ? 's' : ''} need attention</span></span>
+                    <span style="background:var(--priority-high);color:#fff;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:800;margin-right:4px">${state.conflicts.length}</span>
                     ${chev}
                   </button>` : ''}
                   <button class="menu-row" onclick="setView('journal');closeThemeMenu()">
@@ -17484,7 +17484,7 @@
     <div class="day-info">
       <div class="day-name">${day.dayName}</div>
       <div class="day-pills" data-day-pills="${di}">
-        ${actCount > 0 ? `<span class="pill-hrs" style="background:#EDF1F5;color:#5A7289">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)}
+        ${actCount > 0 ? `<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)}
         ${ord > 0 ? `<span class="pill-hrs">${Math.round(ord) === ord ? ord : ord.toFixed(1)}h</span>` : ''}
         ${ot > 0 ? `<span class="pill-ot">+${Math.round(ot) === ot ? ot : ot.toFixed(1)} OT</span>` : ''}
         ${remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : ''}
