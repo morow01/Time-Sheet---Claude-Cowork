@@ -97,12 +97,16 @@
       --border-warm-light: #dcdad4;      /* lighter warm divider (table cells) */
       --border-subtle: #EAEFF5;          /* very light section border */
       --border-medium: #E0E8F0;          /* medium strength border */
-      /* Shadows */
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-      --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.3);
-      --shadow-brand-sm: 0 1px 4px rgba(15, 28, 46, 0.08);
-      --shadow-brand-md: 0 4px 20px rgba(0, 0, 0, 0.06);
+      /* Shadow tint RGB — themes override these to tint all generic shadows.
+         Use in box-shadow as rgba(var(--shadow-rgb), 0.X). */
+      --shadow-rgb: 0, 0, 0;             /* neutral black — default shadow tint */
+      --shadow-brand-rgb: 15, 28, 46;    /* brand navy tint — cards, lifts */
+      /* Composed shadows — rarely used, kept for reference */
+      --shadow-sm: 0 1px 2px rgba(var(--shadow-rgb), 0.05);
+      --shadow-md: 0 4px 12px rgba(var(--shadow-rgb), 0.10);
+      --shadow-lg: 0 10px 40px rgba(var(--shadow-rgb), 0.30);
+      --shadow-brand-sm: 0 1px 4px rgba(var(--shadow-brand-rgb), 0.08);
+      --shadow-brand-md: 0 4px 20px rgba(var(--shadow-rgb), 0.06);
       /* Gradient endpoints */
       --gradient-success-from: #10B981;
       --gradient-success-to: #059669;
@@ -176,7 +180,7 @@
       transition: background 0.15s;
       border-radius: 0;
       gap: 18px;
-      box-shadow: 0 3px 10px -2px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 3px 10px -2px rgba(var(--shadow-rgb), 0.18);
     }
 
     .day-header:active {
@@ -775,7 +779,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13);
+      box-shadow: 0 8px 28px rgba(var(--shadow-rgb), 0.13);
       min-width: 200px;
       overflow: hidden;
       display: none;
@@ -1423,7 +1427,7 @@
     .activity-card {
       background: var(--bg-card);
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(15, 28, 46, 0.06);
+      box-shadow: 0 2px 8px rgba(var(--shadow-brand-rgb), 0.06);
       border: 1.5px solid var(--border);
       margin: 0 14px 10px 0;
       /* Removed left margin to use parent padding */
@@ -1460,12 +1464,12 @@
       border-radius: 50%;
       background: var(--bg-card);
       border: 2px solid #c4d0e1;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.1);
       z-index: 3;
     }
 
     .activity-card.expanded {
-      box-shadow: 0 8px 24px rgba(15, 28, 46, 0.12);
+      box-shadow: 0 8px 24px rgba(var(--shadow-brand-rgb), 0.12);
     }
 
     .task-num {
@@ -1964,7 +1968,7 @@
       overflow-y: auto;
       transform: translateX(100%);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: -8px 0 32px rgba(0, 0, 0, 0.18);
+      box-shadow: -8px 0 32px rgba(var(--shadow-rgb), 0.18);
     }
 
     .theme-dropdown.open {
@@ -1986,7 +1990,7 @@
         width: 300px;
         max-height: 85vh;
         border-radius: 16px;
-        box-shadow: 0 8px 36px rgba(0, 0, 0, 0.18);
+        box-shadow: 0 8px 36px rgba(var(--shadow-rgb), 0.18);
         border: 1px solid var(--border);
         transform: translateY(-8px);
         opacity: 0;
@@ -2168,7 +2172,7 @@
       background: var(--bg-card);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.06);
     }
 
     /* ── Rows inside cards ── */
@@ -2994,7 +2998,7 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.04);
     }
 
     .csbs-titlebar {
@@ -3904,7 +3908,7 @@
       padding: 24px;
       width: 100%;
       max-width: 320px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 20px 60px rgba(var(--shadow-rgb), 0.25);
       text-align: center;
     }
 
@@ -4216,7 +4220,7 @@
       background: var(--bg-card);
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 20px rgba(var(--shadow-rgb), 0.08);
     }
 
     /* ── Summary header button (matches day card header) ── */
@@ -4809,7 +4813,7 @@
       background: var(--bg-modal);
       border: 1px solid var(--border);
       border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+      box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.13);
       z-index: 200;
       max-height: 220px;
       overflow-y: auto;
@@ -4865,7 +4869,7 @@
         overflow: hidden;
         flex: 0 1 auto;
         background: var(--bg-card);
-        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 24px 64px rgba(var(--shadow-rgb), 0.5);
       }
 
       #code-modal-inner .safe-top {
@@ -4886,7 +4890,7 @@
         overflow: hidden;
         flex: 0 1 auto;
         background: var(--bg-card);
-        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 24px 64px rgba(var(--shadow-rgb), 0.5);
       }
 
       #location-modal-inner .safe-top {
@@ -4913,7 +4917,7 @@
         overflow: hidden;
         flex: 0 1 auto;
         background: var(--bg-card);
-        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 24px 64px rgba(var(--shadow-rgb), 0.5);
       }
 
       #finder-modal-inner .safe-top {
@@ -5017,7 +5021,7 @@
       border-radius: 14px;
       padding: 16px;
       width: 90%; max-width: 360px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 32px rgba(var(--shadow-rgb),0.4);
     }
     #notes-modal-header {
       display: flex; align-items: center; gap: 8px;
@@ -5054,7 +5058,7 @@
       border-bottom: none;
       border-radius: 14px 14px 0 0;
       padding: 16px 20px 24px;
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+      box-shadow: 0 -4px 24px rgba(var(--shadow-rgb),0.3);
       animation: slideUp 0.3s ease;
     }
     @keyframes slideUp {
@@ -5180,7 +5184,7 @@
       align-items: center;
       gap: 5px;
       flex-wrap: wrap;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.12);
     }
 
     #note-fs-tt-colors.tt-colors-open {
@@ -5269,7 +5273,7 @@
       gap: 1px;
       z-index: 300;
       min-width: 148px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
+      box-shadow: 0 4px 20px rgba(var(--shadow-rgb), 0.14);
     }
 
     .tt-list-menu.tt-open {
@@ -5676,7 +5680,7 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 6px 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.18);
       box-sizing: border-box;
       min-width: 180px;
       max-width: calc(100vw - 24px);
@@ -5777,7 +5781,7 @@
       padding: 24px 20px 18px;
       width: 340px;
       max-width: 100%;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+      box-shadow: 0 24px 64px rgba(var(--shadow-rgb), 0.22);
       animation: rdn-pop .15s ease;
     }
 
@@ -6206,7 +6210,7 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 14px;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+      box-shadow: 0 8px 28px rgba(var(--shadow-rgb), 0.16);
       padding: 10px;
       width: 210px;
     }
@@ -6347,7 +6351,7 @@
       opacity: 0;
       transition: opacity 0.15s;
       z-index: 20;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.3);
     }
 
     .img-resize-wrap.selected .img-resize-handle {
@@ -6410,7 +6414,7 @@
       transition: opacity 0.15s;
       z-index: 10;
       white-space: nowrap;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 2px 12px rgba(var(--shadow-rgb), 0.25);
       /* Prevent clipping on narrow screens */
       max-width: calc(100vw - 16px);
       overflow-x: auto;
@@ -6539,7 +6543,7 @@
       margin: 0 14px 20px;
       padding: 4px;
       transition: all .3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.04);
     }
 
     .ai-search-stacked:focus-within {
@@ -6607,7 +6611,7 @@
       background: #fff;
       color: var(--text-primary);
       font-weight: 700;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.11), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.11), 0 0 0 0.5px rgba(var(--shadow-rgb), 0.04);
     }
 
     .ai-scope-seg.active svg {
@@ -6616,7 +6620,7 @@
 
     .dark .ai-scope-seg.active {
       background: var(--bg-card);
-      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 1px 6px rgba(var(--shadow-rgb), 0.35);
     }
 
     .ai-scope-seg:active {
@@ -6960,7 +6964,7 @@
     @media (hover: hover) {
       .ai-source-card:hover {
         border-color: #3b82f6;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.05);
       }
     }
 
@@ -7020,7 +7024,7 @@
     @media (hover: hover) {
       .ai-note-card:hover {
         border-color: #059669;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.05);
       }
     }
 
@@ -7397,7 +7401,7 @@
       display: flex;
       flex-direction: column;
       animation: sheetUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-      box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 -4px 32px rgba(var(--shadow-rgb), 0.18);
     }
 
     @keyframes sheetUp {
@@ -7842,7 +7846,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.10);
+      box-shadow: 0 -4px 24px rgba(var(--shadow-rgb), 0.10);
       z-index: 1000;
       transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       box-sizing: border-box;
@@ -8014,7 +8018,7 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 5px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13);
+      box-shadow: 0 4px 20px rgba(var(--shadow-rgb), 0.13);
       display: none;
     }
 
@@ -8276,7 +8280,7 @@
 
     .ncf-swatch.ncf-sel {
       border-color: #1e293b;
-      box-shadow: 0 0 0 2px white, 0 0 0 3.5px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 0 0 2px white, 0 0 0 3.5px rgba(var(--shadow-rgb), 0.25);
     }
 
     .ncf-swatch.ncf-sel::after {
@@ -8580,7 +8584,7 @@
       border-radius: 50%;
       background: #fff;
       transition: transform 0.2s;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.2);
     }
 
     .te-toggle input:checked+.te-toggle-track::after {
@@ -9569,7 +9573,7 @@
     .jdocx-seg-btn.active {
       background: var(--bg-card);
       color: var(--text-primary);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+      box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.10);
     }
 
     .jdocx-label {
@@ -9850,7 +9854,7 @@
       margin: 0 16px 12px;
       border: 1px solid var(--border);
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.03);
       transition: box-shadow 0.3s ease;
       position: relative;
       transform: translateZ(0);
@@ -9859,7 +9863,7 @@
 
     .note-card.expanded {
       border-color: var(--border);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.06);
     }
 
     /* Straight divider line when note is expanded — remove border-radius so border-bottom stays flat */
@@ -11031,7 +11035,7 @@
       z-index: 20;
       max-height: 200px;
       overflow-y: auto;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.15);
     }
 
     .note-town-option {
@@ -11099,7 +11103,7 @@
       justify-content: space-around;
       align-items: center;
       z-index: 10000;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 -4px 12px rgba(var(--shadow-rgb), 0.1);
       padding-bottom: env(safe-area-inset-bottom);
     }
 
@@ -11394,7 +11398,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.22);
+      box-shadow: 0 -8px 40px rgba(var(--shadow-rgb), 0.22);
     }
 
     #snapshot-modal-header {
@@ -13222,7 +13226,7 @@
   <div id="confirm-modal" class="hidden fixed inset-0 flex items-center justify-center"
     style="background:rgba(0,0,0,0.6);z-index:99999">
     <div
-      style="background:var(--bg-modal);border-radius:12px;padding:24px;max-width:360px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.3)">
+      style="background:var(--bg-modal);border-radius:12px;padding:24px;max-width:360px;width:90%;box-shadow:0 10px 40px rgba(var(--shadow-rgb),0.3)">
       <div style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text)" id="confirm-title">Confirm</div>
       <div style="font-size:14px;color:var(--text-muted);margin-bottom:20px" id="confirm-message">Are you sure?</div>
       <div style="display:flex;gap:12px;justify-content:flex-end">
@@ -13471,7 +13475,7 @@
   <div id="backup-modal" class="hidden fixed inset-0 flex flex-col"
     style="background:rgba(0,0,0,0.6);z-index:900;overflow-y:auto">
     <div style="margin:auto;width:100%;max-width:600px;padding:16px 12px 32px">
-      <div style="background:var(--bg-card);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.35)">
+      <div style="background:var(--bg-card);border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(var(--shadow-rgb),0.35)">
         <div
           style="padding:16px 16px 14px;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--border)">
           <div>
@@ -13511,7 +13515,7 @@
   <div id="restore-confirm-modal" class="hidden fixed inset-0 flex items-center justify-center"
     style="background:rgba(0,0,0,0.6);z-index:910">
     <div
-      style="background:var(--bg-card);border-radius:16px;padding:24px;max-width:360px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,0.35)">
+      style="background:var(--bg-card);border-radius:16px;padding:24px;max-width:360px;width:90%;box-shadow:0 8px 40px rgba(var(--shadow-rgb),0.35)">
       <div style="font-weight:700;font-size:1rem;color:var(--text-primary);margin-bottom:8px">Restore from backup?</div>
       <div id="restore-confirm-msg"
         style="font-size:0.88rem;color:var(--text-muted);line-height:1.5;margin-bottom:20px"></div>
@@ -13569,7 +13573,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.7';
+    const VERSION = '5.6.8';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16669,7 +16673,7 @@
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Voice button</span><span class="menu-row-sub">${state.micFabHidden ? 'Hidden — tap to show' : 'Visible — tap to hide'}</span></span>
                     <span style="width:36px;height:20px;border-radius:10px;background:${state.micFabHidden ? '#e2e8f0' : 'var(--accent)'};position:relative;transition:background 0.2s;flex-shrink:0;display:inline-block;">
-                      <span style="position:absolute;top:2px;left:${state.micFabHidden ? '2px' : '18px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.18);display:block;"></span>
+                      <span style="position:absolute;top:2px;left:${state.micFabHidden ? '2px' : '18px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.18);display:block;"></span>
                     </span>
                   </button>
                 </div>
@@ -20026,7 +20030,7 @@
       var ghost = rowEl.cloneNode(true);
       ghost.removeAttribute('data-jid');
       ghost.classList.add('j-drag-ghost');
-      ghost.style.cssText = 'position:fixed;top:' + rect.top + 'px;left:' + rect.left + 'px;width:' + rowW + 'px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;' + (e.pointerType === 'mouse' ? 'cursor:grabbing;' : '');
+      ghost.style.cssText = 'position:fixed;top:' + rect.top + 'px;left:' + rect.left + 'px;width:' + rowW + 'px;z-index:9999;box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.22);border-radius:10px;pointer-events:none;background:var(--bg-card,#fff);opacity:1;transform:scale(1.03);transition:none;' + (e.pointerType === 'mouse' ? 'cursor:grabbing;' : '');
       document.body.appendChild(ghost);
       _jPointerDrag = { type: type, id: id, pointerId: e.pointerId, rowEl: rowEl, ghost: ghost, ph: ph, container: container, origRects: origRects, startY: e.clientY, rectTop: rect.top, hasMoved: false };
       document.addEventListener('pointermove', _jOnPointerMove);
@@ -21528,7 +21532,7 @@
             width:${liRect.width}px !important; box-sizing:border-box !important;
             height:auto !important; overflow:visible !important; opacity:1 !important;
             background:#fff !important; border-radius:8px !important;
-            box-shadow:0 8px 24px rgba(0,0,0,0.15),0 2px 8px rgba(0,0,0,0.10) !important;
+            box-shadow:0 8px 24px rgba(var(--shadow-rgb),0.15),0 2px 8px rgba(var(--shadow-rgb),0.10) !important;
             margin:0 !important; transform:none !important;
           }`);
           // Lock the ul's min-height to its pre-drag value so it can never shrink
@@ -21657,7 +21661,7 @@
           width:${wrapRect.width}px;height:${wrapRect.height}px;
           border:2.5px dashed #818cf8;border-radius:10px;
           background:rgba(129,140,248,0.09);pointer-events:none;z-index:10000;
-          box-shadow:0 4px 20px rgba(0,0,0,0.10);`;
+          box-shadow:0 4px 20px rgba(var(--shadow-rgb),0.10);`;
         document.body.appendChild(ghost);
         wrap.style.opacity = '0.35';
 
@@ -22902,7 +22906,7 @@
         <div class="flex p-1 rounded-xl mb-3" style="background:var(--bg-code-group)">
           <button onclick="setExchangeTab('exchanges')"
             class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200"
-            style="${isEx ? 'background:var(--bg-card);color:var(--text-primary);box-shadow:0 1px 3px rgba(0,0,0,0.08)' : 'color:var(--text-muted);'}">
+            style="${isEx ? 'background:var(--bg-card);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.08)' : 'color:var(--text-muted);'}">
             <span class="inline-flex items-center gap-1.5">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
               Exchanges
@@ -22910,7 +22914,7 @@
           </button>
           <button onclick="setExchangeTab('cabinets')"
             class="flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all duration-200"
-            style="${!isEx ? 'background:var(--bg-card);color:var(--text-primary);box-shadow:0 1px 3px rgba(0,0,0,0.08)' : 'color:var(--text-muted);'}">
+            style="${!isEx ? 'background:var(--bg-card);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.08)' : 'color:var(--text-muted);'}">
             <span class="inline-flex items-center gap-1.5">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg>
               Cabinets
@@ -23689,7 +23693,7 @@
       const overlay = document.createElement('div');
       overlay.id = 'exit-dialog';
       overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn 0.15s ease';
-      overlay.innerHTML = '<div style="background:var(--bg-card);border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 16px 48px rgba(0,0,0,0.3);">'
+      overlay.innerHTML = '<div style="background:var(--bg-card);border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.3);">'
         + '<div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Exit Rian?</div>'
         + '<div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px;">Are you sure you want to close the app?</div>'
         + '<div style="display:flex;gap:10px;justify-content:flex-end;">'
@@ -23883,7 +23887,7 @@
     function renderLogin() {
       document.getElementById('app').innerHTML = `
         <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-page);">
-          <div style="background:var(--bg-card);border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%;box-shadow:0 4px 24px rgba(0,0,0,0.10);border:1px solid var(--border);">
+          <div style="background:var(--bg-card);border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%;box-shadow:0 4px 24px rgba(var(--shadow-rgb),0.10);border:1px solid var(--border);">
             <div style="font-size:2.5rem;margin-bottom:12px;color:var(--accent);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);margin-bottom:6px;">Rian</h1>
             <p style="color:var(--text-secondary);margin-bottom:28px;font-size:0.88rem;">Sign in to sync your timesheet across all devices.</p>
@@ -24073,7 +24077,7 @@
           <span style="font-size:17px;font-weight:800;flex:1;color:var(--text-primary)">Notes Tag Manager</span>
         </div>
         <div style="background:var(--bg-page);min-height:100vh;padding:20px 16px 100px">
-          <div id="tag-editor-body" style="max-width:480px;margin:0 auto;background:var(--bg-card);border-radius:16px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.07)"></div>
+          <div id="tag-editor-body" style="max-width:480px;margin:0 auto;background:var(--bg-card);border-radius:16px;padding:16px 18px;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.07)"></div>
         </div>`;
     }
 
@@ -27699,7 +27703,7 @@
       html += `<div style="padding:14px 14px 4px">`;
 
       // White card — contains everything
-      html += `<div style="background:var(--bg-card);border-radius:18px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid var(--border)">`;
+      html += `<div style="background:var(--bg-card);border-radius:18px;overflow:hidden;box-shadow:0 2px 8px rgba(var(--shadow-rgb),0.08);border:1px solid var(--border)">`;
 
       // Header row: icon + title + subtitle + close button
       html += `<div style="display:flex;align-items:center;gap:12px;padding:16px 16px 12px">
@@ -34964,7 +34968,7 @@ The state block is invisible to the user.`;
 
   <!-- Battery recorder modal -->
   <div id="battery-modal" class="hidden fixed inset-0 flex items-center justify-center" style="background:rgba(0,0,0,0.5);z-index:10010;backdrop-filter:blur(3px);padding:16px;">
-    <div style="background:var(--bg-card);border-radius:20px;width:100%;max-width:460px;height:calc(100vh - 32px);max-height:800px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="background:var(--bg-card);border-radius:20px;width:100%;max-width:460px;height:calc(100vh - 32px);max-height:800px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(var(--shadow-rgb),0.3);">
       <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
         <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3h-2V1h-2v2H9C7.9 3 7 3.9 7 5v16c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
