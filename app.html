@@ -2286,12 +2286,30 @@
       --priority-low-border: #8BAC0F;
       --priority-low-dark: #0F380F;
     }
-    [data-theme="gameboy"] body { font-family: var(--font-body); background-color: var(--bg-page); font-size: 10px; }
+    [data-theme="gameboy"] body { font-family: var(--font-body); background-color: var(--bg-page); font-size: 8px; }
     [data-theme="gameboy"] .font-mono, [data-theme="gameboy"] .t-code,
     [data-theme="gameboy"] .task-hours, [data-theme="gameboy"] .val { font-family: var(--font-mono) !important; }
     [data-theme="gameboy"] .day-header { background: var(--bg-card); }
     [data-theme="gameboy"] * { border-radius: 0 !important; }
     [data-theme="gameboy"] ::placeholder { color: #306230 !important; opacity: 1; }
+    /* Reduce font sizes — Press Start 2P renders large */
+    [data-theme="gameboy"] .act-textarea, [data-theme="gameboy"] .act-input { font-size: 8px !important; }
+    [data-theme="gameboy"] input[type="number"] { font-size: 10px !important; }
+    [data-theme="gameboy"] .text-sm, [data-theme="gameboy"] .text-xs { font-size: 7px !important; }
+    [data-theme="gameboy"] .text-base { font-size: 8px !important; }
+    [data-theme="gameboy"] .text-lg { font-size: 10px !important; }
+    [data-theme="gameboy"] .text-xl { font-size: 11px !important; }
+    [data-theme="gameboy"] .text-2xl, [data-theme="gameboy"] .text-3xl { font-size: 12px !important; }
+    [data-theme="gameboy"] .font-bold, [data-theme="gameboy"] .font-semibold { font-size: inherit; }
+    [data-theme="gameboy"] .act-field-label { font-size: 6px !important; }
+    /* Fix ··· dots button — use smaller font and no letter-spacing */
+    [data-theme="gameboy"] .btn-more {
+      font-size: 10px !important;
+      letter-spacing: 0 !important;
+      font-family: monospace !important;
+      width: 36px;
+      height: 36px;
+    }
 
     /* ===== WINDOWS 3.1 THEME ===== */
     /* Silver/teal desktop, navy title bars, 3D inset shadows */
@@ -15146,7 +15164,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.44';
+    const VERSION = '5.6.45';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -18034,6 +18052,15 @@
       }
 
       app.innerHTML = renderHeader() + _renderConflictBanner() + viewBody;
+      // Hoist .j-fab out of #app to document.body so position:fixed is always
+      // relative to the viewport (not any transformed ancestor inside #app).
+      const _existingBodyFab = document.getElementById('j-fab-portal');
+      if (_existingBodyFab) _existingBodyFab.remove();
+      const _inlineFab = app.querySelector('.j-fab');
+      if (_inlineFab) {
+        _inlineFab.id = 'j-fab-portal';
+        document.body.appendChild(_inlineFab);
+      }
       attachEvents();
       // Populate tag editor body when in full-screen tags view
       if (state.view === 'tags-full') { _teFormOpen = false; _teEditKey = null; renderTagEditor(); }
