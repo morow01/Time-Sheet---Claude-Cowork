@@ -13526,7 +13526,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.5.32';
+    const VERSION = '5.5.33';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26538,14 +26538,28 @@
       const settings = {};
       lsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
       const now = Date.now();
-      await backupRef.set({
-        // Identical format to Export All Data so files are interchangeable
+      // Strip embedded base64 data-URIs from rich content before backup —
+      // images are already in Firebase Storage with URLs; base64 in content
+      // would double storage and blow Firestore's 1MB doc limit.
+      const _stripB64 = v => {
+        if (typeof v === 'string') {
+          return v.replace(/<img[^>]*src=["']data:[^"']+["'][^>]*>/gi, '<img src="[image removed from backup]">')
+                  .replace(/"data:[^"]{200,}"/g, '"[data:url stripped]"');
+        }
+        if (Array.isArray(v)) return v.map(_stripB64);
+        if (v && typeof v === 'object') {
+          const out = {};
+          for (const k in v) out[k] = _stripB64(v[k]);
+          return out;
+        }
+        return v;
+      };
+      const payload = {
         _format: 'rian-export-v1',
         _exportedAt: new Date(now).toISOString(),
         _sourceUid: uid,
         _sourceEmail: state.currentUser?.email || '',
         _version: VERSION,
-        // Extra backup metadata (display use only)
         _backedUpAt: now,
         _noteCount: noteCount,
         _weekCount: weekCount,
@@ -26555,18 +26569,31 @@
         _tagCount: tagCount,
         _notebookCount: notebookCount,
         _pageCount: pageCount,
-        // Data — same fields as export
-        weeks,
-        notes,
+        weeks: _stripB64(weeks),
+        notes: _stripB64(notes),
         reminders,
-        callouts,
+        callouts: _stripB64(callouts),
         routines,
         categories,
         jNotebooks,
         jSections,
-        jPages,
+        jPages: _stripB64(jPages),
         settings
-      });
+      };
+      // Size guard — Firestore caps docs at 1,048,576 bytes. If still too
+      // large, bail out with a clear console message so the user knows to
+      // use Export All Data instead.
+      try {
+        const sz = new Blob([JSON.stringify(payload)]).size;
+        if (sz > 900000) {
+          console.warn('[Rian Backup] Payload ' + Math.round(sz/1024) + 'kb exceeds safe limit — skipping daily backup. Use ☰ → Export All Data for local file.');
+          throw new Error('Backup too large (' + Math.round(sz/1024) + 'kb)');
+        }
+      } catch (e) {
+        if (/too large/.test(e.message)) throw e;
+        // Blob size calc failed — still attempt the write
+      }
+      await backupRef.set(payload);
       // Prune: keep only the 30 most recent backups
       try {
         const allSnap = await db_fs.collection(`users/${uid}/backups`).orderBy('_backedUpAt', 'asc').get();
