@@ -13573,7 +13573,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.10';
+    const VERSION = '5.6.11';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16676,6 +16676,20 @@
                       <span style="position:absolute;top:2px;left:${state.micFabHidden ? '2px' : '18px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.18);display:block;"></span>
                     </span>
                   </button>
+                  ${(() => {
+                    const cur = getSavedTheme();
+                    const keys = Object.keys(THEME_META);
+                    return `
+                    <div class="menu-row" style="display:block;padding:12px 14px;">
+                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/><path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10"/><line x1="2" y1="12" x2="22" y2="12"/></svg></span>
+                        <span class="menu-row-body" style="flex:1;"><span class="menu-row-label">Theme</span><span class="menu-row-sub">${esc(THEME_META[cur].label)}</span></span>
+                      </div>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                        ${keys.map(k => `<button type="button" onclick="setTheme('${k}')" style="padding:6px 12px;border-radius:999px;border:1.5px solid ${cur === k ? 'var(--accent)' : 'var(--border)'};background:${cur === k ? 'var(--accent)' : 'var(--bg-card)'};color:${cur === k ? '#fff' : 'var(--text-primary)'};font-size:12px;font-weight:600;cursor:pointer;">${esc(THEME_META[k].label)}</button>`).join('')}
+                      </div>
+                    </div>`;
+                  })()}
                 </div>
               </div>
 
@@ -23818,16 +23832,37 @@
     // ============================================================
     // THEME LOGIC
     // ============================================================
-    const THEME_META = { claude: '#0F1C2E' };
+    // Registry: { themeKey: { label, metaColor } }
+    //   label     — shown in the picker
+    //   metaColor — address-bar colour on mobile (matches header bg)
+    const THEME_META = {
+      claude: { label: 'Claude (default)', metaColor: '#0F1C2E' },
+    };
+    const DEFAULT_THEME = 'claude';
+
+    function getSavedTheme() {
+      try {
+        const v = localStorage.getItem('rian_theme');
+        return (v && THEME_META[v]) ? v : DEFAULT_THEME;
+      } catch { return DEFAULT_THEME; }
+    }
 
     function initTheme() {
-      document.documentElement.setAttribute('data-theme', 'claude');
+      const t = getSavedTheme();
+      document.documentElement.setAttribute('data-theme', t);
       const meta = document.getElementById('meta-theme');
-      if (meta) meta.setAttribute('content', '#0F1C2E');
+      if (meta) meta.setAttribute('content', THEME_META[t].metaColor);
     }
 
     function setTheme(t) {
-      /* themes removed */
+      if (!THEME_META[t]) return;
+      document.documentElement.setAttribute('data-theme', t);
+      try { localStorage.setItem('rian_theme', t); } catch {}
+      const meta = document.getElementById('meta-theme');
+      if (meta) meta.setAttribute('content', THEME_META[t].metaColor);
+      // Re-render so the menu reflects the new selection
+      if (typeof render === 'function') render();
+      showToast('Theme: ' + THEME_META[t].label);
     }
 
     function toggleThemeMenu(e) {
