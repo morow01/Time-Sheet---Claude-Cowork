@@ -54,7 +54,7 @@
       --btn-danger-color: #E8453C;
       --btn-danger-bg: #FDECEA;
       --btn-danger-border: rgba(232, 69, 60, 0.22);
-      --bg-input: #F4F7FA;
+      --bg-input: #f8fafc;
       --bg-code-btn: #EBF1FD;
       --bg-modal: #FFFFFF;
       --bg-modal-search: #F4F7FA;
@@ -468,7 +468,7 @@
     }
 
     .act-codes-wrap {
-      background: #f8fafc;
+      background: var(--bg-input);
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
@@ -608,7 +608,7 @@
 
     .act-textarea {
       width: 100%;
-      background: #f8fafc;
+      background: var(--bg-input);
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
@@ -622,7 +622,7 @@
 
     .act-input {
       width: 100%;
-      background: #f8fafc;
+      background: var(--bg-input);
       border: 1.5px solid var(--border);
       border-radius: 8px;
       padding: 10px 12px;
@@ -880,7 +880,7 @@
     }
 
     .note-confirm-preview {
-      background: #f8fafc;
+      background: var(--bg-input);
       border: 1px solid #e2e8f0;
       border-radius: 10px;
       padding: 12px;
@@ -4314,7 +4314,7 @@
     }
 
     .sum-grid-row:hover {
-      background: #F8FAFC;
+      background: var(--bg-input);
     }
 
     .sum-grid-row.sum-missing {
@@ -10073,7 +10073,7 @@
     .note-detail input[type="search"],
     .note-detail input[type="date"] {
       width: 100%;
-      background: #f8fafc;
+      background: var(--bg-input);
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 12px 14px;
@@ -10280,7 +10280,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #f8fafc;
+      background: var(--bg-input);
       border: 1px solid #e2e8f0;
       border-radius: 12px;
       padding: 10px 12px;
@@ -10392,7 +10392,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: #f8fafc;
+      background: var(--bg-input);
       border-radius: 12px;
       padding: 10px 12px;
       border: 1px solid #e2e8f0;
@@ -10671,7 +10671,7 @@
     }
 
     .remind-preview {
-      background: #f8fafc;
+      background: var(--bg-input);
       border-radius: 12px;
       padding: 12px 14px;
       margin: 0 12px 12px;
@@ -10852,7 +10852,7 @@
     }
 
     .task-picker-preview {
-      background: #f8fafc;
+      background: var(--bg-input);
       border-radius: 12px;
       padding: 14px 16px;
       margin: 0 12px 12px;
@@ -13566,7 +13566,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.1';
+    const VERSION = '5.6.2';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
