@@ -2294,14 +2294,47 @@
     [data-theme="gameboy"] ::placeholder { color: #306230 !important; opacity: 1; }
     /* Reduce font sizes — Press Start 2P renders large */
     [data-theme="gameboy"] .act-textarea, [data-theme="gameboy"] .act-input { font-size: 8px !important; }
-    [data-theme="gameboy"] input[type="number"] { font-size: 10px !important; }
+    [data-theme="gameboy"] input, [data-theme="gameboy"] textarea, [data-theme="gameboy"] select { font-size: 8px !important; }
+    [data-theme="gameboy"] input[type="number"] { font-size: 9px !important; }
+    [data-theme="gameboy"] button { font-size: 8px !important; }
     [data-theme="gameboy"] .text-sm, [data-theme="gameboy"] .text-xs { font-size: 7px !important; }
     [data-theme="gameboy"] .text-base { font-size: 8px !important; }
-    [data-theme="gameboy"] .text-lg { font-size: 10px !important; }
-    [data-theme="gameboy"] .text-xl { font-size: 11px !important; }
-    [data-theme="gameboy"] .text-2xl, [data-theme="gameboy"] .text-3xl { font-size: 12px !important; }
+    [data-theme="gameboy"] .text-lg { font-size: 9px !important; }
+    [data-theme="gameboy"] .text-xl { font-size: 10px !important; }
+    [data-theme="gameboy"] .text-2xl { font-size: 11px !important; }
+    [data-theme="gameboy"] .text-3xl { font-size: 12px !important; }
+    [data-theme="gameboy"] h1 { font-size: 12px !important; }
+    [data-theme="gameboy"] h2 { font-size: 11px !important; }
+    [data-theme="gameboy"] h3 { font-size: 10px !important; }
+    [data-theme="gameboy"] h4, [data-theme="gameboy"] h5, [data-theme="gameboy"] h6 { font-size: 9px !important; }
     [data-theme="gameboy"] .font-bold, [data-theme="gameboy"] .font-semibold { font-size: inherit; }
     [data-theme="gameboy"] .act-field-label { font-size: 6px !important; }
+    /* Day/summary/header specific overrides */
+    [data-theme="gameboy"] .day-name { font-size: 10px !important; }
+    [data-theme="gameboy"] .day-date { font-size: 10px !important; }
+    [data-theme="gameboy"] .day-num { font-size: 11px !important; }
+    [data-theme="gameboy"] .task-title { font-size: 9px !important; }
+    [data-theme="gameboy"] .task-hours { font-size: 8px !important; }
+    [data-theme="gameboy"] .task-code { font-size: 8px !important; }
+    [data-theme="gameboy"] .stat-pill { font-size: 7px !important; }
+    [data-theme="gameboy"] .hdr-metric-val { font-size: 12px !important; }
+    [data-theme="gameboy"] .hdr-metric-label { font-size: 6px !important; }
+    [data-theme="gameboy"] .sum-footer-val, [data-theme="gameboy"] .sum-total-val { font-size: 11px !important; }
+    [data-theme="gameboy"] .sum-footer-label { font-size: 7px !important; }
+    [data-theme="gameboy"] .week-range { font-size: 10px !important; }
+    [data-theme="gameboy"] .sync-status { font-size: 7px !important; }
+    [data-theme="gameboy"] .nav-tab { font-size: 8px !important; }
+    [data-theme="gameboy"] .anomaly-banner-title { font-size: 8px !important; }
+    [data-theme="gameboy"] .anomaly-banner-count { font-size: 7px !important; }
+    [data-theme="gameboy"] .anomaly-item { font-size: 7px !important; }
+    [data-theme="gameboy"] .menu-display-name { font-size: 10px !important; }
+    [data-theme="gameboy"] .menu-avatar-initials { font-size: 10px !important; }
+    [data-theme="gameboy"] .vl-text-title, [data-theme="gameboy"] .vl-transcript,
+    [data-theme="gameboy"] .vc-title, [data-theme="gameboy"] .rtn-picker-close-btn { font-size: 10px !important; }
+    /* Journal / Notes specific */
+    [data-theme="gameboy"] .j-fab, [data-theme="gameboy"] .j-nb-title, [data-theme="gameboy"] .j-sec-title,
+    [data-theme="gameboy"] .j-pg-title { font-size: 10px !important; }
+    [data-theme="gameboy"] .note-title, [data-theme="gameboy"] .note-snippet { font-size: 8px !important; }
     /* Fix ··· dots button — use smaller font and no letter-spacing */
     [data-theme="gameboy"] .btn-more {
       font-size: 10px !important;
@@ -15164,7 +15197,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.45';
+    const VERSION = '5.6.46';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
