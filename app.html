@@ -15214,7 +15214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.60';
+    const VERSION = '5.6.61';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16600,7 +16600,20 @@
           }
           state.callouts = merged;
         } else {
+          // Collect draft callouts before overwriting
+          const _coDrafts = {};
+          if (state.callouts?.weeks) {
+            for (const [wk, wd] of Object.entries(state.callouts.weeks)) {
+              const drafts = (wd.callouts || []).filter(c => c._draft);
+              if (drafts.length) _coDrafts[wk] = drafts;
+            }
+          }
           state.callouts = { weeks: remote.weeks || {}, onCall: remote.onCall || {} };
+          // Re-inject drafts
+          for (const [wk, drafts] of Object.entries(_coDrafts)) {
+            if (!state.callouts.weeks[wk]) state.callouts.weeks[wk] = { startDate: wk, callouts: [] };
+            state.callouts.weeks[wk].callouts.push(...drafts);
+          }
         }
 
         dbPut('notes', { id: 'callouts_all', userId: uid, data: state.callouts, updatedAt: remote._updatedAt || Date.now() });
@@ -16617,10 +16630,16 @@
     async function saveCallouts() {
       const uid = state.currentUser?.uid;
       if (!uid || !state.callouts) return;
-      // Update HWM before saving
-      _raiseCoHWM(_totalCalloutEntries(state.callouts));
-      await dbPut('notes', { id: 'callouts_all', userId: uid, data: state.callouts, updatedAt: Date.now() });
-      await fsSetCallouts(state.callouts);
+      // Strip draft callouts before saving — they haven't been explicitly saved yet
+      const toSave = deepCopy(state.callouts);
+      if (toSave.weeks) {
+        for (const wk of Object.values(toSave.weeks)) {
+          if (wk.callouts) wk.callouts = wk.callouts.filter(c => !c._draft);
+        }
+      }
+      _raiseCoHWM(_totalCalloutEntries(toSave));
+      await dbPut('notes', { id: 'callouts_all', userId: uid, data: toSave, updatedAt: Date.now() });
+      await fsSetCallouts(toSave);
     }
 
     // Rolling notes backup — separate from main notes doc, never overwritten with empty
@@ -29917,11 +29936,17 @@
             <input type="time" id="co-time-input" class="act-input" value="${timeStr}"
               onchange="updateCoField('engineerOnSite', this.value)">
           </div>
-          <!-- Delete only (auto-save handles saving) -->
           <div class="note-bottom-actions">
-            <button class="note-btn-delete" onclick="event.stopPropagation(); coDelete()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> ${isNew ? 'Discard' : 'Delete Callout'}
+            ${isNew || co._draft ? `
+            <button class="note-btn-done" onclick="event.stopPropagation(); coSaveDraft()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
             </button>
+            <button class="note-btn-delete" onclick="event.stopPropagation(); coDelete()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
+            </button>` : `
+            <button class="note-btn-delete" onclick="event.stopPropagation(); coDelete()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout
+            </button>`}
           </div>
         </div>
       </div>`;
@@ -30034,7 +30059,8 @@
         const co = {
           id,
           date: document.getElementById('co-date-input')?.value || weekStart,
-          ticket: '', site: '', fault: '', engineerOnSite: '', notes: ''
+          ticket: '', site: '', fault: '', engineerOnSite: '', notes: '',
+          _draft: true
         };
         weekData.callouts.push(co);
         state.calloutsExpandedId = id;
@@ -30225,6 +30251,15 @@
 
     // coSave is now handled by coAutoSave — kept for backwards compat
     function coSave() { _coDoSave(); }
+
+    function coSaveDraft() {
+      const co = _coGetOrCreate();
+      if (!co) return;
+      delete co._draft;
+      _coDoSave();
+      render();
+      showToast('Callout saved');
+    }
 
     function coDelete() {
       const deleteId = state.calloutsExpandedId;
