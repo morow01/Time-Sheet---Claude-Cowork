@@ -15214,7 +15214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.54';
+    const VERSION = '5.6.55';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20998,9 +20998,18 @@
                 if (ln && ln.id === _protectId) {
                   const _openTs = window._tiptapNoteOpenTs || 0;
                   const _edited = (ln.updatedAt || 0) > _openTs;
+                  // SAFETY: if local is empty but remote has content, ALWAYS take remote
+                  // regardless of timestamps — empty should never overwrite data.
+                  const _localEmpty = !(ln.noteContent || '').trim();
+                  const _remoteHasContent = !!(rn.noteContent || '').trim();
+                  if (_localEmpty && _remoteHasContent) { _mergeChanged = true; return deepCopy(rn); }
                   if (!_edited && rn.updatedAt > _openTs) { _mergeChanged = true; return deepCopy(rn); } // stale open, no edits → take remote
                   return deepCopy(ln); // user edited → keep local
                 }
+                // SAFETY: empty local should never beat non-empty remote
+                const _lnEmpty = !(ln?.noteContent || '').trim();
+                const _rnHasContent = !!(rn.noteContent || '').trim();
+                if (ln && _lnEmpty && _rnHasContent) { _mergeChanged = true; return deepCopy(rn); }
                 if (ln && (ln.updatedAt || 0) >= (rn.updatedAt || 0)) return deepCopy(ln); // local same-or-newer
                 // Remote is strictly newer — accept and lower HWM
                 const _trSize = (rn.noteContent || '').length;
@@ -23618,8 +23627,15 @@
         _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
         _tiptapLastSavedNoteId = noteId;
         window._tiptapNoteEdited = false; // track whether user actually changed anything
+        window._tiptapOpenedEmpty = !(note.noteContent || '').trim(); // was editor empty at open?
         _tiptapOnUpdate = (editor) => {
           const html = _ttGetHTML();
+          const hasContent = html && html.replace(/<[^>]*>/g, '').trim().length > 0;
+          // SAFETY: if editor was opened empty (stale cache), don't save empty content
+          // back to Firestore — it would overwrite fresh content from another device.
+          // Only save once the user actually adds real content.
+          if (window._tiptapOpenedEmpty && !hasContent) return;
+          if (hasContent) window._tiptapOpenedEmpty = false; // user typed → safe to save now
           const _fsArr = _fnFsSource === 'jpage' ? state.jPages
             : _fnFsSource === 'journal' ? state.journal
               : state.notes;
