@@ -15214,7 +15214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.58';
+    const VERSION = '5.6.59';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -16766,7 +16766,7 @@
     }
 
     function createActivity() {
-      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false };
+      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false, _draft: true };
     }
 
     function toggleRemedyFlag(di, actId) {
@@ -17520,13 +17520,13 @@
       // Deep-copy weekData so a week switch mid-debounce saves the correct
       // version rather than whatever state.weekData points to at fire time.
       const capturedWeekData = deepCopy(state.weekData);
+      // Strip draft activities before saving — they haven't been explicitly saved yet
+      if (capturedWeekData.days) {
+        capturedWeekData.days.forEach(d => {
+          d.activities = (d.activities || []).filter(a => !a._draft);
+        });
+      }
       saveTimer = setTimeout(async () => {
-        // Always save the captured snapshot of state at edit time.
-        // Using state.weekData here would cause a race: if a Firestore snapshot
-        // arrives within the 1s debounce it overwrites state.weekData with stale
-        // data (e.g. empty hours from another device), and the timer then persists
-        // that stale state, destroying the user's edit. capturedWeekData is always
-        // correct — it's the deepCopy taken right when the user's edit fired.
         const dataToSave = capturedWeekData;
         const uid = state.currentUser?.uid || null;
         await dbPut('weeks', { weekStart: capturedWeekStart, userId: uid, data: dataToSave, updatedAt: dataToSave._updatedAt });
@@ -19301,8 +19301,12 @@
             </div>
 
             <div class="act-actions-row" style="gap:8px;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;">
-              ${!(act.description || '').trim() && !(parseFloat(act.ordinary) > 0) && !(parseFloat(act.overtime) > 0)
-              ? `<button onclick="removeActivity('${act.id}',${di})" class="act-action-btn act-action-delete">
+              ${act._draft
+              ? `<button onclick="saveTaskDraft('${act.id}',${di})" class="act-action-btn act-action-note" style="flex:1;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Save
+                </button>
+                <button onclick="discardTaskDraft('${act.id}',${di})" class="act-action-btn act-action-delete">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   Discard
                 </button>`
@@ -19442,7 +19446,28 @@
       state.weekData.days[di].activities.push(newAct);
       state.activitiesExpanded.add(newAct.id); // Auto-expand new activities
       state.expandedDays.add(di); // Auto-expand the entire day so user sees the new activity
+      // Don't sync yet — task is in draft mode until user taps Save
       render();
+    }
+
+    function saveTaskDraft(actId, di) {
+      const day = state.weekData?.days[di];
+      if (!day) return;
+      const act = day.activities.find(a => a.id === actId);
+      if (!act) return;
+      delete act._draft;
+      scheduleAutoSave();
+      render();
+      showToast('Task saved');
+    }
+
+    function discardTaskDraft(actId, di) {
+      const day = state.weekData?.days[di];
+      if (!day) return;
+      day.activities = day.activities.filter(a => a.id !== actId);
+      state.activitiesExpanded.delete(actId);
+      render();
+      showToast('Draft discarded');
     }
 
     function removeActivity(actId, di) {
