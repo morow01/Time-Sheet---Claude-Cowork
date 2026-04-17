@@ -15738,7 +15738,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.8';
+    const VERSION = '5.8.9';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -17027,6 +17027,27 @@
       }
 
       await ref.set(merged);
+      // Verify the write landed on the server (Firestore persistence
+      // resolves set() from local cache, not server confirmation).
+      // If verification fails, retry once after a short delay.
+      try {
+        var _verify = await ref.get({ source: 'server' });
+        if (_verify.exists) {
+          var _vData = _verify.data();
+          var _vTotal = 0;
+          if (_vData.days) _vData.days.forEach(function(d) { _vTotal += (d.activities || []).length; });
+          var _mTotal = 0;
+          merged.days.forEach(function(d) { _mTotal += (d.activities || []).length; });
+          if (_vTotal < _mTotal) {
+            console.warn('[Rian] Write verification: server has fewer activities (' + _vTotal + ' vs ' + _mTotal + ') — retrying write');
+            await ref.set(merged);
+          } else {
+            console.info('[Rian] Write verified on server (' + _vTotal + ' activities)');
+          }
+        }
+      } catch (_ve) {
+        console.warn('[Rian] Write verification failed (offline?) —', _ve.message);
+      }
       // Also update local state with the merged data so it reflects recovered activities
       if (state.weekStart === weekStart && merged.days) {
         // Only update if we actually recovered something
@@ -26773,31 +26794,95 @@
       if (document.visibilityState === 'hidden') flushPendingSaves();
     });
 
-    // ── Firestore listener heartbeat (v5.8.8) ─────────────────────────
-    // Chrome's WebSocket for Firestore onSnapshot can silently go stale.
-    // Two triggers: (1) tab becomes visible after backgrounding,
-    //               (2) periodic 2-minute check while tab is active.
-    // If last snapshot >60s ago → force network reconnect.
-    let _fsReconnecting = false;
-    function _fsHeartbeatCheck() {
-      if (_fsReconnecting) return;
+    // ── Firestore sync polling (v5.8.9) ────────────────────────────────
+    // The onSnapshot WebSocket dies silently across all browsers. Rather
+    // than trying to reconnect it (disableNetwork/enableNetwork doesn't
+    // stick), we poll the server directly every 30s. If remote data is
+    // newer than local, accept it. This runs alongside onSnapshot — if
+    // the listener works, great; if it doesn't, the poll catches it.
+    let _fsPollBusy = false;
+    let _fsPollTimer = null;
+    function _fsPollSync() {
+      if (_fsPollBusy) return;
       if (!state.currentUser) return;
-      const staleMs = Date.now() - _lastFirestoreSnapAt;
-      if (_lastFirestoreSnapAt > 0 && staleMs > 60000) {
-        _fsReconnecting = true;
-        console.info('[Rian] Firestore listener stale (' + Math.round(staleMs / 1000) + 's) — forcing reconnect');
-        const _fs = firebase.firestore();
-        _fs.disableNetwork().then(() => _fs.enableNetwork()).then(() => {
-          _fsReconnecting = false;
-          setTimeout(() => { render(); }, 1500);
-        }).catch(e => { _fsReconnecting = false; console.warn('[Rian] Heartbeat reconnect failed:', e); });
-      }
+      if (state.syncStatus === 'pending') return; // don't overwrite unsaved edits
+      if (!state.weekStart) return;
+      var ref = userDoc('weeks/' + state.weekStart);
+      if (!ref) return;
+      _fsPollBusy = true;
+      ref.get({ source: 'server' }).then(function(snap) {
+        _fsPollBusy = false;
+        if (!snap.exists) return;
+        var remote = snap.data();
+        if (!remote.days) return;
+        var remoteTs = (remote._updatedAt && remote._updatedAt.toMillis)
+          ? remote._updatedAt.toMillis()
+          : (remote._updatedAt || 0);
+        var localTs = state.weekData._updatedAt || 0;
+        // Only update if remote is newer than local
+        if (remoteTs > localTs) {
+          console.info('[Rian] Poll sync: remote is newer (remote:', remoteTs, 'local:', localTs, ') — updating');
+          // Preserve drafts
+          var _draftsPerDay = {};
+          if (state.weekData && state.weekData.days) {
+            state.weekData.days.forEach(function(d, i) {
+              var drafts = (d.activities || []).filter(function(a) { return a._draft; });
+              if (drafts.length) _draftsPerDay[i] = drafts;
+            });
+          }
+          state.weekData = deepCopy(remote);
+          state.weekData._updatedAt = remoteTs;
+          // Re-attach drafts
+          Object.keys(_draftsPerDay).forEach(function(i) {
+            if (state.weekData.days[parseInt(i)]) {
+              state.weekData.days[parseInt(i)].activities = state.weekData.days[parseInt(i)].activities.concat(_draftsPerDay[i]);
+            }
+          });
+          state.syncStatus = 'synced';
+          updateHeaderStatus();
+          render();
+        } else {
+          // Check activity count per day — remote might have activities we don't
+          // even if timestamps are equal (another browser saved at ~same time)
+          var localTotal = 0, remoteTotal = 0;
+          state.weekData.days.forEach(function(d) { localTotal += (d.activities || []).length; });
+          remote.days.forEach(function(d) { remoteTotal += (d.activities || []).length; });
+          if (remoteTotal > localTotal) {
+            console.info('[Rian] Poll sync: remote has more activities (' + remoteTotal + ' vs ' + localTotal + ') — merging');
+            // Merge: keep all local + add remote-only
+            state.weekData.days.forEach(function(localDay, di) {
+              var remoteDay = remote.days[di];
+              if (!remoteDay || !remoteDay.activities) return;
+              var localIds = {};
+              (localDay.activities || []).forEach(function(a) { if (a.id) localIds[a.id] = true; });
+              remoteDay.activities.forEach(function(ra) {
+                if (ra.id && !localIds[ra.id]) {
+                  if ((ra.description || '').trim() || (ra.location || '').trim() ||
+                      (parseFloat(ra.ordinary) || 0) > 0 || (parseFloat(ra.overtime) || 0) > 0 ||
+                      (ra.codes && ra.codes.length > 0)) {
+                    localDay.activities.push(ra);
+                    console.info('[Rian] Poll sync: recovered "' + (ra.description || '').substring(0, 30) + '" on day ' + di);
+                  }
+                }
+              });
+            });
+            render();
+          }
+        }
+        _lastFirestoreSnapAt = Date.now(); // reset heartbeat timer
+      }).catch(function(e) {
+        _fsPollBusy = false;
+        // Server unreachable — that's fine, skip this cycle
+      });
     }
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') _fsHeartbeatCheck();
+    // Poll every 30 seconds
+    _fsPollTimer = setInterval(_fsPollSync, 30000);
+    // Also poll on tab focus (instant sync when user returns)
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        setTimeout(_fsPollSync, 500); // slight delay to let network settle
+      }
     });
-    // Periodic check every 2 minutes (catches stale listeners even without tab switch)
-    setInterval(_fsHeartbeatCheck, 120000);
 
     window.addEventListener('pagehide', () => {
       flushPendingSaves();
