@@ -924,15 +924,15 @@
     }
 
     .ctx-item.ctx-blue svg {
-      color: #2563eb;
+      color: var(--text-secondary);
     }
 
     .ctx-item.ctx-green svg {
-      color: #16a34a;
+      color: var(--text-secondary);
     }
 
     .ctx-item.ctx-purple svg {
-      color: #7c3aed;
+      color: var(--text-secondary);
     }
 
     .ctx-item.ctx-orange svg {
@@ -14847,6 +14847,294 @@
       color: var(--text-secondary);
       border: 1px solid var(--border);
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       DESKTOP THREE-PANEL LAYOUT (v5.8.0)
+       Days │ Tasks │ Detail — activated at 1280px+
+       ═══════════════════════════════════════════════════════════════ */
+    @media (min-width: 1280px) {
+      #app { max-width: 1409px !important; }
+
+      /* ── Three-panel container ── */
+      .desk-three-panel {
+        display: flex;
+        min-height: calc(100vh - 180px);
+        border-top: 1px solid var(--border);
+      }
+
+      /* ── Panel: Days (left) ── */
+      .desk-panel-days {
+        width: 381px;
+        min-width: 381px;
+        border-right: 1px solid var(--border);
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+
+      .desk-panel-days-hdr {
+        padding: 10px 14px 8px;
+        font-size: 10px;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        border-bottom: 1px solid var(--border);
+        line-height: 1.4;
+      }
+
+      .desk-day-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 16px 14px 15px;
+        min-height: 80px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border-subtle);
+        border-left: 3px solid transparent;
+        transition: background 0.12s;
+      }
+      .desk-day-row:hover { background: rgba(var(--accent-rgb), 0.04); }
+      .desk-day-row.desk-day-selected {
+        background: linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03));
+        border-left-color: var(--accent);
+      }
+      .desk-day-row.desk-day-weekend .desk-day-badge { opacity: 0.65; }
+      .desk-day-row.desk-day-weekend .desk-day-name { color: var(--text-muted); font-weight: 600; }
+      .desk-day-row.desk-day-weekend.desk-day-selected .desk-day-badge { opacity: 1; }
+
+      .desk-day-badge {
+        width: 40px; height: 40px; min-width: 40px;
+        border-radius: 10px;
+        background: var(--date-badge-bg);
+        color: var(--date-badge-color);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; font-weight: 400;
+      }
+      .desk-day-row.desk-day-today .desk-day-badge { background: var(--accent); }
+
+      .desk-day-info { flex: 1; min-width: 0; }
+      .desk-day-name { font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin-bottom: 2px; }
+      .desk-day-pills { display: flex; gap: 4px; align-items: center; }
+      .desk-day-empty { font-size: 11px; color: var(--border); font-weight: 600; }
+
+      /* Summary in days panel */
+      .desk-panel-summary {
+        margin-top: auto;
+        padding: 12px;
+      }
+      .desk-summary-bar {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        box-shadow: var(--shadow-card);
+      }
+      .desk-summary-title {
+        font-size: 12px; font-weight: 700; color: var(--text-secondary);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .desk-summary-badge {
+        background: var(--accent-chip-bg); color: var(--accent-chip-text);
+        font-size: 12px; font-weight: 700; font-family: var(--font-mono);
+        padding: 2px 8px; border-radius: 6px;
+      }
+      .desk-summary-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 5px 0; font-size: 12px;
+      }
+      .desk-summary-row + .desk-summary-row { border-top: 1px solid var(--border-subtle); }
+      .desk-summary-code { color: var(--text-secondary); font-weight: 500; }
+      .desk-summary-hrs {
+        font-family: var(--font-mono); font-weight: 700; color: var(--text-hours);
+      }
+      .desk-summary-hrs.ot { color: var(--text-ot); }
+
+      /* ── Panel: Tasks (middle) ── */
+      .desk-panel-tasks {
+        width: 381px;
+        min-width: 381px;
+        border-right: 1px solid var(--border);
+        background: var(--bg-card);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .desk-panel-tasks-hdr {
+        padding: 10px 14px;
+        font-size: 13px; font-weight: 600; color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-subtle);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .desk-tasks-hdr-badge {
+        width: 28px; height: 28px; border-radius: 8px;
+        background: var(--accent); color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 13px;
+      }
+      .desk-panel-tasks-list { padding: 0 12px; flex: 1; }
+
+      .desk-task-card {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 12px 14px;
+        margin-bottom: 0;
+        cursor: pointer;
+        transition: background 0.15s;
+        position: relative;
+      }
+      .desk-task-card:hover { background: transparent; }
+      .desk-card-wrap {
+        margin: 0 -12px;
+        padding: 5px 12px;
+        min-height: 80px;
+        border-bottom: 1px solid var(--border-subtle);
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .desk-card-wrap:hover {
+        background: rgba(var(--accent-rgb), 0.04);
+      }
+      .desk-card-wrap .desk-task-card {
+        margin-bottom: 0;
+      }
+      .desk-card-wrap.desk-sel-wrap {
+        background: linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03));
+        border-left: 3px solid var(--accent);
+      }
+      .desk-task-card.desk-task-selected {
+        background: transparent;
+      }
+      .desk-task-card.desk-task-selected .task-num {
+        background: var(--accent);
+        color: #fff;
+      }
+      .desk-card-wrap.desk-wrap-invalid {
+        border-left: 3px solid var(--btn-danger-color);
+      }
+      .desk-card-wrap.desk-wrap-remedy {
+        border-left: 3px solid #7c3aed;
+      }
+      .desk-card-wrap.desk-sel-wrap.desk-wrap-invalid {
+        border-left-color: var(--btn-danger-color);
+      }
+      .desk-card-wrap.desk-sel-wrap.desk-wrap-remedy {
+        border-left-color: #7c3aed;
+      }
+
+      /* Task cards reuse mobile .act-desc-txt, .act-row2, .act-loc-txt, .act-pill-row, .pill-hrs, .pill-ot */
+
+      .desk-add-task-btn {
+        width: 100%; padding: 12px; margin-top: 12px;
+        border: 1px dashed var(--accent); border-radius: 10px;
+        background: rgba(var(--accent-rgb), 0.06); color: var(--accent); font-weight: 700;
+        font-size: 13px; cursor: pointer; font-family: var(--font-body);
+        transition: background 0.12s;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+      }
+      .desk-add-task-btn:hover {
+        background: rgba(var(--accent-rgb), 0.12);
+      }
+      .desk-add-task-btn:hover { background: var(--accent-light); }
+
+      /* ── Panel: Detail (right) ── */
+      .desk-panel-detail {
+        flex: 1;
+        overflow-y: auto;
+        background: var(--bg-card);
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .desk-detail-body {
+        padding: 16px 28px 20px;
+        flex: 1;
+      }
+      .desk-detail-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(var(--shadow-brand-rgb), 0.06);
+        padding: 14px;
+      }
+      .desk-detail-header {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 16px; padding-bottom: 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .desk-detail-form {
+        display: flex; flex-direction: column; gap: 16px;
+        max-width: 640px;
+      }
+      .desk-field-group { display: flex; flex-direction: column; gap: 4px; }
+
+      /* Re-use existing .act-field-label, .act-textarea, .act-input, .act-codes-wrap etc. */
+      .desk-detail-form .act-textarea,
+      .desk-detail-form .act-input {
+        background: var(--bg-input);
+        border-color: var(--border-input);
+        color: var(--text-input);
+      }
+      .desk-detail-form .act-textarea:focus,
+      .desk-detail-form .act-input:focus { border-color: var(--accent); }
+
+      /* Hours boxes in detail panel — reuse mobile .hrs-box / .ot-box / .hrs-stepper */
+      .desk-hrs-row { display: flex; gap: 12px; }
+
+      /* Detail action buttons */
+      .desk-detail-actions {
+        display: flex; gap: 8px; margin-top: 8px; padding-top: 16px;
+        border-top: 1px solid var(--border-subtle);
+      }
+      .desk-detail-btn {
+        padding: 8px 16px; border-radius: 10px; border: 1px solid var(--border);
+        background: var(--bg-card); color: var(--text-secondary);
+        font-size: 12px; font-weight: 600; cursor: pointer;
+        font-family: var(--font-body); transition: all 0.12s;
+        display: flex; align-items: center; gap: 6px;
+      }
+      .desk-detail-btn:hover { border-color: var(--accent); color: var(--accent); }
+      .desk-detail-btn.danger {
+        background: var(--btn-danger-bg);
+        color: var(--btn-danger-color);
+        border-color: var(--btn-danger-border);
+      }
+      .desk-detail-btn.danger:hover { opacity: 0.85; }
+
+      /* ── Empty state ── */
+      .desk-empty-state {
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; height: 100%; color: var(--text-muted);
+        gap: 8px; padding: 40px;
+      }
+      .desk-empty-state svg { opacity: 0.4; }
+      .desk-empty-state p { font-size: 13px; }
+
+      /* Widen TipTap fullscreen editor on desktop */
+      #note-fs-modal > .flex.flex-col.w-full { max-width: 1409px !important; }
+
+      /* Hide bottom mobile nav on desktop */
+      .bottom-nav { display: none !important; }
+
+      /* Convert bottom nav items into horizontal tab nav */
+      .desk-tab-nav {
+        display: flex;
+        background: var(--bg-header);
+        border-bottom: 2px solid var(--bg-header-tab);
+        padding: 0 16px;
+      }
+      .desk-tab-nav button {
+        flex: none; padding: 10px 20px; border: none; background: none;
+        font-size: 11px; font-weight: 700; color: var(--text-muted);
+        cursor: pointer; border-bottom: 2px solid transparent;
+        margin-bottom: -2px; text-transform: uppercase; letter-spacing: 0.05em;
+        font-family: var(--font-body); transition: color 0.15s;
+      }
+      .desk-tab-nav button.active { color: var(--tab-active); border-bottom-color: var(--tab-active); }
+      .desk-tab-nav button:hover:not(.active) { color: var(--text-secondary); }
+    }
   </style>
 </head>
 
@@ -15291,7 +15579,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.7.5';
+    const VERSION = '5.8.6';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -15945,6 +16233,8 @@
       headerExpanded: localStorage.getItem('rian_headerExpanded') === 'true',
       expandedDays: new Set(),
       weekendOpen: false,
+      deskSelectedDay: 0,   // desktop: selected day index (0=Fri, 1=Sat, ...)
+      deskSelectedAct: null, // desktop: selected activity id
       micFabHidden: localStorage.getItem('micFabHidden') === '1',  // track which day indices are expanded
       notesOpen: new Map(), // explicit open/closed per actId; default = open if note has content
       selectionMode: false,
@@ -17414,7 +17704,7 @@
         state.weekData.days.forEach(d => {
           const seen = {};
           d.activities = (d.activities || []).filter(a => {
-            const key = (a.description || '') + '|' + (a.workCode || '') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
+            const key = (a.id || '') + '|' + (a.description || '') + '|' + (a.location || '') + '|' + (a.codes || []).map(function(c){return c.c}).join(',') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
             if (seen[key]) return false;
             seen[key] = true;
             return true;
@@ -17559,7 +17849,7 @@
             const seen = {};
             const before = d.activities.length;
             d.activities = d.activities.filter(a => {
-              const key = (a.description || '') + '|' + (a.workCode || '') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
+              const key = (a.id || '') + '|' + (a.description || '') + '|' + (a.location || '') + '|' + (a.codes || []).map(function(c){return c.c}).join(',') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
               if (seen[key]) return false;
               seen[key] = true;
               return true;
@@ -17588,7 +17878,15 @@
 
           dbPut('weeks', { weekStart, userId: state.currentUser?.uid || null, data: state.weekData, updatedAt: remoteTs || Date.now() });
 
-          if (!userEditing) render();
+          if (!userEditing) {
+            render();
+          } else if (_isDesktop()) {
+            // Desktop: user is editing a field in the detail panel — don't full-render
+            // (would destroy their focus), but DO refresh the task panel so
+            // changes from other devices appear immediately.
+            var _dtp = document.getElementById('desk-tasks-panel');
+            if (_dtp) _dtp.innerHTML = _renderDeskTasks(state.deskSelectedDay);
+          }
 
           state.syncStatus = 'synced';
           updateHeaderStatus();
@@ -18733,8 +19031,11 @@
       </div>`;
     }
 
+    function _isDesktop() { return window.innerWidth >= 1280; }
+
     function renderWeekView() {
       if (!state.weekData) return `<div class="p-8 text-center" style="color:var(--text-muted)">Loading…</div>`;
+      if (_isDesktop()) return _renderDesktopTimesheet();
       return renderCardView();
     }
 
@@ -18864,6 +19165,342 @@
 
       const anomalyHtml = renderAnomalyBanner(state.weekData);
       return `<main class="pb-6">${anomalyHtml ? `<div style="padding:10px 12px 0">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
+    }
+
+    // ================================================================
+    // DESKTOP THREE-PANEL TIMESHEET (v5.8.0)
+    // ================================================================
+    function _renderDesktopTimesheet() {
+      const summary = calcSummary(state.weekData);
+      const totalOrd = summary.reduce(function(s, r) { return s + r.ordinary; }, 0);
+      const totalOT = summary.reduce(function(s, r) { return s + r.overtime; }, 0);
+      const todayStr = dateToStr(new Date());
+
+      // Clamp selected day
+      var selDi = state.deskSelectedDay;
+      if (selDi < 0 || selDi >= state.weekData.days.length) selDi = 0;
+      state.deskSelectedDay = selDi;
+
+      // Clamp selected activity
+      var selDay = state.weekData.days[selDi];
+      var activeActs = selDay.activities.filter(function(a) {
+        return a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0;
+      });
+      // Include drafts too so they show up
+      var allActs = selDay.activities;
+      if (state.deskSelectedAct && !allActs.find(function(a) { return a.id === state.deskSelectedAct; })) {
+        state.deskSelectedAct = allActs.length > 0 ? allActs[0].id : null;
+      }
+      if (!state.deskSelectedAct && allActs.length > 0) {
+        state.deskSelectedAct = allActs[0].id;
+      }
+
+      // ── Days panel ──
+      var daysHtml = '';
+      state.weekData.days.forEach(function(day, di) {
+        var isWe = (di === 1 || di === 2);
+        var isToday = (day.date === todayStr);
+        var isSel = (di === selDi);
+        var dt = calcDayTotals(day);
+        var taskCount = day.activities.filter(function(a) {
+          return a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0;
+        }).length;
+        var dom = parseInt(day.date.split('-')[2]);
+        var cls = 'desk-day-row' + (isSel ? ' desk-day-selected' : '') + (isToday ? ' desk-day-today' : '') + (isWe ? ' desk-day-weekend' : '');
+        daysHtml += '<div class="' + cls + '" onclick="deskSelectDay(' + di + ')">' +
+          '<div class="desk-day-badge">' + dom + '</div>' +
+          '<div class="desk-day-info">' +
+            '<div class="desk-day-name">' + esc(day.dayName) + '</div>' +
+            (taskCount > 0
+              ? '<div class="desk-day-pills">' +
+                  '<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">' + taskCount + ' task' + (taskCount !== 1 ? 's' : '') + '</span>' +
+                  (dt.ord > 0 ? '<span class="pill-hrs">' + (Math.round(dt.ord) === dt.ord ? dt.ord : dt.ord.toFixed(1)) + 'h</span>' : '') +
+                  (dt.ot > 0 ? '<span class="pill-ot">+' + (Math.round(dt.ot) === dt.ot ? dt.ot : dt.ot.toFixed(1)) + ' OT</span>' : '') +
+                '</div>'
+              : '<div class="desk-day-empty">' + (isWe ? '' : 'No entries') + '</div>') +
+          '</div>' +
+        '</div>';
+      });
+
+      // ── Summary at bottom of days panel ──
+      var summaryRows = '';
+      summary.forEach(function(row) {
+        summaryRows += '<div class="desk-summary-row">' +
+          '<span class="desk-summary-code">' + esc(row.code || row.description) + '</span>' +
+          '<span class="desk-summary-hrs">' + fmtHrs(row.ordinary) + '</span>' +
+        '</div>';
+      });
+
+      var daysPanel = '<div class="desk-panel-days">' +
+        '<div class="desk-panel-days-hdr">Week Days</div>' +
+        daysHtml +
+        '<div class="desk-panel-summary">' +
+          '<div class="desk-summary-bar">' +
+            '<div class="desk-summary-title">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' +
+              'Weekly Summary ' +
+              '<span class="desk-summary-badge">' + Math.round(totalOrd) + 'h</span>' +
+              (totalOT > 0 ? '<span class="desk-summary-badge" style="background:var(--bg-ot);color:var(--text-ot)">+' + Math.round(totalOT) + ' OT</span>' : '') +
+            '</div>' +
+            (summaryRows ? '<div style="margin-top:8px">' + summaryRows + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+      // ── Tasks panel ──
+      var tasksPanel = '<div class="desk-panel-tasks" id="desk-tasks-panel">' +
+        _renderDeskTasks(selDi) +
+      '</div>';
+
+      // ── Detail panel ──
+      var detailPanel = '<div class="desk-panel-detail" id="desk-detail-panel">' +
+        _renderDeskDetail(selDi, state.deskSelectedAct) +
+      '</div>';
+
+      return '<main><div class="desk-three-panel">' + daysPanel + tasksPanel + detailPanel + '</div></main>';
+    }
+
+    function _renderDeskTasks(di) {
+      var day = state.weekData.days[di];
+      var dom = parseInt(day.date.split('-')[2]);
+      var taskCount = day.activities.filter(function(a) {
+        return a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0;
+      }).length;
+      var allCount = day.activities.length;
+
+      var hdr = '<div class="desk-panel-days-hdr">Tasks</div>';
+
+      var cards = '';
+      if (day.activities.length === 0) {
+        cards = '<div class="desk-empty-state" style="padding:30px 20px">' +
+          '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>' +
+          '<p>No tasks for ' + esc(day.dayName) + '</p>' +
+        '</div>';
+      } else {
+        day.activities.forEach(function(act, ai) {
+          var ord = parseFloat(act.ordinary) || 0;
+          var ot = parseFloat(act.overtime) || 0;
+          var isSel = (act.id === state.deskSelectedAct);
+          var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+          var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+
+          var cls = 'desk-task-card' +
+            (isSel ? ' desk-task-selected' : '') +
+            (isMissingCode || isMissingHours ? ' desk-task-invalid' : '') +
+            (act.remedyPending && !(isMissingCode || isMissingHours) ? ' desk-task-remedy' : '');
+
+          var wrapCls = 'desk-card-wrap' + (isSel ? ' desk-sel-wrap' : '') +
+            (isMissingCode || isMissingHours ? ' desk-wrap-invalid' : '') +
+            (act.remedyPending && !(isMissingCode || isMissingHours) ? ' desk-wrap-remedy' : '');
+          cards += '<div class="' + wrapCls + '">';
+          cards += '<div class="' + cls + '" onclick="deskSelectAct(\'' + act.id + '\')">' +
+            '<div class="flex items-center gap-3">' +
+              '<div class="task-num">' + (ai + 1) + '</div>' +
+              '<div class="flex-1 min-w-0 act-meta">' +
+                '<div class="act-desc-txt">' + (esc(act.description) || '<span style="opacity:0.4;font-weight:400;font-style:italic">No description</span>') + '</div>' +
+                '<div class="act-row2">' +
+                  '<div class="act-loc-txt">' +
+                    (act.location ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>' + esc(act.location) : '<span style="opacity:0.4">No location</span>') +
+                  '</div>' +
+                  '<div class="act-pill-row">' +
+                    (ord > 0 ? '<span class="pill-hrs">' + ord + 'h</span>' : '') +
+                    (ot > 0 ? '<span class="pill-ot">+' + ot + ' OT</span>' : '') +
+                    (act.remedyPending ? '<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>' : '') +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+          cards += '</div>';
+        });
+      }
+
+      return hdr +
+        '<div class="desk-panel-tasks-list">' + cards +
+          '<button class="desk-add-task-btn" onclick="deskAddTask(' + di + ')">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+            'Add Task' +
+          '</button>' +
+        '</div>';
+    }
+
+    function _renderDeskDetail(di, actId) {
+      var day = state.weekData.days[di];
+      if (!actId || !day) {
+        return '<div class="desk-panel-days-hdr">Task Details</div>' +
+          '<div class="desk-empty-state">' +
+          '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+          '<p>Select a task to view details</p>' +
+        '</div>';
+      }
+      var actIndex = -1;
+      var act = null;
+      for (var i = 0; i < day.activities.length; i++) {
+        if (day.activities[i].id === actId) { act = day.activities[i]; actIndex = i; break; }
+      }
+      if (!act) {
+        return '<div class="desk-empty-state"><p>Task not found</p></div>';
+      }
+
+      var ord = parseFloat(act.ordinary) || 0;
+      var ot = parseFloat(act.overtime) || 0;
+      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+      var notePreview = act.notes ? act.notes.replace(/<[^>]+>/g, '').substring(0, 120) : '';
+
+      var codesHtml = '';
+      if (act.codes.length === 0) {
+        codesHtml = '<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer" onclick="openCodeModal(' + di + ',\'' + act.id + '\')">' +
+          '<svg width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add work codes</span>';
+      } else {
+        act.codes.forEach(function(c) {
+          codesHtml += '<div class="act-code-chip" style="pointer-events:none">' +
+            esc(c.d) + '<span class="act-code-mono">' + esc(c.c) + '</span></div>';
+        });
+      }
+
+      // Escape values for onclick attributes (single-quote safe)
+      var escId = act.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      var escDesc = (act.description || 'Unnamed').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+      return '<div class="desk-panel-days-hdr">Task Details</div>' +
+        '<div class="desk-detail-body">' +
+        '<div class="desk-detail-header">' +
+          '<div class="task-num" style="background:var(--accent);color:#fff">' + (actIndex + 1) + '</div>' +
+          '<div class="flex-1 min-w-0 act-meta">' +
+            '<div class="act-desc-txt">' + (esc(act.description) || '<span style="opacity:0.4;font-weight:400;font-style:italic">No description</span>') + '</div>' +
+            '<div class="act-row2">' +
+              '<div class="act-loc-txt">' +
+                (act.location ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>' + esc(act.location) : '<span style="opacity:0.4">No location</span>') +
+              '</div>' +
+              '<div class="act-pill-row">' +
+                (ord > 0 ? '<span class="pill-hrs">' + ord + 'h</span>' : '') +
+                (ot > 0 ? '<span class="pill-ot">+' + ot + ' OT</span>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="desk-detail-form">' +
+          '<div class="desk-field-group">' +
+            '<span class="act-field-label">Description</span>' +
+            '<textarea placeholder="Description of work" rows="1" class="act-textarea" ' +
+              'data-field="description" data-act="' + act.id + '" data-day="' + di + '" ' +
+              'oninput="updateField(this);autoGrow(this);_deskLiveUpdateTask(\'' + escId + '\')">' + esc(act.description) + '</textarea>' +
+          '</div>' +
+
+          '<div class="desk-field-group">' +
+            '<span class="act-field-label">Notes</span>' +
+            renderNoteInline(act.notes, 'openNoteFullscreen(\'' + escId + '\',' + di + ')', 'data-notes-inline="' + act.id + '"') +
+          '</div>' +
+
+          '<div class="desk-field-group">' +
+            '<span class="act-field-label">Location</span>' +
+            '<div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;' + (act.location ? '' : 'color:var(--text-muted)') + '" ' +
+              'data-field="location" data-act="' + act.id + '" data-day="' + di + '" ' +
+              'onclick="openLocationModal(' + di + ',\'' + escId + '\')">' +
+              (act.location ? esc(act.location) : 'Town name or code\u2026') +
+            '</div>' +
+          '</div>' +
+
+          '<div class="desk-field-group">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+              '<span class="act-field-label">Work Codes</span>' +
+              '<button id="suggest-btn-' + act.id + '" class="act-suggest-btn" onclick="suggestCodes(\'' + escId + '\',' + di + ')">' +
+                '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg> Suggest</button>' +
+            '</div>' +
+            '<div class="act-codes-wrap" data-act-codes="' + act.id + '" onclick="openCodeModal(' + di + ',\'' + escId + '\')" style="cursor:pointer;min-height:42px">' +
+              codesHtml +
+            '</div>' +
+            '<div id="suggest-wrap-' + act.id + '"></div>' +
+            (isMissingCode ? '<div class="act-missing-warn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code</div>' : '') +
+            (isMissingHours ? '<div class="act-missing-warn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours</div>' : '') +
+          '</div>' +
+
+          '<div class="flex gap-3">' +
+            '<div class="hrs-box flex-1">' +
+              '<div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>' +
+              '<div class="hrs-stepper flex items-center justify-between">' +
+                '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',-1)">&#8722;</button>' +
+                '<input type="tel" class="val" data-step-val="' + act.id + '-ordinary" value="' + (act.ordinary || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'ordinary\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}">' +
+                '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',1)">+</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="hrs-box ot-box flex-1">' +
+              '<div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>' +
+              '<div class="hrs-stepper flex items-center justify-between">' +
+                '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',-1)">&#8722;</button>' +
+                '<input type="tel" class="val" data-step-val="' + act.id + '-overtime" value="' + (act.overtime || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'overtime\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}">' +
+                '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',1)">+</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          (act._draft
+            ? '<div class="desk-detail-actions">' +
+                '<button class="desk-detail-btn" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="saveTaskDraft(\'' + escId + '\',' + di + ')">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save</button>' +
+                '<button class="desk-detail-btn danger" onclick="discardTaskDraft(\'' + escId + '\',' + di + ')">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard</button>' +
+              '</div>'
+            : '<div class="desk-detail-actions">' +
+                '<button class="desk-detail-btn" onclick="openCopyPicker(\'' + escId + '\',' + di + ',false)">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button>' +
+                '<button class="desk-detail-btn" onclick="openCopyPicker(\'' + escId + '\',' + di + ',true)">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Move</button>' +
+                '<button class="desk-detail-btn" onclick="openAddToNotes(\'' + escId + '\',' + di + ')">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg> Add to Notes</button>' +
+                '<button class="desk-detail-btn" onclick="toggleRemedyFlag(' + di + ',\'' + escId + '\')" style="' + (act.remedyPending ? 'color:#7c3aed;border-color:#7c3aed' : '') + '">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="' + (act.remedyPending ? '#7c3aed' : 'none') + '" stroke="' + (act.remedyPending ? '#7c3aed' : 'currentColor') + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ' +
+                  (act.remedyPending ? 'Remedy \u2713' : 'Remedy') + '</button>' +
+                '<button class="desk-detail-btn danger" style="margin-left:auto" onclick="showConfirm(\'Delete task?\',\'' + escDesc + '\',function(){removeActivity(\'' + escId + '\',' + di + ')})">' +
+                  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete</button>' +
+              '</div>') +
+
+        '</div>' +
+        '</div>';
+    }
+
+    // ── Desktop interactivity ──
+    function deskSelectDay(di) {
+      state.deskSelectedDay = di;
+      state.deskSelectedAct = null; // reset to first task of new day
+      render();
+    }
+
+    function deskSelectAct(actId) {
+      state.deskSelectedAct = actId;
+      // Surgical update: re-render tasks + detail panels only
+      var tasksPanel = document.getElementById('desk-tasks-panel');
+      var detailPanel = document.getElementById('desk-detail-panel');
+      if (tasksPanel) tasksPanel.innerHTML = _renderDeskTasks(state.deskSelectedDay);
+      if (detailPanel) {
+        detailPanel.innerHTML = _renderDeskDetail(state.deskSelectedDay, actId);
+        detailPanel.querySelectorAll('textarea').forEach(autoGrow);
+      }
+    }
+
+    function deskAddTask(di) {
+      addActivity(di);
+      // After adding, select the new (last) task
+      var day = state.weekData.days[di];
+      if (day.activities.length > 0) {
+        state.deskSelectedAct = day.activities[day.activities.length - 1].id;
+      }
+    }
+
+    function deskStepHrs(actId, di, field, delta) {
+      stepHrs(actId, di, field, delta);
+    }
+
+    function deskSetHrs(actId, di, field, rawVal) {
+      setHrs(actId, di, field, rawVal);
+    }
+
+    function _deskLiveUpdateTask(actId) {
+      // Live-update the task card in the middle panel when description changes
+      if (!_isDesktop()) return;
+      var tasksPanel = document.getElementById('desk-tasks-panel');
+      if (tasksPanel) tasksPanel.innerHTML = _renderDeskTasks(state.deskSelectedDay);
     }
 
     function calcDayTotals(day) {
@@ -25996,7 +26633,7 @@
               state.weekData.days.forEach(d => {
                 const seen = {};
                 d.activities = (d.activities || []).filter(a => {
-                  const key = (a.description || '') + '|' + (a.workCode || '') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
+                  const key = (a.id || '') + '|' + (a.description || '') + '|' + (a.location || '') + '|' + (a.codes || []).map(function(c){return c.c}).join(',') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
                   if (seen[key]) return false;
                   seen[key] = true;
                   return true;
@@ -32027,6 +32664,13 @@ Rules:
 
       try { initTheme(); } catch (e) { console.warn('[Rian] Theme blocked by browser:', e); }
 
+      // v5.8.0: Re-render when crossing desktop/mobile breakpoint
+      var _prevDesktop = _isDesktop();
+      window.addEventListener('resize', function() {
+        var nowDesktop = _isDesktop();
+        if (nowDesktop !== _prevDesktop) { _prevDesktop = nowDesktop; render(); }
+      });
+
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(`sw.js?v=${VERSION}`).catch(e => console.warn('[Rian]', e));
         // Network-first strategy: always serves latest when online,
@@ -35109,9 +35753,13 @@ QUESTION: ${query}`;
     }
     function openNoteFullscreen(actId, di) {
       _noteFsActId = actId; _noteFsDi = di;
+      window._actNoteDirty = false; // track if user actually edited
+      window._actNoteOpenTs = Date.now(); // track when opened for stale-editor guard
       history.pushState({ noteFs: true }, '');
       const ta = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
-      const currentValue = ta ? ta.value : '';
+      // Desktop mode: no hidden textarea — read directly from activity data
+      const _actForNote = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
+      const currentValue = ta ? ta.value : (_actForNote?.notes || '');
       // Populate header with description + location context
       const act = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
       const titleEl = document.getElementById('note-fs-title');
@@ -35131,9 +35779,15 @@ QUESTION: ${query}`;
         // Blur so cursor isn't visible at top — user taps to edit
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapOnUpdate = (editor) => {
+          window._actNoteDirty = true;
           const html = _ttGetHTML();
           const mainTa = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
           if (mainTa) { mainTa.value = html; updateField(mainTa); }
+          else {
+            // Desktop mode: no hidden textarea, write directly to activity data
+            const _dAct = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
+            if (_dAct) { _dAct.notes = html; scheduleAutoSave(); }
+          }
         };
         // Don't auto-focus — user may just want to read, not edit
         // Keyboard opens on first tap in the editor
@@ -35182,6 +35836,24 @@ QUESTION: ${query}`;
             : _fnFsSource === 'journal' ? state.journal
               : state.notes;
           const n = _closeArr.find(x => x.id === _fnFsNoteId);
+          // v5.8.0: Stale-editor guard — if the note was updated remotely while
+          // TipTap was open, warn the user instead of silently overwriting.
+          if (n && (n.updatedAt || 0) > (window._tiptapNoteOpenTs || 0) + 2000) {
+            // Remote update arrived after we opened the editor
+            const keepLocal = confirm(
+              'This note was updated on another device while you were editing.\n\n' +
+              'Keep YOUR version (OK) or discard your changes and keep the cloud version (Cancel)?'
+            );
+            if (!keepLocal) {
+              // Discard local — don't save, keep remote content
+              window._tiptapNoteEdited = false;
+              _fnFsNoteId = null;
+              if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+              render();
+              _noteFsActId = null; _noteFsDi = null;
+              return;
+            }
+          }
           if (n) { n.noteContent = html; n.updatedAt = Date.now(); }
           // User explicitly saved — allow intentional shrinkage on THIS device
           if (_fnFsSource === 'notes') _setNoteHWMExplicit(_fnFsNoteId, (html || '').length);
@@ -35195,6 +35867,41 @@ QUESTION: ${query}`;
         _fnFsNoteId = null;
         // Destroy editor AFTER content is saved
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+        render();
+      } else if (_noteFsActId != null && _noteFsDi != null) {
+        // Activity inline note (timesheet) — flush final TipTap content
+        if (_tiptapEditor) {
+          if (window._actNoteDirty) {
+            const html = _ttGetHTML();
+            const _clAct = state.weekData?.days[_noteFsDi]?.activities?.find(a => a.id === _noteFsActId);
+            if (_clAct) {
+              // Stale-editor guard: if the activity's note was updated remotely
+              // while TipTap was open, warn the user before overwriting
+              const remoteNote = _clAct.notes || '';
+              const openTs = window._actNoteOpenTs || 0;
+              const localTs = state.weekData._updatedAt || 0;
+              if (openTs > 0 && localTs > openTs + 2000 && remoteNote !== html) {
+                const keepLocal = confirm(
+                  'This note was updated on another device while you were editing.\n\n' +
+                  'Keep YOUR version (OK) or discard your changes and keep the cloud version (Cancel)?'
+                );
+                if (!keepLocal) {
+                  _tiptapEditor.destroy(); _tiptapEditor = null;
+                  window._actNoteOpenTs = 0;
+                  window._actNoteDirty = false;
+                  render();
+                  _noteFsActId = null; _noteFsDi = null;
+                  return;
+                }
+              }
+              _clAct.notes = html;
+              scheduleAutoSave();
+            }
+          }
+          _tiptapEditor.destroy(); _tiptapEditor = null;
+        }
+        window._actNoteOpenTs = 0;
+        window._actNoteDirty = false;
         render();
       } else {
         // No note context — still destroy to free memory
