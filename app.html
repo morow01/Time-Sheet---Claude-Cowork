@@ -10908,6 +10908,7 @@
       background: var(--bg-page);
     }
     .j-screen { view-transition-name: j-screen; }
+    ::view-transition-group(j-screen) { overflow: hidden; }
 
     /* Forward: old fades back, new slides in from right */
     .j-vt-left::view-transition-old(j-screen) {
@@ -15286,7 +15287,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.76';
+    const VERSION = '5.6.77';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
