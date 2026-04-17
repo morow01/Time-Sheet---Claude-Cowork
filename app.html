@@ -10907,19 +10907,40 @@
       padding-bottom: 90px;
       background: var(--bg-page);
     }
-    .j-screen.j-slide-left {
-      animation: jSlideLeft 0.25s ease both;
+    .j-screen { view-transition-name: j-screen; }
+
+    /* Forward: old fades back, new slides in from right */
+    .j-vt-left::view-transition-old(j-screen) {
+      animation: jVtFadeBack 0.3s ease both;
+      z-index: 1;
     }
-    .j-screen.j-slide-right {
-      animation: jSlideRight 0.25s ease both;
+    .j-vt-left::view-transition-new(j-screen) {
+      animation: jVtSlideIn 0.3s ease both;
+      z-index: 2;
     }
-    @keyframes jSlideLeft {
-      from { opacity: 0; transform: translateX(60px); }
-      to   { opacity: 1; transform: translateX(0); }
+    /* Back: old slides away right, new fades in underneath */
+    .j-vt-right::view-transition-old(j-screen) {
+      animation: jVtSlideAway 0.3s ease both;
+      z-index: 2;
     }
-    @keyframes jSlideRight {
-      from { opacity: 0; transform: translateX(-60px); }
-      to   { opacity: 1; transform: translateX(0); }
+    .j-vt-right::view-transition-new(j-screen) {
+      animation: jVtFadeIn 0.3s ease both;
+      z-index: 1;
+    }
+    @keyframes jVtFadeBack {
+      to { transform: translateX(-25%); opacity: 0; }
+    }
+    @keyframes jVtSlideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    @keyframes jVtSlideAway {
+      from { transform: translateX(0); }
+      to { transform: translateX(100%); }
+    }
+    @keyframes jVtFadeIn {
+      from { transform: translateX(-25%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
 
     .j-sub-header {
@@ -15265,7 +15286,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.68';
+    const VERSION = '5.6.69';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21443,9 +21464,17 @@
     }
 
     // ── Navigation ──
-    var _jNavDir = ''; // 'left' | 'right' | ''
+    function _jTransitionRender(dir) {
+      if (document.startViewTransition) {
+        document.documentElement.classList.remove('j-vt-left', 'j-vt-right');
+        document.documentElement.classList.add('j-vt-' + dir);
+        document.startViewTransition(() => render());
+      } else {
+        render();
+      }
+    }
+
     function navJournal(screen, opts) {
-      _jNavDir = 'left';
       state.jScreen = screen; state.jEditMode = false;
       if (opts?.notebookId !== undefined) state.jNotebookId = opts.notebookId;
       if (opts?.sectionId !== undefined) state.jSectionId = opts.sectionId;
@@ -21460,10 +21489,9 @@
       if (screen === 'sections' || screen === 'pages') {
         history.pushState({ jScreen: screen }, '');
       }
-      render();
+      _jTransitionRender('left');
     }
     function navJBack() {
-      _jNavDir = 'right';
       state.jAddMode = null; state.jAddTitle = '';
       state.jEditId = null; state.jRenameTitle = ''; state.jEditMode = false;
       if (state.jScreen === 'pages') {
@@ -21478,7 +21506,7 @@
         localStorage.setItem('jNotebookId', state.jNotebookId || '');
         localStorage.setItem('jSectionId', state.jSectionId || '');
       } catch (e) { }
-      render();
+      _jTransitionRender('right');
     }
 
     // ── DOCX → Notebooks import ──
@@ -23144,16 +23172,9 @@
 
     function renderJournalView() {
       if (state.jSearchMode) return renderJSearch();
-      var html;
-      if (state.jScreen === 'sections') html = renderJSections();
-      else if (state.jScreen === 'pages') html = renderJPages();
-      else html = renderJNotebooks();
-      // Apply slide animation if navigating
-      if (_jNavDir) {
-        html = html.replace('class="j-screen"', 'class="j-screen j-slide-' + _jNavDir + '"');
-        _jNavDir = '';
-      }
-      return html;
+      if (state.jScreen === 'sections') return renderJSections();
+      if (state.jScreen === 'pages') return renderJPages();
+      return renderJNotebooks();
     }
 
     // ---- Notes search ----
