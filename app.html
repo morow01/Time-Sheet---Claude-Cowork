@@ -15738,7 +15738,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.10';
+    const VERSION = '5.8.11';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26817,19 +26817,29 @@
       if (document.visibilityState === 'hidden') flushPendingSaves();
     });
 
-    // ── Firestore sync polling (v5.8.9) ────────────────────────────────
-    // The onSnapshot WebSocket dies silently across all browsers. Rather
-    // than trying to reconnect it (disableNetwork/enableNetwork doesn't
-    // stick), we poll the server directly every 30s. If remote data is
-    // newer than local, accept it. This runs alongside onSnapshot — if
-    // the listener works, great; if it doesn't, the poll catches it.
+    // ── Firestore sync polling (v5.8.11) ───────────────────────────────
+    // The onSnapshot WebSocket dies silently across all browsers.
+    // Poll the server every 10s. Use a data fingerprint (activity IDs +
+    // descriptions per day) to detect ANY change — additions, deletions,
+    // edits — not just timestamp differences.
     let _fsPollBusy = false;
     let _fsPollTimer = null;
+    let _fsPollFingerprint = ''; // last known fingerprint of local data
+
+    function _weekFingerprint(weekData) {
+      if (!weekData || !weekData.days) return '';
+      return weekData.days.map(function(d, i) {
+        return (d.activities || []).filter(function(a) { return !a._draft; }).map(function(a) {
+          return a.id + ':' + (a.description || '') + ':' + (a.ordinary || '') + ':' + (a.overtime || '') + ':' + (a.location || '');
+        }).sort().join('|');
+      }).join('~');
+    }
+
     function _fsPollSync() {
       if (_fsPollBusy) return;
       if (!state.currentUser) return;
       if (state.syncStatus === 'pending') return; // don't overwrite unsaved edits
-      if (!state.weekStart) return;
+      if (!state.weekStart || !state.weekData) return;
       var ref = userDoc('weeks/' + state.weekStart);
       if (!ref) return;
       _fsPollBusy = true;
@@ -26838,16 +26848,25 @@
         if (!snap.exists) return;
         var remote = snap.data();
         if (!remote.days) return;
+
+        // Compare fingerprints — detect any data difference
+        var localFp = _weekFingerprint(state.weekData);
+        var remoteFp = _weekFingerprint(remote);
+
+        if (localFp === remoteFp) return; // identical data, nothing to do
+
         var remoteTs = (remote._updatedAt && remote._updatedAt.toMillis)
           ? remote._updatedAt.toMillis()
           : (remote._updatedAt || 0);
         var localTs = state.weekData._updatedAt || 0;
-        // Only update if remote is newer than local
-        if (remoteTs > localTs) {
-          console.info('[Rian] Poll sync: remote is newer (remote:', remoteTs, 'local:', localTs, ') — updating');
+
+        // Remote is different. If remote is newer OR same age, accept it
+        // (same age = another browser saved at ~same time, trust server as source of truth)
+        if (remoteTs >= localTs) {
+          console.info('[Rian] Poll sync: server data differs (remote:', remoteTs, 'local:', localTs, ') — accepting server version');
           // Preserve drafts
           var _draftsPerDay = {};
-          if (state.weekData && state.weekData.days) {
+          if (state.weekData.days) {
             state.weekData.days.forEach(function(d, i) {
               var drafts = (d.activities || []).filter(function(a) { return a._draft; });
               if (drafts.length) _draftsPerDay[i] = drafts;
@@ -26872,48 +26891,44 @@
           });
           state.syncStatus = 'synced';
           updateHeaderStatus();
+          _fsPollFingerprint = _weekFingerprint(state.weekData);
           render();
         } else {
-          // Check activity count per day — remote might have activities we don't
-          // even if timestamps are equal (another browser saved at ~same time)
-          var localTotal = 0, remoteTotal = 0;
-          state.weekData.days.forEach(function(d) { localTotal += (d.activities || []).length; });
-          remote.days.forEach(function(d) { remoteTotal += (d.activities || []).length; });
-          if (remoteTotal > localTotal) {
-            console.info('[Rian] Poll sync: remote has more activities (' + remoteTotal + ' vs ' + localTotal + ') — merging');
-            // Merge: keep all local + add remote-only
-            state.weekData.days.forEach(function(localDay, di) {
-              var remoteDay = remote.days[di];
-              if (!remoteDay || !remoteDay.activities) return;
-              var localIds = {};
-              (localDay.activities || []).forEach(function(a) { if (a.id) localIds[a.id] = true; });
-              _pruneDeletedIds();
-              remoteDay.activities.forEach(function(ra) {
-                if (ra.id && !localIds[ra.id] && !_isRecentlyDeleted(ra.id)) {
-                  if ((ra.description || '').trim() || (ra.location || '').trim() ||
-                      (parseFloat(ra.ordinary) || 0) > 0 || (parseFloat(ra.overtime) || 0) > 0 ||
-                      (ra.codes && ra.codes.length > 0)) {
-                    localDay.activities.push(ra);
-                    console.info('[Rian] Poll sync: recovered "' + (ra.description || '').substring(0, 30) + '" on day ' + di);
-                  }
+          // Local is newer than remote — our save should push eventually.
+          // But if remote has activities we don't (added by another browser
+          // whose save had an older timestamp), merge them in.
+          var merged = false;
+          _pruneDeletedIds();
+          state.weekData.days.forEach(function(localDay, di) {
+            var remoteDay = remote.days[di];
+            if (!remoteDay || !remoteDay.activities) return;
+            var localIds = {};
+            (localDay.activities || []).forEach(function(a) { if (a.id) localIds[a.id] = true; });
+            remoteDay.activities.forEach(function(ra) {
+              if (ra.id && !localIds[ra.id] && !_isRecentlyDeleted(ra.id)) {
+                if ((ra.description || '').trim() || (ra.location || '').trim() ||
+                    (parseFloat(ra.ordinary) || 0) > 0 || (parseFloat(ra.overtime) || 0) > 0 ||
+                    (ra.codes && ra.codes.length > 0)) {
+                  localDay.activities.push(ra);
+                  merged = true;
+                  console.info('[Rian] Poll sync: recovered "' + (ra.description || '').substring(0, 30) + '" on day ' + di);
                 }
-              });
+              }
             });
-            render();
-          }
+          });
+          if (merged) render();
         }
-        _lastFirestoreSnapAt = Date.now(); // reset heartbeat timer
+        _lastFirestoreSnapAt = Date.now();
       }).catch(function(e) {
         _fsPollBusy = false;
-        // Server unreachable — that's fine, skip this cycle
       });
     }
-    // Poll every 30 seconds
-    _fsPollTimer = setInterval(_fsPollSync, 30000);
-    // Also poll on tab focus (instant sync when user returns)
+    // Poll every 10 seconds
+    _fsPollTimer = setInterval(_fsPollSync, 10000);
+    // Also poll on tab focus
     document.addEventListener('visibilitychange', function() {
       if (document.visibilityState === 'visible') {
-        setTimeout(_fsPollSync, 500); // slight delay to let network settle
+        setTimeout(_fsPollSync, 500);
       }
     });
 
