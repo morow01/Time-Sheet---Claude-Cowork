@@ -15286,7 +15286,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.69';
+    const VERSION = '5.6.70';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21468,7 +21468,10 @@
       if (document.startViewTransition) {
         document.documentElement.classList.remove('j-vt-left', 'j-vt-right');
         document.documentElement.classList.add('j-vt-' + dir);
-        document.startViewTransition(() => render());
+        // Must call _renderNow() synchronously inside the callback —
+        // render() only schedules a RAF which fires after the transition ends
+        if (_renderRAF) { cancelAnimationFrame(_renderRAF); _renderRAF = null; }
+        document.startViewTransition(() => _renderNow());
       } else {
         render();
       }
