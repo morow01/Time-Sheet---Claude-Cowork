@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 13799). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.6.40**
+Current version: **5.6.99**
 
 **Two themes active**: `claude` (default light) and `dark` (slate-based). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -55,20 +55,37 @@ Current version: **5.6.40**
 
 ## Architecture Decisions
 
-### Firestore Sync & Data Protection (v4.35.39–4.35.40)
-The app syncs week data, notes, callouts, and reminders with Firestore in real-time via `onSnapshot` listeners. Several data protection mechanisms are in place:
+### Firestore Sync & Data Protection (v4.35.39–v5.6.99)
+The app syncs week data, notes, callouts, and reminders with Firestore in real-time via `onSnapshot` listeners.
 
-**Hours High-Water-Mark (HWM):** Tracks the max total hours ever seen per week in localStorage (`rian_hwm_{weekStart}`). If incoming Firestore data has >4h fewer than the HWM, it's rejected and local data is pushed back. This prevents stale data from another device silently overwriting a week. When the user explicitly saves (scheduleAutoSave), the HWM is SET (can go lower) so deliberate deletions work. When remote data arrives, the HWM is only RAISED.
+**CRITICAL RULE (v5.6.93+): The `onSnapshot` handler must NEVER call `fsSetWeek()`.** Writing to Firestore inside a snapshot handler creates snapshot→write→snapshot infinite loops that cause UI flashing, render storms, and sync wars across devices. All data writes must happen through user-initiated actions (`scheduleAutoSave`, conflict resolution, etc.), never as a reaction to incoming snapshots.
 
-**Callouts HWM:** Same pattern — tracks max callout entry count (`rian_co_hwm`). Threshold is 2 entries.
+**Auto-dedup (v5.6.94+):** Activities with identical content (description + workCode + ordinary + overtime) are automatically deduplicated on every load path — IndexedDB cache load, Firestore snapshot, and conflict resolution. This replaced the old regression guards as the primary data protection mechanism.
 
-**Week Navigation Race Guard:** `_loadWeekInProgress` flag prevents overlapping async `loadWeek()` calls from corrupting state when clicking prev/next rapidly.
+**Draft system:** `createActivity()` sets `_draft: true`. `scheduleAutoSave` strips drafts before saving. Copy/move operations delete the `_draft` flag so copied tasks auto-save immediately (v5.6.99).
+
+**Disabled guards (v5.6.96–v5.6.97):** The following guards were removed because they caused cascading sync wars when HWM values were inflated by a duplicate bug. Do NOT re-introduce them:
+- Inbound HWM regression guard (rejected remote data with fewer hours than HWM)
+- Inbound activity-count regression guard (rejected remote data with fewer activities)
+- Inbound stale-timestamp push-back (wrote local data back to Firestore when remote was older)
+- Outbound HWM guard in `fsSetWeek` (blocked saves and registered infinite conflict loops)
+
+**Still active:**
+- `hasPendingWrites` guard — skips snapshots that echo our own pending writes
+- `_snapWriteBackCooldown` — 5s cooldown after any snapshot-triggered write (safety net)
+- `_loadWeekInProgress` flag — prevents overlapping async `loadWeek()` calls
+- Ghost task removal — strips empty activities locally on snapshot (does NOT write back)
+- `executeCopyTask._running` — re-entrancy guard prevents double-execution of copy/move
+- Callouts HWM — tracks max callout entry count (`rian_co_hwm`). Threshold is 2 entries.
 
 **Notes Merge:** Per-note merge using `updatedAt` timestamps. Local-only notes preserved for 2 minutes (not synced yet). Empty remote never overwrites non-empty local.
 
 **Reminders Merge:** Per-reminder merge (keeps newer version). Local-only reminders preserved.
 
 **Snapshots:** Auto-snapshots taken on every save to `users/{uid}/weeks/{weekStart}/snapshots/`. Include notes, callouts, and reminders as `_callouts`, `_notes`, `_reminders` fields. User can restore from ☰ → Cloud Backups.
+
+### backdrop-filter Containing Block (v5.6.89)
+CSS `backdrop-filter` creates a new containing block for `position: fixed` descendants (same spec rule as `transform`, `will-change`, `filter`, `perspective`). This caused modals (Copy picker, Add to Notes, Task picker) to appear at the bottom of the page instead of as proper overlays when `backdrop-filter: blur(3px)` was on a parent wrapper div. Fix: apply `backdrop-filter` to the `.xxx-overlay` element (which IS the fixed-position overlay), not to the wrapper div that contains fixed-position children.
 
 ### Template Literal Gotcha
 The `renderCardView()` function builds HTML inside a template literal. You CANNOT nest template literals inside it — use plain string concatenation with `function(){}` expressions instead of arrow functions with backticks. This caused a blank-page bug before (v4.35.32).
