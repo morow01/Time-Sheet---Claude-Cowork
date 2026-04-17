@@ -15291,7 +15291,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.92';
+    const VERSION = '5.6.93';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -17524,8 +17524,7 @@
           // scaffolded week, local is just the empty scaffold — never push
           // it back, even if its _updatedAt is newer.
           if (!wasFirstSnap && remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
-            _snapWriteBackCooldown = Date.now();
-            fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+            console.warn('[Rian] Skipping stale remote snapshot (remote:', remoteTs, '< local:', localTs, ')');
             return;
           }
 
@@ -17540,8 +17539,6 @@
           // freshly-scaffolded week — local has no real data to compare against.
           if (!wasFirstSnap && _hwm > HWM_THRESHOLD && _remoteHrs < _hwm - HWM_THRESHOLD) {
             console.warn('[Rian] Rejecting remote data — hours regression:', _remoteHrs.toFixed(1), '< HWM', _hwm.toFixed(1));
-            _snapWriteBackCooldown = Date.now();
-            fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             _registerConflict({
               id: 'ts_' + weekStart,
               section: 'Timesheet', icon: '📅',
@@ -17562,8 +17559,7 @@
           // v5.1.91: same — first snapshot of a scaffolded week is always trusted.
           if (!wasFirstSnap && _localActCount > 0 && _remoteActCount < _localActCount) {
             console.warn('[Rian] Rejecting remote data — entry regression (local:', _localActCount, 'acts, remote:', _remoteActCount, 'acts)');
-            _snapWriteBackCooldown = Date.now();
-            fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+
             _registerConflict({
               id: 'ts_' + weekStart,
               section: 'Timesheet', icon: '📅',
@@ -17631,9 +17627,7 @@
           });
           // Push cleaned data back to Firestore to fix permanently
           if (_ghostsRemoved) {
-            console.log('[Rian] Stripped ghost tasks — saving clean data');
-            _snapWriteBackCooldown = Date.now();
-            fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+            console.log('[Rian] Stripped ghost tasks locally (not writing back — will save on next edit)');
           }
 
           // Re-inject draft activities that were in progress before the snapshot
