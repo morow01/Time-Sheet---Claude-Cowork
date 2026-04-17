@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 13799). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.7.5**
+Current version: **5.8.13**
 
 **Two themes active**: `claude` (default light) and `dark` (slate-based). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -156,6 +156,62 @@ Notebooks state keys: `jNotebooks`, `jSections`, `jPages`, `jEditId`, `jRenameTi
 - **Notes icon** in top nav: folded-corner document with 3 content lines (not the old bookmark/tag shape)
 - **NOTES field label** added in activity card above the TipTap inline note (`+ Add a note…`)
 - All field labels use `.act-field-label` class (10px, 800 weight, uppercase, `--text-muted`)
+
+## Desktop Mode (v5.8.0+)
+Desktop layout activates at `min-width: 1280px` via `_isDesktop()`. Mobile layout unchanged below that breakpoint.
+
+### Timesheet — Three-Panel Layout
+- **Left panel (260px)**: Day selector with date, day name, hours summary, task count badge
+- **Middle panel (381px)**: Task list for selected day with Add Task button (top if empty, bottom if tasks exist)
+- **Detail panel (flex)**: Full task editing — description, notes (TipTap inline), location, work codes, hours, action buttons
+
+Key functions: `_renderDeskDays()`, `_renderDeskTasks(di)`, `_renderDeskDetail(di, actId)`, `deskSelectDay(di)`, `deskSelectAct(id)`, `deskAddTask(di)`
+
+State: `deskSelectedDay` (day index), `deskSelectedAct` (activity ID)
+
+CSS classes: `.desk-three-panel`, `.desk-panel-days`, `.desk-panel-tasks`, `.desk-panel-detail`, `.desk-card-wrap`, `.desk-sel-wrap`, `.desk-add-task-btn`, `.desk-detail-actions`, `.desk-detail-btn`
+
+Selection pattern: gradient `linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03))` with `border-left: 3px solid var(--accent)`.
+
+### Notes — Three-Panel Layout B
+- **Sidebar (200px)**: Active/Archive/Bin nav buttons, category tag filters with colored dots
+- **Notes list (380px)**: Search bar, "New Note" button (dashed, same as Add Task), scrollable note rows
+- **Editor panel (flex)**: Description, Notes content (TipTap preview with custom scroll indicator), Location, Date, Due Date, Reminder, Priority dots, action buttons (Mark Done, Archive, Delete)
+
+Note list rows reuse mobile classes: `note-row-top`, `note-dot`, `note-row-title`, `note-row-meta`, `note-meta-item`, `note-meta-icon`, `note-pin-btn`, `note-cat-badge`. Includes bell icon, due date tag, location+date row — matching mobile exactly.
+
+Draft notes show Save + Discard buttons instead of the regular action bar.
+
+Content preview: `dnotes-note-content-area` with inner `.dnotes-content-scroll` div. Native scrollbar hidden; uses same custom round-dot `note-inline-thumb` indicator as mobile via `_updateInlineNoteThumb()`.
+
+Key functions: `_renderDesktopNotes()`, `deskSelectNote(id)`, `deskNotesTab(tab)`, `deskNotesCatFilter(key)`, `deskNotesNew()`, `deskRefreshNotesList()`
+
+State: `deskSelectedNote`, `deskNotesCatFilter`
+
+CSS: `.dnotes-wrap`, `.dnotes-sidebar`, `.dnotes-list`, `.dnotes-editor`, `.dnotes-note-row`
+
+### Desktop Navigation
+Top tab nav bar replaces bottom mobile nav. `desk-tab-nav` with horizontal buttons. Mobile bottom-nav hidden via `display: none !important` at 1280px+.
+
+`renderCardView()` intercept: `if (_isDesktop()) return _renderDesktopTimesheetView();`
+`renderNotesView()` intercept: `if (_isDesktop()) return _renderDesktopNotes();`
+
+### Poll-Based Sync (v5.8.11+)
+Firestore `onSnapshot` WebSocket can silently go stale across browsers. Added 10-second polling fallback:
+
+- `_weekFingerprint(weekData)` — fingerprints activities by ID + description + hours + location
+- Poll runs via `setInterval(10000)`, also fires on tab focus (`visibilitychange`)
+- Compares local vs remote fingerprints. If different and `remoteTs >= localTs`, accepts server data (preserving drafts, stripping deleted IDs)
+- `_lastFirestoreSnapAt` tracks last snapshot delivery time
+
+### Merge-on-Save (v5.8.8+)
+`fsSetWeek()` fetches remote data via `ref.get({source:'server'})` before writing. Merges activities per-day by ID. Remote-only activities recovered unless in `_deletedActIds`. After `ref.set()`, verifies write landed by reading back.
+
+### Deleted Activity Tracking (v5.8.10+)
+`_deletedActIds` object tracks deleted activity IDs with timestamps. 5-minute TTL prevents resurrection by sync mechanisms (poll, merge-on-save, snapshot). `removeActivity()` calls `_trackDeletedAct(actId)` before filtering. All three sync paths check `_isRecentlyDeleted(id)`.
+
+### Firestore IndexedDB Cache Corruption
+`?cleanup=1` URL parameter nukes Firestore's local IndexedDB caches (built into app since v5.1.79). Use when sync behaves inconsistently — `get({source:'server'})` can return cached data from corrupted IndexedDB even when claiming server source. Ad blockers (uBlock Origin Lite) can also interfere with Firestore network requests.
 
 ## Planned: Additional Themes
 Rob wants to add Gameboy, Win 3.1, B&W, iOS themes. Dark theme is done. To add more: copy `[data-theme="dark"]` block, rename, change variable values, register in `THEME_META`.
