@@ -15214,7 +15214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.62';
+    const VERSION = '5.6.63';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -15545,7 +15545,7 @@
         const act = state.weekData.days[di].activities.find(a => a.id === actId);
         if (!act) return;
         act.location = val;
-        scheduleAutoSave();
+        if (!act._draft) scheduleAutoSave();
         const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
         const locHtml = val ? `${pinSvg}${esc(val)}` : '<span style="opacity:0.4">No location</span>';
         // Collapsed card row
@@ -19410,7 +19410,7 @@
       if (val < 0) val = 0;
       act[field] = val;
 
-      scheduleAutoSave();
+      if (!act._draft) scheduleAutoSave();
       render();
     }
 
@@ -19463,7 +19463,8 @@
         if (rowOtPill) { rowOtPill.textContent = ot > 0 ? `+${ot} OT` : ''; rowOtPill.style.display = ot > 0 ? '' : 'none'; }
         updateSummaryDisplay();
       }
-      scheduleAutoSave();
+      // Don't sync draft tasks — they only save when user taps Save
+      if (!act._draft) scheduleAutoSave();
     }
 
     function adjHrs(btn, delta) {
