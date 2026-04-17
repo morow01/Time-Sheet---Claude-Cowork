@@ -861,9 +861,9 @@
     }
 
     .ctx-menu {
-      position: fixed;
-      right: auto;
-      bottom: auto;
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -15287,7 +15287,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.85';
+    const VERSION = '5.6.87';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -19683,28 +19683,13 @@
       document.querySelectorAll('.btn-more').forEach(b => b.classList.remove('open'));
       state._openCtxActId = null;
     }
-    function _positionCtxMenu(btn, menu) {
-      const r = btn.getBoundingClientRect();
-      // Position above the button, right-aligned
-      menu.style.right = (window.innerWidth - r.right) + 'px';
-      const menuH = menu.offsetHeight || 200;
-      // If menu would go above viewport, show below instead
-      if (r.top - menuH - 8 < 0) {
-        menu.style.top = (r.bottom + 8) + 'px';
-      } else {
-        menu.style.top = (r.top - menuH - 8) + 'px';
-      }
-    }
     function toggleActMenu(actId) {
       const menu = document.getElementById('act-ctx-' + actId);
       const btn = document.getElementById('act-more-' + actId);
       if (!menu || !btn) return;
       const open = menu.classList.contains('show');
       closeAllCtx();
-      if (!open) {
-        menu.classList.add('show'); btn.classList.add('open'); state._openCtxActId = actId;
-        _positionCtxMenu(btn, menu);
-      }
+      if (!open) { menu.classList.add('show'); btn.classList.add('open'); state._openCtxActId = actId; }
     }
     function toggleNoteMenu(noteId) {
       const menu = document.getElementById('note-ctx-' + noteId);
@@ -19712,10 +19697,7 @@
       if (!menu || !btn) return;
       const open = menu.classList.contains('show');
       closeAllCtx();
-      if (!open) {
-        menu.classList.add('show'); btn.classList.add('open');
-        _positionCtxMenu(btn, menu);
-      }
+      if (!open) { menu.classList.add('show'); btn.classList.add('open'); }
     }
     document.addEventListener('click', e => {
       if (!e.target.closest('.btn-more') && !e.target.closest('.ctx-menu')) closeAllCtx();
