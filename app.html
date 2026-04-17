@@ -945,6 +945,8 @@
       inset: 0;
       z-index: 60;
       background: rgba(var(--shadow-rgb), 0.4);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1179,6 +1181,8 @@
       inset: 0;
       z-index: 60;
       background: rgba(var(--shadow-rgb), 0.4);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
       display: flex;
       align-items: flex-end;
       justify-content: center;
@@ -7404,9 +7408,6 @@
     #note-voice-confirm-modal,
     #rtn-picker-modal,
     #rtn-log-modal,
-    #note-confirm-modal,
-    #task-picker-modal,
-    #copy-picker-modal,
     #exit-dialog,
     .remind-overlay {
       backdrop-filter: blur(3px);
@@ -12527,6 +12528,8 @@
       inset: 0;
       z-index: 60;
       background: rgba(var(--shadow-rgb), 0.4);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
       display: flex;
       align-items: flex-end;
       justify-content: center;
@@ -15288,7 +15291,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.88';
+    const VERSION = '5.6.89';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
