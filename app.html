@@ -319,6 +319,31 @@
       font-weight: 600;
     }
 
+    /* ── Weekend divider ── */
+    .weekend-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 16px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+    }
+    .weekend-divider:active { background: var(--accent-light); }
+    .weekend-divider::before, .weekend-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .weekend-divider .wk-chev {
+      font-size: 12px; display: inline-block;
+      transition: transform 0.2s;
+    }
+    .weekend-divider.open .wk-chev { transform: rotate(90deg); }
+
     .day-pills {
       display: flex;
       gap: 5px;
@@ -15214,7 +15239,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.65';
+    const VERSION = '5.6.66';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -15868,6 +15893,7 @@
       showSummary: false,
       headerExpanded: localStorage.getItem('rian_headerExpanded') === 'true',
       expandedDays: new Set(),
+      weekendOpen: false,
       micFabHidden: localStorage.getItem('micFabHidden') === '1',  // track which day indices are expanded
       notesOpen: new Map(), // explicit open/closed per actId; default = open if note has content
       selectionMode: false,
@@ -18686,7 +18712,26 @@
       const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
       const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
 
-      const daysHtml = state.weekData.days.map((day, di) => renderDaySection(day, di)).join('');
+      // Build days HTML with collapsible weekend divider
+      const daysHtml = (() => {
+        let html = '';
+        const sat = state.weekData.days[1], sun = state.weekData.days[2];
+        const satHasTasks = sat && sat.activities.some(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0);
+        const sunHasTasks = sun && sun.activities.some(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0);
+        const weekendEmpty = !satHasTasks && !sunHasTasks;
+        const weekendOpen = state.weekendOpen || !weekendEmpty;
+
+        state.weekData.days.forEach((day, di) => {
+          if (di === 1 && weekendEmpty) {
+            // Insert divider before Saturday
+            html += '<div class="weekend-divider' + (weekendOpen ? ' open' : '') + '" onclick="toggleWeekend()">' +
+              '<span class="wk-chev">›</span> Weekend</div>';
+          }
+          if ((di === 1 || di === 2) && weekendEmpty && !weekendOpen) return; // skip hidden weekend
+          html += renderDaySection(day, di);
+        });
+        return html;
+      })();
 
       const chevronSvg = `<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)'}"><path d="M4 6l4 4 4-4" stroke="var(--text-muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
@@ -18814,6 +18859,11 @@
         state.weekData.days.forEach((_, i) => state.expandedDays.add(i));
       }
       saveUiState();
+      render();
+    }
+
+    function toggleWeekend() {
+      state.weekendOpen = !state.weekendOpen;
       render();
     }
 
