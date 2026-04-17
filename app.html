@@ -15291,7 +15291,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.90';
+    const VERSION = '5.6.92';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -17480,9 +17480,13 @@
 
         // Subscribe to Firestore real-time updates for this week
         const ref = userDoc(`weeks/${weekStart}`);
+        let _snapWriteBackCooldown = 0; // cooldown timestamp: prevents snapshot→write→snapshot loops
         weekUnsubscribe = ref.onSnapshot({ includeMetadataChanges: true }, snap => {
           // Ignore snapshots that are just echoing our own pending writes
           if (snap.metadata.hasPendingWrites) return;
+          // If we recently wrote back from a snapshot, skip for 5s to prevent
+          // infinite loop (write→snapshot→write→snapshot…)
+          if (Date.now() - _snapWriteBackCooldown < 5000) return;
 
           // First-snapshot gate (v5.1.90 / v5.1.91): capture whether this is
           // the very first snapshot for a freshly-scaffolded week BEFORE
@@ -17520,6 +17524,7 @@
           // scaffolded week, local is just the empty scaffold — never push
           // it back, even if its _updatedAt is newer.
           if (!wasFirstSnap && remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
+            _snapWriteBackCooldown = Date.now();
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             return;
           }
@@ -17535,6 +17540,7 @@
           // freshly-scaffolded week — local has no real data to compare against.
           if (!wasFirstSnap && _hwm > HWM_THRESHOLD && _remoteHrs < _hwm - HWM_THRESHOLD) {
             console.warn('[Rian] Rejecting remote data — hours regression:', _remoteHrs.toFixed(1), '< HWM', _hwm.toFixed(1));
+            _snapWriteBackCooldown = Date.now();
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             _registerConflict({
               id: 'ts_' + weekStart,
@@ -17556,6 +17562,7 @@
           // v5.1.91: same — first snapshot of a scaffolded week is always trusted.
           if (!wasFirstSnap && _localActCount > 0 && _remoteActCount < _localActCount) {
             console.warn('[Rian] Rejecting remote data — entry regression (local:', _localActCount, 'acts, remote:', _remoteActCount, 'acts)');
+            _snapWriteBackCooldown = Date.now();
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
             _registerConflict({
               id: 'ts_' + weekStart,
@@ -17625,6 +17632,7 @@
           // Push cleaned data back to Firestore to fix permanently
           if (_ghostsRemoved) {
             console.log('[Rian] Stripped ghost tasks — saving clean data');
+            _snapWriteBackCooldown = Date.now();
             fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
           }
 
