@@ -1560,6 +1560,10 @@
       box-shadow: 0 8px 24px rgba(var(--shadow-brand-rgb), 0.12);
     }
 
+    .activity-card.ctx-raised {
+      z-index: 210;
+    }
+
     .task-num {
       width: 30px;
       height: 30px;
@@ -15288,7 +15292,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.88';
+    const VERSION = '5.6.89';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -19682,6 +19686,10 @@
     function closeAllCtx() {
       document.querySelectorAll('.ctx-menu').forEach(m => m.classList.remove('show'));
       document.querySelectorAll('.btn-more').forEach(b => b.classList.remove('open'));
+      // Restore z-index on any previously raised activity card
+      document.querySelectorAll('.activity-card.ctx-raised').forEach(c => {
+        c.classList.remove('ctx-raised');
+      });
       state._openCtxActId = null;
     }
     function toggleActMenu(actId) {
@@ -19690,7 +19698,12 @@
       if (!menu || !btn) return;
       const open = menu.classList.contains('show');
       closeAllCtx();
-      if (!open) { menu.classList.add('show'); btn.classList.add('open'); state._openCtxActId = actId; }
+      if (!open) {
+        menu.classList.add('show'); btn.classList.add('open'); state._openCtxActId = actId;
+        // Raise the parent activity-card above siblings so the upward menu isn't clipped
+        const card = btn.closest('.activity-card');
+        if (card) card.classList.add('ctx-raised');
+      }
     }
     function toggleNoteMenu(noteId) {
       const menu = document.getElementById('note-ctx-' + noteId);
