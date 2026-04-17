@@ -15287,7 +15287,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.79';
+    const VERSION = '5.6.80';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -15416,12 +15416,11 @@
       auth_fb = firebase.auth();
       storage_fb = firebase.storage();
       // FCM removed — using raw Web Push API
-      // v5.1.79: switched from multi-tab ({synchronizeTabs:true}) to single-tab
-      // persistence. Multi-tab uses localStorage to coordinate mutations between
-      // browser tabs and that layer filled to QuotaExceededError on 2026-04-06,
-      // cascading into FIRESTORE INTERNAL ASSERTION FAILED. Single-tab uses
-      // IndexedDB only (~GB quota vs ~5–10MB for localStorage).
-      db_fs.enablePersistence().catch(e => console.warn('[Rian]', e));
+      // v5.6.80: experimentalForceOwningTab lets each tab have its own
+      // IndexedDB persistence without localStorage coordination (which caused
+      // QuotaExceededError in v5.1.79). No more "exclusive access" errors
+      // when multiple tabs are open.
+      db_fs.enablePersistence({ experimentalForceOwningTab: true }).catch(e => console.warn('[Rian]', e));
     } catch (firebaseErr) {
       console.error("Firebase init failed (likely blocked by Brave Shields):", firebaseErr);
       document.body.innerHTML = '<div style="margin: 40px auto; max-width: 600px; padding: 20px; background: #fee2e2; border: 1px solid var(--priority-high); border-radius: 8px; font-family: sans-serif; text-align: center;"><h2>⚠️ App Blocked by Brave Shields</h2><p>Your browser is blocking IndexedDB or essential scripts needed to run this application. Please click the <strong>Lion icon</strong> (Brave Shields) in your address bar and turn Shields <strong>OFF</strong> for localhost, then refresh the page.</p></div>';
