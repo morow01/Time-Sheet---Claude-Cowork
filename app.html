@@ -15287,7 +15287,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.83';
+    const VERSION = '5.6.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -19680,7 +19680,11 @@
     }
     function closeAllCtx() {
       document.querySelectorAll('.ctx-menu').forEach(m => m.classList.remove('show'));
-      document.querySelectorAll('.btn-more').forEach(b => b.classList.remove('open'));
+      document.querySelectorAll('.btn-more').forEach(b => {
+        b.classList.remove('open');
+        const card = b.closest('.activity-card');
+        if (card) card.style.zIndex = '';
+      });
       state._openCtxActId = null;
     }
     function toggleActMenu(actId) {
@@ -19689,7 +19693,12 @@
       if (!menu || !btn) return;
       const open = menu.classList.contains('show');
       closeAllCtx();
-      if (!open) { menu.classList.add('show'); btn.classList.add('open'); state._openCtxActId = actId; }
+      if (!open) {
+        menu.classList.add('show'); btn.classList.add('open'); state._openCtxActId = actId;
+        // Elevate the card so the menu isn't trapped under sibling cards
+        const card = btn.closest('.activity-card');
+        if (card) card.style.zIndex = '300';
+      }
     }
     function toggleNoteMenu(noteId) {
       const menu = document.getElementById('note-ctx-' + noteId);
