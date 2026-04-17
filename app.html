@@ -15287,7 +15287,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.6.81';
+    const VERSION = '5.6.82';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -17433,6 +17433,14 @@
         const localIsOwn = local && local.userId === uid;
         state.weekData = localIsOwn ? deepCopy(local.data) : createEmptyWeek(weekStart);
         enforceCorrectDates(weekStart, state.weekData);
+        // Strip ghost tasks from local cache (empty activities with no content)
+        state.weekData.days.forEach(d => {
+          d.activities = (d.activities || []).filter(a =>
+            (a.description || '').trim() || (a.location || '').trim() ||
+            (parseFloat(a.ordinary) || 0) > 0 || (parseFloat(a.overtime) || 0) > 0 ||
+            (a.codes && a.codes.length > 0) || (a.notes || '').trim()
+          );
+        });
         // Seed the HWM from local cache so we have a reference before Firestore arrives
         if (localIsOwn) _raiseHWM(weekStart, _weekTotalHours(state.weekData));
         autoExpandToday();
@@ -17586,11 +17594,28 @@
           // Ensure the local updatedAt reflects the server time (as a number)
           state.weekData._updatedAt = remoteTs;
 
-          // Strip _draft flag from any activities that leaked to Firestore
-          // before v5.6.63 — remote data is always "saved" by definition.
+          // Strip _draft flag and remove completely empty ghost tasks that
+          // leaked to Firestore before v5.6.63.
+          let _ghostsRemoved = false;
           state.weekData.days.forEach(d => {
-            (d.activities || []).forEach(a => { delete a._draft; });
+            const before = (d.activities || []).length;
+            d.activities = (d.activities || []).filter(a => {
+              delete a._draft;
+              // Keep if it has any content at all
+              return (a.description || '').trim() ||
+                (a.location || '').trim() ||
+                (parseFloat(a.ordinary) || 0) > 0 ||
+                (parseFloat(a.overtime) || 0) > 0 ||
+                (a.codes && a.codes.length > 0) ||
+                (a.notes || '').trim();
+            });
+            if (d.activities.length < before) _ghostsRemoved = true;
           });
+          // Push cleaned data back to Firestore to fix permanently
+          if (_ghostsRemoved) {
+            console.log('[Rian] Stripped ghost tasks — saving clean data');
+            fsSetWeek(weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+          }
 
           // Re-inject draft activities that were in progress before the snapshot
           for (const [di, drafts] of Object.entries(_draftsPerDay)) {
