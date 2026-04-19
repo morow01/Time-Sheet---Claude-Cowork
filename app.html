@@ -8213,6 +8213,17 @@
       /* contain the resize handle so it never affects row height */
     }
 
+    /* Strip hardcoded inline backgrounds from pasted/saved table content on non-default themes */
+    :root:not([data-theme="claude"]):not([data-theme="ios"]) :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) td,
+    :root:not([data-theme="claude"]):not([data-theme="ios"]) :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) th {
+      background-color: transparent !important;
+      color: var(--text-warm) !important;
+    }
+    :root:not([data-theme="claude"]):not([data-theme="ios"]) :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) th {
+      background-color: var(--table-header-bg) !important;
+      color: var(--table-header-text) !important;
+    }
+
     /* Column resize handle — always absolute, never in flow */
     #note-fs-editor .ProseMirror .column-resize-handle,
     #dj-editor-mount .ProseMirror .column-resize-handle {
@@ -17018,7 +17029,7 @@
         align-items: center;
         justify-content: center;
         font-size: 11px;
-        font-weight: 400;
+        font-weight: 500;
       }
       .dfnd-selected .dfnd-badge {
         background: rgba(var(--accent-rgb), 0.12);
@@ -17488,7 +17499,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.83';
+    const VERSION = '5.8.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
