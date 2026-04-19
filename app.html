@@ -17390,7 +17390,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.75';
+    const VERSION = '5.8.76';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20597,11 +20597,11 @@
                     <span class="menu-row-body"><span class="menu-row-label">Email / Export Week</span><span class="menu-row-sub">Preview &amp; copy, or send email</span></span>
                     ${chev}
                   </button>
-                  <button class="menu-row" onclick="setView('tags-full');closeThemeMenu()">
+                  ${_isDesktop() ? '' : `<button class="menu-row" onclick="setView('tags-full');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Notes Tag Manager</span><span class="menu-row-sub">Create, edit &amp; toggle tags for Notes only</span></span>
                     ${chev}
-                  </button>
+                  </button>`}
                 </div>
               </div>
 
