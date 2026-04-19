@@ -17496,7 +17496,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.87';
+    const VERSION = '5.8.89';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21247,8 +21247,19 @@
       }
 
       // ── Days panel ──
+      var sat = state.weekData.days[1], sun = state.weekData.days[2];
+      var satHasTasks = sat && sat.activities.some(function (a) { return a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0; });
+      var sunHasTasks = sun && sun.activities.some(function (a) { return a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0; });
+      var weekendEmpty = !satHasTasks && !sunHasTasks;
+      var weekendOpen = state.weekendOpen || !weekendEmpty || selDi === 1 || selDi === 2;
+
       var daysHtml = '';
       state.weekData.days.forEach(function (day, di) {
+        if (di === 1 && weekendEmpty) {
+          daysHtml += '<div class="weekend-divider' + (weekendOpen ? ' open' : '') + '" onclick="toggleWeekend()">' +
+            '<span class="wk-chev">›</span> Weekend</div>';
+          daysHtml += '<div class="wk-collapse' + (weekendOpen ? ' open' : '') + '" id="wk-collapse-wrap"><div class="wk-collapse-inner">';
+        }
         var isWe = (di === 1 || di === 2);
         var isToday = (day.date === todayStr);
         var isSel = (di === selDi);
@@ -21271,6 +21282,9 @@
             : '<div class="desk-day-empty">' + (isWe ? '' : 'No entries') + '</div>') +
           '</div>' +
           '</div>';
+        if (di === 2 && weekendEmpty) {
+          daysHtml += '</div></div>';
+        }
       });
 
       // ── Summary at bottom of days panel (reuses mobile summary classes) ──
@@ -21328,7 +21342,9 @@
       var daysPanel = '<div class="desk-panel-days" style="width:' + _deskDaysWidth + 'px">' +
         '<div class="desk-panel-days-hdr">Week Days</div>' +
         daysHtml +
-        '<div class="desk-panel-summary">' + deskSummaryHtml + '</div>' +
+        '<div class="desk-panel-summary">' +
+        '<div class="sum-section-hdr"><div class="sum-section-line"></div><div class="sum-section-label">Weekly Summary</div><div class="sum-section-line"></div></div>' +
+        deskSummaryHtml + '</div>' +
         '</div>';
 
       // ── Tasks panel ──
