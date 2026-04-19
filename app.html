@@ -17496,7 +17496,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.85';
+    const VERSION = '5.8.86';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21273,29 +21273,58 @@
           '</div>';
       });
 
-      // ── Summary at bottom of days panel ──
-      var summaryRows = '';
-      summary.forEach(function (row) {
-        summaryRows += '<div class="desk-summary-row">' +
-          '<span class="desk-summary-code">' + esc(row.code || row.description) + '</span>' +
-          '<span class="desk-summary-hrs">' + fmtHrs(row.ordinary) + '</span>' +
+      // ── Summary at bottom of days panel (reuses mobile summary classes) ──
+      var adjOrd = adjOrdHrs(summary, totalOrd);
+      var summaryRowsHtml = '';
+      summary.forEach(function (row, idx) {
+        var m = row.isUncategorized;
+        var pct = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
+        var pctOT = totalOrd > 0 ? Math.round((row.overtime / totalOrd) * 100) : 0;
+        summaryRowsHtml += '<div class="sum-new-row' + (m ? ' sum-missing' : '') + '">' +
+          '<div>' +
+          '<div class="sum-row-code">' + esc(row.code) + '</div>' +
+          '<div class="sum-row-desc">' + esc(row.description) + '</div>' +
+          '<div class="sum-row-bar-wrap"><div class="sum-row-bar-fill" style="width:' + pct + '%"></div></div>' +
+          (row.overtime > 0 ? '<div class="sum-row-bar-ot-wrap"><div class="sum-row-bar-ot-fill" style="width:' + pctOT + '%"></div></div>' : '') +
+          '</div>' +
+          '<div class="sum-td-num' + (m ? ' missing' : '') + '">' + adjOrd[idx] + '</div>' +
+          '<div class="sum-td-num ' + (row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash') + '">' + (row.overtime > 0 ? fmtHrs(row.overtime) : '\u2014') + '</div>' +
           '</div>';
       });
+
+      var deskSummaryHtml = '<div class="sum-section" style="margin:0">' +
+        '<div class="sum-new-head" style="cursor:default">' +
+        '<div class="sum-head-left">' +
+        '<div class="sum-sum-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>' +
+        '<div class="sum-new-title">Weekly Summary</div>' +
+        '</div>' +
+        '<div class="sum-head-right">' +
+        '<div class="sum-new-badge">' + Math.round(totalOrd) + 'h</div>' +
+        (totalOT > 0 ? '<div class="sum-new-badge-ot">+' + Math.round(totalOT) + ' OT</div>' : '') +
+        '</div>' +
+        '</div>' +
+        '<div class="sum-table-wrap open">' +
+        '<div class="sum-new-col-head">' +
+        '<div class="sum-new-col-th">Code / Description</div>' +
+        '<div class="sum-new-col-th r">ORD</div>' +
+        '<div class="sum-new-col-th r">OT</div>' +
+        '</div>' +
+        summaryRowsHtml +
+        '<div class="sum-new-footer">' +
+        '<div class="sum-footer-label">Total</div>' +
+        '<div class="sum-footer-totals">' +
+        '<div class="sum-footer-item"><div class="sum-footer-lbl">ORD</div><div class="sum-footer-val">' + Math.round(totalOrd) + '</div></div>' +
+        '<div class="sum-footer-div"></div>' +
+        '<div class="sum-footer-item"><div class="sum-footer-lbl">OT</div><div class="sum-footer-val ot">' + (totalOT > 0 ? Math.round(totalOT) : 0) + '</div></div>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
 
       var daysPanel = '<div class="desk-panel-days" style="width:' + _deskDaysWidth + 'px">' +
         '<div class="desk-panel-days-hdr">Week Days</div>' +
         daysHtml +
-        '<div class="desk-panel-summary">' +
-        '<div class="desk-summary-bar">' +
-        '<div class="desk-summary-title">' +
-        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' +
-        'Weekly Summary ' +
-        '<span class="desk-summary-badge">' + Math.round(totalOrd) + 'h</span>' +
-        (totalOT > 0 ? '<span class="desk-summary-badge" style="background:var(--bg-ot);color:var(--text-ot)">+' + Math.round(totalOT) + ' OT</span>' : '') +
-        '</div>' +
-        (summaryRows ? '<div style="margin-top:8px">' + summaryRows + '</div>' : '') +
-        '</div>' +
-        '</div>' +
+        '<div class="desk-panel-summary">' + deskSummaryHtml + '</div>' +
         '</div>';
 
       // ── Tasks panel ──
