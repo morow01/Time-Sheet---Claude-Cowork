@@ -17496,7 +17496,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.93';
+    const VERSION = '5.8.94';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22400,7 +22400,8 @@
       if (!_catDropdownOpen) return;
       if (!e.target.closest('.note-inline-cat-picker') &&
         !e.target.closest('.note-cat-badge') &&
-        !e.target.closest('.note-ghost-pill')) {
+        !e.target.closest('.note-ghost-pill') &&
+        !e.target.closest('.note-cat-wrap')) {
         _catDropdownOpen = null;
         const picker = document.querySelector('.note-inline-cat-picker');
         if (picker) {
