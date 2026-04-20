@@ -17539,7 +17539,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.1';
+    const VERSION = '5.9.2';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24258,7 +24258,7 @@
           dbPut('notes', { id: 'j_notebooks', userId, data: state.jNotebooks, updatedAt: r._updatedAt || Date.now() });
         }
         state.jSyncStatus = 'synced'; updateHeaderStatus();
-        if (state.view === 'journal') render();
+        if (state.view === 'journal' && !state.jEditId) render();
       }, () => { state.jSyncStatus = 'error'; updateHeaderStatus(); });
 
       _jUnsubSec = secRef.onSnapshot(snap => {
@@ -24269,7 +24269,7 @@
           state.jSections = _mergeArr(r.sections, state.jSections);
           dbPut('notes', { id: 'j_sections', userId, data: state.jSections, updatedAt: r._updatedAt || Date.now() });
         }
-        if (state.view === 'journal') render();
+        if (state.view === 'journal' && !state.jEditId) render();
       }, () => { });
 
       _jUnsubPg = pgRef.onSnapshot(snap => {
@@ -24280,7 +24280,7 @@
           state.jPages = _mergeArr(r.pages, state.jPages);
           dbPut('notes', { id: 'j_pages', userId, data: state.jPages, updatedAt: r._updatedAt || Date.now() });
         }
-        if (state.view === 'journal') render();
+        if (state.view === 'journal' && !state.jEditId) render();
       }, () => { });
 
       state.jSyncStatus = 'synced';
