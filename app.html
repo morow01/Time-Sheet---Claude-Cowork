@@ -16380,6 +16380,7 @@
         cursor: pointer;
         border-left: 3px solid transparent;
         transition: background 0.12s;
+        position: relative;
       }
 
       .dnotes-note-row:hover {
@@ -16407,13 +16408,18 @@
         font-weight: 600;
         color: var(--text-muted);
         cursor: pointer;
-        padding: 2px 6px;
+        padding: 3px 9px;
         border: 1px dashed var(--border);
         border-radius: 20px;
       }
 
       .dnotes-tag-menu {
-        margin-top: 8px;
+        position: absolute;
+        left: -14px;
+        right: -14px;
+        top: 100%;
+        z-index: 20;
+        margin-top: 2px;
       }
 
       /* Editor panel */
@@ -17562,7 +17568,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.6';
+    const VERSION = '5.9.7';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
