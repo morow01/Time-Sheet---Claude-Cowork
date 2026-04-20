@@ -11264,6 +11264,33 @@
       opacity: 0.6;
     }
 
+    .j-action-btn.danger {
+      color: var(--priority-high, #ef4444);
+    }
+
+    .dj-row-more {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 2px 4px;
+      border-radius: 4px;
+      opacity: 0;
+      flex-shrink: 0;
+      line-height: 1;
+      transition: opacity 0.15s;
+    }
+
+    .dj-nb-row:hover .dj-row-more,
+    .dj-sec-row:hover .dj-row-more {
+      opacity: 1;
+    }
+
+    .dj-row-more:hover {
+      background: var(--bg-card-alt);
+      opacity: 1 !important;
+    }
+
     /* ⋯ button on page rows */
     .j-pg-more {
       background: none;
@@ -17512,7 +17539,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.0';
+    const VERSION = '5.9.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26118,6 +26145,8 @@
       } else if (act === 'copy' || act === 'move') {
         state.jCopyMovePgId = pgId; state.jCopyMoveMode = act; state.jCopyMoveTargetSecId = null;
         _renderNow();
+      } else if (act === 'delete') {
+        jDeletePage(pgId);
       }
     }
     function _jPageActionSheet() {
@@ -26129,7 +26158,8 @@
         rename: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
         date: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
         copy: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
-        move: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>'
+        move: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>',
+        delete: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>'
       };
       return '<div class="j-sheet-overlay" onclick="if(event.target===this)jClosePageAction()">'
         + '<div class="j-sheet">'
@@ -26140,6 +26170,7 @@
         + '<button class="j-action-btn" onclick="jPgAction(\'date\',\'' + id + '\')">' + icons.date + 'Change Date</button>'
         + '<button class="j-action-btn" onclick="jPgAction(\'copy\',\'' + id + '\')">' + icons.copy + 'Copy To\u2026</button>'
         + '<button class="j-action-btn" onclick="jPgAction(\'move\',\'' + id + '\')">' + icons.move + 'Move To\u2026</button>'
+        + '<button class="j-action-btn danger" onclick="jPgAction(\'delete\',\'' + id + '\')">' + icons.delete + 'Delete</button>'
         + '</div>'
         + '<div class="j-sheet-btns" style="margin-top:12px;">'
         + '<button class="j-sheet-btn cancel" style="flex:none;width:100%;" onclick="jClosePageAction()">Cancel</button>'
@@ -26157,11 +26188,13 @@
       if (!nb) return '';
       const id = nb.id;
       const renameIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+      const deleteIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
       return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseNbAction()">'
         + '<div class="j-sheet">'
         + '<div class="j-sheet-title" style="font-size:15px;padding-bottom:0;">' + esc(nb.title || 'Untitled') + '</div>'
         + '<div class="j-action-list">'
         + '<button class="j-action-btn" onclick="state.jNbActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=\'' + (nb.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
+        + '<button class="j-action-btn danger" onclick="jCloseNbAction();jDeleteNotebook(\'' + id + '\')">' + deleteIcon + 'Delete</button>'
         + '</div>'
         + '<div class="j-sheet-btns" style="margin-top:12px;">'
         + '<button class="j-sheet-btn cancel" style="flex:none;width:100%;" onclick="jCloseNbAction()">Cancel</button>'
@@ -26180,12 +26213,14 @@
       const id = sec.id;
       const renameIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
       const colorIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>';
+      const deleteIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
       return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseSecAction()">'
         + '<div class="j-sheet">'
         + '<div class="j-sheet-title" style="font-size:15px;padding-bottom:0;">' + esc(sec.title || 'Untitled') + '</div>'
         + '<div class="j-action-list">'
         + '<button class="j-action-btn" onclick="state.jSecActionId=null;state.jEditId=\'' + id + '\';state.jRenameTitle=\'' + (sec.title || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\';_renderNow();setTimeout(function(){var el=document.getElementById(\'j-rename-input\');if(el)el.focus();},80)">' + renameIcon + 'Rename</button>'
         + '<button class="j-action-btn" onclick="state.jSecActionId=null;_renderNow();jOpenColorPick(\'' + id + '\')">' + colorIcon + 'Change Colour\u2026</button>'
+        + '<button class="j-action-btn danger" onclick="jCloseSecAction();jDeleteSection(\'' + id + '\')">' + deleteIcon + 'Delete</button>'
         + '</div>'
         + '<div class="j-sheet-btns" style="margin-top:12px;">'
         + '<button class="j-sheet-btn cancel" style="flex:none;width:100%;" onclick="jCloseSecAction()">Cancel</button>'
@@ -26483,7 +26518,8 @@
         var isNbExp = !!exp[nb.id];
         col1Html += '<div class="dj-nb-row" onclick="djToggle(\'' + nb.id + '\')">'
           + '<span class="dj-chev ' + (isNbExp ? 'open' : 'closed') + '">' + chevSvg + '</span>'
-          + bookSvg + ' ' + esc(nb.title)
+          + bookSvg + ' <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(nb.title) + '</span>'
+          + '<button class="dj-row-more" onclick="event.stopPropagation();jOpenNbAction(\'' + nb.id + '\')" title="Notebook options">' + moreSvg + '</button>'
           + '</div>';
 
         if (!isNbExp) return;
@@ -26498,6 +26534,7 @@
             + '<div class="dj-sec-name">' + esc(sec.title) + '</div>'
             + '<div class="dj-sec-meta">' + pgCount + ' page' + (pgCount === 1 ? '' : 's') + '</div>'
             + '</div>'
+            + '<button class="dj-row-more" onclick="event.stopPropagation();jOpenSecAction(\'' + sec.id + '\')" title="Section options">' + moreSvg + '</button>'
             + '</div>';
         });
         col1Html += '<button class="dj-add-sec-inline-btn" onclick="event.stopPropagation();djAddSection(\'' + nb.id + '\')">' + plusSvg + ' Add Section</button>';
