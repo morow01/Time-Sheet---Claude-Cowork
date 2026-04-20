@@ -17496,7 +17496,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.92';
+    const VERSION = '5.8.93';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24948,7 +24948,8 @@
           var catBadgeHtml = noteCat ? '<span class="note-cat-badge" style="background:' + noteCat.color + '">' + getCatIconHtml(noteCat, 11) + ' ' + esc(noteCat.label) + '</span>' : '';
 
           // Pin — reuse mobile note-pin-btn
-          var pinHtml = '<span class="note-pin-btn' + (n.pinned ? ' pinned' : '') + '" style="margin-right:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="' + (n.pinned ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg></span>';
+          var escId = n.id.replace(/'/g, "\\'");
+          var pinHtml = '<button class="note-pin-btn' + (n.pinned ? ' pinned' : '') + '" onclick="event.stopPropagation();toggleNotePin(\'' + escId + '\')" title="' + (n.pinned ? 'Unpin' : 'Pin') + '" style="margin-right:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="' + (n.pinned ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg></button>';
 
           // Bell icon — reuse mobile logic
           var _remActive = hasActiveReminder(n.id);
@@ -24977,7 +24978,6 @@
           }
           if (bellHtml) metaHtml += bellHtml;
 
-          var escId = n.id.replace(/'/g, "\\'");
           listHtml += '<div class="dnotes-note-row' + (isSel ? ' active' : '') + '" onclick="deskSelectNote(\'' + escId + '\')">' +
             '<div class="note-row-top">' +
             '<div class="note-dot ' + dotCls + '" style="flex-shrink:0;margin:0"></div>' +
@@ -25036,13 +25036,18 @@
 
         editorHtml = '<div class="dnotes-editor-header">' +
           '<div class="dnotes-editor-title">' + esc(selTitle) + '</div>' +
-          '<div style="display:flex;gap:6px;align-items:center">' + selCatBadge + selPriBadge + '</div>' +
+          '<div style="display:flex;gap:6px;align-items:center">' + selPriBadge + '</div>' +
           '</div>' +
           '<div class="dnotes-editor-body">' +
           // Description
           '<div class="dnotes-field-group">' +
           '<div class="dnotes-field-label">Description</div>' +
           '<input class="dnotes-field-input" type="text" value="' + esc(selRawDesc) + '" data-note-id="' + selEscId + '" data-note-field="description" onchange="updateNoteField(this);deskRefreshNotesList()" placeholder="Note title…">' +
+          '</div>' +
+          // Category
+          '<div class="dnotes-field-group">' +
+          '<div class="dnotes-field-label">Tag</div>' +
+          renderNoteCatDropdown(selNote.id, selNote.category || '') +
           '</div>' +
           // Notes (content) — rendered inline, same as mobile
           '<div class="dnotes-field-group">' +
