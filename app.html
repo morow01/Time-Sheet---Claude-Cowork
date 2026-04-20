@@ -17496,7 +17496,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.96';
+    const VERSION = '5.8.97';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33403,11 +33403,26 @@
       if (!state.currentUser) return;
       showConfirm(
         'Delete account?',
-        'Your account and all data will be permanently deleted. You will be signed out immediately. This cannot be undone.',
+        'All your data will be permanently deleted. Google will ask you to sign in once to confirm your identity, then your account will be removed. This cannot be undone.',
         async () => {
-          showToast('Deleting account…');
           try {
-            // Pass null so _deleteAllFirestoreData deletes ALL weeks (no empty-set)
+            // Re-authenticate first (Firebase requires recent login for deletion)
+            showToast('Sign in to confirm deletion…');
+            const user = auth_fb.currentUser;
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account', login_hint: user.email || '' });
+            try {
+              await user.reauthenticateWithPopup(provider);
+            } catch (reAuthErr) {
+              if (reAuthErr.code === 'auth/popup-closed-by-user' || reAuthErr.code === 'auth/cancelled-popup-request') {
+                showToast('Deletion cancelled.');
+                return;
+              }
+              throw reAuthErr;
+            }
+
+            // Re-auth succeeded — now delete all data and the account
+            showToast('Deleting account…');
             await _deleteAllFirestoreData(null);
             await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
             if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
@@ -33419,22 +33434,7 @@
             if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
             if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
 
-            // Firebase requires a recent sign-in for account deletion.
-            // If the session is stale, re-authenticate then retry.
-            const user = auth_fb.currentUser;
-            try {
-              await user.delete();
-            } catch (e) {
-              if (e.code === 'auth/requires-recent-login') {
-                showToast('Re-authenticating…');
-                const provider = new firebase.auth.GoogleAuthProvider();
-                provider.setCustomParameters({ prompt: 'select_account' });
-                await user.reauthenticateWithPopup(provider);
-                await user.delete();
-              } else {
-                throw e;
-              }
-            }
+            await user.delete();
             // onAuthStateChanged fires after delete → automatically shows login screen
           } catch (e) {
             showToast('Could not delete account: ' + (e.message || e.code));
