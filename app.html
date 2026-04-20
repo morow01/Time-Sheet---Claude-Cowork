@@ -17496,7 +17496,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.95';
+    const VERSION = '5.8.96';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33420,7 +33420,7 @@
             if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
 
             // Firebase requires a recent sign-in for account deletion.
-            // If the session is stale, re-authenticate silently then retry.
+            // If the session is stale, re-authenticate then retry.
             const user = auth_fb.currentUser;
             try {
               await user.delete();
@@ -33429,8 +33429,8 @@
                 showToast('Re-authenticating…');
                 const provider = new firebase.auth.GoogleAuthProvider();
                 provider.setCustomParameters({ prompt: 'select_account' });
-                await auth_fb.signInWithPopup(provider);
-                await auth_fb.currentUser.delete();
+                await user.reauthenticateWithPopup(provider);
+                await user.delete();
               } else {
                 throw e;
               }
