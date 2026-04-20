@@ -8320,7 +8320,8 @@
 
     :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) .tableWrapper {
       overflow-x: auto;
-      display: inline-block;
+      display: block;
+      width: fit-content;
       max-width: 100%;
     }
 
@@ -17539,7 +17540,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.2';
+    const VERSION = '5.9.3';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
