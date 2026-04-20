@@ -16614,6 +16614,22 @@
         width: 100%;
       }
       .dj-add-sec-btn:hover { background: rgba(var(--accent-rgb), 0.08); }
+      .dj-add-sec-inline-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 8px 4px 36px;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: var(--font-body);
+        border-radius: 6px;
+        width: 100%;
+      }
+      .dj-add-sec-inline-btn:hover { background: rgba(var(--accent-rgb), 0.06); color: var(--accent); }
       /* Col 2: Page list */
       .dj-col2 {
         min-width: 180px;
@@ -17496,7 +17512,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.8.99';
+    const VERSION = '5.9.0';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26484,6 +26500,7 @@
             + '</div>'
             + '</div>';
         });
+        col1Html += '<button class="dj-add-sec-inline-btn" onclick="event.stopPropagation();djAddSection(\'' + nb.id + '\')">' + plusSvg + ' Add Section</button>';
       });
 
       // ── Col 2: Page list for selected section ──
@@ -26598,6 +26615,10 @@
       state.djExpanded[id] = !state.djExpanded[id];
       _djSaveNav();
       render();
+    }
+    function djAddSection(nbId) {
+      state.jNotebookId = nbId;
+      jOpenAdd('section');
     }
     // Per-section memory: remembers last selected page per section
     var _djSecPageMemory = {};   // { secId: pageId }
