@@ -16394,14 +16394,26 @@
       /* Note rows reuse mobile classes: note-row-top, note-dot, note-row-title,
          note-row-meta, note-meta-item, note-meta-icon, note-pin-btn, note-cat-badge */
 
-      .dnotes-row-tag-picker {
-        margin-top: 10px;
+      .dnotes-tag-trigger {
+        cursor: pointer;
       }
 
-      .dnotes-row-tag-picker .note-cat-trigger {
-        background: var(--bg-input);
-        font-size: 12px;
-        padding: 5px 10px;
+      .dnotes-tag-trigger:hover {
+        opacity: 0.85;
+      }
+
+      .dnotes-tag-add-trigger {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 2px 6px;
+        border: 1px dashed var(--border);
+        border-radius: 20px;
+      }
+
+      .dnotes-tag-menu {
+        margin-top: 8px;
       }
 
       /* Editor panel */
@@ -17550,7 +17562,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.5';
+    const VERSION = '5.9.6';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25041,6 +25053,14 @@
           }
           if (bellHtml) metaHtml += bellHtml;
 
+          // Tag: clickable badge stays in meta row; pills open below on click
+          var tagBadgeHtml = noteCat
+            ? '<span class="note-cat-badge dnotes-tag-trigger" style="background:' + noteCat.color + '" onclick="event.stopPropagation();toggleNoteCatDD(\'' + escId + '\')">' + getCatIconHtml(noteCat, 11) + ' ' + esc(noteCat.label) + '</span>'
+            : (isSel ? '<span class="dnotes-tag-add-trigger" onclick="event.stopPropagation();toggleNoteCatDD(\'' + escId + '\')">+ Tag</span>' : '');
+          var tagMenuHtml = (_catDropdownOpen === n.id)
+            ? '<div class="note-cat-menu ncm-open dnotes-tag-menu" onclick="event.stopPropagation()">' + buildNoteCatMenuHtml(n.id, n.category || '') + '</div>'
+            : '';
+
           listHtml += '<div class="dnotes-note-row' + (isSel ? ' active' : '') + '" onclick="deskSelectNote(\'' + escId + '\')">' +
             '<div class="note-row-top">' +
             '<div class="note-dot ' + dotCls + '" style="flex-shrink:0;margin:0"></div>' +
@@ -25049,11 +25069,11 @@
             '</div>' +
             (metaHtml ? '<div class="note-row-meta">' + metaHtml + '</div>' : '') +
             '<div class="note-row-meta" style="margin-top:4px;align-items:center">' +
-            pinHtml + (isSel ? '' : catBadgeHtml) +
+            pinHtml + tagBadgeHtml +
             '<span style="flex:1"></span>' +
             dueHtml +
             '</div>' +
-            (isSel ? '<div class="dnotes-row-tag-picker" onclick="event.stopPropagation()">' + renderNoteCatDropdown(n.id, n.category || '') + '</div>' : '') +
+            tagMenuHtml +
             '</div>';
         });
       }
