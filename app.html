@@ -16404,13 +16404,22 @@
       }
 
       .dnotes-tag-add-trigger {
+        display: inline-flex;
+        align-items: center;
         font-size: 11px;
         font-weight: 600;
         color: var(--text-muted);
         cursor: pointer;
         padding: 3px 9px;
-        border: 1px dashed var(--border);
-        border-radius: 20px;
+        border: 1.5px dashed var(--border);
+        border-radius: 999px;
+        line-height: 1.4;
+        user-select: none;
+      }
+
+      .dnotes-tag-add-trigger:hover {
+        border-color: var(--accent);
+        color: var(--accent);
       }
 
       .dnotes-tag-menu {
@@ -16420,6 +16429,7 @@
         top: 100%;
         z-index: 20;
         margin-top: 2px;
+        padding: 4px;
       }
 
       /* Editor panel */
@@ -17568,7 +17578,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.7';
+    const VERSION = '5.9.8';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25062,7 +25072,7 @@
           // Tag: clickable badge stays in meta row; pills open below on click
           var tagBadgeHtml = noteCat
             ? '<span class="note-cat-badge dnotes-tag-trigger" style="background:' + noteCat.color + '" onclick="event.stopPropagation();toggleNoteCatDD(\'' + escId + '\')">' + getCatIconHtml(noteCat, 11) + ' ' + esc(noteCat.label) + '</span>'
-            : (isSel ? '<span class="dnotes-tag-add-trigger" onclick="event.stopPropagation();toggleNoteCatDD(\'' + escId + '\')">+ Tag</span>' : '');
+            : '<span class="dnotes-tag-add-trigger" onclick="event.stopPropagation();' + (isSel ? 'toggleNoteCatDD(\'' + escId + '\')' : 'deskSelectNote(\'' + escId + '\');toggleNoteCatDD(\'' + escId + '\')') + '">+ Add tag</span>';
           var tagMenuHtml = (_catDropdownOpen === n.id)
             ? '<div class="note-cat-menu ncm-open dnotes-tag-menu" onclick="event.stopPropagation()">' + buildNoteCatMenuHtml(n.id, n.category || '') + '</div>'
             : '';
