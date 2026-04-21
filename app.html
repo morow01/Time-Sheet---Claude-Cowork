@@ -17998,7 +17998,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.30';
+    const VERSION = '5.9.31';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26951,8 +26951,8 @@
         exp[allNbs[0].id] = true;
       }
 
-      // Auto-select first section if none selected
-      if (!state.djSelectedSec && allNbs.length) {
+      // Auto-select first section if none selected (skip if user deliberately selected a notebook)
+      if (!state.djSelectedSec && !state.djActiveNb && allNbs.length) {
         for (var i = 0; i < allNbs.length; i++) {
           if (!exp[allNbs[i].id]) continue;
           var firstSecs = allSecs.filter(function (s) { return s.notebookId === allNbs[i].id; });
