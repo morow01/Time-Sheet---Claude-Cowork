@@ -18000,7 +18000,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.34';
+    const VERSION = '5.9.35';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26379,13 +26379,25 @@
     }
     function _jColorPickSheet() {
       if (!state.jColorPickId) return '';
+      var swatches = _jColorSwatches(
+        (state.jSections.find(function (s) { return s.id === state.jColorPickId; }) || {}).color || '',
+        "jSetSectionColor('" + state.jColorPickId + "','__C__')"
+      );
+      if (_isDesktop()) {
+        return '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)jCloseColorPick()">'
+          + '<div style="background:var(--bg-card);border-radius:14px;box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.22);padding:24px;width:340px;max-width:90vw">'
+          + '<div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px">Choose Colour</div>'
+          + swatches
+          + '<div style="margin-top:16px">'
+          + '<button class="j-sheet-btn cancel" style="width:100%" onclick="jCloseColorPick()">Cancel</button>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+      }
       return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseColorPick()">'
         + '<div class="j-sheet">'
         + '<div class="j-sheet-title">Choose Colour</div>'
-        + _jColorSwatches(
-          (state.jSections.find(function (s) { return s.id === state.jColorPickId; }) || {}).color || '',
-          "jSetSectionColor('" + state.jColorPickId + "','__C__')"
-        )
+        + swatches
         + '<div class="j-sheet-btns">'
         + '<button class="j-sheet-btn cancel" style="flex:none;width:100%" onclick="jCloseColorPick()">Cancel</button>'
         + '</div>'
@@ -26712,6 +26724,18 @@
     }
     function _jDatePickSheet() {
       if (!state.jDatePickId) return '';
+      if (_isDesktop()) {
+        return '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)jCloseDatePick()">'
+          + '<div style="background:var(--bg-card);border-radius:14px;box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.22);padding:24px;width:320px;max-width:90vw">'
+          + '<div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px">Change Date</div>'
+          + '<input id="j-date-pick-input" type="date" class="j-sheet-input" value="' + esc(state.jDatePickVal) + '" oninput="state.jDatePickVal=this.value" style="font-family:inherit">'
+          + '<div style="display:flex;gap:10px;margin-top:16px">'
+          + '<button class="j-sheet-btn cancel" style="flex:1" onclick="jCloseDatePick()">Cancel</button>'
+          + '<button class="j-sheet-btn primary" style="flex:1" onclick="jCommitDatePick()">Save</button>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+      }
       return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseDatePick()">'
         + '<div class="j-sheet">'
         + '<div class="j-sheet-title">Change Date</div>'
@@ -26775,6 +26799,21 @@
       });
       const canExec = !!state.jCopyMoveTargetSecId;
       const btnLabel = mode === 'copy' ? 'Copy Here' : 'Move Here';
+      if (_isDesktop()) {
+        return '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)jCloseCopyMove()">'
+          + '<div style="background:var(--bg-card);border-radius:14px;box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.22);padding:0;width:380px;max-width:90vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">'
+          + '<div style="padding:20px 20px 12px">'
+          + '<div style="font-size:15px;font-weight:700;color:var(--text-primary)">' + (mode === 'copy' ? 'Copy To\u2026' : 'Move To\u2026') + '</div>'
+          + '<div style="font-size:13px;color:var(--text-muted);margin-top:2px">' + esc(pg.title || 'Untitled') + '</div>'
+          + '</div>'
+          + '<div style="flex:1;overflow-y:auto;border-top:1px solid var(--border)">' + (sectionRows || '<div style="padding:16px;color:var(--text-muted);font-size:14px">No other sections available.</div>') + '</div>'
+          + '<div style="display:flex;gap:10px;padding:16px;border-top:1px solid var(--border)">'
+          + '<button class="j-sheet-btn cancel" style="flex:1" onclick="jCloseCopyMove()">Cancel</button>'
+          + '<button class="j-sheet-btn primary" style="flex:1" onclick="jExecuteCopyMove()"' + (canExec ? '' : ' disabled style="opacity:0.4;cursor:not-allowed"') + '>' + btnLabel + '</button>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+      }
       return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCloseCopyMove()">'
         + '<div class="j-sheet" style="padding-bottom:0;max-height:78vh;display:flex;flex-direction:column;">'
         + '<div style="padding:0 0 8px;">'
