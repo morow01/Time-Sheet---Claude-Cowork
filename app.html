@@ -18000,7 +18000,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.35';
+    const VERSION = '5.9.36';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25349,10 +25349,11 @@
         });
       }
 
-      // Sort: pinned first, then by updatedAt
+      // Sort: overdue first, then pinned, then by updatedAt
       listNotes.sort(function (a, b) {
-        if (b.pinned && !a.pinned) return 1;
-        if (a.pinned && !b.pinned) return -1;
+        var aOv = isNoteOverdue(a) ? 0 : (a.pinned ? 1 : 2);
+        var bOv = isNoteOverdue(b) ? 0 : (b.pinned ? 1 : 2);
+        if (aOv !== bOv) return aOv - bOv;
         return (b.updatedAt || 0) - (a.updatedAt || 0);
       });
 
@@ -25428,7 +25429,33 @@
       if (listNotes.length === 0) {
         listHtml += '<div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px">No ' + notesTab + ' notes</div>';
       } else {
+        var _overdueIds = notesTab === 'notes' ? listNotes.filter(function(n){ return isNoteOverdue(n); }).map(function(n){return n.id;}) : [];
+        var _pinnedIds = notesTab === 'notes' ? listNotes.filter(function(n){ return !isNoteOverdue(n) && n.pinned; }).map(function(n){return n.id;}) : [];
+        var _openIds = notesTab === 'notes' ? listNotes.filter(function(n){ return !isNoteOverdue(n) && !n.pinned; }).map(function(n){return n.id;}) : [];
+
+        var _addedOpenHdr = false;
+        var _addedPinnedHdr = false;
+        var _addedOverdueHdr = false;
+
+        if (notesTab === 'notes') {
+          var CLOCK_SVG2 = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+          var PIN_SVG2 = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><line x1="12" y1="17" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>';
+        }
+
         listNotes.forEach(function (n) {
+          // Inject section headings on first note of each group (active tab only)
+          if (notesTab === 'notes') {
+            if (_overdueIds.indexOf(n.id) !== -1 && !_addedOverdueHdr) {
+              listHtml += '<div class="notes-section-label" style="color:var(--priority-high);display:flex;align-items:center;gap:5px">' + CLOCK_SVG2 + ' Overdue (' + _overdueIds.length + ')</div>';
+              _addedOverdueHdr = true;
+            } else if (_pinnedIds.indexOf(n.id) !== -1 && !_addedPinnedHdr) {
+              listHtml += '<div class="notes-section-label" style="display:flex;align-items:center;gap:5px">' + PIN_SVG2 + ' Pinned</div>';
+              _addedPinnedHdr = true;
+            } else if (_openIds.indexOf(n.id) !== -1 && !_addedOpenHdr) {
+              listHtml += '<div class="notes-section-label">Open</div>';
+              _addedOpenHdr = true;
+            }
+          }
           var isSel = (n.id === state.deskSelectedNote);
           var rawDesc = n.description || '';
           var cleanDesc = rawDesc.includes('<') ? rawDesc.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : rawDesc;
