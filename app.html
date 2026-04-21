@@ -18000,7 +18000,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.33';
+    const VERSION = '5.9.34';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26394,6 +26394,19 @@
     }
     function _jRenameSheet() {
       if (!state.jEditId) return '';
+      if (_isDesktop()) {
+        return '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)jCancelRename()">'
+          + '<div style="background:var(--bg-card);border-radius:14px;box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.22);padding:24px;width:340px;max-width:90vw">'
+          + '<div style="font-size:15px;font-weight:700;color:var(--text-primary);margin-bottom:16px">Rename</div>'
+          + '<input id="j-rename-input" class="j-sheet-input" type="text" value="' + esc(state.jRenameTitle) + '" '
+          + 'oninput="state.jRenameTitle=this.value" onkeydown="if(event.key===\'Enter\')jCommitRename();if(event.key===\'Escape\')jCancelRename()">'
+          + '<div style="display:flex;gap:10px;margin-top:16px">'
+          + '<button class="j-sheet-btn cancel" style="flex:1" onclick="jCancelRename()">Cancel</button>'
+          + '<button class="j-sheet-btn primary" style="flex:1" onclick="jCommitRename()">Save</button>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+      }
       return '<div class="j-sheet-overlay" onclick="if(event.target===this)jCancelRename()">'
         + '<div class="j-sheet">'
         + '<div class="j-sheet-title">Rename</div>'
