@@ -16772,10 +16772,17 @@
         color: var(--text-primary);
         cursor: pointer;
         user-select: none;
+        border-left: 3px solid transparent;
+        transition: background 0.1s;
       }
 
       .dj-nb-row:hover {
         background: rgba(var(--accent-rgb), 0.03);
+      }
+
+      .dj-nb-row.active {
+        background: linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03));
+        border-left-color: var(--accent);
       }
 
       .dj-chev {
@@ -17991,7 +17998,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.29';
+    const VERSION = '5.9.30';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26965,7 +26972,8 @@
       var col1Html = '';
       allNbs.forEach(function (nb) {
         var isNbExp = !!exp[nb.id];
-        col1Html += '<div class="dj-nb-row" onclick="djToggle(\'' + nb.id + '\')">'
+        var isNbActive = state.djActiveNb === nb.id && !state.djSelectedSec;
+        col1Html += '<div class="dj-nb-row' + (isNbActive ? ' active' : '') + '" onclick="djToggle(\'' + nb.id + '\')">'
           + '<span class="dj-chev ' + (isNbExp ? 'open' : 'closed') + '">' + chevSvg + '</span>'
           + bookSvg + ' <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(nb.title) + '</span>'
           + '<button class="dj-row-more" onclick="event.stopPropagation();jOpenNbAction(\'' + nb.id + '\')" title="Notebook options">' + moreSvg + '</button>'
@@ -27119,7 +27127,9 @@
     // ── Desktop journal helpers ──
     function djToggle(id) {
       state.djExpanded[id] = !state.djExpanded[id];
-      state.djActiveNb = id; // track last clicked notebook for Add Section context
+      state.djActiveNb = id;
+      state.djSelectedSec = null; // deselect section so notebook highlights
+      state.djSelectedPage = null;
       _djSaveNav();
       render();
     }
@@ -27223,7 +27233,8 @@
       var prevSec = state.djSelectedSec;
       if (prevSec && state.djSelectedPage) _djSecPageMemory[prevSec] = state.djSelectedPage;
       state.djSelectedSec = secId;
-      state.djSelectedPage = _djSecPageMemory[secId] || null; // restore or empty state
+      state.djSelectedPage = _djSecPageMemory[secId] || null;
+      state.djActiveNb = null; // deselect notebook so section highlights
       state.djTreeSearch = '';
       _djSaveNav();
       render();
