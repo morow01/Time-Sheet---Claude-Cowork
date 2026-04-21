@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 13799). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **5.9.14**
+Current version: **5.9.39**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -284,6 +284,52 @@ Desktop Timesheet days panel now mirrors mobile's weekend collapse: when both Sa
 
 ### Universal ESC Handler (v5.8.91+)
 Single global `keydown` listener closes the topmost open modal/sheet on ESC. Walks a priority-ordered stack via `_isModalShown(id)` (checks `.hidden` class, computed display/visibility, inline style, offsetParent). First match wins — calls the modal's specific close function (e.g. `closeBatteryRecorder`, `closeNoteFullscreen`, `closeFaultAssistant`, `closePasteTicket`, etc.), then `oc-schedule-overlay` and `state.isMenuOpen` as final fallbacks. Safe to add new modals to the stack — bug-tolerant via `try/catch` and `typeof === 'function'` guards. Lives near line 29435 next to the older notes-modal-only ESC handler (kept for compatibility).
+
+### Journal Desktop — Notebook Highlighting & Empty Notebook Fix (v5.9.28–5.9.31)
+Clicking a notebook in the left column now highlights it (accent left-border gradient) and deselects any active section. Clicking a section deselects the notebook highlight. Three separate code paths all needed updating:
+
+- **Render-time `secDisabled`**: checks `state.djActiveNb` first (before falling back to selected section's notebook). This allows empty notebooks (no sections) to serve as the "Add Section" target.
+- **Auto-select guard**: `if (!state.djSelectedSec && !state.djActiveNb && allNbs.length)` — the `!state.djActiveNb` condition prevents auto-selecting the first section when a notebook was just clicked.
+- **`djToggle(id)`**: sets `state.djActiveNb = id`, clears `state.djSelectedSec` and `state.djSelectedPage`.
+- **`djSelectSec(secId)`**: clears `state.djActiveNb = null`.
+- **Active CSS**: `.dj-nb-row.active` uses `isNbActive = state.djActiveNb === nb.id && !state.djSelectedSec`.
+
+**`+` dropdown letter-spacing fix**: `.dj-add-dropdown` inherits `letter-spacing: 0.1em; text-transform: uppercase` from the NOTEBOOKS header. Fixed by adding `letter-spacing: normal; text-transform: none` to `.dj-add-dropdown`.
+
+### Journal Desktop — Context Menu Popover (v5.9.32–5.9.35)
+`djCtxMenu(e, type, id)` — unified right-click context menu popover for notebooks, sections, and pages. Injects a `div.dj-ctx-menu` into `document.body` at cursor position. Handles three types:
+- `'nb'`: Rename, Delete
+- `'sec'`: Rename, Change Colour…, Delete
+- `'page'`: Rename, Copy/Move, Change Date, Delete
+
+Closes on next click/right-click via one-shot `document.addEventListener('click', ...)`. `djCloseCtx()` removes the menu from DOM. Mobile still uses the existing bottom sheet action menus (`jOpenNbAction`, `jOpenSecAction`, `jOpenPageAction`).
+
+CSS: `.dj-ctx-menu` (fixed position, `z-index:9500`, box shadow, 180px min-width), `.dj-ctx-menu button` (full-width, hover highlight), `.dj-ctx-menu .danger` (red text), `.dj-ctx-sep` (1px divider).
+
+### Journal Desktop — Centered Modals Replacing Bottom Sheets (v5.9.36)
+On desktop, the four mobile bottom-sheet dialogs now render as centered `position:fixed` overlay modals instead of sliding up from the bottom:
+- `_jRenameSheet()` — "Rename" input + Cancel/Save buttons (340px centered card)
+- `_jColorPickSheet()` — colour dot picker grid (centered card)
+- `_jCopyMoveSheet()` — section selector for Copy/Move page (centered card)
+- `_jDatePickSheet()` — date input for Change Date (centered card)
+
+Pattern: `if (_isDesktop())` branch returns `position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9000;display:flex;align-items:center;justify-content:center` overlay with `background:var(--bg-card);border-radius:14px` inner card. Click on backdrop calls the cancel function.
+
+### Notes Desktop — Section Headings (v5.9.37–5.9.38)
+Desktop Notes list now shows Overdue / Pinned / Open section headings matching mobile, using a "background band" style (Option B):
+- **Sort order**: overdue first, then pinned, then open, each sub-sorted by `updatedAt` descending.
+- **Band style**: `margin: 0 -12px` breaks out of `dnotes-list-scroll`'s `padding: 0 12px` for full-width bands. Each band has a `border-top` + `border-bottom` + tinted `background`.
+  - Overdue: `rgba(var(--priority-high-rgb), 0.08)` background, red border tint, clock SVG
+  - Pinned: `var(--bg-input)` background, `var(--border)` borders, pin SVG
+  - Open: `var(--bg-input)` background, `var(--border)` borders, no icon
+- Headings injected just before the first note in each group using `_addedOverdueHdr / _addedPinnedHdr / _addedOpenHdr` flags.
+
+### Notes Desktop — Convert to Task & Add to Calendar Buttons (v5.9.39)
+Desktop Notes action bar (Active tab only) now includes two extra action buttons matching the existing `desk-detail-btn` style:
+- **Convert to Task** — calls `openNoteToTask(noteId)` (existing function)
+- **Add to Calendar** — calls `addNoteToCalendar(noteId)` (existing function)
+
+Both buttons only shown when `notesTab === 'notes'` (Active tab). Same guard as the existing Archive/Delete buttons.
 
 ### Poll-Based Sync (v5.8.11+)
 Firestore `onSnapshot` WebSocket can silently go stale across browsers. Added 10-second polling fallback:
