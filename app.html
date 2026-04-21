@@ -6973,6 +6973,8 @@
       box-shadow: var(--shadow-sm);
     }
 
+    #code-modal { background: var(--bg-modal); }
+
     /* Work Codes modal — desktop: centered dialog instead of full-screen */
     @media (min-width: 1024px) {
       #code-modal {
@@ -17141,7 +17143,7 @@
   <div id="app" class="mx-auto" style="max-width:690px"></div>
 
   <!-- ===== CODE SEARCH MODAL ===== -->
-  <div id="code-modal" class="hidden fixed inset-0 flex flex-col" style="background:var(--bg-modal);z-index:600">
+  <div id="code-modal" class="hidden fixed inset-0 flex flex-col" style="z-index:600">
     <div id="code-modal-inner" class="flex flex-col flex-1 overflow-hidden">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
         <button onclick="closeCodeModal()" class="text-white p-1 text-xl leading-none">✕</button>
@@ -17577,7 +17579,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.14';
+    const VERSION = '5.9.15';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
