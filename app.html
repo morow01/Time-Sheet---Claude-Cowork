@@ -16844,6 +16844,76 @@
         border-top: 1px solid var(--border);
       }
 
+      /* Header row with inline + button */
+      .dj-hdr-with-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .dj-hdr-add-btn {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+        font-size: 18px;
+        font-weight: 300;
+        line-height: 1;
+        padding: 0;
+        transition: background 0.12s;
+      }
+      .dj-hdr-add-btn:hover { background: rgba(var(--accent-rgb), 0.10); }
+
+      /* Breadcrumb context bar in col 2 */
+      .dj-ctx-bar {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-card);
+        flex-shrink: 0;
+        min-height: 38px;
+      }
+      .dj-ctx-crumb {
+        font-size: 12px;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 80px;
+      }
+      .dj-ctx-crumb.active {
+        color: var(--text-primary);
+        font-weight: 700;
+        max-width: 120px;
+      }
+      .dj-ctx-sep { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+      .dj-ctx-spacer { flex: 1; }
+      .dj-ctx-new-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 11px;
+        border-radius: 7px;
+        border: none;
+        background: var(--accent);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: var(--font-body);
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: opacity 0.12s;
+      }
+      .dj-ctx-new-btn:hover { opacity: 0.88; }
+
       .dj-add-sec-btn {
         display: flex;
         align-items: center;
@@ -17880,7 +17950,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.20';
+    const VERSION = '5.9.21';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26951,32 +27021,39 @@
 
       var col2Title = selSec ? esc(selSec.title) : 'Pages';
 
+      // Breadcrumb for col 2 context bar
+      var selNb = selSec ? allNbs.find(function (n) { return n.id === selSec.notebookId; }) : null;
+      var ctxBarHtml = '<div class="dj-ctx-bar">';
+      if (selNb && selSec) {
+        ctxBarHtml += '<span class="dj-ctx-crumb" title="' + esc(selNb.title) + '">' + esc(selNb.title) + '</span>'
+          + '<span class="dj-ctx-sep">›</span>'
+          + '<span class="dj-ctx-crumb active" title="' + esc(selSec.title) + '">' + esc(selSec.title) + '</span>'
+          + '<span class="dj-ctx-spacer"></span>'
+          + _jSyncDot()
+          + '<button class="dj-ctx-new-btn" onclick="djAddPage(\'' + selSec.id + '\')">' + plusSvg + ' New Page</button>';
+      } else {
+        ctxBarHtml += '<span class="dj-ctx-crumb active">Pages</span>'
+          + '<span class="dj-ctx-spacer"></span>'
+          + _jSyncDot();
+      }
+      ctxBarHtml += '</div>';
+
       return '<div class="dj-wrap">'
         // Col 1: notebooks + sections
         + '<div class="dj-col1" style="width:' + _djCol1Width + 'px">'
-        + '<div class="desk-panel-days-hdr">Notebooks</div>'
+        + '<div class="desk-panel-days-hdr dj-hdr-with-btn"><span>Notebooks</span><button class="dj-hdr-add-btn" onclick="jOpenAdd(\'notebook\')" title="New notebook">+</button></div>'
         + '<div class="dj-col1-body">' + col1Html + '</div>'
-        + '<div class="dj-col1-footer">'
-        + '<button class="dj-add-sec-btn" onclick="jOpenAdd(\'notebook\')">' + plusSvg + ' Add Notebook</button>'
-        + '</div>'
         + '</div>'
         // Resize handle 1
         + '<div class="dj-resize-handle" onmousedown="djResizeStart(event,1)"></div>'
         // Col 2: page list
         + '<div class="dj-col2" style="width:' + _djCol2Width + 'px">'
-        + '<div class="desk-panel-days-hdr">Pages</div>'
-        + '<div class="dj-col2-header">'
-        + '<span style="font-weight:700;font-size:13px;color:var(--text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + col2Title + '</span>'
-        + _jSyncDot()
-        + '</div>'
+        + ctxBarHtml
         + '<div style="padding:6px 10px;position:relative;border-bottom:1px solid var(--border)">'
         + '<span style="position:absolute;left:20px;top:15px;color:var(--text-muted)">' + searchSvg + '</span>'
         + '<input placeholder="Search pages\u2026" oninput="djTreeSearch(this.value)" value="' + esc(state.djTreeSearch || '') + '" style="width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-input);outline:none;box-sizing:border-box;font-family:var(--font-body);color:var(--text-primary)" />'
         + '</div>'
         + '<div class="dj-col2-body">' + col2Html + '</div>'
-        + (selSec ? ('<div class="dj-col2-footer">'
-          + '<button class="dj-add-page-btn" onclick="djAddPage(\'' + selSec.id + '\')">' + plusSvg + ' Add Page</button>'
-          + '</div>') : '')
         + '</div>'
         // Resize handle 2
         + '<div class="dj-resize-handle" onmousedown="djResizeStart(event,2)"></div>'
