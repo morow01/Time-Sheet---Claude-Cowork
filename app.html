@@ -15965,14 +15965,17 @@
       }
 
       .desk-panel-days-hdr {
-        padding: 10px 14px 8px;
+        height: 40px;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
         font-size: 10px;
         font-weight: 800;
         color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.1em;
         border-bottom: 1px solid var(--border);
-        line-height: 1.4;
+        flex-shrink: 0;
       }
 
       .desk-day-row {
@@ -16846,8 +16849,6 @@
 
       /* Header row with inline + button */
       .dj-hdr-with-btn {
-        display: flex;
-        align-items: center;
         justify-content: space-between;
       }
       .dj-hdr-add-btn {
@@ -16855,19 +16856,23 @@
         height: 22px;
         border-radius: 6px;
         border: none;
-        background: transparent;
+        background: var(--date-badge-bg);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--accent);
-        font-size: 18px;
-        font-weight: 300;
+        color: var(--text-secondary);
+        font-size: 16px;
+        font-weight: 400;
         line-height: 1;
         padding: 0;
-        transition: background 0.12s;
+        flex-shrink: 0;
+        transition: background 0.12s, color 0.12s;
       }
-      .dj-hdr-add-btn:hover { background: rgba(var(--accent-rgb), 0.10); }
+      .dj-hdr-add-btn:hover {
+        background: var(--accent);
+        color: #fff;
+      }
 
       /* Breadcrumb context bar in col 2 */
       .dj-ctx-bar {
@@ -17950,7 +17955,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.24';
+    const VERSION = '5.9.25';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
