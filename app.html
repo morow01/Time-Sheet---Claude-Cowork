@@ -18000,7 +18000,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.39';
+    const VERSION = '5.9.40';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20398,10 +20398,15 @@
             console.log('[Rian] Auto-deduped activities locally (will save on next edit)');
           }
 
-          // Re-inject draft activities that were in progress before the snapshot
+          // Re-inject draft activities that were in progress before the snapshot.
+          // Only push drafts whose ID is NOT already present in the remote data —
+          // if autosave fired before the snapshot arrived, Firestore already has the
+          // activity and re-injecting it would create a same-ID duplicate.
           for (const [di, drafts] of Object.entries(_draftsPerDay)) {
             if (state.weekData.days[di]) {
-              state.weekData.days[di].activities.push(...drafts);
+              const existingIds = new Set(state.weekData.days[di].activities.map(a => a.id));
+              const newDrafts = drafts.filter(d => !existingIds.has(d.id));
+              state.weekData.days[di].activities.push(...newDrafts);
             }
           }
 
