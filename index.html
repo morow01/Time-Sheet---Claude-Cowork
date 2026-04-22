@@ -353,10 +353,10 @@
     /* ── SAMSUNG PHONE MOCKUP ── */
     .samsung-wrap{display:flex;justify-content:center;align-items:flex-start;}
     .samsung-frame{
-      width:220px;flex-shrink:0;
+      width:210px;flex-shrink:0;
       background:linear-gradient(145deg,#2a2a2a,#111);
-      border-radius:44px;
-      padding:9px;
+      border-radius:30px;
+      padding:8px;
       box-shadow:
         0 32px 72px rgba(0,0,0,0.38),
         0 0 0 1px rgba(255,255,255,0.07),
@@ -366,24 +366,25 @@
     }
     /* Volume buttons */
     .samsung-frame::before{
-      content:'';position:absolute;left:-3px;top:88px;
-      width:3px;height:26px;background:#2a2a2a;border-radius:2px 0 0 2px;
-      box-shadow:0 34px 0 #2a2a2a;
+      content:'';position:absolute;left:-3px;top:80px;
+      width:3px;height:24px;background:#2a2a2a;border-radius:2px 0 0 2px;
+      box-shadow:0 32px 0 #2a2a2a;
     }
     /* Power button */
     .samsung-frame::after{
-      content:'';position:absolute;right:-3px;top:110px;
-      width:3px;height:38px;background:#2a2a2a;border-radius:0 2px 2px 0;
+      content:'';position:absolute;right:-3px;top:100px;
+      width:3px;height:36px;background:#2a2a2a;border-radius:0 2px 2px 0;
     }
     .samsung-screen{
-      background:#000;border-radius:37px;overflow:hidden;position:relative;
+      background:#000;border-radius:23px;overflow:hidden;position:relative;
+      height:424px;
     }
     .samsung-camera{
-      position:absolute;top:11px;left:50%;transform:translateX(-50%);
-      width:11px;height:11px;background:#0d0d0d;border-radius:50%;
+      position:absolute;top:10px;left:50%;transform:translateX(-50%);
+      width:10px;height:10px;background:#0d0d0d;border-radius:50%;
       box-shadow:0 0 0 1.5px rgba(255,255,255,0.08);z-index:2;
     }
-    .samsung-screen img{width:100%;display:block;}
+    .samsung-screen img{width:100%;display:block;object-fit:cover;object-position:top;height:100%;}
 
     /* ── RESPONSIVE ── */
     @media(max-width:768px){
