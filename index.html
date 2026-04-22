@@ -393,7 +393,6 @@
 
     /* ── CAROUSEL: kicks in whenever two phones would overflow ── */
     @media(max-width:1100px){
-      .samsung-dots{grid-column:1/-1;}
       .samsung-wrap{
         width:100%;
         min-width:0;
@@ -1096,6 +1095,13 @@
 document.querySelectorAll('.samsung-wrap').forEach(function(wrap){
   var frames = wrap.querySelectorAll('.samsung-slide');
   if(frames.length < 2) return;
+
+  // Wrap carousel + dots in a column container so they stay in the same grid cell
+  var col = document.createElement('div');
+  col.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+  wrap.parentNode.insertBefore(col, wrap);
+  col.appendChild(wrap);
+
   var dotsEl = document.createElement('div');
   dotsEl.className = 'samsung-dots';
   frames.forEach(function(_,i){
@@ -1103,7 +1109,8 @@ document.querySelectorAll('.samsung-wrap').forEach(function(wrap){
     d.className = 'samsung-dot' + (i === 0 ? ' active' : '');
     dotsEl.appendChild(d);
   });
-  wrap.parentNode.insertBefore(dotsEl, wrap.nextSibling);
+  col.appendChild(dotsEl);
+
   var obs = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
       if(!e.isIntersecting) return;
