@@ -18026,7 +18026,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.43';
+    const VERSION = '5.9.44';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27214,6 +27214,7 @@
       var secDisabled = !activeNb;
       var folderIconSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
       var nbIconSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+      var importSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
       var addDropdown = '<div class="dj-add-dropdown" id="dj-add-dd">'
         + '<button class="dj-add-dd-item" onclick="djAddMenuAction(\'notebook\')">'
         + '<div class="dj-add-dd-icon" style="background:#eff6ff;color:#2D6BE4">' + nbIconSvg + '</div>'
@@ -27225,6 +27226,11 @@
         + '<div class="dj-add-dd-body"><span class="dj-add-dd-label">Add Section</span>'
         + (secSubtitle ? '<span class="dj-add-dd-sub">' + esc(secSubtitle) + '</span>' : '')
         + '</div>'
+        + '</button>'
+        + '<div class="dj-add-dd-sep"></div>'
+        + '<button class="dj-add-dd-item" onclick="event.stopPropagation();djCloseAddMenu();openJDocxImport()">'
+        + '<div class="dj-add-dd-icon" style="background:#f0fdf4;color:#16a34a">' + importSvg + '</div>'
+        + '<div class="dj-add-dd-body"><span class="dj-add-dd-label">Import DOCX</span></div>'
         + '</button>'
         + '</div>';
 
@@ -27304,6 +27310,13 @@
         if (btn) btn.classList.remove('open');
         document.removeEventListener('click', _djAddMenuOutside);
       }
+    }
+    function djCloseAddMenu() {
+      var dd = document.getElementById('dj-add-dd');
+      var btn = document.getElementById('dj-add-btn');
+      if (dd) dd.classList.remove('open');
+      if (btn) btn.classList.remove('open');
+      document.removeEventListener('click', _djAddMenuOutside);
     }
     function djAddMenuAction(type) {
       var dd = document.getElementById('dj-add-dd');
