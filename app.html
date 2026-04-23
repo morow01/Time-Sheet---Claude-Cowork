@@ -18080,7 +18080,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.46';
+    const VERSION = '5.9.47';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23262,6 +23262,7 @@
 
         // Move mode: delete source task from its day
         if (moveMode) {
+          _trackDeletedAct(actId); // prevent snapshot/poll from resurrecting the source
           state.weekData.days[sourceDi].activities = state.weekData.days[sourceDi].activities.filter(a => a.id !== actId);
           scheduleAutoSave();
         }
