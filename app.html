@@ -22827,6 +22827,39 @@
       requestAnimationFrame(() => {
         ov.querySelectorAll('textarea').forEach(autoGrow);
         _initInlineNoteThumbs();
+
+        // Drag-down to dismiss — track on drag handle + header only
+        const sheet = ov.querySelector('.task-modal-sheet');
+        const dragZone = ov.querySelector('.task-modal-drag-handle');
+        const header = ov.querySelector('.task-modal-header');
+        if (!sheet || !dragZone) return;
+        let _startY = 0, _dragging = false;
+        function _onDown(e) {
+          _startY = (e.touches ? e.touches[0].clientY : e.clientY);
+          _dragging = true;
+          sheet.style.transition = 'none';
+        }
+        function _onMove(e) {
+          if (!_dragging) return;
+          const dy = (e.touches ? e.touches[0].clientY : e.clientY) - _startY;
+          if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
+        }
+        function _onUp(e) {
+          if (!_dragging) return;
+          _dragging = false;
+          const dy = (e.changedTouches ? e.changedTouches[0].clientY : e.clientY) - _startY;
+          sheet.style.transition = '';
+          sheet.style.transform = '';
+          if (dy > 80) closeTaskModal();
+        }
+        [dragZone, header].forEach(el => {
+          el.addEventListener('touchstart', _onDown, { passive: true });
+          el.addEventListener('touchmove', _onMove, { passive: true });
+          el.addEventListener('touchend', _onUp);
+          el.addEventListener('mousedown', _onDown);
+          el.addEventListener('mousemove', _onMove);
+          el.addEventListener('mouseup', _onUp);
+        });
       });
     }
 
