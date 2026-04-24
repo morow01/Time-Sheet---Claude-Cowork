@@ -18183,7 +18183,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.53-exp';
+    const VERSION = '5.9.54-exp';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21473,11 +21473,11 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Display</div>
                 <div class="menu-card">
-                  <button class="menu-row" onclick="toggleMicFab()">
+                  <button id="menu-mic-fab-btn" class="menu-row" onclick="toggleMicFab()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></span>
-                    <span class="menu-row-body"><span class="menu-row-label">Voice button</span><span class="menu-row-sub">${state.micFabHidden ? 'Hidden — tap to show' : 'Visible — tap to hide'}</span></span>
-                    <span style="width:36px;height:20px;border-radius:10px;background:${state.micFabHidden ? 'var(--border-strong)' : 'var(--accent)'};position:relative;transition:background 0.2s;flex-shrink:0;display:inline-block;">
-                      <span style="position:absolute;top:2px;left:${state.micFabHidden ? '2px' : '18px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.18);display:block;"></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Voice button</span><span id="menu-mic-fab-sub" class="menu-row-sub">${state.micFabHidden ? 'Hidden — tap to show' : 'Visible — tap to hide'}</span></span>
+                    <span id="menu-mic-fab-track" style="width:36px;height:20px;border-radius:10px;background:${state.micFabHidden ? 'var(--border-strong)' : 'var(--accent)'};position:relative;transition:background 0.2s;flex-shrink:0;display:inline-block;">
+                      <span id="menu-mic-fab-pill" style="position:absolute;top:2px;left:${state.micFabHidden ? '2px' : '18px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.18);display:block;"></span>
                     </span>
                   </button>
                   ${(() => {
@@ -23454,7 +23454,15 @@
       state.micFabHidden = !state.micFabHidden;
       localStorage.setItem('micFabHidden', state.micFabHidden ? '1' : '0');
       _applyMicFabVisibility();
-      render(); // refresh menu toggle state
+      const hidden = state.micFabHidden;
+      const sub = document.getElementById('menu-mic-fab-sub');
+      const track = document.getElementById('menu-mic-fab-track');
+      const pill = document.getElementById('menu-mic-fab-pill');
+      if (sub && track && pill) {
+        sub.textContent = hidden ? 'Hidden — tap to show' : 'Visible — tap to hide';
+        track.style.background = hidden ? 'var(--border-strong)' : 'var(--accent)';
+        pill.style.left = hidden ? '2px' : '18px';
+      }
     }
     function _applyMicFabVisibility() {
       const fab = document.getElementById('voice-fab');
