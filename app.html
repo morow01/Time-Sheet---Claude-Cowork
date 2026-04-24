@@ -31084,6 +31084,8 @@
       // 0. Exit dialog open — dismiss it
       var exitDlg = document.getElementById('exit-dialog');
       if (exitDlg) { exitDlg.remove(); return; }
+      // 0a. Task fullscreen modal open — close it
+      if (_taskModalState) { closeTaskModal(); return; }
       // 1. Any open bottom sheet / action sheet
       const sheets = document.querySelectorAll('.btm-sheet.open, .bottom-sheet.open');
       if (sheets.length) {
