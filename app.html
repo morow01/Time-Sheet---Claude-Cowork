@@ -1642,15 +1642,15 @@
       inset: 0;
       z-index: 10005;
       background: rgba(0,0,0,0.45);
-      align-items: flex-end;
+      align-items: stretch;
       justify-content: center;
     }
     .task-modal-sheet {
       background: var(--bg-card);
-      border-radius: 20px 20px 0 0;
+      border-radius: 0;
       width: 100%;
       max-width: 640px;
-      max-height: 92dvh;
+      height: 100%;
       display: flex;
       flex-direction: column;
       animation: ttAiSlideUp 0.22s ease;
@@ -23003,7 +23003,7 @@
         ov.id = 'note-modal-overlay';
         ov.id = 'note-modal-overlay';
         ov.setAttribute('onclick', 'if(event.target===this)closeNoteModal()');
-        ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center';
+        ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:stretch;justify-content:center';
         document.body.appendChild(ov);
       }
       ov.innerHTML = _renderNoteModalHtml(note);
@@ -31252,6 +31252,8 @@
       if (_taskModalState) { closeTaskModal(); return; }
       // 0b. Note fullscreen modal open — close it
       if (_noteModalState) { closeNoteModal(); return; }
+      // 0c. Callout fullscreen modal open — close it
+      if (_coModalState) { closeCoModal(); return; }
       // 1. Any open bottom sheet / action sheet
       const sheets = document.querySelectorAll('.btm-sheet.open, .bottom-sheet.open');
       if (sheets.length) {
@@ -36142,10 +36144,10 @@
               </div>
             </div>
           </div>
-          <span class="chevron" style="font-size:14px;color:var(--text-muted);transform:${isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'};transition:transform 0.2s;flex-shrink:0;">›</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted)"><polyline points="9 18 15 12 9 6"/></svg>
         </div>`;
 
-      // Expanded detail — only render when expanded to avoid duplicate IDs
+      // Expanded detail — only render when expanded (kept for desktop/add-new flow)
       if (isExpanded) {
         cardHtml += `<div class="activity-detail open">
         <div class="act-detail-inner" style="display:flex;flex-direction:column;gap:14px">
@@ -36716,7 +36718,143 @@
 
     function coPressClick(e, id) {
       if (_coPressLocked) { _coPressLocked = false; return; }
-      if (state.coSelectionMode) { coToggleSelection(id); } else { coToggleCard(id); }
+      if (state.coSelectionMode) { coToggleSelection(id); } else { openCoModal(id); }
+    }
+
+    // ── Callout fullscreen modal ──
+    var _coModalState = null;
+
+    function openCoModal(coId) {
+      _coModalState = coId;
+      state.calloutsExpandedId = coId; // keep so updateCoField works via existing IDs
+      _showCoModal();
+    }
+
+    function closeCoModal() {
+      _coFlushSave();
+      _coModalState = null;
+      state.calloutsExpandedId = null;
+      state.calloutsNotesOpen = false;
+      const ov = document.getElementById('co-modal-overlay');
+      if (ov) ov.style.display = 'none';
+      document.body.style.overflow = '';
+      render();
+    }
+
+    function _showCoModal() {
+      if (!_coModalState) return;
+      const coId = _coModalState;
+      const week = state.callouts.weeks?.[state.calloutsSelectedWeek];
+      const co = week?.callouts?.find(c => c.id === coId);
+      if (!co) { closeCoModal(); return; }
+
+      let ov = document.getElementById('co-modal-overlay');
+      if (!ov) {
+        ov = document.createElement('div');
+        ov.id = 'co-modal-overlay';
+        ov.setAttribute('onclick', 'if(event.target===this)closeCoModal()');
+        ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:stretch;justify-content:center';
+        document.body.appendChild(ov);
+      }
+      ov.innerHTML = _renderCoModalHtml(co);
+      ov.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      requestAnimationFrame(() => {
+        ov.querySelectorAll('textarea').forEach(autoGrow);
+        _initInlineNoteThumbs();
+        const sheet = ov.querySelector('.task-modal-sheet');
+        const dragZone = ov.querySelector('.task-modal-drag-handle');
+        const header = ov.querySelector('.task-modal-header');
+        if (!sheet || !dragZone) return;
+        let _sY = 0, _drag = false;
+        function _dn(e) { _sY = (e.touches?.[0]||e).clientY; _drag = true; sheet.style.transition = 'none'; }
+        function _mv(e) { if (!_drag) return; const dy = (e.touches?.[0]||e).clientY - _sY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }
+        function _up(e) {
+          if (!_drag) return; _drag = false;
+          const dy = ((e.changedTouches?.[0])||e).clientY - _sY;
+          sheet.style.transition = ''; sheet.style.transform = '';
+          if (dy > 80) closeCoModal();
+        }
+        [dragZone, header].forEach(el => {
+          el.addEventListener('touchstart', _dn, { passive: true });
+          el.addEventListener('touchmove', _mv, { passive: true });
+          el.addEventListener('touchend', _up);
+          el.addEventListener('mousedown', _dn);
+          el.addEventListener('mousemove', _mv);
+          el.addEventListener('mouseup', _up);
+        });
+      });
+    }
+
+    function _renderCoModalHtml(co) {
+      const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
+      const fault = co.fault || '';
+      const isDraft = !!co._draft;
+      const actionsHtml = isDraft
+        ? `<button class="note-btn-done" onclick="coSaveDraft();closeCoModal()">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
+           </button>
+           <button class="note-btn-delete" onclick="coDelete();closeCoModal()">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
+           </button>`
+        : `<button class="note-btn-delete" onclick="coDelete();closeCoModal()">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout
+           </button>`;
+
+      return `<div class="task-modal-sheet" onclick="event.stopPropagation()">
+        <div class="task-modal-drag-handle"></div>
+        <div class="task-modal-header">
+          <button class="task-modal-close" onclick="closeCoModal()" title="Back">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="task-modal-title">${fault ? esc(fault.substring(0,60)) : '<span style="opacity:0.45;font-style:italic">Callout</span>'}</div>
+          <span class="task-modal-saved" id="co-modal-saved">Saved</span>
+        </div>
+        <div class="task-modal-body">
+          <div class="flex flex-col gap-1.5">
+            <span class="act-field-label">Date</span>
+            <input type="date" id="co-date-input" value="${co.date||''}" class="act-input" style="cursor:pointer" onchange="updateCoField('date',this.value);_coModalFlashSaved()">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <span class="act-field-label">Ticket Number</span>
+            <textarea id="co-ticket-input" class="act-textarea" rows="1" style="resize:none;overflow:hidden" placeholder="e.g. R23482335"
+              autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+              oninput="this.value=this.value.replace(/\\n/g,'');updateCoField('ticket',this.value.trim());_coModalFlashSaved()"
+              onkeydown="if(event.key==='Enter')event.preventDefault()">${esc(co.ticket||'')}</textarea>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <span class="act-field-label">Location</span>
+            <input type="text" id="co-site-display" class="act-input" readonly value="${esc(co.site||'')}" placeholder="Tap to select location"
+              style="cursor:pointer;user-select:none" autocomplete="new-password" data-lpignore="true"
+              onclick="_coSiteCallback=(name)=>{document.getElementById('co-site-display').value=name;updateCoField('site',name);_coModalFlashSaved()};openLocationModal()">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <span class="act-field-label">Fault Description</span>
+            <textarea id="co-fault-input" class="act-textarea" rows="1" placeholder="e.g. EXTERNAL ALARM: AC MAINS FAIL"
+              autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+              oninput="autoGrow(this);updateCoField('fault',this.value.trim());_coModalFlashSaved()">${esc(co.fault||'')}</textarea>
+          </div>
+          ${renderNoteInline(co.notes||'', `openCoNoteFullscreen()`, `data-co-notes-inline`)}
+          <textarea class="act-notes-area" id="co-notes-ta" style="display:none" autocomplete="off" data-lpignore="true"
+            oninput="coAutoSave()">${esc(co.notes||'')}</textarea>
+          <div class="flex flex-col gap-1.5">
+            <span class="act-field-label">Engineer On Site</span>
+            <input type="time" id="co-time-input" class="act-input" value="${esc(co.engineerOnSite||'')}"
+              onchange="updateCoField('engineerOnSite',this.value);_coModalFlashSaved()">
+          </div>
+        </div>
+        <div class="task-modal-actions">${actionsHtml}</div>
+      </div>`;
+    }
+
+    var _coModalSavedTimer = null;
+    function _coModalFlashSaved() {
+      const el = document.getElementById('co-modal-saved');
+      if (!el) return;
+      el.classList.add('show');
+      clearTimeout(_coModalSavedTimer);
+      _coModalSavedTimer = setTimeout(() => el.classList.remove('show'), 1500);
     }
 
     function coToggleSelectionMode() {
