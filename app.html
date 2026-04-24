@@ -18080,7 +18080,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.50';
+    const VERSION = '5.9.51';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23223,6 +23223,17 @@
           scheduleAutoSave();
         }
 
+        // Move mode: delete source BEFORE the async target-week saves.
+        // This sets syncStatus='pending' immediately, blocking incoming snapshots
+        // and polls during the network round-trips below. Without this, a snapshot
+        // arriving during the await window has no pending-write protection and
+        // restores the deleted task before the save can land.
+        if (moveMode) {
+          _trackDeletedAct(actId);
+          state.weekData.days[sourceDi].activities = state.weekData.days[sourceDi].activities.filter(a => a.id !== actId);
+          scheduleAutoSave();
+        }
+
         // Copy to other weeks (load, modify, save)
         for (const ws of Object.keys(datesByWeek)) {
           try {
@@ -23260,13 +23271,6 @@
           } catch (e) {
             console.warn('[Rian] copy to week', ws, e);
           }
-        }
-
-        // Move mode: delete source task from its day
-        if (moveMode) {
-          _trackDeletedAct(actId); // prevent snapshot/poll from resurrecting the source
-          state.weekData.days[sourceDi].activities = state.weekData.days[sourceDi].activities.filter(a => a.id !== actId);
-          scheduleAutoSave();
         }
 
         closeCopyPicker();
