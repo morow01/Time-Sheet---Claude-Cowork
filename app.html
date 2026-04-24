@@ -1686,19 +1686,38 @@
       text-overflow: ellipsis;
     }
     .task-modal-close {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border: none;
-      background: var(--bg-card-alt);
-      border-radius: 50%;
+      background: none;
       font-size: 18px;
-      line-height: 1;
       color: var(--text-muted);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      margin-left: -8px;
+    }
+    .task-modal-drag-handle {
+      width: 36px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin: 8px auto 0;
+      flex-shrink: 0;
+    }
+    .task-modal-saved {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--priority-low, #22c55e);
+      opacity: 0;
+      transition: opacity 0.2s;
+      margin-left: auto;
+      padding-right: 4px;
+    }
+    .task-modal-saved.show {
+      opacity: 1;
     }
     .task-modal-body {
       flex: 1;
@@ -22840,10 +22859,14 @@
            </button>`;
 
       return `<div class="task-modal-sheet" onclick="event.stopPropagation()">
+        <div class="task-modal-drag-handle"></div>
         <div class="task-modal-header">
+          <button class="task-modal-close" onclick="closeTaskModal()" title="Back">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
           <div class="task-modal-num">${di + 1}</div>
           <div class="task-modal-title">${esc(act.description) || '<span style="opacity:0.45;font-style:italic">No description</span>'}</div>
-          <button class="task-modal-close" onclick="closeTaskModal()">×</button>
+          <span class="task-modal-saved" id="task-modal-saved">Saved</span>
         </div>
         <div class="task-modal-body">
           <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0;display:contents">
@@ -22906,6 +22929,16 @@
     function _taskModalRefreshTitle(val) {
       const t = document.querySelector('#task-modal-overlay .task-modal-title');
       if (t) t.innerHTML = val ? esc(val) : '<span style="opacity:0.45;font-style:italic">No description</span>';
+    }
+
+    // Flash "Saved" in the modal header briefly after a field change
+    var _taskModalSavedTimer = null;
+    function _taskModalFlashSaved() {
+      const el = document.getElementById('task-modal-saved');
+      if (!el) return;
+      el.classList.add('show');
+      clearTimeout(_taskModalSavedTimer);
+      _taskModalSavedTimer = setTimeout(() => el.classList.remove('show'), 1500);
     }
 
     function renderActivity(act, di, actIndex) {
@@ -23076,6 +23109,7 @@
         const modalEl = document.getElementById('task-modal-overlay');
         const inp = modalEl ? modalEl.querySelector(`[data-step-val="${actId}-${field}"]`) : null;
         if (inp) inp.value = val;
+        _taskModalFlashSaved();
         // Also refresh card pill
         const pill = document.querySelector(`[data-row-hrs="${actId}"]`);
         if (pill && field === 'ordinary') { pill.textContent = val + 'h'; pill.style.display = val > 0 ? '' : 'none'; }
@@ -23108,6 +23142,8 @@
 
       const val = el.value;
       act[field] = val;
+
+      if (_taskModalState && _taskModalState.actId === actId) _taskModalFlashSaved();
 
       // Live-update description in collapsed header
       if (field === 'description') {
