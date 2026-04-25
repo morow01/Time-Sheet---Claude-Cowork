@@ -12349,23 +12349,21 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 14px;
+      gap: 6px;
+      padding: 12px;
       margin: 0 16px 8px;
-      border: 2px dashed var(--border);
-      border-radius: 14px;
-      color: var(--text-muted);
-      font-size: 14px;
-      font-weight: 600;
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
 
-    .add-note-dashed:active {
-      background: rgba(var(--accent-rgb), 0.06);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    .add-note-dashed:hover  { background: rgba(var(--accent-rgb), 0.04); border-color: var(--accent); }
+    .add-note-dashed:active { background: rgba(var(--accent-rgb), 0.08); border-color: var(--accent); }
 
     .notes-selection-banner {
       display: flex;
@@ -18174,7 +18172,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.66';
+    const VERSION = '5.9.67';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
