@@ -18189,7 +18189,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.87';
+    const VERSION = '5.9.88';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23373,35 +23373,27 @@
       el.style.height = el.scrollHeight + 'px';
     }
 
+    function _applyHrsInPlace(act, actId, field, val) {
+      // Update every input with this data-step-val (expanded card + modal)
+      document.querySelectorAll(`[data-step-val="${actId}-${field}"]`).forEach(inp => { inp.value = val; });
+      // Update collapsed header pills
+      const pill   = document.querySelector(`[data-row-hrs="${actId}"]`);
+      const pillOt = document.querySelector(`[data-row-ot="${actId}"]`);
+      if (pill   && field === 'ordinary') { pill.textContent   = val + 'h';         pill.style.display   = val > 0 ? '' : 'none'; }
+      if (pillOt && field === 'overtime') { pillOt.textContent = '+' + val + ' OT'; pillOt.style.display = val > 0 ? '' : 'none'; }
+      if (_taskModalState && _taskModalState.actId === actId) _taskModalFlashSaved();
+    }
+
     function stepHrs(actId, di, field, delta) {
       const day = state.weekData.days[di];
       if (!day) return;
       const act = day.activities.find(a => a.id === actId);
       if (!act) return;
-
       let val = (parseFloat(act[field]) || 0) + delta;
       if (val < 0) val = 0;
       act[field] = val;
-
       scheduleAutoSave();
-
-      // If the task modal is open for this activity, update just the input in-place
-      // instead of a full render() which would close the modal.
-      // Scope to #task-modal-overlay — the hidden .activity-detail in the card
-      // has the same data-step-val and querySelector would find that one first.
-      if (_taskModalState && _taskModalState.actId === actId) {
-        const modalEl = document.getElementById('task-modal-overlay');
-        const inp = modalEl ? modalEl.querySelector(`[data-step-val="${actId}-${field}"]`) : null;
-        if (inp) inp.value = val;
-        _taskModalFlashSaved();
-        // Also refresh card pill
-        const pill = document.querySelector(`[data-row-hrs="${actId}"]`);
-        if (pill && field === 'ordinary') { pill.textContent = val + 'h'; pill.style.display = val > 0 ? '' : 'none'; }
-        const pillOt = document.querySelector(`[data-row-ot="${actId}"]`);
-        if (pillOt && field === 'overtime') { pillOt.textContent = '+' + val + ' OT'; pillOt.style.display = val > 0 ? '' : 'none'; }
-      } else {
-        render(); // Guaranteed UI sync
-      }
+      _applyHrsInPlace(act, actId, field, val);
     }
 
     function setHrs(actId, di, field, rawVal) {
@@ -23409,13 +23401,11 @@
       if (!day) return;
       const act = day.activities.find(a => a.id === actId);
       if (!act) return;
-
       let val = parseFloat(rawVal) || 0;
       if (val < 0) val = 0;
       act[field] = val;
-
       if (!act._draft) scheduleAutoSave();
-      render();
+      _applyHrsInPlace(act, actId, field, val);
     }
 
     function updateField(el) {
