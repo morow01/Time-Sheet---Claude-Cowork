@@ -18189,7 +18189,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.88';
+    const VERSION = '5.9.89';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -19824,6 +19824,7 @@
       if (!act) return;
       act.remedyPending = !act.remedyPending;
       scheduleAutoSave();
+      _refreshDayPills(di);
 
       const isPending = act.remedyPending;
       const remedyPillHtml = `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>`;
@@ -23373,15 +23374,41 @@
       el.style.height = el.scrollHeight + 'px';
     }
 
-    function _applyHrsInPlace(act, actId, field, val) {
+    function _refreshDayPills(di) {
+      const el = document.querySelector(`[data-day-pills="${di}"]`);
+      if (!el) return;
+      const day = state.weekData?.days[di];
+      if (!day) return;
+      const acts = day.activities;
+      const ord = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
+      const ot  = acts.reduce((s, a) => s + (parseFloat(a.overtime)  || 0), 0);
+      const actCount    = acts.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0).length;
+      const remedyCount = acts.filter(a => a.remedyPending).length;
+      const hasMissingCode = acts.some(a => {
+        const o = parseFloat(a.ordinary) || 0, v = parseFloat(a.overtime) || 0;
+        return ((o > 0 || v > 0) && a.codes.length === 0) || (a.codes.length > 0 && o === 0 && v === 0);
+      });
+      const isWeekend = di === 1 || di === 2;
+      const fmtNum = n => Math.round(n) === n ? n : n.toFixed(1);
+      el.innerHTML =
+        (actCount > 0 ? `<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)) +
+        (ord > 0 ? `<span class="pill-hrs">${fmtNum(ord)}h</span>` : '') +
+        (ot  > 0 ? `<span class="pill-ot">+${fmtNum(ot)} OT</span>` : '') +
+        (remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : '') +
+        (hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : '');
+    }
+
+    function _applyHrsInPlace(act, actId, field, val, di) {
       // Update every input with this data-step-val (expanded card + modal)
       document.querySelectorAll(`[data-step-val="${actId}-${field}"]`).forEach(inp => { inp.value = val; });
-      // Update collapsed header pills
+      // Update task row pills in collapsed header
       const pill   = document.querySelector(`[data-row-hrs="${actId}"]`);
       const pillOt = document.querySelector(`[data-row-ot="${actId}"]`);
       if (pill   && field === 'ordinary') { pill.textContent   = val + 'h';         pill.style.display   = val > 0 ? '' : 'none'; }
       if (pillOt && field === 'overtime') { pillOt.textContent = '+' + val + ' OT'; pillOt.style.display = val > 0 ? '' : 'none'; }
       if (_taskModalState && _taskModalState.actId === actId) _taskModalFlashSaved();
+      // Refresh day header pills
+      if (di !== undefined) _refreshDayPills(di);
     }
 
     function stepHrs(actId, di, field, delta) {
@@ -23393,7 +23420,7 @@
       if (val < 0) val = 0;
       act[field] = val;
       scheduleAutoSave();
-      _applyHrsInPlace(act, actId, field, val);
+      _applyHrsInPlace(act, actId, field, val, di);
     }
 
     function setHrs(actId, di, field, rawVal) {
@@ -23405,7 +23432,7 @@
       if (val < 0) val = 0;
       act[field] = val;
       if (!act._draft) scheduleAutoSave();
-      _applyHrsInPlace(act, actId, field, val);
+      _applyHrsInPlace(act, actId, field, val, di);
     }
 
     function updateField(el) {
