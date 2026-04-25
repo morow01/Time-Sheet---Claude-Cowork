@@ -1642,10 +1642,9 @@
       inset: 0;
       z-index: 10005;
       background: rgba(0,0,0,0.45);
-      align-items: stretch;
+      align-items: center;
       justify-content: center;
     }
-    #task-modal-overlay, #note-modal-overlay, #co-modal-overlay { align-items: center; }
     .task-modal-sheet {
       background: var(--bg-card);
       border-radius: 16px;
@@ -1653,10 +1652,12 @@
       max-width: 690px;
       height: auto;
       max-height: 92dvh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       animation: ttAiSlideUp 0.22s ease;
     }
+    .task-modal-body { min-height: 0; }
     .task-modal-drag-handle { display: none; }
     .task-modal-header {
       display: flex;
@@ -18181,7 +18182,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.61';
+    const VERSION = '5.9.62';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23028,7 +23029,7 @@
         ov.id = 'note-modal-overlay';
         ov.id = 'note-modal-overlay';
         ov.setAttribute('onclick', 'if(event.target===this)closeNoteModal()');
-        ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:stretch;justify-content:center';
+        ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:center;justify-content:center';
         document.body.appendChild(ov);
       }
       ov.innerHTML = _renderNoteModalHtml(note);
@@ -36542,11 +36543,25 @@
     }
 
     function coOpenAdd(date) {
+      if (getTaskStyle() === 'modal') {
+        const wk = state.calloutsSelectedWeek || state.weekData?.weekStart;
+        if (!wk) return;
+        if (!state.callouts.weeks[wk]) state.callouts.weeks[wk] = { callouts: [] };
+        const wd = state.callouts.weeks[wk];
+        if (!wd.callouts) wd.callouts = [];
+        const newCo = {
+          id: 'co_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+          date: wk, site: '', fault: '', ticket: '', engineerOnSite: '', notes: '', _draft: true
+        };
+        wd.callouts.push(newCo);
+        state.calloutsExpandedId = newCo.id;
+        openCoModal(newCo.id);
+        return;
+      }
       state.calloutsExpandedId = '__new__';
       state.calloutsEditId = null;
       state.calloutsNotesOpen = false;
       render();
-      // Scroll to new card
       setTimeout(() => {
         const card = document.querySelector('[data-co-id="__new__"]');
         if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -36822,7 +36837,7 @@
         ov = document.createElement('div');
         ov.id = 'co-modal-overlay';
         ov.setAttribute('onclick', 'if(event.target===this)closeCoModal()');
-        ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:stretch;justify-content:center';
+        ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:center;justify-content:center';
         document.body.appendChild(ov);
       }
       ov.innerHTML = _renderCoModalHtml(co);
