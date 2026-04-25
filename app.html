@@ -13832,12 +13832,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
-      background: var(--bg-card-alt);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: none;
+      color: var(--text-muted);
+      border: none;
       cursor: pointer;
-      font-size: 18px;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .back-btn:active {
+      background: rgba(var(--shadow-rgb), 0.08);
     }
 
     .detail-tabs {
@@ -18175,7 +18179,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.64';
+    const VERSION = '5.9.65';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
