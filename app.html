@@ -18172,7 +18172,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.72';
+    const VERSION = '5.9.73';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23540,7 +23540,19 @@
 
     function setCopyPickerMode(isMove) {
       copyPickerState.moveMode = isMove;
-      renderCopyPicker(true);
+      const modal = document.getElementById('copy-picker-modal');
+      // Patch toggle buttons in-place
+      modal.querySelectorAll('.cp-mode-btn').forEach(b => {
+        const active = (b.dataset.mode === 'move') === isMove;
+        b.style.background = active ? 'var(--bg-segment-active)' : 'none';
+        b.style.color = active ? 'var(--text-primary)' : 'var(--text-muted)';
+      });
+      const sub = modal.querySelector('#cp-sub');
+      if (sub) sub.textContent = isMove
+        ? 'Task will be moved — removed from this day and added to selected day(s).'
+        : 'Select one or more days. All fields including note will be copied.';
+      // Update confirm button label only
+      renderCopyPicker(false);
     }
 
     function closeCopyPicker() {
@@ -23633,8 +23645,8 @@
           <div class="copy-picker-handle"></div>
           <div class="copy-picker-title">"${esc(descLabel)}"</div>
           <div style="display:flex;gap:0;margin:4px 16px 0;background:var(--bg-code-group);border-radius:14px;padding:3px">
-            <button onclick="setCopyPickerMode(false)" style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${!moveMode?'var(--bg-segment-active)':'none'};color:${!moveMode?'var(--text-primary)':'var(--text-muted)'}">Copy</button>
-            <button onclick="setCopyPickerMode(true)"  style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${moveMode?'var(--bg-segment-active)':'none'};color:${moveMode?'var(--text-primary)':'var(--text-muted)'}">Move</button>
+            <button class="cp-mode-btn" data-mode="copy" onclick="setCopyPickerMode(false)" style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${!moveMode?'var(--bg-segment-active)':'none'};color:${!moveMode?'var(--text-primary)':'var(--text-muted)'}">Copy</button>
+            <button class="cp-mode-btn" data-mode="move" onclick="setCopyPickerMode(true)"  style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${moveMode?'var(--bg-segment-active)':'none'};color:${moveMode?'var(--text-primary)':'var(--text-muted)'}">Move</button>
           </div>
           <div class="copy-picker-sub" id="cp-sub">${moveMode ? 'Task will be moved — removed from this day and added to selected day(s).' : 'Select one or more days. All fields including note will be copied.'}</div>
           <div class="copy-picker-weeknav">
