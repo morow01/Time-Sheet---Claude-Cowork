@@ -1655,6 +1655,16 @@
       flex-direction: column;
       animation: ttAiSlideUp 0.22s ease;
     }
+    /* On wide screens: size to content, centre vertically like a dialog */
+    @media (min-width: 691px) {
+      #task-modal-overlay { align-items: center; }
+      .task-modal-sheet {
+        height: auto;
+        max-height: 92dvh;
+        border-radius: 16px;
+      }
+      .task-modal-drag-handle { display: none; }
+    }
     .task-modal-header {
       display: flex;
       align-items: center;
@@ -18178,7 +18188,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.56';
+    const VERSION = '5.9.57';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
