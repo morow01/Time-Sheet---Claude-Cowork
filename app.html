@@ -1659,7 +1659,6 @@
       align-items: center;
       gap: 10px;
       padding: 14px 16px 12px;
-      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
     .task-modal-num {
@@ -10552,7 +10551,8 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .note-card.expanded .note-ghost-pill {
+    .note-card.expanded .note-ghost-pill,
+    .task-modal-sheet .note-ghost-pill {
       visibility: visible;
     }
 
@@ -12983,13 +12983,16 @@
     /* ===== Mockup J: Done + Delete buttons ===== */
     .note-bottom-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-top: 6px;
       margin-left: -16px;
       margin-right: -16px;
       padding: 14px 16px 0;
       border-top: 1px solid var(--border);
       position: relative;
+    }
+    .note-bottom-actions .task-modal-text-btn {
+      padding: 8px 6px;
     }
 
     /* note-btn-done replaced by .btn-primary */
@@ -13131,6 +13134,11 @@
     }
 
     /* Reminder dialog */
+    @keyframes remindFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
     .remind-overlay {
       position: fixed;
       inset: 0;
@@ -13139,8 +13147,13 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      animation: fadeIn 0.15s ease;
+      animation: remindFadeIn 0.15s ease;
       overflow-y: auto;
+    }
+
+    @keyframes remindSlideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
     }
 
     .remind-sheet {
@@ -13148,7 +13161,7 @@
       border-radius: 20px 20px 0 0;
       width: 100%;
       max-width: 480px;
-      animation: slideUp 0.2s ease;
+      animation: remindSlideUp 0.2s ease;
       padding: 0;
       display: flex;
       flex-direction: column;
@@ -18189,7 +18202,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.96';
+    const VERSION = '5.9.114';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -19778,8 +19791,6 @@
       localStorage.setItem('ui_' + state.weekStart, JSON.stringify({
         expanded: [...state.expandedDays],
         notes: Object.fromEntries(state.notesOpen),
-        activitiesExpanded: [...state.activitiesExpanded],
-        expandedNotes: [...state.expandedNotes],
       }));
     }
 
@@ -19791,8 +19802,6 @@
         if (saved) {
           state.expandedDays = new Set(saved.expanded || []);
           state.notesOpen = new Map(Object.entries(saved.notes || {}));
-          state.activitiesExpanded = new Set(saved.activitiesExpanded || []);
-          state.expandedNotes = new Set(saved.expandedNotes || []);
           return true;
         }
       } catch (e) { /* expected: localStorage unavailable or corrupt */ }
@@ -21267,6 +21276,9 @@
     function _renderNow() {
       const app = document.getElementById('app');
       if (!app) return;
+      // Preserve menu scroll position — render() destroys and recreates the menu DOM
+      const _menuEl = document.getElementById('theme-dropdown');
+      const _menuScroll = _menuEl ? _menuEl.scrollTop : 0;
 
       // Update bottom nav active state
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -21306,6 +21318,11 @@
       // Detach desktop journal TipTap wrapper before innerHTML wipes the DOM
       if (_djTiptapWrap && _djTiptapWrap.parentNode) _djTiptapWrap.remove();
       app.innerHTML = renderHeader() + _renderConflictBanner() + viewBody;
+      // Restore menu scroll position after DOM rebuild
+      if (_menuScroll > 0) {
+        const _newMenuEl = document.getElementById('theme-dropdown');
+        if (_newMenuEl) _newMenuEl.scrollTop = _menuScroll;
+      }
       // Hoist .j-fab out of #app to document.body so position:fixed is always
       // relative to the viewport (not any transformed ancestor inside #app).
       const _existingBodyFab = document.getElementById('j-fab-portal');
@@ -22981,25 +22998,25 @@
 
       return `<div class="task-modal-sheet" onclick="event.stopPropagation()">
         <div class="task-modal-drag-handle"></div>
-        <div class="task-modal-header">
-          <button class="task-modal-close" onclick="closeTaskModal()" title="Back">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <div class="task-num">${di + 1}</div>
-          <div class="flex-1 min-w-0 act-meta">
-            <div class="act-desc-txt">${esc(act.description) || '<span style="opacity:0.45;font-weight:400;font-style:italic">No description</span>'}</div>
-            <div class="act-row2">
-              <div class="act-loc-txt">
-                ${act.location ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(act.location)}` : '<span style="opacity:0.4">No location</span>'}
-              </div>
-              <div class="act-pill-row">
-                ${ordinary > 0 ? `<span class="pill-hrs">${ordinary}h</span>` : ''}
-                ${overtime > 0 ? `<span class="pill-ot">+${overtime} OT</span>` : ''}
-                ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>` : ''}
-              </div>
+        <div class="task-modal-header" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="task-modal-close" onclick="closeTaskModal()" title="Back">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div style="flex:1;min-width:0;font-size:16px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)">${esc(act.description) || '<span style="opacity:0.45;font-weight:400;font-style:italic">No description</span>'}</div>
+            <span class="task-modal-saved" id="task-modal-saved">Saved</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:2px 0 6px;border-bottom:1px solid var(--border)">
+            <div class="task-num" style="flex-shrink:0">${di + 1}</div>
+            <div style="flex:1;min-width:0;font-size:13px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              ${act.location ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(act.location)}` : '<span style="opacity:0.4">No location</span>'}
+            </div>
+            <div class="act-pill-row" style="flex-shrink:0">
+              ${ordinary > 0 ? `<span class="pill-hrs">${ordinary}h</span>` : ''}
+              ${overtime > 0 ? `<span class="pill-ot">+${overtime} OT</span>` : ''}
+              ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>` : ''}
             </div>
           </div>
-          <span class="task-modal-saved" id="task-modal-saved">Saved</span>
         </div>
         <div class="task-modal-body">
           <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0;display:contents">
@@ -23136,6 +23153,52 @@
       });
     }
 
+    // Lightweight modal DOM patch for cat picker — no full rebuild
+    function _modalPatchCatPicker(noteId) {
+      const ov = document.getElementById('note-modal-overlay');
+      if (!ov || ov.style.display === 'none') return;
+      const sheet = ov.querySelector('.task-modal-sheet');
+      if (!sheet) return;
+      const note = state.notes.find(n => n.id === noteId);
+      if (!note) return;
+      const escId = noteId.replace(/'/g, "\\'");
+      // Remove existing picker
+      const existing = sheet.querySelector('.note-inline-cat-picker');
+      if (existing) existing.remove();
+      // Inject picker if open
+      if (_catDropdownOpen === noteId) {
+        const body = sheet.querySelector('.task-modal-body');
+        if (body) {
+          const div = document.createElement('div');
+          div.className = 'note-inline-cat-picker';
+          div.innerHTML = buildNoteCatMenuHtml(noteId, note.category || '');
+          body.before(div);
+        }
+      }
+      // Update badge in-place
+      const noteCatM = getCategories().find(c => c.key === (note.category || ''));
+      const newBadgeHtml = noteCatM
+        ? `<span class="note-cat-badge" style="background:${noteCatM.color}" onclick="event.stopPropagation();toggleNoteCatDD('${escId}')">${getCatIconHtml(noteCatM, 11)} ${noteCatM.label}</span>`
+        : `<span class="note-ghost-pill" onclick="event.stopPropagation();toggleNoteCatDD('${escId}')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add tag</span>`;
+      const oldBadge = sheet.querySelector('.note-cat-badge, .note-ghost-pill');
+      if (oldBadge) oldBadge.outerHTML = newBadgeHtml;
+    }
+
+    // Lightweight modal DOM patch for pin state
+    function _modalPatchPin(noteId) {
+      const ov = document.getElementById('note-modal-overlay');
+      if (!ov || ov.style.display === 'none') return;
+      const sheet = ov.querySelector('.task-modal-sheet');
+      if (!sheet) return;
+      const note = state.notes.find(n => n.id === noteId);
+      if (!note) return;
+      const btn = sheet.querySelector('.note-pin-btn');
+      if (btn) {
+        btn.classList.toggle('pinned', !!note.pinned);
+        btn.querySelector('svg').setAttribute('fill', note.pinned ? 'currentColor' : 'none');
+      }
+    }
+
     function _renderNoteModalHtml(note) {
       const escId = note.id.replace(/'/g, "\\'");
       const nc = note.noteContent || '';
@@ -23153,10 +23216,10 @@
         : `<button class="task-modal-text-btn" onclick="markNoteDone('${escId}');closeNoteModal()">
              ${note.status === 'done'
                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
-               : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark Done`}
+               : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Complete`}
            </button>
            ${!note.archived && !note.deleted ? `<button class="task-modal-text-btn" onclick="openNoteToTask('${escId}')">
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> To Task
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task
            </button>
            <button class="task-modal-text-btn" onclick="archiveNote('${escId}');closeNoteModal()">
              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive
@@ -23172,20 +23235,47 @@
              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
            </button>` : ''}`;
 
+      const _remActiveM = hasActiveReminder(note.id);
+      const _remPassedM = !_remActiveM && getReminders().some(r => r.noteId === note.id && r.fired);
+      const bellSvgM = _remActiveM
+        ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
+        : _remPassedM
+          ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
+          : '';
+      const noteCatM = getCategories().find(c => c.key === (note.category || ''));
+      const catBadgeM = noteCatM
+        ? `<span class="note-cat-badge" style="background:${noteCatM.color}" onclick="event.stopPropagation();toggleNoteCatDD('${escId}')">${getCatIconHtml(noteCatM, 11)} ${noteCatM.label}</span>`
+        : `<span class="note-ghost-pill" onclick="event.stopPropagation();toggleNoteCatDD('${escId}')"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add tag</span>`;
+      let metaHtmlM = '';
+      if (note.location || note.date || bellSvgM) {
+        metaHtmlM = '<div class="note-row-meta" style="padding:0 16px 0">';
+        if (note.location) metaHtmlM += `<div class="note-meta-item"><svg class="note-meta-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg><span>${esc(note.location.replace(/\s*\([^)]+\)\s*$/, '').trim())}</span></div>`;
+        if (note.date) metaHtmlM += `<div class="note-meta-item"><svg class="note-meta-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>${formatDateShort(note.date)}</span></div>`;
+        if (bellSvgM) metaHtmlM += bellSvgM;
+        metaHtmlM += '</div>';
+      }
+      const dueChipM = note.dueDate ? `<span style="color:${isNoteOverdue(note) ? 'var(--priority-high)' : 'var(--text-slate)'};font-weight:500;font-size:12.5px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${formatDueStatus(note)}</span>` : '';
       return `<div class="task-modal-sheet" onclick="event.stopPropagation()">
         <div class="task-modal-drag-handle"></div>
-        <div class="task-modal-header">
+        <div class="task-modal-header" style="padding-bottom:6px">
           <button class="task-modal-close" onclick="closeNoteModal()" title="Back">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
-          <div class="task-modal-num"><div class="note-dot ${dotCls}" style="margin:0"></div></div>
-          <div class="task-modal-title">${esc(note.description) || '<span style="opacity:0.45;font-style:italic">No title</span>'}</div>
+          <div class="note-dot ${dotCls}" style="margin:0;flex-shrink:0"></div>
+          <div class="task-modal-title" style="${note.status === 'done' ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${esc(note.description) || '<span style="opacity:0.45;font-style:italic">Untitled</span>'}</div>
           <span class="task-modal-saved" id="note-modal-saved">Saved</span>
+        </div>
+        ${metaHtmlM}
+        <div class="note-row-meta" style="padding:2px 16px 6px;align-items:center;border-bottom:1px solid var(--border)">
+          <button class="note-pin-btn ${note.pinned ? 'pinned' : ''}" onclick="event.stopPropagation();toggleNotePin('${escId}')" title="${note.pinned ? 'Unpin' : 'Pin'}" style="margin-right:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg></button>
+          ${catBadgeM}
+          <span style="flex:1"></span>
+          ${dueChipM}
         </div>
         <div class="task-modal-body">
           <div class="note-detail-row">
             <span class="field-label" style="display:block;margin-bottom:6px;font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase">Description</span>
-            <textarea data-note-id="${note.id}" data-note-field="description" rows="1"
+            <textarea class="act-textarea" data-note-id="${note.id}" data-note-field="description" rows="1"
               style="resize:none;overflow:hidden" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
               oninput="updateNoteField(this);autoGrow(this);_noteModalRefreshTitle(this.value)">${esc(note.description)}</textarea>
           </div>
@@ -23196,14 +23286,14 @@
           </div>
           <div class="note-detail-row">
             <span class="field-label" style="display:block;margin-bottom:6px;font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase">Location</span>
-            <input type="search" data-note-id="${note.id}" data-note-field="location" value="${esc(note.location || '')}"
+            <input type="search" class="act-input" data-note-id="${note.id}" data-note-field="location" value="${esc(note.location || '')}"
               placeholder="Town name or code…" readonly style="cursor:pointer;width:100%"
               autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
               onclick="openLocationModal(null,null,'${escId}')">
           </div>
           <div class="note-detail-row">
             <span class="field-label" style="display:block;margin-bottom:6px;font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase">Due Date</span>
-            <input type="date" data-note-id="${note.id}" data-note-field="dueDate" value="${note.dueDate || ''}"
+            <input type="date" class="act-input" data-note-id="${note.id}" data-note-field="dueDate" value="${note.dueDate || ''}"
               autocomplete="off" onchange="updateNoteField(this)">
           </div>
           ${renderNoteReminderField(note.id)}
@@ -26343,10 +26433,10 @@
             '<button class="desk-detail-btn danger" onclick="discardNoteDraft(\'' + selEscId + '\')">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard</button>'
             : '<button class="task-modal-text-btn" onclick="markNoteDone(\'' + selEscId + '\')">' +
-            (isDone ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark Done') +
+            (isDone ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Complete') +
             '</button>' +
             (notesTab === 'notes' ? '<button class="task-modal-text-btn" onclick="openNoteToTask(\'' + selEscId + '\')">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> To Task</button>' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task</button>' +
             '<button class="task-modal-text-btn" onclick="archiveNote(\'' + selEscId + '\')">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive</button>' : '') +
             (notesTab === 'archive' ? '<button class="task-modal-text-btn" onclick="unarchiveNote(\'' + selEscId + '\')">' +
@@ -26689,7 +26779,7 @@
         { key: 'low', label: `Low (${counts.low})`, solidColor: '#22c55e', rgb: '34,197,94' },
         { key: 'medium', label: `Med (${counts.medium})`, solidColor: '#f97316', rgb: '249,115,22' },
         { key: 'high', label: `High (${counts.high})`, solidColor: '#ef4444', rgb: '239,68,68' },
-        { key: 'done', label: `Done (${doneNotes.length})`, solidColor: '#64748b', rgb: '100,116,139' },
+        { key: 'done', label: `Complete (${doneNotes.length})`, solidColor: '#64748b', rgb: '100,116,139' },
       ];
       const priChips = priChipDefs.map(c => {
         const isActive = c.key === f;
@@ -26845,11 +26935,11 @@
               <button class="task-modal-text-btn" onclick="markNoteDone('${note.id}')">
                 ${note.status === 'done'
             ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
-            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Mark Done`}
+            : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Complete`}
               </button>
               ${!note.archived && !note.deleted ? `
               <button class="task-modal-text-btn" onclick="openNoteToTask('${note.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> To Task
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task
               </button>
               <button class="task-modal-text-btn" onclick="archiveNote('${note.id}')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive
@@ -26871,7 +26961,7 @@
           </div>`;
 
         const isDone = note.status === 'done';
-        const swipeRightLabel = isDone ? 'Reopen' : 'Mark Done';
+        const swipeRightLabel = isDone ? 'Reopen' : 'Complete';
         const swipeRightIcon = isDone
           ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>`
           : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -26926,7 +27016,7 @@
       <button onclick="switchNotesTab('bin')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;${notesTab === 'bin' ? _ntActive : _ntInactive}">
         <span style="display:inline-flex;align-items:center;gap:5px">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          Bin${binCount > 0 ? ` <span style="background:#ef4444;color:#fff;border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${binCount}</span>` : ''}
+          Bin <span style="background:${binCount > 0 ? '#ef4444' : 'rgba(var(--shadow-rgb),0.08)'};color:${binCount > 0 ? '#fff' : 'var(--text-muted)'};border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${binCount}</span>
         </span>
       </button>
     </div>
@@ -26969,7 +27059,7 @@
         : (f !== 'done' ? `<div class="notes-empty">No ${state.notesOverdueFilter ? 'overdue' : (f === 'all' ? 'open' : f)} notes yet.</div>` : '');
 
       const doneSection = visibleDone.length
-        ? `<div class="notes-section-label">Done</div>` +
+        ? `<div class="notes-section-label">Complete</div>` +
         visibleDone.map(n => `<div class="note-card done-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`).join('')
         : '';
 
@@ -26978,7 +27068,7 @@
       const selNotes = state.notes.filter(n => selIds.includes(n.id));
       const selAllDone = selNotes.length > 0 && selNotes.every(n => n.status === 'done');
       const selAllOpen = selNotes.length > 0 && selNotes.every(n => n.status === 'open');
-      const bulkStatusLabel = selAllDone ? 'Reopen' : selAllOpen ? 'Mark Done' : 'Toggle Status';
+      const bulkStatusLabel = selAllDone ? 'Reopen' : selAllOpen ? 'Complete' : 'Toggle Status';
       const bulkStatusIcon = selAllDone
         ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>`
         : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -29280,25 +29370,21 @@
       note.priority = priority;
       note.updatedAt = Date.now();
       scheduleNotesSave();
-      // re-render just the expanded card
-      const card = document.querySelector(`.note-card[data-note-id="${id}"]`);
-      if (card) {
-        const dotEl = card.querySelector('.note-dot');
-        if (dotEl) { dotEl.className = 'note-dot ' + ({ high: 'note-dot-high', medium: 'note-dot-medium', low: 'note-dot-low' }[priority] || 'note-dot-none'); }
-        // Update old-style chips if present
-        card.querySelectorAll('.note-pri-chip').forEach((el, i) => {
-          const p = ['high', 'medium', 'low'][i];
-          el.className = 'note-pri-chip' + (p === priority ? ' sel-' + p : '');
-        });
-        // Update new-style priority dots
-        card.querySelectorAll('.note-pri-dot').forEach(el => {
-          const isHigh = el.classList.contains('pd-high');
-          const isMed = el.classList.contains('pd-medium');
-          const isLow = el.classList.contains('pd-low');
-          const p = isHigh ? 'high' : isMed ? 'medium' : isLow ? 'low' : '';
+      const dotCls = { high: 'note-dot-high', medium: 'note-dot-medium', low: 'note-dot-low' }[priority] || 'note-dot-none';
+      const updateDots = (root) => {
+        if (!root) return;
+        const dotEl = root.querySelector('.note-dot');
+        if (dotEl) dotEl.className = 'note-dot ' + dotCls;
+        root.querySelectorAll('.note-pri-dot').forEach(el => {
+          const p = el.classList.contains('pd-high') ? 'high' : el.classList.contains('pd-medium') ? 'medium' : el.classList.contains('pd-low') ? 'low' : '';
           if (p === priority) el.classList.add('pd-active');
           else el.classList.remove('pd-active');
         });
+      };
+      updateDots(document.querySelector(`.note-card[data-note-id="${id}"]`));
+      if (_noteModalState === id) {
+        const ov = document.getElementById('note-modal-overlay');
+        if (ov) updateDots(ov);
       }
     }
 
@@ -29314,6 +29400,7 @@
         const btn = card.querySelector('.note-pin-btn');
         if (btn) btn.classList.toggle('pinned', !!note.pinned);
       }
+      _modalPatchPin(id);
       // Full re-render to re-sort position
       render();
     }
@@ -29324,6 +29411,8 @@
       note.category = category;
       note.updatedAt = Date.now();
       scheduleNotesSave();
+      _catDropdownOpen = null;
+      if (_noteModalState === id) { _modalPatchCatPicker(id); return; }
       render();
     }
 
@@ -29431,9 +29520,10 @@
     }
 
     function toggleNoteCatDD(noteId) {
+      const inModal = _noteModalState === noteId;
       if (_catDropdownOpen === noteId) {
-        // Animate out then re-render to remove
         _catDropdownOpen = null;
+        if (inModal) { _modalPatchCatPicker(noteId); return; }
         const picker = document.querySelector('.note-inline-cat-picker');
         if (picker) {
           picker.classList.add('closing');
@@ -29444,6 +29534,7 @@
       } else {
         _catDropdownOpen = noteId;
         _catFormNoteId = null;
+        if (inModal) { _modalPatchCatPicker(noteId); return; }
         render();
       }
     }
@@ -36355,14 +36446,14 @@
           </div>
           <div class="note-bottom-actions">
             ${isNew || co._draft ? `
-            <button class="btn-primary" onclick="event.stopPropagation(); coSaveDraft()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
+            <button class="act-action-btn act-action-note" style="flex:1" onclick="event.stopPropagation(); coSaveDraft()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
             </button>
-            <button class="note-btn-delete" onclick="event.stopPropagation(); coDelete()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
+            <button class="act-action-btn act-action-delete" onclick="event.stopPropagation(); coDelete()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
             </button>` : `
-            <button class="note-btn-delete" onclick="event.stopPropagation(); coDelete()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout
+            <button class="act-action-btn act-action-delete" style="flex:1" onclick="event.stopPropagation(); coDelete()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout
             </button>`}
           </div>
         </div>
@@ -36490,8 +36581,8 @@
           const header = card.querySelector('[onclick*="coToggleCard"]');
           if (header) header.setAttribute('onclick', `coToggleCard('${id}')`);
           // Update button label from "Discard" to "Delete Callout"
-          const delBtn = card.querySelector('.note-btn-delete');
-          if (delBtn) delBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete Callout`;
+          const delBtn = card.querySelector('.act-action-delete');
+          if (delBtn) delBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout`;
         }
         return co;
       }
@@ -36717,6 +36808,7 @@
               state.calloutsExpandedId = null;
               state.calloutsEditId = null;
               state.calloutsNotesOpen = false;
+              if (_coModalState) { _coModalState = null; const ov = document.getElementById('co-modal-overlay'); if (ov) ov.style.display = 'none'; document.body.style.overflow = ''; }
               render();
             }
           }
@@ -36931,7 +37023,8 @@
         ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:center;justify-content:center';
         document.body.appendChild(ov);
       }
-      ov.innerHTML = _renderCoModalHtml(co);
+      const idx = (week?.callouts?.findIndex(c => c.id === coId) ?? -1) + 1;
+      ov.innerHTML = _renderCoModalHtml(co, idx);
       ov.style.display = 'flex';
       document.body.style.overflow = 'hidden';
 
@@ -36962,29 +37055,42 @@
       });
     }
 
-    function _renderCoModalHtml(co) {
-      const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
+    function _renderCoModalHtml(co, idx) {
+      const pinSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
+      const clockSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-1px;margin-right:2px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
       const fault = co.fault || '';
       const isDraft = !!co._draft;
       const actionsHtml = isDraft
-        ? `<button class="btn-primary" onclick="coSaveDraft();closeCoModal()">
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
+        ? `<button onclick="coSaveDraft();closeCoModal()" class="act-action-btn act-action-note" style="flex:1">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
            </button>
-           <button class="note-btn-delete" onclick="coDelete();closeCoModal()">
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
+           <button onclick="coDelete();closeCoModal()" class="act-action-btn act-action-delete">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
            </button>`
-        : `<button class="note-btn-delete" onclick="coDelete();closeCoModal()">
-             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout
+        : `<button onclick="coDelete()" class="act-action-btn act-action-delete" style="flex:1">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout
            </button>`;
 
       return `<div class="task-modal-sheet" onclick="event.stopPropagation()">
         <div class="task-modal-drag-handle"></div>
-        <div class="task-modal-header">
-          <button class="task-modal-close" onclick="closeCoModal()" title="Back">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <div class="task-modal-title">${fault ? esc(fault.substring(0,60)) : '<span style="opacity:0.45;font-style:italic">Callout</span>'}</div>
-          <span class="task-modal-saved" id="co-modal-saved">Saved</span>
+        <div class="task-modal-header" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <button class="task-modal-close" onclick="closeCoModal()" title="Back">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div style="flex:1;min-width:0;font-size:16px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)">${fault ? esc(fault.substring(0,60)) : '<span style="opacity:0.45;font-weight:400;font-style:italic">New callout</span>'}</div>
+            <span class="task-modal-saved" id="co-modal-saved">Saved</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:2px 0 6px;border-bottom:1px solid var(--border)">
+            <div class="task-num" style="flex-shrink:0">${idx || '—'}</div>
+            <div style="flex:1;min-width:0;font-size:13px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              ${co.site ? `${pinSvg}${esc(co.site)}` : '<span style="opacity:0.4">No site</span>'}
+            </div>
+            <div class="act-pill-row" style="flex-shrink:0">
+              ${co.ticket ? `<span class="pill-hrs" style="font-family:var(--font-mono)">${esc(co.ticket)}</span>` : ''}
+              ${co.engineerOnSite ? `<span class="pill-hrs" style="background:var(--bg-code-group)">${clockSvg}${esc(co.engineerOnSite)}</span>` : ''}
+            </div>
+          </div>
         </div>
         <div class="task-modal-body">
           <div class="flex flex-col gap-1.5">
@@ -37008,7 +37114,7 @@
             <span class="act-field-label">Fault Description</span>
             <textarea id="co-fault-input" class="act-textarea" rows="1" placeholder="e.g. EXTERNAL ALARM: AC MAINS FAIL"
               autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-              oninput="autoGrow(this);updateCoField('fault',this.value.trim());_coModalFlashSaved()">${esc(co.fault||'')}</textarea>
+              oninput="autoGrow(this);updateCoField('fault',this.value.trim());_coModalFlashSaved();_coModalRefreshTitle(this.value)">${esc(co.fault||'')}</textarea>
           </div>
           ${renderNoteInline(co.notes||'', `openCoNoteFullscreen()`, `data-co-notes-inline`)}
           <textarea class="act-notes-area" id="co-notes-ta" style="display:none" autocomplete="off" data-lpignore="true"
@@ -37021,6 +37127,11 @@
         </div>
         <div class="task-modal-actions">${actionsHtml}</div>
       </div>`;
+    }
+
+    function _coModalRefreshTitle(val) {
+      const t = document.querySelector('#co-modal-overlay .task-modal-header div[style*="font-size:16px"]');
+      if (t) t.innerHTML = val ? esc(val.substring(0, 60)) : '<span style="opacity:0.45;font-weight:400;font-style:italic">New callout</span>';
     }
 
     var _coModalSavedTimer = null;
