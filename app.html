@@ -1230,8 +1230,13 @@
     }
 
     @keyframes cpSlideUp {
-      from { transform: translateY(100%); }
-      to   { transform: translateY(0); }
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
     }
 
     .copy-picker-handle {
@@ -1636,10 +1641,11 @@
       position: fixed;
       inset: 0;
       z-index: 10005;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0, 0, 0, 0.45);
       align-items: center;
       justify-content: center;
     }
+
     .task-modal-sheet {
       background: var(--bg-card);
       border-radius: 16px;
@@ -1652,8 +1658,15 @@
       flex-direction: column;
       animation: ttAiSlideUp 0.22s ease;
     }
-    .task-modal-body { min-height: 0; }
-    .task-modal-drag-handle { display: none; }
+
+    .task-modal-body {
+      min-height: 0;
+    }
+
+    .task-modal-drag-handle {
+      display: none;
+    }
+
     .task-modal-header {
       display: flex;
       align-items: center;
@@ -1661,6 +1674,7 @@
       padding: 14px 16px 12px;
       flex-shrink: 0;
     }
+
     .task-modal-num {
       min-width: 28px;
       height: 28px;
@@ -1673,6 +1687,7 @@
       align-items: center;
       justify-content: center;
     }
+
     .task-modal-title {
       flex: 1;
       min-width: 0;
@@ -1683,6 +1698,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .task-modal-close {
       width: 36px;
       height: 36px;
@@ -1698,8 +1714,15 @@
       margin-left: -8px;
       transition: background 0.15s;
     }
-    .task-modal-close:hover  { background: rgba(var(--shadow-rgb), 0.06); }
-    .task-modal-close:active { background: rgba(var(--shadow-rgb), 0.12); }
+
+    .task-modal-close:hover {
+      background: rgba(var(--shadow-rgb), 0.06);
+    }
+
+    .task-modal-close:active {
+      background: rgba(var(--shadow-rgb), 0.12);
+    }
+
     /* ── Standard modal close button ── */
     .modal-close-x {
       width: 36px;
@@ -1716,11 +1739,19 @@
       flex-shrink: 0;
       transition: background 0.15s;
     }
-    .modal-close-x:hover  { background: rgba(var(--shadow-rgb), 0.06); }
-    .modal-close-x:active { background: rgba(var(--shadow-rgb), 0.12); }
+
+    .modal-close-x:hover {
+      background: rgba(var(--shadow-rgb), 0.06);
+    }
+
+    .modal-close-x:active {
+      background: rgba(var(--shadow-rgb), 0.12);
+    }
+
     .modal-close-x.on-dark {
       color: rgba(255, 255, 255, 0.75);
     }
+
     .modal-close-x.on-dark:active {
       background: rgba(255, 255, 255, 0.1);
     }
@@ -1733,6 +1764,7 @@
       margin: 8px auto 0;
       flex-shrink: 0;
     }
+
     .task-modal-saved {
       font-size: 11px;
       font-weight: 600;
@@ -1742,9 +1774,11 @@
       margin-left: auto;
       padding-right: 4px;
     }
+
     .task-modal-saved.show {
       opacity: 1;
     }
+
     .task-modal-body {
       flex: 1;
       overflow-y: auto;
@@ -1754,6 +1788,7 @@
       gap: 14px;
       -webkit-overflow-scrolling: touch;
     }
+
     .task-modal-actions {
       display: flex;
       gap: 8px;
@@ -1761,6 +1796,7 @@
       border-top: 1px solid var(--border);
       flex-shrink: 0;
     }
+
     .task-modal-text-btn {
       flex: 1;
       padding: 8px 10px;
@@ -1779,10 +1815,27 @@
       transition: border-color 0.12s, color 0.12s;
       white-space: nowrap;
     }
-    .task-modal-text-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
-    .task-modal-text-btn:hover  { border-color: var(--accent); color: var(--accent); }
-    .task-modal-text-btn:active { opacity: 0.75; }
-    .task-modal-text-btn.active { color: #7c3aed; border-color: #c4b5fd; background: #f5f3ff; }
+
+    .task-modal-text-btn svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .task-modal-text-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .task-modal-text-btn:active {
+      opacity: 0.75;
+    }
+
+    .task-modal-text-btn.active {
+      color: #7c3aed;
+      border-color: #c4b5fd;
+      background: #f5f3ff;
+    }
 
     /* Notes panel inside activity-detail */
     .notes-panel {
@@ -1994,6 +2047,7 @@
       z-index: 4;
       touch-action: none;
     }
+
     .note-resize-handle::before {
       content: '';
       width: 28px;
@@ -2002,6 +2056,7 @@
       background: rgba(var(--shadow-rgb), 0.18);
       transition: background 0.15s;
     }
+
     .note-resize-handle:hover::before,
     .note-resize-handle:active::before {
       background: rgba(var(--accent-rgb), 0.45);
@@ -8009,6 +8064,7 @@
     #tt-case-wrap {
       position: relative;
     }
+
     #tt-case-btn {
       display: flex;
       align-items: center;
@@ -8024,6 +8080,7 @@
       -webkit-tap-highlight-color: transparent;
       white-space: nowrap;
     }
+
     #tt-case-dd {
       display: none;
       position: absolute;
@@ -8037,7 +8094,11 @@
       min-width: 148px;
       z-index: 10002;
     }
-    #tt-case-dd.open { display: block; }
+
+    #tt-case-dd.open {
+      display: block;
+    }
+
     #tt-case-dd button {
       display: block;
       width: 100%;
@@ -8050,6 +8111,7 @@
       cursor: pointer;
       font-family: var(--font-body);
     }
+
     #tt-case-dd button:hover,
     #tt-case-dd button:active {
       background: var(--bg-card-alt);
@@ -12058,8 +12120,14 @@
     }
 
     @media (min-width: 1280px) {
-      .jdocx-overlay { align-items: center; }
-      .jdocx-sheet { border-radius: 16px !important; max-width: 540px !important; }
+      .jdocx-overlay {
+        align-items: center;
+      }
+
+      .jdocx-sheet {
+        border-radius: 16px !important;
+        max-width: 540px !important;
+      }
     }
 
     .jdocx-sheet {
@@ -12379,8 +12447,15 @@
       transition: background 0.15s, border-color 0.15s;
     }
 
-    .add-note-dashed:hover  { background: rgba(var(--accent-rgb), 0.04); border-color: var(--accent); }
-    .add-note-dashed:active { background: rgba(var(--accent-rgb), 0.08); border-color: var(--accent); }
+    .add-note-dashed:hover {
+      background: rgba(var(--accent-rgb), 0.04);
+      border-color: var(--accent);
+    }
+
+    .add-note-dashed:active {
+      background: rgba(var(--accent-rgb), 0.08);
+      border-color: var(--accent);
+    }
 
     .notes-selection-banner {
       display: flex;
@@ -12991,6 +13066,7 @@
       border-top: 1px solid var(--border);
       position: relative;
     }
+
     .note-bottom-actions .task-modal-text-btn {
       padding: 8px 6px;
     }
@@ -13013,9 +13089,19 @@
       gap: 6px;
       transition: opacity 0.15s;
     }
-    .btn-primary:hover  { opacity: 0.88; }
-    .btn-primary:active { opacity: 0.75; }
-    .btn-primary svg    { width: 16px; height: 16px; }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+    }
+
+    .btn-primary:active {
+      opacity: 0.75;
+    }
+
+    .btn-primary svg {
+      width: 16px;
+      height: 16px;
+    }
 
     .note-btn-delete {
       flex: 1;
@@ -13135,8 +13221,13 @@
 
     /* Reminder dialog */
     @keyframes remindFadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .remind-overlay {
@@ -13152,8 +13243,13 @@
     }
 
     @keyframes remindSlideUp {
-      from { transform: translateY(100%); }
-      to   { transform: translateY(0); }
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
     }
 
     .remind-sheet {
@@ -13861,8 +13957,14 @@
       flex-shrink: 0;
       transition: background 0.15s;
     }
-    .back-btn:hover  { background: rgba(var(--shadow-rgb), 0.06); }
-    .back-btn:active { background: rgba(var(--shadow-rgb), 0.12); }
+
+    .back-btn:hover {
+      background: rgba(var(--shadow-rgb), 0.06);
+    }
+
+    .back-btn:active {
+      background: rgba(var(--shadow-rgb), 0.12);
+    }
 
     .detail-tabs {
       display: flex;
@@ -14918,8 +15020,14 @@
       cursor: pointer;
       transition: opacity 0.15s;
     }
-    .rtn-picker-done-btn:hover  { opacity: 0.88; }
-    .rtn-picker-done-btn:active { opacity: 0.75; }
+
+    .rtn-picker-done-btn:hover {
+      opacity: 0.88;
+    }
+
+    .rtn-picker-done-btn:active {
+      opacity: 0.75;
+    }
 
     .rtn-picker-search-wrap {
       padding: 12px 14px;
@@ -15099,12 +15207,29 @@
       view-transition-name: co-screen;
     }
 
-    ::view-transition-group(co-screen) { overflow: hidden; }
+    ::view-transition-group(co-screen) {
+      overflow: hidden;
+    }
 
-    .co-vt-left::view-transition-old(co-screen)  { animation: jVtFadeBack  0.25s ease both; z-index: 1; }
-    .co-vt-left::view-transition-new(co-screen)  { animation: jVtSlideIn   0.25s ease both; z-index: 2; }
-    .co-vt-right::view-transition-old(co-screen) { animation: jVtSlideAway 0.25s ease both; z-index: 2; }
-    .co-vt-right::view-transition-new(co-screen) { animation: jVtFadeIn    0.25s ease both; z-index: 1; }
+    .co-vt-left::view-transition-old(co-screen) {
+      animation: jVtFadeBack 0.25s ease both;
+      z-index: 1;
+    }
+
+    .co-vt-left::view-transition-new(co-screen) {
+      animation: jVtSlideIn 0.25s ease both;
+      z-index: 2;
+    }
+
+    .co-vt-right::view-transition-old(co-screen) {
+      animation: jVtSlideAway 0.25s ease both;
+      z-index: 2;
+    }
+
+    .co-vt-right::view-transition-new(co-screen) {
+      animation: jVtFadeIn 0.25s ease both;
+      z-index: 1;
+    }
 
     .co-card::before,
     .co-card::after {
@@ -15156,6 +15281,7 @@
 
     /* ── Desktop 1280px+: On-Call Schedule as centered modal dialog ── */
     @media (min-width: 1280px) {
+
       /* Overlay becomes a full-screen dim backdrop */
       .oc-overlay {
         inset: 0;
@@ -15172,13 +15298,15 @@
         pointer-events: none;
         transition: opacity 0.18s ease;
       }
+
       .oc-overlay.open {
         transform: none;
         opacity: 1;
         pointer-events: auto;
       }
+
       /* The padding wrapper div becomes the scrollable dialog */
-      .oc-overlay > div:first-child {
+      .oc-overlay>div:first-child {
         width: 500px;
         max-width: calc(100vw - 40px);
         max-height: calc(100vh - 80px);
@@ -17115,31 +17243,75 @@
         letter-spacing: normal;
         text-transform: none;
       }
-      .dj-add-dropdown.open { display: block; }
+
+      .dj-add-dropdown.open {
+        display: block;
+      }
+
       .dj-add-dd-item {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 14px; width: 100%;
-        border: none; background: transparent; cursor: pointer;
-        font-family: var(--font-body); text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        width: 100%;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-family: var(--font-body);
+        text-align: left;
         transition: background 0.1s;
       }
-      .dj-add-dd-item:hover { background: var(--bg-input); }
-      .dj-add-dd-item.disabled { opacity: 0.4; cursor: not-allowed; }
-      .dj-add-dd-item.disabled:hover { background: transparent; }
+
+      .dj-add-dd-item:hover {
+        background: var(--bg-input);
+      }
+
+      .dj-add-dd-item.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .dj-add-dd-item.disabled:hover {
+        background: transparent;
+      }
+
       .dj-add-dd-icon {
-        width: 28px; height: 28px; border-radius: 7px;
-        display: flex; align-items: center; justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
       }
-      .dj-add-dd-body { display: flex; flex-direction: column; gap: 1px; }
-      .dj-add-dd-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-      .dj-add-dd-sub { font-size: 11px; color: var(--text-muted); }
-      .dj-add-dd-sep { height: 1px; background: var(--border); }
+
+      .dj-add-dd-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .dj-add-dd-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .dj-add-dd-sub {
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      .dj-add-dd-sep {
+        height: 1px;
+        background: var(--border);
+      }
 
       /* Header row with inline + button */
       .dj-hdr-with-btn {
         justify-content: space-between;
       }
+
       .dj-hdr-add-btn {
         width: 24px;
         height: 24px;
@@ -17158,6 +17330,7 @@
         flex-shrink: 0;
         transition: background 0.12s, color 0.12s, border-color 0.12s;
       }
+
       .dj-hdr-add-btn:hover {
         background: var(--accent);
         border-color: var(--accent);
@@ -17175,6 +17348,7 @@
         flex-shrink: 0;
         min-height: 38px;
       }
+
       .dj-ctx-crumb {
         font-size: 12px;
         color: var(--text-muted);
@@ -17183,13 +17357,23 @@
         text-overflow: ellipsis;
         max-width: 80px;
       }
+
       .dj-ctx-crumb.active {
         color: var(--text-primary);
         font-weight: 700;
         max-width: 120px;
       }
-      .dj-ctx-sep { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
-      .dj-ctx-spacer { flex: 1; }
+
+      .dj-ctx-sep {
+        font-size: 12px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+      }
+
+      .dj-ctx-spacer {
+        flex: 1;
+      }
+
       .dj-ctx-new-btn {
         display: flex;
         align-items: center;
@@ -17207,7 +17391,10 @@
         flex-shrink: 0;
         transition: opacity 0.12s;
       }
-      .dj-ctx-new-btn:hover { opacity: 0.88; }
+
+      .dj-ctx-new-btn:hover {
+        opacity: 0.88;
+      }
 
       .dj-add-sec-btn {
         display: flex;
@@ -17820,7 +18007,11 @@
   <div id="code-modal" class="hidden fixed inset-0 flex flex-col" style="z-index:10010">
     <div id="code-modal-inner" class="flex flex-col flex-1 overflow-hidden">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
-        <button onclick="closeCodeModal()" class="modal-close-x on-dark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <button onclick="closeCodeModal()" class="modal-close-x on-dark"><svg width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></button>
         <h2 class="text-base font-semibold flex-1">Select Code(s)</h2>
         <button onclick="confirmCodeSelection()"
           class="bg-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-bold">Done</button>
@@ -17844,7 +18035,12 @@
     style="background:rgba(var(--shadow-rgb), 0.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:10010">
     <div id="location-modal-inner" class="flex flex-col flex-1 overflow-hidden" style="background:var(--bg-modal)">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
-        <button onclick="closeLocationModal()" class="modal-close-x on-dark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <button onclick="closeLocationModal()" class="modal-close-x on-dark"><svg width="18" height="18"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></button>
         <h2 class="text-base font-semibold flex-1">Select Location</h2>
         <button onclick="confirmLocationModal()"
           class="bg-amber-500 text-white px-4 py-1.5 rounded-xl text-sm font-bold">Done</button>
@@ -17876,7 +18072,12 @@
     style="background:rgba(var(--shadow-rgb), 0.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)">
     <div id="finder-modal-inner" class="flex flex-col flex-1 overflow-hidden" style="background:var(--bg-modal)">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
-        <button onclick="closeFinderModal()" class="modal-close-x on-dark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <button onclick="closeFinderModal()" class="modal-close-x on-dark"><svg width="18" height="18"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></button>
         <h2 class="text-base font-semibold flex-1" id="finder-modal-title">Search Exchanges</h2>
       </div>
       <div class="p-3 sticky top-0 z-10"
@@ -17933,7 +18134,12 @@
           <polyline points="10 9 9 9 8 9" />
         </svg>
         <span id="notes-modal-title">Note</span>
-        <button onclick="closeNotesModal()" class="modal-close-x on-dark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <button onclick="closeNotesModal()" class="modal-close-x on-dark"><svg width="18" height="18"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></button>
       </div>
       <div id="notes-modal-body">
         <textarea id="notes-modal-ta" placeholder="Type your note here…" autocomplete="off" data-lpignore="true"
@@ -18035,7 +18241,12 @@
   <!-- ===== ROUTINES SITE PICKER MODAL ===== -->
   <div id="rtn-picker-modal">
     <div class="rtn-picker-hdr safe-top">
-      <button class="modal-close-x on-dark" onclick="closeRoutinesSitePicker()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <button class="modal-close-x on-dark" onclick="closeRoutinesSitePicker()"><svg width="18" height="18"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg></button>
       <span class="rtn-picker-hdr-title">Choose Sites</span>
       <button class="rtn-picker-done-btn" onclick="saveRoutinesSites()">Save</button>
     </div>
@@ -18171,7 +18382,12 @@
             <div style="font-size:0.78rem;color:var(--text-muted);margin-top:3px">Automatic daily snapshots —
               everything: timesheets, notes, callouts, routines, reminders, note tags, notebooks, settings</div>
           </div>
-          <button onclick="document.getElementById('backup-modal').classList.add('hidden')" class="modal-close-x"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          <button onclick="document.getElementById('backup-modal').classList.add('hidden')" class="modal-close-x"><svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg></button>
         </div>
         <div
           style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -18251,7 +18467,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.0.6';
+    const VERSION = '6.0.7';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -18338,12 +18554,13 @@
       return '';
     }
 
-    // Combined default + user-defined categories, excluding disabled ones
     function getCategories() {
       const disabled = state.disabledCats || [];
       return [...DEFAULT_NOTE_CATEGORIES, ...(state.customCategories || [])]
         .filter(c => !disabled.includes(c.key));
     }
+
+
 
     const firebaseConfig = {
       apiKey: "AIzaSyBq-AMqqUwGgDZGk6F9TndyZaZZui8gPBY",
@@ -18353,11 +18570,8 @@
       messagingSenderId: "670175047784",
       appId: "1:670175047784:web:b48dc899508a925652cbdd"
     };
+
     // ── v5.1.79 RECOVERY MODE ──────────────────────────────────────────────
-    // ?cleanup=1 — nuke Firestore's local IndexedDB + clear all firestore_*
-    // localStorage keys BEFORE Firebase initializes. Required when the SDK's
-    // local write queue gets stuck in a storm (see incident 2026-04-06).
-    // After cleanup, redirects to /app so the SDK opens a fresh DB.
     if (new URLSearchParams(location.search).get('cleanup') === '1') {
       document.documentElement.innerHTML = '<body style="font-family:sans-serif;background:#0f1e2e;color:var(--border-strong);padding:40px;text-align:center;"><h2>Cleaning up Firestore cache…</h2><p id="cu-status">Working…</p></body>';
       try { Object.keys(localStorage).filter(k => k.startsWith('firestore')).forEach(k => localStorage.removeItem(k)); } catch (e) { }
@@ -19902,11 +20116,11 @@
           const ordinary = parseFloat(act.ordinary) || 0;
           const overtime = parseFloat(act.overtime) || 0;
           const missingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
-          const missingHrs  = act.codes.length > 0 && ordinary === 0 && overtime === 0;
-          const missingLoc  = (ordinary > 0 || overtime > 0) && !act.location;
+          const missingHrs = act.codes.length > 0 && ordinary === 0 && overtime === 0;
+          const missingLoc = (ordinary > 0 || overtime > 0) && !act.location;
           if (!missingCode && !missingHrs && !missingLoc) {
             card.style.borderColor = isPending ? '#7c3aed' : '';
-            card.style.boxShadow   = isPending ? '0 0 0 3px rgba(124,58,237,0.13)' : '';
+            card.style.boxShadow = isPending ? '0 0 0 3px rgba(124,58,237,0.13)' : '';
           }
         }
 
@@ -19925,7 +20139,7 @@
           remedyBtn.classList.toggle('active', isPending);
           const svg = remedyBtn.querySelector('svg');
           if (svg) {
-            svg.setAttribute('fill',   isPending ? '#7c3aed' : 'none');
+            svg.setAttribute('fill', isPending ? '#7c3aed' : 'none');
             svg.setAttribute('stroke', isPending ? '#7c3aed' : 'currentColor');
           }
         }
@@ -21600,28 +21814,28 @@
                     </span>
                   </button>
                   ${(() => {
-                    const isModal = getTaskStyle() === 'modal';
-                    return `<button id="menu-card-style-btn" class="menu-row" onclick="setTaskStyle(getTaskStyle()==='modal'?'expand':'modal')">
+              const isModal = getTaskStyle() === 'modal';
+              return `<button id="menu-card-style-btn" class="menu-row" onclick="setTaskStyle(getTaskStyle()==='modal'?'expand':'modal')">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Card style</span><span id="menu-card-style-sub" class="menu-row-sub">${isModal ? 'Fullscreen modal' : 'Expand in place'}</span></span>
                     <span id="menu-card-style-track" style="width:36px;height:20px;border-radius:10px;background:${isModal ? 'var(--accent)' : 'var(--border-strong)'};position:relative;transition:background 0.2s;flex-shrink:0;display:inline-block;">
                       <span id="menu-card-style-pill" style="position:absolute;top:2px;left:${isModal ? '18px' : '2px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.18);display:block;"></span>
                     </span>
                   </button>`;
-                  })()}
+            })()}
                   ${(() => {
-                    const lp = getLayoutPref();
-                    const isForceMobile = lp === 'mobile';
-                    const autoDesk = window.innerWidth >= 1280;
-                    const sub = isForceMobile ? 'Forced mobile' : (autoDesk ? 'Auto — Desktop' : 'Auto — Mobile');
-                    return `<button class="menu-row" onclick="setLayoutPref(getLayoutPref()==='mobile'?'auto':'mobile')">
+              const lp = getLayoutPref();
+              const isForceMobile = lp === 'mobile';
+              const autoDesk = window.innerWidth >= 1280;
+              const sub = isForceMobile ? 'Forced mobile' : (autoDesk ? 'Auto — Desktop' : 'Auto — Mobile');
+              return `<button class="menu-row" onclick="setLayoutPref(getLayoutPref()==='mobile'?'auto':'mobile')">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Force mobile layout</span><span class="menu-row-sub">${sub}</span></span>
                     <span style="width:36px;height:20px;border-radius:10px;background:${isForceMobile ? 'var(--accent)' : 'var(--border-strong)'};position:relative;transition:background 0.2s;flex-shrink:0;display:inline-block;">
                       <span style="position:absolute;top:2px;left:${isForceMobile ? '18px' : '2px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.18);display:block;"></span>
                     </span>
                   </button>`;
-                  })()}
+            })()}
                   ${(() => {
               const cur = getSavedTheme();
               const keys = Object.keys(THEME_META);
@@ -23041,7 +23255,7 @@
              Remedy
            </button>
            <div style="width:1px;background:var(--border);align-self:stretch;margin:0 2px;flex-shrink:0"></div>
-           <button onclick="showConfirm('Delete task?','${escAttr(act.description||'Unnamed')}',()=>{removeActivity('${escId}',${di});closeTaskModal()})" class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" title="Delete">
+           <button onclick="showConfirm('Delete task?','${escAttr(act.description || 'Unnamed')}',()=>{removeActivity('${escId}',${di});closeTaskModal()})" class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" title="Delete">
              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
            </button>`;
 
@@ -23080,12 +23294,12 @@
               <span class="act-field-label">Notes</span>
               ${renderNoteInline(act.notes, `openNoteFullscreen('${escId}',${di})`, `data-notes-inline="${act.id}"`)}
             </div>
-            <textarea class="act-notes-area" style="display:none" data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes||'')}</textarea>
+            <textarea class="act-notes-area" style="display:none" data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes || '')}</textarea>
             <div class="flex flex-col gap-1.5">
               <span class="act-field-label">Location</span>
-              <div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;${act.location?'':'color:var(--text-muted)'}"
+              <div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;${act.location ? '' : 'color:var(--text-muted)'}"
                 data-field="location" data-act="${act.id}" data-day="${di}"
-                onclick="openLocationModal(${di},'${escId}')">${act.location?esc(act.location):'Town name or code…'}</div>
+                onclick="openLocationModal(${di},'${escId}')">${act.location ? esc(act.location) : 'Town name or code…'}</div>
             </div>
             <div class="flex flex-col gap-1.5">
               <div style="display:flex;align-items:center;justify-content:space-between">
@@ -23097,8 +23311,8 @@
               </div>
               <div class="act-codes-wrap" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${escId}')" style="cursor:pointer;min-height:42px">${codesHtml}</div>
               <div id="suggest-wrap-${act.id}"></div>
-              ${isMissingCode?`<div class="act-missing-warn">Missing work code</div>`:''}
-              ${isMissingHours?`<div class="act-missing-warn">Missing hours</div>`:''}
+              ${isMissingCode ? `<div class="act-missing-warn">Missing work code</div>` : ''}
+              ${isMissingHours ? `<div class="act-missing-warn">Missing hours</div>` : ''}
             </div>
             <div class="flex gap-3">
               <div class="hrs-box flex-1">
@@ -23264,8 +23478,8 @@
            </button>`
         : `<button class="task-modal-text-btn" onclick="markNoteDone('${escId}');closeNoteModal()">
              ${note.status === 'done'
-               ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
-               : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Complete`}
+          ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Complete`}
            </button>
            ${!note.archived && !note.deleted ? `<button class="task-modal-text-btn" onclick="openNoteToTask('${escId}')">
              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task
@@ -23517,8 +23731,8 @@
       if (!day) return;
       const acts = day.activities;
       const ord = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
-      const ot  = acts.reduce((s, a) => s + (parseFloat(a.overtime)  || 0), 0);
-      const actCount    = acts.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0).length;
+      const ot = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
+      const actCount = acts.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0).length;
       const remedyCount = acts.filter(a => a.remedyPending).length;
       const hasMissingCode = acts.some(a => {
         const o = parseFloat(a.ordinary) || 0, v = parseFloat(a.overtime) || 0;
@@ -23529,7 +23743,7 @@
       el.innerHTML =
         (actCount > 0 ? `<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)) +
         (ord > 0 ? `<span class="pill-hrs">${fmtNum(ord)}h</span>` : '') +
-        (ot  > 0 ? `<span class="pill-ot">+${fmtNum(ot)} OT</span>` : '') +
+        (ot > 0 ? `<span class="pill-ot">+${fmtNum(ot)} OT</span>` : '') +
         (remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : '') +
         (hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : '');
     }
@@ -23538,9 +23752,9 @@
       // Update every input with this data-step-val (expanded card + modal)
       document.querySelectorAll(`[data-step-val="${actId}-${field}"]`).forEach(inp => { inp.value = val; });
       // Update task row pills in collapsed header
-      const pill   = document.querySelector(`[data-row-hrs="${actId}"]`);
+      const pill = document.querySelector(`[data-row-hrs="${actId}"]`);
       const pillOt = document.querySelector(`[data-row-ot="${actId}"]`);
-      if (pill   && field === 'ordinary') { pill.textContent   = val + 'h';         pill.style.display   = val > 0 ? '' : 'none'; }
+      if (pill && field === 'ordinary') { pill.textContent = val + 'h'; pill.style.display = val > 0 ? '' : 'none'; }
       if (pillOt && field === 'overtime') { pillOt.textContent = '+' + val + ' OT'; pillOt.style.display = val > 0 ? '' : 'none'; }
       if (_taskModalState && _taskModalState.actId === actId) _taskModalFlashSaved();
       // Refresh day header pills
@@ -23866,8 +24080,8 @@
           <div class="copy-picker-handle"></div>
           <div class="copy-picker-title">"${esc(descLabel)}"</div>
           <div style="display:flex;gap:0;margin:4px 16px 0;background:var(--bg-code-group);border-radius:14px;padding:3px">
-            <button class="cp-mode-btn" data-mode="copy" onclick="setCopyPickerMode(false)" style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${!moveMode?'var(--bg-segment-active)':'none'};color:${!moveMode?'var(--text-primary)':'var(--text-muted)'}">Copy</button>
-            <button class="cp-mode-btn" data-mode="move" onclick="setCopyPickerMode(true)"  style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${moveMode?'var(--bg-segment-active)':'none'};color:${moveMode?'var(--text-primary)':'var(--text-muted)'}">Move</button>
+            <button class="cp-mode-btn" data-mode="copy" onclick="setCopyPickerMode(false)" style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${!moveMode ? 'var(--bg-segment-active)' : 'none'};color:${!moveMode ? 'var(--text-primary)' : 'var(--text-muted)'}">Copy</button>
+            <button class="cp-mode-btn" data-mode="move" onclick="setCopyPickerMode(true)"  style="flex:1;padding:7px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.15s;background:${moveMode ? 'var(--bg-segment-active)' : 'none'};color:${moveMode ? 'var(--text-primary)' : 'var(--text-muted)'}">Move</button>
           </div>
           <div class="copy-picker-sub" id="cp-sub">${moveMode ? 'Task will be moved — removed from this day and added to selected day(s).' : 'Select one or more days. All fields including note will be copied.'}</div>
           <div class="copy-picker-weeknav">
@@ -26288,9 +26502,9 @@
       if (listNotes.length === 0) {
         listHtml += '<div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px">No ' + notesTab + ' notes</div>';
       } else {
-        var _overdueIds = notesTab === 'notes' ? listNotes.filter(function(n){ return isNoteOverdue(n); }).map(function(n){return n.id;}) : [];
-        var _pinnedIds = notesTab === 'notes' ? listNotes.filter(function(n){ return !isNoteOverdue(n) && n.pinned; }).map(function(n){return n.id;}) : [];
-        var _openIds = notesTab === 'notes' ? listNotes.filter(function(n){ return !isNoteOverdue(n) && !n.pinned; }).map(function(n){return n.id;}) : [];
+        var _overdueIds = notesTab === 'notes' ? listNotes.filter(function (n) { return isNoteOverdue(n); }).map(function (n) { return n.id; }) : [];
+        var _pinnedIds = notesTab === 'notes' ? listNotes.filter(function (n) { return !isNoteOverdue(n) && n.pinned; }).map(function (n) { return n.id; }) : [];
+        var _openIds = notesTab === 'notes' ? listNotes.filter(function (n) { return !isNoteOverdue(n) && !n.pinned; }).map(function (n) { return n.id; }) : [];
 
         var _addedOpenHdr = false;
         var _addedPinnedHdr = false;
@@ -26446,7 +26660,7 @@
           '<input class="dnotes-field-input" type="text" value="' + esc(selRawDesc) + '" data-note-id="' + selEscId + '" data-note-field="description" onchange="updateNoteField(this);deskRefreshNotesList()" placeholder="Note title…">' +
           '</div>' +
           // Notes (content) — rendered inline, same as mobile
-          (function() {
+          (function () {
             var _dnRszId = 'dnote_' + selNote.id;
             var _dnH = localStorage.getItem('rian_note_h_' + _dnRszId) || '';
             var _dnOuterStyle = _dnH ? ' style="max-height:' + _dnH + 'px"' : '';
@@ -26496,16 +26710,16 @@
             (isDone ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Complete') +
             '</button>' +
             (notesTab === 'notes' ? '<button class="task-modal-text-btn" onclick="openNoteToTask(\'' + selEscId + '\')">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task</button>' +
-            '<button class="task-modal-text-btn" onclick="archiveNote(\'' + selEscId + '\')">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive</button>' : '') +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task</button>' +
+              '<button class="task-modal-text-btn" onclick="archiveNote(\'' + selEscId + '\')">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive</button>' : '') +
             (notesTab === 'archive' ? '<button class="task-modal-text-btn" onclick="unarchiveNote(\'' + selEscId + '\')">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Unarchive</button>' : '') +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Unarchive</button>' : '') +
             (notesTab === 'bin' ? '<button class="task-modal-text-btn" onclick="restoreNote(\'' + selEscId + '\')">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> Restore</button>' : '') +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> Restore</button>' : '') +
             (notesTab !== 'bin' ? '<div style="width:1px;background:var(--border);align-self:stretch;margin:0 2px;flex-shrink:0"></div>' +
-            '<button class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" onclick="deleteNote(\'' + selEscId + '\')">' +
-            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' : '')) +
+              '<button class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" onclick="deleteNote(\'' + selEscId + '\')">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' : '')) +
           '</div>' +
           '</div>';
       }
@@ -28023,9 +28237,9 @@
       var col2Title = selSec ? esc(selSec.title) : 'Pages';
 
       // Find the active notebook for dropdown context (djActiveNb first, then selected section's, then first expanded)
-      var activeNb = state.djActiveNb ? allNbs.find(function(n){ return n.id === state.djActiveNb; }) : null;
-      if (!activeNb) activeNb = selSec ? allNbs.find(function(n){ return n.id === selSec.notebookId; }) : null;
-      if (!activeNb) activeNb = allNbs.find(function(n){ return !!exp[n.id]; }) || null;
+      var activeNb = state.djActiveNb ? allNbs.find(function (n) { return n.id === state.djActiveNb; }) : null;
+      if (!activeNb) activeNb = selSec ? allNbs.find(function (n) { return n.id === selSec.notebookId; }) : null;
+      if (!activeNb) activeNb = allNbs.find(function (n) { return !!exp[n.id]; }) || null;
       var secSubtitle = activeNb ? 'to ' + activeNb.title : '';
       var secDisabled = !activeNb;
       var folderIconSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
@@ -28113,7 +28327,7 @@
       dd.classList.toggle('open', opening);
       if (btn) btn.classList.toggle('open', opening);
       if (opening) {
-        setTimeout(function() {
+        setTimeout(function () {
           document.addEventListener('click', _djAddMenuOutside);
         }, 0);
       }
@@ -28144,13 +28358,13 @@
         jOpenAdd('notebook');
       } else {
         var exp = state.djExpanded || {};
-        var allNbs = state.jNotebooks.filter(function(n){ return !n.deleted; });
-        var allSecs = state.jSections.filter(function(s){ return !s.deleted; });
-        var selSec = state.djSelectedSec ? allSecs.find(function(s){ return s.id === state.djSelectedSec; }) : null;
+        var allNbs = state.jNotebooks.filter(function (n) { return !n.deleted; });
+        var allSecs = state.jSections.filter(function (s) { return !s.deleted; });
+        var selSec = state.djSelectedSec ? allSecs.find(function (s) { return s.id === state.djSelectedSec; }) : null;
         // Priority: last clicked notebook > selected section's notebook > first expanded
-        var activeNb = state.djActiveNb ? allNbs.find(function(n){ return n.id === state.djActiveNb; }) : null;
-        if (!activeNb) activeNb = selSec ? allNbs.find(function(n){ return n.id === selSec.notebookId; }) : null;
-        if (!activeNb) activeNb = allNbs.find(function(n){ return !!exp[n.id]; }) || null;
+        var activeNb = state.djActiveNb ? allNbs.find(function (n) { return n.id === state.djActiveNb; }) : null;
+        if (!activeNb) activeNb = selSec ? allNbs.find(function (n) { return n.id === selSec.notebookId; }) : null;
+        if (!activeNb) activeNb = allNbs.find(function (n) { return !!exp[n.id]; }) || null;
         if (activeNb) djAddSection(activeNb.id);
       }
     }
@@ -28322,7 +28536,7 @@
     }
     function djRenameSec(secId) {
       djCloseCtx();
-      var sec = state.jSections.find(function(s){ return s.id === secId; });
+      var sec = state.jSections.find(function (s) { return s.id === secId; });
       if (sec) jOpenRename(secId, sec.title || '');
     }
     function djChangeColourSec(secId) {
@@ -28335,7 +28549,7 @@
     }
     function djRenameNb(nbId) {
       djCloseCtx();
-      var nb = state.jNotebooks.find(function(n){ return n.id === nbId; });
+      var nb = state.jNotebooks.find(function (n) { return n.id === nbId; });
       if (nb) jOpenRename(nbId, nb.title || '');
     }
     function djDeleteNb(nbId) {
@@ -28500,11 +28714,11 @@
         var inp = document.getElementById('dj-image-input');
         if (inp) { inp.value = ''; inp.click(); }
       });
-      (function() {
+      (function () {
         var inp = document.getElementById('dj-image-input');
         if (inp && !inp._djBound) {
           inp._djBound = true;
-          inp.addEventListener('change', function(ev) { _djHandleImageUpload(ev); });
+          inp.addEventListener('change', function (ev) { _djHandleImageUpload(ev); });
         }
       })();
     }
@@ -31113,7 +31327,7 @@
       const stack = [
         ['task-modal-overlay', () => typeof closeTaskModal === 'function' && closeTaskModal()],
         ['note-modal-overlay', () => typeof closeNoteModal === 'function' && closeNoteModal()],
-        ['co-modal-overlay',   () => typeof closeCoModal   === 'function' && closeCoModal()],
+        ['co-modal-overlay', () => typeof closeCoModal === 'function' && closeCoModal()],
         ['battery-modal', () => typeof closeBatteryRecorder === 'function' && closeBatteryRecorder()],
         ['note-fs-modal', () => typeof closeNoteFullscreen === 'function' && closeNoteFullscreen()],
         ['ai-fault-modal', () => typeof closeFaultAssistant === 'function' && closeFaultAssistant()],
@@ -37096,11 +37310,11 @@
         const header = ov.querySelector('.task-modal-header');
         if (!sheet || !dragZone) return;
         let _sY = 0, _drag = false;
-        function _dn(e) { _sY = (e.touches?.[0]||e).clientY; _drag = true; sheet.style.transition = 'none'; }
-        function _mv(e) { if (!_drag) return; const dy = (e.touches?.[0]||e).clientY - _sY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }
+        function _dn(e) { _sY = (e.touches?.[0] || e).clientY; _drag = true; sheet.style.transition = 'none'; }
+        function _mv(e) { if (!_drag) return; const dy = (e.touches?.[0] || e).clientY - _sY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }
         function _up(e) {
           if (!_drag) return; _drag = false;
-          const dy = ((e.changedTouches?.[0])||e).clientY - _sY;
+          const dy = ((e.changedTouches?.[0]) || e).clientY - _sY;
           sheet.style.transition = ''; sheet.style.transform = '';
           if (dy > 80) closeCoModal();
         }
@@ -37138,7 +37352,7 @@
             <button class="task-modal-close" onclick="closeCoModal()" title="Back">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <div style="flex:1;min-width:0;font-size:16px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)">${fault ? esc(fault.substring(0,60)) : '<span style="opacity:0.45;font-weight:400;font-style:italic">New callout</span>'}</div>
+            <div style="flex:1;min-width:0;font-size:16px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)">${fault ? esc(fault.substring(0, 60)) : '<span style="opacity:0.45;font-weight:400;font-style:italic">New callout</span>'}</div>
             <span class="task-modal-saved" id="co-modal-saved">Saved</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;padding:2px 0 6px;border-bottom:1px solid var(--border)">
@@ -37155,18 +37369,18 @@
         <div class="task-modal-body">
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Date</span>
-            <input type="date" id="co-date-input" value="${co.date||''}" class="act-input" style="cursor:pointer" onchange="updateCoField('date',this.value);_coModalFlashSaved()">
+            <input type="date" id="co-date-input" value="${co.date || ''}" class="act-input" style="cursor:pointer" onchange="updateCoField('date',this.value);_coModalFlashSaved()">
           </div>
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Ticket Number</span>
             <textarea id="co-ticket-input" class="act-textarea" rows="1" style="resize:none;overflow:hidden" placeholder="e.g. R23482335"
               autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
               oninput="this.value=this.value.replace(/\\n/g,'');updateCoField('ticket',this.value.trim());_coModalFlashSaved()"
-              onkeydown="if(event.key==='Enter')event.preventDefault()">${esc(co.ticket||'')}</textarea>
+              onkeydown="if(event.key==='Enter')event.preventDefault()">${esc(co.ticket || '')}</textarea>
           </div>
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Location</span>
-            <input type="text" id="co-site-display" class="act-input" readonly value="${esc(co.site||'')}" placeholder="Tap to select location"
+            <input type="text" id="co-site-display" class="act-input" readonly value="${esc(co.site || '')}" placeholder="Tap to select location"
               style="cursor:pointer;user-select:none" autocomplete="new-password" data-lpignore="true"
               onclick="_coSiteCallback=(name)=>{document.getElementById('co-site-display').value=name;updateCoField('site',name);_coModalFlashSaved()};openLocationModal()">
           </div>
@@ -37174,14 +37388,14 @@
             <span class="act-field-label">Fault Description</span>
             <textarea id="co-fault-input" class="act-textarea" rows="1" placeholder="e.g. EXTERNAL ALARM: AC MAINS FAIL"
               autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-              oninput="autoGrow(this);updateCoField('fault',this.value.trim());_coModalFlashSaved();_coModalRefreshTitle(this.value)">${esc(co.fault||'')}</textarea>
+              oninput="autoGrow(this);updateCoField('fault',this.value.trim());_coModalFlashSaved();_coModalRefreshTitle(this.value)">${esc(co.fault || '')}</textarea>
           </div>
-          ${renderNoteInline(co.notes||'', `openCoNoteFullscreen()`, `data-co-notes-inline`)}
+          ${renderNoteInline(co.notes || '', `openCoNoteFullscreen()`, `data-co-notes-inline`)}
           <textarea class="act-notes-area" id="co-notes-ta" style="display:none" autocomplete="off" data-lpignore="true"
-            oninput="coAutoSave()">${esc(co.notes||'')}</textarea>
+            oninput="coAutoSave()">${esc(co.notes || '')}</textarea>
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Engineer On Site</span>
-            <input type="time" id="co-time-input" class="act-input" value="${esc(co.engineerOnSite||'')}"
+            <input type="time" id="co-time-input" class="act-input" value="${esc(co.engineerOnSite || '')}"
               onchange="updateCoField('engineerOnSite',this.value);_coModalFlashSaved()">
           </div>
         </div>
@@ -42956,7 +43170,12 @@ The state block is invisible to the user.`;
   <div id="email-preview-modal" class="hidden fixed inset-0 z-50 flex flex-col" style="background:var(--bg-modal)">
     <div class="flex flex-col flex-1 overflow-hidden">
       <div style="background:var(--bg-header)" class="text-white px-4 py-3 flex items-center gap-3 safe-top">
-        <button onclick="closeEmailPreview()" class="modal-close-x on-dark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <button onclick="closeEmailPreview()" class="modal-close-x on-dark"><svg width="18" height="18"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg></button>
         <h2 class="text-base font-semibold flex-1">Weekly Summary</h2>
         <button onclick="sendWeeklyEmailFromPreview()"
           style="background:#f59e0b;color:#fff;padding:6px 16px;border-radius:999px;font-size:13px;font-weight:700;border:none;cursor:pointer;">Send
