@@ -18189,7 +18189,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.95';
+    const VERSION = '5.9.96';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20499,8 +20499,8 @@
         // Prevents the scaffold-before-sync race that wiped Brave's data.
         // If we have NO local cache for this week, mark it as "not ready" so
         // scheduleAutoSave will not push the empty scaffold to Firestore until
-        // we've heard from the cloud at least once. After 5s without a snapshot
-        // (offline / slow network), we release the gate so edits can save.
+        // we've heard from the cloud at least once. After 60s without a snapshot
+        // (offline / very slow network such as Firefox ETP delay), release the gate.
         window._firstSnapReceived = window._firstSnapReceived || {};
         if (localIsOwn) {
           window._firstSnapReceived[weekStart] = true;
@@ -20511,7 +20511,7 @@
               console.warn('[Rian] First-snapshot gate timeout for week', weekStart, '— releasing');
               window._firstSnapReceived[weekStart] = true;
             }
-          }, 5000);
+          }, 60000);
         }
 
         if (!state.currentUser) return;
