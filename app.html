@@ -15096,7 +15096,15 @@
       padding: 0 0 80px;
       background: var(--bg-page);
       min-height: calc(100vh - 56px);
+      view-transition-name: co-screen;
     }
+
+    ::view-transition-group(co-screen) { overflow: hidden; }
+
+    .co-vt-left::view-transition-old(co-screen)  { animation: jVtFadeBack  0.25s ease both; z-index: 1; }
+    .co-vt-left::view-transition-new(co-screen)  { animation: jVtSlideIn   0.25s ease both; z-index: 2; }
+    .co-vt-right::view-transition-old(co-screen) { animation: jVtSlideAway 0.25s ease both; z-index: 2; }
+    .co-vt-right::view-transition-new(co-screen) { animation: jVtFadeIn    0.25s ease both; z-index: 1; }
 
     .co-card::before,
     .co-card::after {
@@ -18202,7 +18210,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.114';
+    const VERSION = '6.0.0';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25554,6 +25562,17 @@
         document.documentElement.classList.add('j-vt-' + dir);
         // Must call _renderNow() synchronously inside the callback —
         // render() only schedules a RAF which fires after the transition ends
+        if (_renderRAF) { cancelAnimationFrame(_renderRAF); _renderRAF = null; }
+        document.startViewTransition(() => _renderNow());
+      } else {
+        render();
+      }
+    }
+
+    function _coTransitionRender(dir) {
+      if (document.startViewTransition) {
+        document.documentElement.classList.remove('co-vt-left', 'co-vt-right');
+        document.documentElement.classList.add('co-vt-' + dir);
         if (_renderRAF) { cancelAnimationFrame(_renderRAF); _renderRAF = null; }
         document.startViewTransition(() => _renderNow());
       } else {
@@ -36707,7 +36726,7 @@
       state.calloutsEditId = null;
       // Push history state so phone back button returns to list
       history.pushState({ coWeek: weekStart }, '');
-      render();
+      _coTransitionRender('left');
     }
 
     function coAddWeek() {
@@ -36768,7 +36787,7 @@
       state.calloutsNotesOpen = false;
       state.coSelectionMode = false;
       state.selectedCallouts.clear();
-      render();
+      _coTransitionRender('right');
     }
 
     // coSave is now handled by coAutoSave — kept for backwards compat
