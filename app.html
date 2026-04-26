@@ -18189,7 +18189,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '5.9.94';
+    const VERSION = '5.9.95';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -31558,16 +31558,11 @@
     }
     function setTaskStyle(s) {
       try { localStorage.setItem('rian_task_style', s); } catch { }
+      state.activitiesExpanded.clear();
+      state.expandedNotes.clear();
       const isModal = s === 'modal';
-      const sub = document.getElementById('menu-card-style-sub');
-      const track = document.getElementById('menu-card-style-track');
-      const pill = document.getElementById('menu-card-style-pill');
-      if (sub && track && pill) {
-        sub.textContent = isModal ? 'Fullscreen modal' : 'Expand in place';
-        track.style.background = isModal ? 'var(--accent)' : 'var(--border-strong)';
-        pill.style.left = isModal ? '18px' : '2px';
-      }
       showToast(isModal ? 'Card style: Fullscreen' : 'Card style: Expand in place');
+      render();
     }
 
     function toggleThemeMenu(e) {
