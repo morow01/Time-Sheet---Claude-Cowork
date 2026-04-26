@@ -17118,11 +17118,18 @@
         width: 7px;
       }
 
+      /* Used where panel has its own border-right — handle is drag-only, no visual */
+      .dj-resize-handle.dj-rh-invis {
+        width: 0;
+        background: transparent;
+      }
+
       /* Col 1: Notebooks + Sections */
       .dj-col1 {
         min-width: 180px;
         max-width: 340px;
         background: var(--bg-card);
+        border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -17442,6 +17449,7 @@
         min-width: 180px;
         max-width: 400px;
         background: var(--bg-card);
+        border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -18508,7 +18516,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.0.12';
+    const VERSION = '6.0.13';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -28316,7 +28324,7 @@
         + '<div class="dj-col1-body">' + col1Html + '</div>'
         + '</div>'
         // Resize handle 1
-        + '<div class="dj-resize-handle" onmousedown="djResizeStart(event,1)"></div>'
+        + '<div class="dj-resize-handle dj-rh-invis" onmousedown="djResizeStart(event,1)"></div>'
         // Col 2: page list
         + '<div class="dj-col2" style="width:' + _djCol2Width + 'px">'
         + '<div class="desk-panel-days-hdr dj-hdr-with-btn"><span>' + col2Title + '</span>'
@@ -28330,7 +28338,7 @@
         + '<div class="dj-col2-body">' + col2Html + '</div>'
         + '</div>'
         // Resize handle 2
-        + '<div class="dj-resize-handle" onmousedown="djResizeStart(event,2)"></div>'
+        + '<div class="dj-resize-handle dj-rh-invis" onmousedown="djResizeStart(event,2)"></div>'
         // Col 3: editor
         + '<div class="dj-editor" style="position:relative">'
         + '<div class="desk-panel-days-hdr">Editor</div>'
