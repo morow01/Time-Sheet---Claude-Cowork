@@ -17103,7 +17103,7 @@
       .dj-resize-handle {
         width: 1px;
         cursor: col-resize;
-        background: var(--border-subtle);
+        background: var(--border);
         flex-shrink: 0;
         position: relative;
         z-index: 2;
@@ -17750,7 +17750,7 @@
       .dco-panel-weeks {
         width: 280px;
         background: var(--bg-card);
-        border-right: none;
+        border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
         overflow-y: auto;
@@ -17760,7 +17760,7 @@
       .dco-panel-callouts {
         width: 360px;
         background: var(--bg-card);
-        border-right: none;
+        border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
         overflow-y: auto;
@@ -17771,7 +17771,6 @@
         flex: 1;
         background: var(--bg-card);
         overflow-y: auto;
-        border-left: none;
       }
 
       .dco-panel-detail .desk-detail-body {
@@ -18509,7 +18508,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.0.11';
+    const VERSION = '6.0.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -36244,7 +36243,7 @@
       detailHtml += '</div>';
 
       // Wrap in three-panel + schedule overlay
-      return '<main><div class="dco-wrap">' + weeksHtml + '<div class="dj-resize-handle" onmousedown="dcoResizeStart(event,1)"></div>' + calloutsHtml + '<div class="dj-resize-handle" onmousedown="dcoResizeStart(event,2)"></div>' + detailHtml + '</div></main>' + renderOcScheduleOverlay();
+      return '<main><div class="dco-wrap">' + weeksHtml + calloutsHtml + detailHtml + '</div></main>' + renderOcScheduleOverlay();
     }
 
     // ── Desktop Callouts: resizable column widths ──
