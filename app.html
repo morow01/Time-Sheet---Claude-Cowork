@@ -18696,7 +18696,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.0.36';
+    const VERSION = '6.0.37';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -32475,13 +32475,39 @@
         return;
       }
       if (type === 'task') {
-        if (typeof dayIdx === 'number' && !isNaN(dayIdx)) state.deskSelectedDay = dayIdx;
+        await setView('week');
+        await loadWeek(weekStart);
+        var di = typeof dayIdx === 'number' && !isNaN(dayIdx) ? dayIdx : -1;
+        if (di < 0 && id && state.weekData) {
+          (state.weekData.days || []).some(function(day, idx) {
+            if ((day.activities || []).some(function(act) { return act.id === id; })) {
+              di = idx;
+              return true;
+            }
+            return false;
+          });
+        }
+        if (di >= 0) {
+          state.expandedDays.clear();
+          state.expandedDays.add(di);
+          state.deskSelectedDay = di;
+        }
         if (id) {
           state.deskSelectedAct = id;
           state.activitiesExpanded.add(id);
+          state.notesOpen.set(id, true);
         }
-        await loadWeek(weekStart);
-        await setView('week');
+        saveUiState();
+        render();
+        setTimeout(function() {
+          var target = id
+            ? document.querySelector('.activity-card[data-act-id="' + id + '"]')
+            : document.querySelector('.day-card[data-day-idx="' + di + '"]');
+          if (target) {
+            var y = target.getBoundingClientRect().top + window.scrollY - 80;
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+          }
+        }, 120);
       }
     }
     function histOpenJump() { state.historyJumpOpen = true; render(); }
