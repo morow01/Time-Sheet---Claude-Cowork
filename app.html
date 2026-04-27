@@ -18198,7 +18198,7 @@
     .hist-result-title { min-width:0; font-size:13px; font-weight:800; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .hist-result-meta { margin-top:2px; font-size:11px; color:var(--text-muted); font-weight:600; }
     .hist-result-snippet { margin:8px 0 0 36px; font-size:12px; line-height:1.35; color:var(--text-secondary); }
-    .hist-mark { padding:0 2px; border-radius:4px; background:rgba(var(--amber-rgb),0.26); color:inherit; }
+    .hist-mark { padding:0; border-radius:3px; background:rgba(var(--amber-rgb),0.26); color:inherit; }
   }
   </style>
 </head>
@@ -18670,7 +18670,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.0.28';
+    const VERSION = '6.0.29';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -31983,6 +31983,20 @@
       return tokens.every(function(t) { return hay.indexOf(t) !== -1; });
     }
 
+    function _histSearchScore(fields, tokens) {
+      var title = String(fields.title || '').toLowerCase();
+      var body = String(fields.body || '').toLowerCase();
+      var meta = String(fields.meta || '').toLowerCase();
+      var score = 0;
+      tokens.forEach(function(t) {
+        if (title.indexOf(t) === 0) score += 100;
+        else if (title.indexOf(t) > 0) score += 80;
+        if (body.indexOf(t) >= 0) score += 35;
+        if (meta.indexOf(t) >= 0) score += 10;
+      });
+      return score;
+    }
+
     function _histHighlight(text, q) {
       var out = esc(text || '');
       var tokens = _histSearchTokens(q).filter(function(t) { return t.length > 1; });
@@ -32015,9 +32029,11 @@
         weeks.forEach(function(w) {
           (w.tasks || []).forEach(function(t) {
             var codeText = (t.codes || []).map(function(c) { return [c.c, c.d, c.a].filter(Boolean).join(' '); }).join(' ');
-            var hay = [t.description, t.location, stripHtml(t.notes), codeText, t.date, t.dayName].join(' ');
-            if (!_histSearchMatch(hay, tokens)) return;
             var title = stripHtml(t.description || '').replace(/\s+/g, ' ').trim() || 'Untitled task';
+            var meta = 'Task' + (t.location ? ' · ' + t.location : '') + (t.date ? ' · ' + formatDateShort(t.date) : '');
+            var bodyText = [stripHtml(t.notes), codeText, t.location].join(' ');
+            var hay = [title, bodyText, meta, t.date, t.dayName].join(' ');
+            if (!_histSearchMatch(hay, tokens)) return;
             var snippet = _histSnippet(t.notes || codeText || t.location || title, q);
             results.push({
               type: 'task',
@@ -32026,8 +32042,9 @@
               dayIdx: t.dayIdx,
               id: t.id,
               title: title,
-              meta: 'Task' + (t.location ? ' · ' + t.location : '') + (t.date ? ' · ' + formatDateShort(t.date) : ''),
-              snippet: snippet
+              meta: meta,
+              snippet: snippet,
+              score: _histSearchScore({ title: title, body: bodyText, meta: meta + ' ' + t.dayName + ' ' + t.date }, tokens)
             });
           });
         });
@@ -32038,23 +32055,27 @@
           var wk = entry[0];
           var wd = entry[1] || {};
           (wd.callouts || []).forEach(function(co) {
-            var hay = [co.fault, co.site, co.location, co.ticket, co.notes, co.engineerOnSite, co.date].join(' ');
-            if (!_histSearchMatch(hay, tokens)) return;
             var title = stripHtml(co.fault || co.site || co.location || co.ticket || '').replace(/\s+/g, ' ').trim() || 'Callout';
+            var meta = 'Callout' + (co.ticket ? ' · ' + co.ticket : '') + ((co.site || co.location) ? ' · ' + (co.site || co.location) : '');
+            var bodyText = [co.notes, co.fault, co.site, co.location, co.engineerOnSite].join(' ');
+            var hay = [title, bodyText, meta, co.date].join(' ');
+            if (!_histSearchMatch(hay, tokens)) return;
             results.push({
               type: 'callout',
               weekStart: wk,
               date: co.date || wk,
               id: co.id,
               title: title,
-              meta: 'Callout' + (co.ticket ? ' · ' + co.ticket : '') + ((co.site || co.location) ? ' · ' + (co.site || co.location) : ''),
-              snippet: _histSnippet(co.notes || co.fault || co.site || co.location || '', q)
+              meta: meta,
+              snippet: _histSnippet(co.notes || co.fault || co.site || co.location || '', q),
+              score: _histSearchScore({ title: title, body: bodyText, meta: meta + ' ' + co.date }, tokens)
             });
           });
         });
       }
 
       return results.sort(function(a, b) {
+        if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
         var d = String(b.date || '').localeCompare(String(a.date || ''));
         if (d) return d;
         return String(b.weekStart || '').localeCompare(String(a.weekStart || ''));
@@ -32092,7 +32113,7 @@
           '<div class="hist-result-top">' +
           '<div class="hist-result-kind ' + kind + '">' + icon + '</div>' +
           '<div style="min-width:0;flex:1"><div class="hist-result-title">' + _histHighlight(r.title, q) + '</div>' +
-          '<div class="hist-result-meta">' + esc(r.meta) + '</div></div>' +
+          '<div class="hist-result-meta">' + _histHighlight(r.meta, q) + '</div></div>' +
           '</div>' +
           (r.snippet ? '<div class="hist-result-snippet">' + _histHighlight(r.snippet, q) + '</div>' : '') +
           '</div>';
