@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.0.36**
+Current version: **6.0.78**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -514,8 +514,10 @@ Tables shrink-wrap to content (not 100% width). Column resizing is enabled via `
 ```
 `_ttStripDefaultTableWidths()` runs on both `onUpdate` and `onSelectionUpdate` to catch the plugin re-applying styles.
 
-### WebView Microphone Permission (v5.4.10)
+### WebView Microphone Permission (v5.4.10, v6.0.78)
 `MainActivity.java` sets a custom `WebChromeClient` that auto-grants `onPermissionRequest` — required for mic access when loading from a remote URL. The Android manifest declares `RECORD_AUDIO`. Without the WebChromeClient override, the WebView silently blocks mic requests.
+
+Since v6.0.78, `MainActivity.java` also requests Android runtime `RECORD_AUDIO` permission on startup and again before granting a WebView permission request. This is required on modern target SDKs; the manifest permission alone is not enough. If the user previously denied the mic permission, Android may require enabling it from App info → Permissions → Microphone after installing the new APK.
 
 ### PWA Back Button (v5.4.10)
 On Android standalone PWA, the system back gesture exits the app if the history stack empties. The app traps `popstate` and re-pushes a history entry *before* calling `_handleBackButton()`, so the stack never runs dry. Only one seed entry is needed at init since popstate always replenishes.
