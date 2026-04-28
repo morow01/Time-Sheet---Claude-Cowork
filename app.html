@@ -19986,7 +19986,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.0.76';
+    const VERSION = '6.0.77';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23060,7 +23060,8 @@
       if (!app) return;
       // Preserve menu scroll position — render() destroys and recreates the menu DOM
       const _menuEl = document.getElementById('theme-dropdown');
-      const _menuScroll = _menuEl ? _menuEl.scrollTop : 0;
+      const _menuWasOpen = !!(_menuEl && _menuEl.classList.contains('open'));
+      const _menuScroll = _menuWasOpen ? _menuEl.scrollTop : 0;
 
       // Update bottom nav active state
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -23103,7 +23104,7 @@
       if (_djTiptapWrap && _djTiptapWrap.parentNode) _djTiptapWrap.remove();
       app.innerHTML = renderHeader() + _renderConflictBanner() + viewBody;
       // Restore menu scroll position after DOM rebuild
-      if (_menuScroll > 0) {
+      if (_menuWasOpen && _menuScroll > 0) {
         const _newMenuEl = document.getElementById('theme-dropdown');
         if (_newMenuEl) _newMenuEl.scrollTop = _menuScroll;
       }
@@ -34272,6 +34273,11 @@
 
     function toggleThemeMenu(e) {
       if (e) e.stopPropagation();
+      const opening = !state.isMenuOpen;
+      if (opening && _renderRAF) {
+        cancelAnimationFrame(_renderRAF);
+        _renderRAF = null;
+      }
       state.isMenuOpen = !state.isMenuOpen;
       if (state.isMenuOpen) state.menuView = 'main';
       // Directly toggle classes so CSS transition fires (re-rendering destroys the element)
