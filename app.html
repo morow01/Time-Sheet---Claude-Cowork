@@ -4246,6 +4246,283 @@
       background: rgba(255, 255, 255, 0.18);
     }
 
+    .hdr-top-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: var(--text-header);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .hdr-top-btn:active {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .hdr-top-btn.disabled {
+      opacity: 0.35;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .hdr-top-spacer {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .hdr-section-title {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text-header-sub);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin: 0 16px 14px;
+    }
+
+    .hdr-week-pill {
+      margin: 0 16px 14px;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hdr-week-pill .hdr-nav-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+    }
+
+    .hdr-week-main {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 10px;
+      padding: 6px 4px;
+    }
+
+    .hdr-week-main:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .hdr-week-range {
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text-header);
+      white-space: nowrap;
+    }
+
+    .hdr-week-hint {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--text-header-sub);
+    }
+
+    .page-week-selector {
+      margin: 12px 14px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg-card);
+      box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.04);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-week-selector-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .page-week-selector-btn:active {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .page-week-selector-main {
+      flex: 1;
+      min-width: 0;
+      padding: 4px 6px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .page-week-selector-main:active {
+      background: var(--bg-page);
+    }
+
+    .page-week-selector-kicker {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
+
+    .page-week-selector-range {
+      margin-top: 2px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page-week-selector-sub {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.25;
+    }
+
+    @media (min-width: 1280px) {
+      .page-week-selector {
+        width: 430px;
+        max-width: calc(100% - 32px);
+        margin: 10px 16px;
+        padding: 6px;
+        border-radius: 12px;
+        box-shadow: none;
+      }
+
+      .page-week-selector-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+      }
+
+      .page-week-selector-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-align: left;
+        padding: 0 4px;
+      }
+
+      .page-week-selector-kicker {
+        flex-shrink: 0;
+        font-size: 9px;
+        letter-spacing: 0.12em;
+      }
+
+      .page-week-selector-range {
+        margin-top: 0;
+        font-size: 15px;
+      }
+
+      .page-week-selector-sub {
+        display: none;
+      }
+
+      .desk-panel-days .page-week-selector {
+        width: auto;
+        max-width: none;
+        margin: 10px 12px 8px;
+      }
+
+      .desk-week-nav-hdr {
+        min-height: 66px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        background: var(--bg-card);
+      }
+
+      .desk-week-nav-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg-page);
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        cursor: pointer;
+      }
+
+      .desk-week-nav-main {
+        min-width: 0;
+        flex: 1;
+        text-align: center;
+        border-radius: 10px;
+        padding: 3px 6px;
+        cursor: pointer;
+      }
+
+      .desk-week-nav-main:active {
+        background: var(--bg-page);
+      }
+
+      .desk-week-nav-range {
+        color: var(--text-primary);
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .desk-week-nav-hint {
+        margin-top: 2px;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .desk-week-days-subhdr {
+        height: 34px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: var(--bg-card);
+      }
+    }
+
     /* ===== THEME DROPDOWN ===== */
     .theme-menu-wrap {
       position: relative;
@@ -4306,18 +4583,18 @@
     .theme-dropdown {
       position: fixed;
       top: 0;
-      right: 0;
+      left: 0;
       bottom: 0;
-      width: 85%;
-      max-width: 340px;
+      width: min(86vw, 360px);
+      max-width: calc(100vw - 28px);
       background: var(--bg-page);
       z-index: 10001;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
-      transform: translateX(100%);
+      transform: translateX(-100%);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: -8px 0 32px rgba(var(--shadow-rgb), 0.18);
+      box-shadow: 8px 0 32px rgba(var(--shadow-rgb), 0.18);
     }
 
     .theme-dropdown.open {
@@ -4326,36 +4603,17 @@
 
     /* ── Desktop: compact dropdown card ── */
     @media (min-width: 768px) {
-      .menu-backdrop {
-        display: none !important;
-      }
-
       .theme-dropdown {
-        position: absolute;
-        top: calc(100% + 8px);
-        right: 0;
-        bottom: auto;
-        left: auto;
-        width: 300px;
-        max-height: 85vh;
-        border-radius: 16px;
-        box-shadow: 0 8px 36px rgba(var(--shadow-rgb), 0.18);
-        border: 1px solid var(--border);
-        transform: translateY(-8px);
-        opacity: 0;
-        pointer-events: none;
-        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+        width: 360px;
+        max-width: 360px;
       }
 
       .theme-dropdown.open {
-        transform: translateY(0);
-        opacity: 1;
-        pointer-events: auto;
+        transform: translateX(0);
       }
 
       .menu-header-block {
         padding: 20px 16px 16px !important;
-        border-radius: 16px 16px 0 0;
       }
 
       .menu-avatar-wrap {
@@ -4397,9 +4655,6 @@
         padding: 10px 0 16px !important;
       }
 
-      .menu-close-btn {
-        display: none !important;
-      }
     }
 
     /* ── Dark header block ── */
@@ -16378,6 +16633,18 @@
         border-left-color: var(--accent);
       }
 
+      .desk-day-row.desk-day-weekend {
+        background: var(--bg-weekend, #FAFBFC);
+      }
+
+      .desk-day-row.desk-day-weekend:hover {
+        background: color-mix(in srgb, var(--bg-weekend, #FAFBFC) 86%, var(--accent) 14%);
+      }
+
+      .desk-day-row.desk-day-weekend.desk-day-selected {
+        background: linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03)), var(--bg-weekend, #FAFBFC);
+      }
+
       .desk-day-row.desk-day-weekend .desk-day-badge {
         opacity: 0.65;
       }
@@ -19719,7 +19986,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.0.61';
+    const VERSION = '6.0.74';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22913,6 +23180,55 @@
       requestAnimationFrame(step);
     }
 
+    function getHeaderSectionTitle() {
+      const titles = {
+        week: 'Timesheet',
+        notes: 'Notes',
+        journal: 'Field Journal',
+        exchanges: 'Finder',
+        callouts: 'Callouts',
+        routines: 'Routines',
+        history: 'Week History',
+        conflicts: 'Sync Conflicts',
+        'tags-full': 'Tags',
+        ai: 'AI Assistant'
+      };
+      return titles[state.view] || 'Timesheet';
+    }
+
+    function isHeaderSearchActive() {
+      return ['notes', 'journal', 'history', 'exchanges'].includes(state.view);
+    }
+
+    function headerSearchAction() {
+      if (state.view === 'notes') {
+        var n = document.getElementById('notes-search-input') || document.querySelector('.dnotes-search');
+        if (n) n.focus({ preventScroll: true });
+        return;
+      }
+      if (state.view === 'journal') {
+        if (!state.jSearchMode) jToggleSearch();
+        else {
+          var j = document.getElementById('j-search-input');
+          if (j) j.focus({ preventScroll: true });
+        }
+        return;
+      }
+      if (state.view === 'history') {
+        var h = document.getElementById('hist-search-input') || document.querySelector('.hist-mobile-search input');
+        if (h) h.focus({ preventScroll: true });
+        return;
+      }
+      if (state.view === 'exchanges') {
+        if (_isDesktop()) {
+          var f = document.getElementById('dfnd-search-input');
+          if (f) f.focus({ preventScroll: true });
+        } else {
+          openFinderModal(state.exchangeTab || 'exchanges');
+        }
+      }
+    }
+
     function renderHeader() {
       const syncIcons = {
         idle: '',
@@ -22922,28 +23238,18 @@
         error: '<span class="text-red-300 text-xs">✗</span>',
       };
       const syncTitles = { idle: '', pending: 'Unsaved changes', syncing: 'Syncing…', synced: 'Synced', error: 'Sync failed – tap to retry' };
+      const syncStatusLabel = state.syncStatus === 'synced' ? 'Synced' : 'Not synced';
+      const syncStatusColor = state.syncStatus === 'synced' ? '#63f097' : '#f87171';
 
       return `
   <header class="shadow-lg" style="background:var(--bg-header);color:var(--text-header)">
-    <div class="flex items-center px-4 py-3 gap-2">
-      <button onclick="prevWeek()" class="hdr-nav-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <div class="flex-1 text-center">
-        <div onclick="setView('history')" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:2px 6px;border-radius:6px;transition:background 0.2s;" onmousedown="this.style.background='rgba(255,255,255,0.08)'" onmouseup="this.style.background='transparent'" onmouseleave="this.style.background='transparent'">
-          <span class="font-bold text-base leading-tight">${state.weekStart ? formatWeekRange(state.weekStart) : '—'}</span>
-        </div>
-        <div class="text-xs mt-0.5 flex items-center justify-center gap-2" style="color:var(--text-header-sub)">
-          ${syncIcons[state.syncStatus] || ''}
-          <span title="${syncTitles[state.syncStatus]}">${syncTitles[state.syncStatus]}</span>
-          <span style="color:var(--text-muted)" class="text-xs">v${VERSION}</span>
-        </div>
-      </div>
-      <button onclick="nextWeek()" class="hdr-nav-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+    <div class="flex items-center px-4 py-3 gap-3">
       <div class="theme-menu-wrap">
-        <button class="theme-menu-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu" style="position:relative">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
+        <button class="hdr-top-btn more-menu-btn" onclick="toggleThemeMenu(event)" title="Menu" style="position:relative">
+          <svg width="20" height="16" viewBox="0 0 20 16" fill="none">
+            <rect y="0" width="20" height="2.5" rx="1.25" fill="currentColor"/>
+            <rect y="6.75" width="14" height="2.5" rx="1.25" fill="currentColor"/>
+            <rect y="13.5" width="8" height="2.5" rx="1.25" fill="currentColor"/>
           </svg>
           ${state.conflicts.length > 0 ? `<span class="conflict-menu-badge">${state.conflicts.length}</span>` : ''}
         </button>
@@ -23145,6 +23451,13 @@
         })()}
         </div>
       </div>
+      <div class="flex-1 text-center" style="min-width:0">
+        <div class="text-xs flex items-center justify-center gap-2" style="color:var(--text-header-sub);min-height:18px">
+          <span title="${syncTitles[state.syncStatus]}" style="color:${syncStatusColor};font-weight:600">${syncStatusLabel}</span>
+          <span style="color:var(--text-muted)" class="text-xs">v${VERSION}</span>
+        </div>
+      </div>
+      <div class="hdr-top-spacer" aria-hidden="true"></div>
     </div>
     <div class="flex" style="background:var(--bg-header-tab);">
       <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="padding-left:14px;padding-right:14px;color:${state.view === 'week' ? 'var(--text-ot)' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid var(--text-ot)' : ''}">
@@ -23412,6 +23725,35 @@
       return renderCardView();
     }
 
+    function renderPageWeekSelector(context) {
+      const weekStart = state.weekStart || dateToStr(getCurrentFriday());
+      const range = weekStart ? formatWeekRange(weekStart) : '—';
+      const label = 'Timesheet week';
+      const hint = 'Tap to open week history';
+      const mainAction = `setView('history')`;
+      return `<div class="page-week-selector">
+        <button onclick="prevWeek()" class="page-week-selector-btn" title="Previous week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="page-week-selector-main" onclick="${mainAction}">
+          <div class="page-week-selector-kicker">${label}</div>
+          <div class="page-week-selector-range">${esc(range)}</div>
+          <div class="page-week-selector-sub">${hint}</div>
+        </div>
+        <button onclick="nextWeek()" class="page-week-selector-btn" title="Next week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>`;
+    }
+
+    function renderDesktopWeekDaysHeader() {
+      const range = state.weekStart ? formatWeekRange(state.weekStart) : '—';
+      return '<div class="desk-week-nav-hdr">' +
+        '<button onclick="prevWeek()" class="desk-week-nav-btn" title="Previous week"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>' +
+        '<div class="desk-week-nav-main" onclick="setView(\'history\')" title="Open Week History">' +
+        '<div class="desk-week-nav-range">' + esc(range) + '</div>' +
+        '<div class="desk-week-nav-hint">Tap to open Week History</div>' +
+        '</div>' +
+        '<button onclick="nextWeek()" class="desk-week-nav-btn" title="Next week"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>' +
+        '</div><div class="desk-week-days-subhdr">Week Days</div>';
+    }
+
     function renderCardView() {
       const summary = calcSummary(state.weekData);
       const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
@@ -23537,7 +23879,7 @@
   </div>`;
 
       const anomalyHtml = renderAnomalyBanner(state.weekData);
-      return `<main class="pb-6">${anomalyHtml ? `<div style="padding:10px 12px 0">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
+      return `<main class="pb-6">${renderPageWeekSelector('timesheet')}${anomalyHtml ? `<div style="padding:0 12px 10px">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
     }
 
     // ================================================================
@@ -23662,7 +24004,7 @@
         '</div>';
 
       var daysPanel = '<div class="desk-panel-days" style="width:' + _deskDaysWidth + 'px">' +
-        '<div class="desk-panel-days-hdr">Week Days</div>' +
+        renderDesktopWeekDaysHeader() +
         daysHtml +
         '<div class="desk-panel-summary">' +
         '<div class="sum-section-hdr"><div class="sum-section-line"></div><div class="sum-section-label">Weekly Summary</div><div class="sum-section-line"></div></div>' +
@@ -33148,7 +33490,7 @@
 
     function _histBuildResultsHtml(results, q, searchScope) {
       var html = '<aside class="hist-results-panel" style="width:' + _histResultsWidth() + 'px">' +
-        '<div class="hist-results-head"><div class="hist-results-title">Search Results</div>' +
+        '<div class="hist-results-head"><div class="hist-results-title">Saved Work</div>' +
         '<div class="hist-results-sub">' + results.length + ' match' + (results.length === 1 ? '' : 'es') + ' for <strong>' + esc(q) + '</strong></div>' +
         _histBuildSearchControlsHtml(q, searchScope) + '</div>';
       if (!results.length) {
@@ -33180,7 +33522,7 @@
 
     function _histBuildIdleResultsHtml(searchQ, searchScope) {
       return '<aside class="hist-results-panel" style="width:' + _histResultsWidth() + 'px">' +
-        '<div class="hist-results-head"><div class="hist-results-title">Search Results</div>' +
+        '<div class="hist-results-head"><div class="hist-results-title">Saved Work</div>' +
         _histBuildSearchControlsHtml(searchQ || '', searchScope || 'all') + '</div>' +
         '<div class="hist-results-hint">' +
         '<div style="font-weight:800;color:var(--text-primary);margin-bottom:6px">Search saved work</div>' +
@@ -33193,7 +33535,7 @@
     function _histBuildMobileResultsHtml(results, q) {
       var html = '<div class="hist-mobile-results-card">' +
         '<div class="hist-mobile-results-head">' +
-        '<div class="hist-mobile-results-title">Search Results</div>' +
+        '<div class="hist-mobile-results-title">Saved Work</div>' +
         '<div class="hist-mobile-results-sub">' + results.length + ' match' + (results.length === 1 ? '' : 'es') + ' for <strong>' + esc(q) + '</strong></div>' +
         '</div>';
       if (!results.length) {
