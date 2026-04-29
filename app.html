@@ -1690,8 +1690,13 @@
       }
 
       :root[data-task-layout="grouped"] .day-today .day-header::before {
-        display: block;
-        border-radius: 16px 0 0 16px;
+        display: none;
+      }
+
+      :root[data-task-layout="grouped"] .day-today .day-header {
+        border-left-width: 5px;
+        border-left-color: var(--accent);
+        padding-left: 12px;
       }
 
       :root[data-task-layout="grouped"] .activity-card {
@@ -1783,10 +1788,11 @@
     .task-modal-sheet {
       background: var(--bg-card);
       border-radius: 16px;
-      width: 100%;
+      width: calc(100% - 16px);
       max-width: 690px;
       height: auto;
-      max-height: 92dvh;
+      max-height: calc(92dvh - 16px);
+      margin: 8px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -20289,7 +20295,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.10';
+    const VERSION = '6.1.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
