@@ -19705,7 +19705,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.19';
+    const VERSION = '6.1.20';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25881,7 +25881,7 @@
         const swReg = await navigator.serviceWorker.ready;
 
         // Convert VAPID public key to Uint8Array
-        const vapidKey = 'BDJe4av7QjifE6l7dqNpb3ee-19fkGJcpaYaLNOv54NWLd-pyejhZBnzCx78fHxy1zDOWXyaSY_SjfhFHN4bQkE';
+        const vapidKey = 'BMuxVwL8s3Q7opLy3C4x-y_-0BTZ847dZRu7PhtmGj2uNW2HtptD1a6HRL4GgT__1LnixfnUyQ5g9A0gb_oUqG0';
         const padding = '='.repeat((4 - vapidKey.length % 4) % 4);
         const b64 = (vapidKey + padding).replace(/-/g, '+').replace(/_/g, '/');
         const raw = atob(b64);

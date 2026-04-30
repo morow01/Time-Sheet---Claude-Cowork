@@ -1,16 +1,20 @@
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const webpush = require("web-push");
 
 admin.initializeApp();
 const db = admin.firestore();
+const vapidPrivateKey = defineSecret("VAPID_PRIVATE_KEY");
+const VAPID_PUBLIC_KEY = "BMuxVwL8s3Q7opLy3C4x-y_-0BTZ847dZRu7PhtmGj2uNW2HtptD1a6HRL4GgT__1LnixfnUyQ5g9A0gb_oUqG0";
 
-// VAPID keys for web push (same public key used in the client)
-webpush.setVapidDetails(
-  "mailto:morow01@gmail.com",
-  "BDJe4av7QjifE6l7dqNpb3ee-19fkGJcpaYaLNOv54NWLd-pyejhZBnzCx78fHxy1zDOWXyaSY_SjfhFHN4bQkE",
-  "CFIQosadsS5MzPNvgfQuE3LIwbXkIgUxwvlJnJH_M7g"
-);
+function configureWebPush() {
+  webpush.setVapidDetails(
+    "mailto:morow01@gmail.com",
+    VAPID_PUBLIC_KEY,
+    vapidPrivateKey.value()
+  );
+}
 
 /**
  * Runs every minute. Checks all users for reminders that became due
@@ -18,7 +22,10 @@ webpush.setVapidDetails(
  * IMPORTANT: Writes firedBy:"server" to Firestore BEFORE sending push,
  * so the client sees the update when it opens and doesn't double-fire.
  */
-exports.checkReminders = onSchedule("* * * * *", async () => {
+exports.checkReminders = onSchedule(
+  { schedule: "* * * * *", secrets: [vapidPrivateKey] },
+  async () => {
+  configureWebPush();
   const now = Date.now();
   console.log(`[checkReminders] Running at ${new Date(now).toISOString()}`);
 
