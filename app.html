@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Press+Start+2P&family=Silkscreen&family=VT323&family=Pixelify+Sans:wght@400..700&family=Bitcount+Single&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Share+Tech+Mono&family=Silkscreen&family=VT323&family=Pixelify+Sans:wght@400..700&family=Bitcount+Single&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <!-- TipTap loaded lazily via dynamic import on first editor open -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -169,6 +169,48 @@
       --pill-slate-bg: #EDF1F5;
       --pill-slate-color: #5A7289;
       --pill-amber-color: #C07800;
+      /* Remedy pill (purple by default) */
+      --pill-remedy-bg: #7c3aed;
+      --pill-remedy-text: #ffffff;
+      --pill-remedy-border: #7c3aed;
+      --pill-remedy-shadow: rgba(124, 58, 237, 0.13);
+      /* Callout count pill (red by default) */
+      --pill-callout-bg: #fff1f1;
+      --pill-callout-text: #ef4444;
+      /* "This Week" pill (green by default) */
+      --pill-thisweek-bg: #22c55e;
+      --pill-thisweek-text: #ffffff;
+      --pill-thisweek-line: rgba(34, 197, 94, 0.3);
+      /* Anomaly banner (warning state) */
+      --anomaly-bg: #FEF3E7;
+      --anomaly-border: rgba(249, 115, 22, 0.4);
+      --anomaly-shadow: rgba(234, 88, 12, 0.08);
+      --anomaly-text: #c2410c;
+      --anomaly-count-bg: #fb923c;
+      --anomaly-count-text: #ffffff;
+      --anomaly-ok-bg: #ECFDF3;
+      --anomaly-ok-border: rgba(34, 197, 94, 0.4);
+      --anomaly-ok-text: #15803d;
+      /* Anomaly item internals — strong-text highlights, dividers, action buttons */
+      --anomaly-strong-text: #9a3412;
+      --anomaly-remedy-text: #7c3aed;
+      --anomaly-fix-color: #b45309;
+      --anomaly-fix-bg: #fde68a;
+      --anomaly-add-color: #7c3aed;
+      --anomaly-add-bg: #ede9fe;
+      --anomaly-divider: #fde8cf;
+      --anomaly-chev-color: #c2410c;
+      /* Mic FAB (defaults to accent — themes can override for a different look) */
+      --fab-bg: var(--accent);
+      --fab-text: #ffffff;
+      /* Notes voice FAB — purple by default to differentiate from the timesheet mic FAB */
+      --note-fab-bg: #7c3aed;
+      --note-fab-text: #ffffff;
+      --note-fab-shadow: rgba(124, 58, 237, 0.45);
+      /* Location pin SVG fill — themes desaturate for monochrome looks */
+      --pin-color: #e8453c;
+      /* Chevron arrows on day cards, task rows, weekend divider, etc. */
+      --chevron-color: #b4bece;
       /* Date + task number badges */
       --date-badge-bg: #95a6c1;
       --date-badge-color: #ffffff;
@@ -365,6 +407,7 @@
       font-size: 12px;
       display: inline-block;
       transition: transform 0.2s;
+      color: var(--chevron-color);
     }
 
     .weekend-divider.open .wk-chev {
@@ -400,8 +443,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #b4bece;
+      color: var(--chevron-color);
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* All location pin SVGs — fill picks up the theme via --pin-color */
+    .act-loc-txt svg,
+    .note-meta-item svg.loc-icon,
+    [data-theme] .act-loc-txt svg path {
+      fill: var(--pin-color);
     }
 
     .day-card.expanded .day-chevron {
@@ -1161,16 +1211,16 @@
     }
 
     .activity-card.remedy-flagged {
-      border-color: #7c3aed !important;
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.13);
+      border-color: var(--pill-remedy-border) !important;
+      box-shadow: 0 0 0 3px var(--pill-remedy-shadow);
     }
 
     .pill-remedy {
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      background: #7c3aed;
-      color: #fff;
+      background: var(--pill-remedy-bg);
+      color: var(--pill-remedy-text);
       border-radius: 20px;
       padding: 2px 8px;
       font-size: 11px;
@@ -2582,527 +2632,6 @@
       --amber-rgb: 251, 191, 36;
     }
 
-    /* ===== GAME BOY THEME ===== */
-    /* Authentic DMG 4-colour green palette — Press Start 2P font */
-    [data-theme="gameboy"] {
-      --font-body: 'Press Start 2P', monospace;
-      --font-mono: 'Press Start 2P', monospace;
-      --bg-page: #306230;
-      --bg-header: #0F380F;
-      --bg-header-tab: #0a2808;
-      --bg-card: #8BAC0F;
-      --bg-card-alt: #8BAC0F;
-      --bg-day-header: #9BBC0F;
-      --bg-day-header-we: #8BAC0F;
-      --bg-weekend: #8BAC0F;
-      --bg-section-muted: #306230;
-      --bg-input: #8BAC0F;
-      --bg-modal: #8BAC0F;
-      --bg-modal-search: #8BAC0F;
-      --bg-code-btn: rgba(15, 56, 15, 0.18);
-      --bg-code-group: #306230;
-      --bg-segment-active: #9BBC0F;
-      --bg-code-item: #8BAC0F;
-      --bg-code-item-sel: #9BBC0F;
-      --bg-ot: #9BBC0F;
-      --summary-even: #8BAC0F;
-      --text-header: #9BBC0F;
-      --text-header-sub: #306230;
-      --text-primary: #0F380F;
-      --text-secondary: #306230;
-      --text-muted: #306230;
-      --text-input: #0F380F;
-      --text-day: #0F380F;
-      --text-day-we: #306230;
-      --text-hours: #0F380F;
-      --text-ot: #0F380F;
-      --text-display: #0F380F;
-      --text-warm: #306230;
-      --text-slate: #306230;
-      --text-dim: #4a7a30;
-      --text-ink: #0F380F;
-      --border: #306230;
-      --border-input: #306230;
-      --border-strong: #0F380F;
-      --border-warm: #306230;
-      --border-warm-light: #4a7a30;
-      --border-subtle: #4a7a30;
-      --border-medium: #306230;
-      --accent: #0F380F;
-      --accent-light: rgba(15, 56, 15, 0.18);
-      --accent-chip-bg: rgba(15, 56, 15, 0.20);
-      --accent-chip-text: #0F380F;
-      --accent-rgb: 15, 56, 15;
-      --accent-alpha-06: rgba(15, 56, 15, 0.08);
-      --accent-alpha-10: rgba(15, 56, 15, 0.12);
-      --accent-alpha-30: rgba(15, 56, 15, 0.30);
-      --btn-danger-bg: rgba(15, 56, 15, 0.18);
-      --btn-danger-color: #0F380F;
-      --btn-danger-border: rgba(15, 56, 15, 0.40);
-      --shadow-rgb: 0, 0, 0;
-      --shadow-brand-rgb: 15, 56, 15;
-      --shadow-card: none;
-      --overlay: rgba(15, 56, 15, 0.88);
-      --tab-active: #9BBC0F;
-      --amber-alpha-10: rgba(15, 56, 15, 0.12);
-      --amber-alpha-40: rgba(15, 56, 15, 0.40);
-      --slate-alpha-10: rgba(48, 98, 48, 0.12);
-      --slate-alpha-40: rgba(48, 98, 48, 0.40);
-      --blue-alpha-10: rgba(15, 56, 15, 0.12);
-      --blue-alpha-40: rgba(15, 56, 15, 0.40);
-      --prose-h1-color: #0F380F;
-      --prose-h1-ribbon: #0F380F;
-      --prose-h2-color: #0F380F;
-      --prose-h2-underline: #306230;
-      --prose-h3-color: #306230;
-      --prose-hr-color: #306230;
-      --prose-blockquote-bg: #8BAC0F;
-      --prose-blockquote-border: rgba(15, 56, 15, 0.20);
-      --prose-code-bg: #306230;
-      --prose-code-text: #9BBC0F;
-      --prose-code-block-bg: #0F380F;
-      --prose-code-block-text: #9BBC0F;
-      --table-header-bg: #306230;
-      --table-header-text: #9BBC0F;
-      --table-border: #306230;
-      --table-border-light: #8BAC0F;
-      --table-row-hover-bg: #9BBC0F;
-      --tt-btn-active-bg: rgba(15, 56, 15, 0.20);
-      --tt-btn-active-color: #0F380F;
-      --tt-table-bar-bg: #0F380F;
-      --tt-sel-bar-border: #306230;
-      --pill-slate-bg: #8BAC0F;
-      --pill-slate-color: #0F380F;
-      --pill-amber-color: #0F380F;
-      --date-badge-bg: #306230;
-      --date-badge-color: #9BBC0F;
-      --task-num-bg: #8BAC0F;
-      --task-num-color: #0F380F;
-      --stepper-bg: #8BAC0F;
-      --stepper-border: #306230;
-      --stepper-text: #0F380F;
-      --stepper-btn-color: #306230;
-      --ot-stepper-bg: #9BBC0F;
-      --ot-stepper-border: #0F380F;
-      --ot-stepper-text: #0F380F;
-      --code-text: #0F380F;
-      --code-del-text: #306230;
-      --code-add-text: #306230;
-      --section-divider: #306230;
-      --priority-high-rgb: 15, 56, 15;
-      --priority-low-rgb: 155, 188, 15;
-      --priority-medium-rgb: 48, 98, 48;
-      --amber-rgb: 15, 56, 15;
-      --priority-low-border: #8BAC0F;
-      --priority-low-dark: #0F380F;
-      --notes-tab-seg-bg: #306230;
-      --notes-tab-active-bg: #9BBC0F;
-      --notes-tab-inactive-text: #9BBC0F;
-      --notes-tab-count-bg: #0F380F;
-      --notes-tab-count-text: #9BBC0F;
-    }
-
-    [data-theme="gameboy"] body {
-      font-family: var(--font-body);
-      background-color: var(--bg-page);
-      font-size: 8px;
-    }
-
-    [data-theme="gameboy"] .font-mono,
-    [data-theme="gameboy"] .t-code,
-    [data-theme="gameboy"] .task-hours,
-    [data-theme="gameboy"] .val {
-      font-family: var(--font-mono) !important;
-    }
-
-    [data-theme="gameboy"] .day-header {
-      background: var(--bg-card);
-    }
-
-    [data-theme="gameboy"] * {
-      border-radius: 0 !important;
-    }
-
-    [data-theme="gameboy"] ::placeholder {
-      color: #306230 !important;
-      opacity: 1;
-    }
-
-    /* Reduce font sizes — Press Start 2P renders large */
-    [data-theme="gameboy"] .act-textarea,
-    [data-theme="gameboy"] .act-input {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] input,
-    [data-theme="gameboy"] textarea,
-    [data-theme="gameboy"] select {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] input[type="number"] {
-      font-size: 9px !important;
-    }
-
-    [data-theme="gameboy"] button {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] .text-sm,
-    [data-theme="gameboy"] .text-xs {
-      font-size: 7px !important;
-    }
-
-    [data-theme="gameboy"] .text-base {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] .text-lg {
-      font-size: 9px !important;
-    }
-
-    [data-theme="gameboy"] .text-xl {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .text-2xl {
-      font-size: 11px !important;
-    }
-
-    [data-theme="gameboy"] .text-3xl {
-      font-size: 12px !important;
-    }
-
-    [data-theme="gameboy"] h1 {
-      font-size: 12px !important;
-    }
-
-    [data-theme="gameboy"] h2 {
-      font-size: 11px !important;
-    }
-
-    [data-theme="gameboy"] h3 {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] h4,
-    [data-theme="gameboy"] h5,
-    [data-theme="gameboy"] h6 {
-      font-size: 9px !important;
-    }
-
-    [data-theme="gameboy"] .font-bold,
-    [data-theme="gameboy"] .font-semibold {
-      font-size: inherit;
-    }
-
-    [data-theme="gameboy"] .act-field-label {
-      font-size: 6px !important;
-    }
-
-    /* Day/summary/header specific overrides */
-    [data-theme="gameboy"] .day-name {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .day-date {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .day-num {
-      font-size: 11px !important;
-    }
-
-    [data-theme="gameboy"] .dom {
-      font-size: 11px !important;
-    }
-
-    [data-theme="gameboy"] .menu-row-label {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .menu-row-sub {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] .step-btn,
-    [data-theme="gameboy"] .stepper-btn,
-    [data-theme="gameboy"] .num-step-btn {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .task-title {
-      font-size: 9px !important;
-    }
-
-    [data-theme="gameboy"] .task-hours {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] .task-code {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] .stat-pill {
-      font-size: 7px !important;
-    }
-
-    [data-theme="gameboy"] .hdr-metric-val {
-      font-size: 12px !important;
-    }
-
-    [data-theme="gameboy"] .hdr-metric-label {
-      font-size: 6px !important;
-    }
-
-    [data-theme="gameboy"] .sum-footer-val,
-    [data-theme="gameboy"] .sum-total-val {
-      font-size: 11px !important;
-    }
-
-    [data-theme="gameboy"] .sum-footer-label {
-      font-size: 7px !important;
-    }
-
-    [data-theme="gameboy"] .week-range {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .sync-status {
-      font-size: 7px !important;
-    }
-
-    [data-theme="gameboy"] .nav-tab {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] .anomaly-banner-title {
-      font-size: 8px !important;
-    }
-
-    [data-theme="gameboy"] .anomaly-banner-count {
-      font-size: 7px !important;
-    }
-
-    [data-theme="gameboy"] .anomaly-item {
-      font-size: 7px !important;
-    }
-
-    [data-theme="gameboy"] .menu-display-name {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .menu-avatar-initials {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .vl-text-title,
-    [data-theme="gameboy"] .vl-transcript,
-    [data-theme="gameboy"] .vc-title,
-    [data-theme="gameboy"] .rtn-picker-close-btn {
-      font-size: 10px !important;
-    }
-
-    /* Journal / Notes specific */
-    [data-theme="gameboy"] .j-fab,
-    [data-theme="gameboy"] .j-nb-title,
-    [data-theme="gameboy"] .j-sec-title,
-    [data-theme="gameboy"] .j-pg-title {
-      font-size: 10px !important;
-    }
-
-    [data-theme="gameboy"] .note-title,
-    [data-theme="gameboy"] .note-snippet {
-      font-size: 8px !important;
-    }
-
-    /* Fix ··· dots button — use smaller font and no letter-spacing */
-    [data-theme="gameboy"] .notes-tab,
-    [data-theme="gameboy"] .dnotes-sidebar-btn,
-    [data-theme="gameboy"] .dnotes-cat-btn {
-      color: #0F380F;
-    }
-
-    [data-theme="gameboy"] .notes-tab:not(.active),
-    [data-theme="gameboy"] .dnotes-sidebar-btn:not(.active),
-    [data-theme="gameboy"] .dnotes-cat-btn:not(.active) {
-      color: #306230;
-    }
-
-    [data-theme="gameboy"] .notes-tab:not(.active) .tab-count,
-    [data-theme="gameboy"] .notes-tab .tab-count.archive-count,
-    [data-theme="gameboy"] .notes-tab .tab-count.bin-count,
-    [data-theme="gameboy"] .dnotes-count {
-      background: var(--notes-tab-count-bg) !important;
-      color: var(--notes-tab-count-text) !important;
-    }
-
-    [data-theme="gameboy"] .notes-tab.active .tab-count,
-    [data-theme="gameboy"] .notes-tab.active .tab-count.archive-count,
-    [data-theme="gameboy"] .notes-tab.active .tab-count.bin-count {
-      background: var(--notes-tab-count-bg) !important;
-      color: var(--notes-tab-count-text) !important;
-    }
-
-    [data-theme="gameboy"] .btn-more {
-      font-size: 10px !important;
-      letter-spacing: 0 !important;
-      font-family: monospace !important;
-      width: 36px;
-      height: 36px;
-    }
-
-    /* ── Game Boy refinements ── */
-
-    /* Active mobile top tab — was using --text-ot which was identical to header bg, so it
-       was effectively invisible. Force the lightest-green palette colour here. */
-    [data-theme="gameboy"] header button[style*="border-bottom:2.5px solid var(--text-ot)"] {
-      color: var(--tab-active) !important;
-      border-bottom-color: var(--tab-active) !important;
-    }
-
-    /* Date-range header on the timesheet — Press Start 2P at 18px is huge */
-    [data-theme="gameboy"] .page-week-selector-range {
-      font-size: 11px !important;
-      letter-spacing: 0 !important;
-    }
-    [data-theme="gameboy"] .page-week-selector-sub {
-      font-size: 8px !important;
-    }
-
-    /* Task description text in timesheet activity rows (was 14px Press Start 2P → wall-of-text) */
-    [data-theme="gameboy"] .act-desc-txt {
-      font-size: 9px !important;
-      line-height: 1.5 !important;
-    }
-    [data-theme="gameboy"] .task-num {
-      font-size: 9px !important;
-    }
-    [data-theme="gameboy"] .wk-chev {
-      font-size: 10px !important;
-    }
-
-    /* Weekly summary block — title, badges, table cells were all 12-13px */
-    [data-theme="gameboy"] .sum-new-title {
-      font-size: 9px !important;
-      letter-spacing: 0 !important;
-    }
-    [data-theme="gameboy"] .sum-new-badge,
-    [data-theme="gameboy"] .sum-new-badge-ot {
-      font-size: 8px !important;
-    }
-    [data-theme="gameboy"] .sum-row-desc {
-      font-size: 8px !important;
-    }
-    [data-theme="gameboy"] .sum-td-num {
-      font-size: 9px !important;
-    }
-    [data-theme="gameboy"] .sum-row-code {
-      font-size: 8px !important;
-    }
-
-    /* Restore the line break in stat labels at all viewport widths so
-       "On-Call / Weeks", "Extra / Shifts" etc. stack instead of running together */
-    [data-theme="gameboy"] .oc-stat-label br {
-      display: inline !important;
-    }
-
-    /* Callouts stat block sizes (number was 18px, year picker 20px) */
-    [data-theme="gameboy"] .oc-stat-val {
-      font-size: 12px !important;
-    }
-    [data-theme="gameboy"] .oc-stat-label {
-      font-size: 7px !important;
-    }
-    [data-theme="gameboy"] .oc-year-label {
-      font-size: 12px !important;
-    }
-    [data-theme="gameboy"] .oc-month-label {
-      font-size: 7px !important;
-    }
-
-    /* Stat number colours in Callouts — override the inline #F59E0B / #8B5CF6 / priority-high
-       hardcodes so they fit the four-shade Game Boy palette */
-    [data-theme="gameboy"] .oc-stat-val[style*="F59E0B"],
-    [data-theme="gameboy"] .oc-stat-val[style*="8B5CF6"],
-    [data-theme="gameboy"] .oc-stat-val[style*="priority-high"] {
-      color: var(--text-primary) !important;
-    }
-
-    /* Callouts week rows have inline font-sizes of 14/13/14 px on the date/incident/chevron.
-       Knock those down so they match the rest of the Game Boy aesthetic. */
-    [data-theme="gameboy"] .co-page div[style*="font-size:14px"],
-    [data-theme="gameboy"] .co-page span[style*="font-size:14px"] {
-      font-size: 9px !important;
-    }
-    [data-theme="gameboy"] .co-page div[style*="font-size:13px"],
-    [data-theme="gameboy"] .co-page span[style*="font-size:13px"] {
-      font-size: 8px !important;
-    }
-    [data-theme="gameboy"] .co-page div[style*="font-size:16px"],
-    [data-theme="gameboy"] .co-page div[style*="font-size:17px"] {
-      font-size: 10px !important;
-    }
-
-    /* EXTRA SHIFT badge — reskin the cream/amber inline style to fit the palette */
-    [data-theme="gameboy"] span[style*="#FEF3C7"] {
-      background: var(--tab-active) !important;
-      color: var(--bg-header) !important;
-      border: 1px solid var(--bg-header) !important;
-    }
-
-    /* Notes — header label "Filters", chips, empty-state */
-    [data-theme="gameboy"] .nf-header-label {
-      font-size: 9px !important;
-    }
-    [data-theme="gameboy"] .notes-chip {
-      font-size: 8px !important;
-    }
-    [data-theme="gameboy"] .notes-empty {
-      font-size: 9px !important;
-    }
-
-    /* Finder Exchanges/Cabinets segment switcher container — in Game Boy this was using
-       --bg-code-group (#306230), the same colour as --bg-page, so the entire pill bar
-       blended into the background and the unselected button was effectively invisible.
-       Force the darker header shade for the container and a lighter text for inactive. */
-    [data-theme="gameboy"] .flex.p-1.rounded-xl.mb-3[style*="bg-code-group"] {
-      background: var(--bg-header) !important;
-    }
-    [data-theme="gameboy"] .flex.p-1.rounded-xl.mb-3[style*="bg-code-group"] button[style*="text-muted"] {
-      color: var(--bg-card) !important;
-    }
-
-    /* Loading…/empty-state messages with hard-coded 16px font (Routines, no-callouts, etc.) */
-    [data-theme="gameboy"] div[style*="font-size:16px"][style*="font-weight:600"] {
-      font-size: 10px !important;
-    }
-    [data-theme="gameboy"] div[style*="font-size:48px"] {
-      font-size: 24px !important;
-    }
-
-    /* Routines empty/loading state — class-based 17px/14px were huge in pixel font */
-    [data-theme="gameboy"] .rtn-empty-title {
-      font-size: 10px !important;
-    }
-    [data-theme="gameboy"] .rtn-empty-sub {
-      font-size: 8px !important;
-    }
-    [data-theme="gameboy"] .rtn-setup-btn {
-      font-size: 9px !important;
-    }
-    [data-theme="gameboy"] .rtn-empty-icon {
-      font-size: 32px !important;
-    }
-
-    /* Treat the legacy badgeBg "#FEF3C7" used on the on-call task-num badge the same way
-       as the EXTRA SHIFT span — keep palette clean. */
-    [data-theme="gameboy"] .task-num[style*="#FEF3C7"] {
-      background: var(--bg-card) !important;
-      color: var(--text-primary) !important;
-      border: 1px solid var(--border) !important;
-    }
-
     /* ===== LCD THEME ===== */
     /* Old-school calculator LCD — muted greens, Bitcount mono font */
     [data-theme="lcd"] {
@@ -3195,6 +2724,46 @@
       --pill-slate-bg: #697f4c;
       --pill-slate-color: #1c2810;
       --pill-amber-color: #1c2810;
+      /* LCD pill overrides — desaturated to fit olive palette */
+      --pill-remedy-bg: #4a3e20;
+      --pill-remedy-text: #d4c87e;
+      --pill-remedy-border: #4a3e20;
+      --pill-remedy-shadow: rgba(74, 62, 32, 0.30);
+      --pill-callout-bg: rgba(74, 40, 20, 0.40);
+      --pill-callout-text: #c8a07e;
+      --pill-thisweek-bg: #1c2810;
+      --pill-thisweek-text: #9ab870;
+      --pill-thisweek-line: rgba(28, 40, 16, 0.40);
+      --anomaly-bg: #6a5a30;
+      --anomaly-border: #4a3e20;
+      --anomaly-shadow: rgba(0, 0, 0, 0.20);
+      --anomaly-text: #1c2810;
+      --anomaly-count-bg: #4a3e20;
+      --anomaly-count-text: #d4c87e;
+      --anomaly-ok-bg: #4a5e30;
+      --anomaly-ok-border: #1c2810;
+      --anomaly-ok-text: #1c2810;
+      /* Cream highlights + cream Fix/Add buttons — readable on the olive-brown banner */
+      --anomaly-strong-text: #f0dc8e;
+      --anomaly-remedy-text: #f0dc8e;
+      --anomaly-fix-color: #1c2810;
+      --anomaly-fix-bg: #d4c87e;
+      --anomaly-add-color: #1c2810;
+      --anomaly-add-bg: #d4c87e;
+      --anomaly-divider: rgba(28, 40, 16, 0.30);
+      --anomaly-chev-color: #d4c87e;
+      /* LCD FAB — softer than full --accent black */
+      --fab-bg: #2a3c18;
+      --fab-text: #9ab870;
+      /* LCD note voice FAB — match the regular FAB tone instead of purple */
+      --note-fab-bg: #2a3c18;
+      --note-fab-text: #9ab870;
+      --note-fab-shadow: rgba(28, 40, 16, 0.45);
+      /* Pin & chevron — desaturate for the olive look */
+      --pin-color: #6b3018;
+      --chevron-color: #6b8a45;
+      /* Bumped placeholder/muted contrast for readability on olive */
+      --text-muted: #2a3c18;
       --date-badge-bg: #4a5e30;
       --date-badge-color: #9ab870;
       --task-num-bg: #637648;
@@ -3210,12 +2779,17 @@
       --code-del-text: #3d5428;
       --code-add-text: #3d5428;
       --section-divider: #4a5e30;
-      --priority-high-rgb: 28, 40, 16;
-      --priority-low-rgb: 154, 184, 112;
-      --priority-medium-rgb: 61, 84, 40;
-      --amber-rgb: 28, 40, 16;
-      --priority-low-border: #8BAC60;
+      /* Priority colors — dark rust/amber/olive instead of bright RGB so they read on the olive bg */
+      --priority-high: #6b2818;
+      --priority-high-dark: #4a1c10;
+      --priority-high-rgb: 107, 40, 24;
+      --priority-medium: #6b4818;
+      --priority-medium-rgb: 107, 72, 24;
+      --priority-low: #2a4010;
+      --priority-low-rgb: 74, 104, 36;
       --priority-low-dark: #1c2810;
+      --priority-low-border: #8BAC60;
+      --amber-rgb: 107, 72, 24;
     }
 
     [data-theme="lcd"] body {
@@ -4927,7 +4501,7 @@
 
     .c-day-chevron {
       transition: transform 0.25s ease;
-      color: var(--text-muted);
+      color: var(--chevron-color);
       display: flex;
     }
 
@@ -6358,7 +5932,7 @@
     .sum-section-line {
       flex: 1;
       height: 1px;
-      background: #D4E0EC;
+      background: var(--text-muted);
     }
 
     .sum-section-label {
@@ -6653,8 +6227,8 @@
     }
 
     .sum-new-badge-ot {
-      background: rgba(245, 158, 11, 0.12);
-      color: #b45309;
+      background: var(--bg-ot);
+      color: var(--pill-amber-color);
       font-size: 12px;
       font-weight: 500;
       font-family: var(--font-mono);
@@ -10888,6 +10462,36 @@
       transform: translateX(16px);
     }
 
+    [data-theme="lcd"] .te-toggle {
+      width: 44px;
+      height: 24px;
+    }
+
+    [data-theme="lcd"] .te-toggle-track {
+      border-radius: 0 !important;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-code-group);
+      box-sizing: border-box;
+    }
+
+    [data-theme="lcd"] .te-toggle input:checked+.te-toggle-track {
+      background: var(--accent);
+    }
+
+    [data-theme="lcd"] .te-toggle-track::after {
+      top: 2px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      border-radius: 0 !important;
+      background: var(--tab-active);
+      box-shadow: none;
+    }
+
+    [data-theme="lcd"] .te-toggle input:checked+.te-toggle-track::after {
+      transform: translateX(20px);
+    }
+
     /* Inline edit form inside tag row */
     .te-edit-form {
       background: var(--bg);
@@ -11873,7 +11477,8 @@
 
     .j-fab {
       position: fixed;
-      bottom: 28px;
+      /* Stacked above the voice-fab (56px tall + 28px from bottom + 12px gap = 96px) */
+      bottom: 96px;
       right: max(20px, calc((100vw - 690px) / 2 + 20px));
       background: var(--accent);
       color: #fff;
@@ -11890,6 +11495,11 @@
       z-index: 200;
       font-family: inherit;
       transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    /* When the voice-fab is hidden via the menu toggle, drop the j-fab back to the bottom */
+    body:has(.voice-fab.vf-hidden) .j-fab {
+      bottom: 28px;
     }
 
     .j-fab:active {
@@ -15707,9 +15317,9 @@
       margin: 0 0 10px;
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid rgba(249, 115, 22, 0.4);
-      background: #FEF3E7;
-      box-shadow: 0 1px 6px rgba(234, 88, 12, 0.08);
+      border: 1px solid var(--anomaly-border);
+      background: var(--anomaly-bg);
+      box-shadow: 0 1px 6px var(--anomaly-shadow);
     }
 
     [data-theme="dark"] .anomaly-banner,
@@ -15718,8 +15328,8 @@
     }
 
     .anomaly-banner.all-ok {
-      border-color: rgba(34, 197, 94, 0.4);
-      background: #ECFDF3;
+      border-color: var(--anomaly-ok-border);
+      background: var(--anomaly-ok-bg);
     }
 
     [data-theme="dark"] .anomaly-banner.all-ok,
@@ -15747,18 +15357,18 @@
       flex: 1;
       font-size: 13px;
       font-weight: 700;
-      color: #c2410c;
+      color: var(--anomaly-text);
     }
 
     .anomaly-banner.all-ok .anomaly-banner-title {
-      color: #15803d;
+      color: var(--anomaly-ok-text);
     }
 
     .anomaly-banner-count {
       font-size: 11px;
       font-weight: 700;
-      background: #fb923c;
-      color: #fff;
+      background: var(--anomaly-count-bg);
+      color: var(--anomaly-count-text);
       border-radius: 999px;
       min-width: 26px;
       height: 20px;
@@ -15771,7 +15381,7 @@
     }
 
     .anomaly-banner-chevron {
-      color: #c2410c;
+      color: var(--anomaly-chev-color);
       transition: transform 0.2s;
       flex-shrink: 0;
     }
@@ -15799,7 +15409,7 @@
       align-items: center;
       column-gap: 10px;
       padding: 9px 14px;
-      border-bottom: 1px solid #fde8cf;
+      border-bottom: 1px solid var(--anomaly-divider);
       font-size: 12.5px;
       color: var(--text-ink);
     }
@@ -15824,7 +15434,12 @@
     }
 
     .anomaly-item-msg strong {
-      color: #9a3412;
+      color: var(--anomaly-strong-text);
+    }
+
+    .anomaly-item-remedy .anomaly-item-msg,
+    .anomaly-item-remedy .anomaly-item-msg strong {
+      color: var(--anomaly-remedy-text);
     }
 
     .anomaly-item-goto {
@@ -15832,8 +15447,8 @@
       min-height: 28px;
       font-size: 12px;
       font-weight: 800;
-      color: #b45309;
-      background: #fde68a;
+      color: var(--anomaly-fix-color);
+      background: var(--anomaly-fix-bg);
       border: none;
       border-radius: 999px;
       padding: 4px 12px;
@@ -15845,15 +15460,21 @@
       gap: 3px;
     }
 
+    /* Remedy variant of the action button (Add) */
+    .anomaly-item-remedy .anomaly-item-goto {
+      color: var(--anomaly-add-color);
+      background: var(--anomaly-add-bg);
+    }
+
     .anomaly-banner-dismiss {
       display: block;
       width: 100%;
       padding: 8px;
       font-size: 11px;
-      color: #9a3412;
+      color: var(--anomaly-strong-text);
       background: none;
       border: none;
-      border-top: 1px solid #fed7aa;
+      border-top: 1px solid var(--anomaly-divider);
       cursor: pointer;
       text-align: center;
       opacity: 0.7;
@@ -15873,8 +15494,8 @@
       width: 56px;
       height: 56px;
       border-radius: 50%;
-      background: var(--accent);
-      color: #fff;
+      background: var(--fab-bg);
+      color: var(--fab-text);
       border: none;
       box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.45);
       display: flex;
@@ -15907,10 +15528,10 @@
       width: 56px;
       height: 56px;
       border-radius: 50%;
-      background: #7c3aed;
-      color: #fff;
+      background: var(--note-fab-bg);
+      color: var(--note-fab-text);
       border: none;
-      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.45);
+      box-shadow: 0 4px 18px var(--note-fab-shadow);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -18325,12 +17946,12 @@
       content: '';
       flex: 1;
       height: 1px;
-      background: rgba(34, 197, 94, 0.3);
+      background: var(--pill-thisweek-line);
     }
 
     .hist-now-pill {
-      background: #22c55e;
-      color: #fff;
+      background: var(--pill-thisweek-bg);
+      color: var(--pill-thisweek-text);
       font-size: 10px;
       font-weight: 800;
       letter-spacing: 0.08em;
@@ -18459,8 +18080,8 @@
     }
 
     .hist-badge.red {
-      background: #fff1f1;
-      color: #ef4444;
+      background: var(--pill-callout-bg);
+      color: var(--pill-callout-text);
     }
 
     .hist-badge.muted {
@@ -19705,7 +19326,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.20';
+    const VERSION = '6.1.33';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22308,7 +21929,6 @@
         slate: { hdr: '#1a2535', hdrSub: '#63b3ed', chip: '#2b6cb0', chipTxt: '#ffffff', ord: '#2b6cb0', ot: '#c2410c', totBg: '#1a2535', totOrd: '#ffffff', totOT: '#63b3ed', foot: '#cbd5e1', footTxt: '#64748b', outerBg: '#e8eef5', bodyBg: '#f0f4f8', cardBg: '#ffffff', border: '#c8d8e8', labelTxt: '#2b6cb0', rowAlt: '#f0f4f8', txt: '#1a2535' },
         'slate-dark': { hdr: '#0a1018', hdrSub: '#60a5fa', chip: '#1e3a5f', chipTxt: '#ffffff', ord: '#60a5fa', ot: '#f97316', totBg: '#0a1018', totOrd: '#ffffff', totOT: '#60a5fa', foot: '#1e293b', footTxt: '#64748b', outerBg: '#0a1018', bodyBg: '#0d1520', cardBg: '#111f30', border: '#1e3a5f', labelTxt: '#60a5fa', rowAlt: '#152033', txt: '#cbd5e1' },
         lcd: { hdr: '#4a6741', hdrSub: '#c8e6c0', chip: '#4a6741', chipTxt: '#d4e6c8', ord: '#3d5c36', ot: '#8b4513', totBg: '#3d5c36', totOrd: '#d4e6c8', totOT: '#c8e6c0', foot: '#c8e6c0', footTxt: '#4a6741', outerBg: '#b8d4b0', bodyBg: '#cce0c4', cardBg: '#ddeedd', border: '#8aab80', labelTxt: '#3d5c36', rowAlt: '#d4e8cc', txt: '#1a2e18' },
-        gameboy: { hdr: '#0F380F', hdrSub: '#9BBC0F', chip: '#306230', chipTxt: '#9BBC0F', ord: '#306230', ot: '#0F380F', totBg: '#0F380F', totOrd: '#9BBC0F', totOT: '#8BAC0F', foot: '#8BAC0F', footTxt: '#0F380F', outerBg: '#9BBC0F', bodyBg: '#8BAC0F', cardBg: '#9BBC0F', border: '#306230', labelTxt: '#0F380F', rowAlt: '#8BAC0F', txt: '#0F380F' },
         apple: { hdr: '#1D1D1F', hdrSub: '#86868b', chip: '#007AFF', chipTxt: '#ffffff', ord: '#007AFF', ot: '#FF3B30', totBg: '#1D1D1F', totOrd: '#ffffff', totOT: '#30D158', foot: '#f5f5f7', footTxt: '#86868b', outerBg: '#f5f5f7', bodyBg: '#ffffff', cardBg: '#ffffff', border: '#d2d2d7', labelTxt: '#1D1D1F', rowAlt: '#f9f9fb', txt: '#1D1D1F' },
       };
       return map[t] || map.light;
@@ -23175,23 +22795,23 @@
       <div class="flex-1 text-center" style="min-width:0">
         <div class="text-xs flex items-center justify-center gap-2" style="color:var(--text-header-sub);min-height:18px">
           <span title="${syncTitles[state.syncStatus]}" style="color:${syncStatusColor}">${syncStatusLabel}</span>
-          <span style="color:var(--text-muted)" class="text-xs">v${VERSION}</span>
+          <span style="color:var(--text-header-sub);opacity:0.85" class="text-xs">v${VERSION}</span>
         </div>
       </div>
       <div class="hdr-top-spacer" aria-hidden="true"></div>
     </div>
     <div class="flex" style="background:var(--bg-header-tab);">
-      <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="padding-left:14px;padding-right:14px;color:${state.view === 'week' ? 'var(--text-ot)' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:2.5px solid var(--text-ot)' : ''}">
+      <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="padding-left:14px;padding-right:14px;color:${state.view === 'week' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Timesheet</span>
       </button>
-      <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? 'var(--text-ot)' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:2.5px solid var(--text-ot)' : ''}">
+      <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>Notes</span>
         ${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus]}"></span>` : ''}
       </button>
-      <button onclick="setView('journal')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'journal' ? 'var(--text-ot)' : 'var(--text-header-sub)'};${state.view === 'journal' ? 'border-bottom:2.5px solid var(--text-ot)' : ''}">
+      <button onclick="setView('journal')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'journal' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'journal' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Journal</span>
       </button>
-      <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? 'var(--text-ot)' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:2.5px solid var(--text-ot)' : ''}">
+      <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Finder</span>
       </button>
     </div>
@@ -23390,7 +23010,7 @@
             if (act.remedyPending) {
               const today = new Date(); const dow = today.getDay();
               const tagSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>';
-              remedyItems.push({ icon: tagSvg, msg: `<strong style="color:#7c3aed">${esc(day.dayName)}</strong>: <span style="color:#7c3aed">"${esc(act.description || 'Unnamed')}"</span> needs a Remedy ticket`, dayIdx: di, actId: act.id, isRemedy: true, actionLabel: 'Add' });
+              remedyItems.push({ icon: tagSvg, msg: `<strong>${esc(day.dayName)}</strong>: <span>"${esc(act.description || 'Unnamed')}"</span> needs a Remedy ticket`, dayIdx: di, actId: act.id, isRemedy: true, actionLabel: 'Add' });
             }
           });
         });
@@ -23416,7 +23036,7 @@
         <div class="anomaly-item${item.isRemedy ? ' anomaly-item-remedy' : ''}">
           <span class="anomaly-item-icon">${item.icon}</span>
           <span class="anomaly-item-msg">${item.msg}</span>
-          ${item.isRemedy ? `<button class="anomaly-item-goto" style="color:#7c3aed;background:#ede9fe" onclick="gotoRemedyTask(${item.dayIdx},'${item.actId}')">Add</button>` : (item.dayIdx != null ? `<button class="anomaly-item-goto" onclick="${item.actId ? `gotoRemedyTask(${item.dayIdx},'${item.actId}')` : `gotoAnomalyDay(${item.dayIdx})`}">${String(item.msg || '').toLowerCase().includes('unusually high') ? 'Review' : (String(item.msg || '').toLowerCase().includes('description') ? 'Add' : 'Fix')}</button>` : '')}
+          ${item.isRemedy ? `<button class="anomaly-item-goto" onclick="gotoRemedyTask(${item.dayIdx},'${item.actId}')">Add</button>` : (item.dayIdx != null ? `<button class="anomaly-item-goto" onclick="${item.actId ? `gotoRemedyTask(${item.dayIdx},'${item.actId}')` : `gotoAnomalyDay(${item.dayIdx})`}">${String(item.msg || '').toLowerCase().includes('unusually high') ? 'Review' : (String(item.msg || '').toLowerCase().includes('description') ? 'Add' : 'Fix')}</button>` : '')}
         </div>`).join('');
 
       return `
@@ -24952,7 +24572,7 @@
             </div>
           </div>
           
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted);${isActExpanded ? 'transform:rotate(90deg)' : ''}"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--chevron-color);${isActExpanded ? 'transform:rotate(90deg)' : ''}"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
         <div class="activity-detail${isActExpanded ? ' open' : ''}" style="${isActExpanded ? '' : 'display:none'}">
           <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
@@ -28709,7 +28329,7 @@
       const searchEmpty = state.notesSearch && !visibleOpen.length && !visibleDone.length
         ? `<div class="notes-empty" style="margin-top:32px">No notes match "<strong>${esc(state.notesSearch)}</strong>"</div>` : '';
 
-      const notesHint = !state.selectionMode ? `<div style="margin-top:12px;margin-bottom:4px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap = open · Long-press = select · Swipe ✓/🗑</div>` : '';
+      const notesHint = !state.selectionMode ? `<div style="margin-top:12px;margin-bottom:4px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap">Tap = open · Long-press = select · Swipe <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="20 6 9 17 4 12"/></svg>/<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></div>` : '';
 
       const archiveView = (notesTab === 'archive') ? `
         <div style="padding:0 16px 24px;">
@@ -33978,12 +33598,11 @@
     //   label     — shown in the picker
     //   metaColor — address-bar colour on mobile (matches header bg)
     const THEME_META = {
-      claude: { label: 'Claude', metaColor: '#0F1C2E' },
+      claude: { label: 'Light', metaColor: '#0F1C2E' },
       dark: { label: 'Dark', metaColor: '#0a0f1a' },
       champagne: { label: 'Champagne', metaColor: '#2a1f0e' },
       'champagne-dark': { label: 'Champagne Dark', metaColor: '#0e0b05' },
       apple: { label: 'macOS', metaColor: '#1D1D1F' },
-      gameboy: { label: 'Game Boy', metaColor: '#0F380F' },
       lcd: { label: 'LCD', metaColor: '#1c2810' },
     };
     const DEFAULT_THEME = 'claude';
