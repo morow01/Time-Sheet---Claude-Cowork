@@ -1823,6 +1823,28 @@
       :root[data-task-layout="grouped"] .day-card.expanded {
         background: transparent;
       }
+
+      /* Callout cards reuse .activity-card but live on the Callouts page where
+         they're free-standing rows (8px margin, never grouped/stacked). The
+         grouped task-layout rules above strip their border-radius — restore it. */
+      :root[data-task-layout="grouped"] .activity-card.co-card,
+      :root[data-task-layout="grouped"] .activity-card.co-card:first-of-type,
+      :root[data-task-layout="grouped"] .activity-card.co-card:last-of-type,
+      :root[data-task-layout="grouped"] .activity-card.co-card+.activity-card.co-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 1px 5px rgba(var(--shadow-rgb), 0.04);
+      }
+
+      :root[data-task-layout="grouped"] .activity-card.co-card.expanded {
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.05);
+      }
+
+      :root[data-task-layout="grouped"] .activity-card.co-card .activity-detail {
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+      }
     }
 
     #task-modal-overlay {
@@ -19330,7 +19352,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.34';
+    const VERSION = '6.1.44';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -38420,9 +38442,14 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted)"><polyline points="9 18 15 12 9 6"/></svg>
         </div>`;
 
-      // Expanded detail — only render when expanded (kept for desktop/add-new flow)
+      // Expanded detail — only render when expanded.
+      // On the initial expand-click render we omit .open so coToggleCard can
+      // animate it open. Subsequent re-renders (snapshots, edits) include
+      // .open so the card doesn't flash closed. window._coJustExpanded is set
+      // to the callout id by coToggleCard immediately before render().
+      const _justExpandedThis = (typeof window !== 'undefined' && window._coJustExpanded === id);
       if (isExpanded) {
-        cardHtml += `<div class="activity-detail open">
+        cardHtml += `<div class="activity-detail${_justExpandedThis ? '' : ' open'}">
         <div class="act-detail-inner" style="display:flex;flex-direction:column;gap:14px">
           <!-- Date -->
           <div class="flex flex-col gap-1.5">
@@ -38526,16 +38553,52 @@
         state.calloutsExpandedId = id;
         state.calloutsEditId = id === '__new__' ? null : id;
         state.calloutsNotesOpen = false;
-        // Need full render to populate form fields with correct data
+        // Render — the detail is rendered WITHOUT .open so it starts collapsed
+        // (max-height:0, opacity:0). After the browser paints that collapsed
+        // state, we add .open on the next frame to trigger the CSS transition.
+        // Mark the upcoming render as the "first expand" so the detail HTML
+        // omits the .open class — we add it via JS to trigger the CSS
+        // transition. After this render, we clear the flag so any subsequent
+        // re-renders (snapshots, edits) DO include .open and the card stays
+        // open without flashing closed.
+        window._coJustExpanded = id;
         render();
-        // Auto-grow textareas and scroll into view
-        setTimeout(() => {
+        requestAnimationFrame(() => {
+          delete window._coJustExpanded;
           const card = document.querySelector(`[data-co-id="${id}"]`);
           if (card) {
-            card.querySelectorAll('textarea').forEach(autoGrow);
-            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const detail = card.querySelector('.activity-detail');
+            if (detail) {
+              // Animate from the rendered collapsed state to the detail's real
+              // height. Inline max-height wins over .open, so set the target
+              // height explicitly during the transition, then clear it.
+              card.querySelectorAll('textarea').forEach(autoGrow);
+              detail.style.maxHeight = '0px';
+              detail.style.opacity = '0';
+              detail.style.paddingTop = '0';
+              detail.style.paddingBottom = '0';
+              detail.style.overflow = 'hidden';
+              detail.offsetHeight;
+              requestAnimationFrame(() => {
+                detail.classList.add('open');
+                detail.style.maxHeight = detail.scrollHeight + 'px';
+                detail.style.opacity = '1';
+                detail.style.paddingTop = '16px';
+                detail.style.paddingBottom = '16px';
+                setTimeout(() => {
+                  detail.style.maxHeight = '';
+                  detail.style.opacity = '';
+                  detail.style.paddingTop = '';
+                  detail.style.paddingBottom = '';
+                  detail.style.overflow = '';
+                }, 320);
+              });
+            }
+            setTimeout(() => {
+              card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 340);
           }
-        }, 100);
+        });
       }
     }
 
