@@ -207,6 +207,11 @@
       --note-fab-bg: #7c3aed;
       --note-fab-text: #ffffff;
       --note-fab-shadow: rgba(124, 58, 237, 0.45);
+      /* Week chooser status pills — on-call (red-ish) and extra-shift (amber) */
+      --pill-oncall-bg: #FCEBEB;
+      --pill-oncall-text: #A32D2D;
+      --pill-extra-bg: #FAEEDA;
+      --pill-extra-text: #854F0B;
       /* Location pin SVG fill — themes desaturate for monochrome looks */
       --pin-color: #e8453c;
       /* Chevron arrows on day cards, task rows, weekend divider, etc. */
@@ -2781,6 +2786,11 @@
       --note-fab-bg: #2a3c18;
       --note-fab-text: #9ab870;
       --note-fab-shadow: rgba(28, 40, 16, 0.45);
+      /* LCD week chooser pills — desaturated to fit olive palette */
+      --pill-oncall-bg: rgba(74, 40, 20, 0.40);
+      --pill-oncall-text: #c8a07e;
+      --pill-extra-bg: #6a5a30;
+      --pill-extra-text: #f0dc8e;
       /* Pin & chevron — desaturate for the olive look */
       --pin-color: #6b3018;
       --chevron-color: #6b8a45;
@@ -3546,11 +3556,45 @@
       text-overflow: ellipsis;
     }
 
+    /* On-call / extra-shift pills shown beside the date range */
+    .week-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      vertical-align: 3px;
+      margin-left: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      line-height: 1.4;
+    }
+    .week-status-pill.is-oncall {
+      background: var(--pill-oncall-bg);
+      color: var(--pill-oncall-text);
+    }
+    .week-status-pill.is-extra {
+      background: var(--pill-extra-bg);
+      color: var(--pill-extra-text);
+    }
+
     .page-week-selector-sub {
       margin-top: 2px;
       font-size: 12px;
       color: var(--text-muted);
       line-height: 1.25;
+    }
+
+    /* When viewing a non-current week the subtitle becomes the tap target for
+       returning to this week — accent it so it reads as actionable. */
+    .page-week-selector-sub.is-back {
+      color: var(--accent);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
     }
 
     @media (min-width: 1280px) {
@@ -19352,7 +19396,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.44';
+    const VERSION = '6.1.47';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23107,14 +23151,30 @@
       const weekStart = state.weekStart || dateToStr(getCurrentFriday());
       const range = weekStart ? formatWeekRange(weekStart) : '—';
       const label = 'Timesheet week';
-      const hint = 'Tap to open week history';
-      const mainAction = `setView('history')`;
+      // Off-current weeks: subtitle becomes the "Back to this week" tap target.
+      // On the current week: subtitle keeps the existing "Tap to open week history" affordance.
+      const isCurrentWeek = weekStart === dateToStr(getCurrentFriday());
+      const hint = isCurrentWeek ? 'Tap to open week history' : 'Back to this week';
+      const mainAction = isCurrentWeek ? `setView('history')` : `goToCurrentWeek()`;
+      const subClass = isCurrentWeek ? 'page-week-selector-sub' : 'page-week-selector-sub is-back';
+      const subInner = isCurrentWeek
+        ? esc(hint)
+        : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>${esc(hint)}`;
+      // Surface on-call / extra-shift status from state.callouts.onCall[weekStart].
+      // 'oncall' = scheduled on-call week (red pill). 'extra' = extra shift (amber pill).
+      const ocStatus = state.callouts && state.callouts.onCall && state.callouts.onCall[weekStart];
+      const phoneSvg = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+      const statusPill = ocStatus === 'oncall'
+        ? `<span class="week-status-pill is-oncall" title="You are on-call this week">${phoneSvg}On-call</span>`
+        : ocStatus === 'extra'
+          ? `<span class="week-status-pill is-extra" title="You picked up an extra shift this week">${phoneSvg}Extra</span>`
+          : '';
       return `<div class="page-week-selector">
         <button onclick="prevWeek()" class="page-week-selector-btn" title="Previous week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div class="page-week-selector-main" onclick="${mainAction}">
           <div class="page-week-selector-kicker">${label}</div>
-          <div class="page-week-selector-range">${esc(range)}</div>
-          <div class="page-week-selector-sub">${hint}</div>
+          <div class="page-week-selector-range">${esc(range)}${statusPill}</div>
+          <div class="${subClass}">${subInner}</div>
         </div>
         <button onclick="nextWeek()" class="page-week-selector-btn" title="Next week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
       </div>`;
@@ -25586,19 +25646,35 @@
       }
     }
 
-    // Navigate to a specific note: switch to notes view, expand it, scroll to it
+    // Navigate to a specific note: switch to notes view, expand it, scroll to it.
+    // On a cold start the notes list may not be hydrated yet — we poll for the
+    // card to appear and retry the scroll, so the deep link still lands.
     async function navigateToNote(noteId) {
       if (!noteId) return;
       // Switch to notes view if not already there
       if (state.view !== 'notes') await setView('notes');
-      // Expand the note
+      // Mark as expanded so the upcoming render shows it open
       if (!state.expandedNotes.has(noteId)) state.expandedNotes.add(noteId);
       render();
-      // Scroll to the note card after render
-      requestAnimationFrame(() => {
+      // Try to scroll. If the card isn't in the DOM yet (notes still loading),
+      // poll for up to 5s — covers Firestore initial sync delays.
+      const startedAt = Date.now();
+      const tryScroll = () => {
         const card = document.querySelector(`.note-card[data-note-id="${noteId}"]`);
-        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
+        if (card) {
+          // Re-add expand state in case a snapshot rebuild dropped it
+          if (!state.expandedNotes.has(noteId)) {
+            state.expandedNotes.add(noteId);
+            render();
+          }
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+        if (Date.now() - startedAt < 5000) {
+          setTimeout(tryScroll, 200);
+        }
+      };
+      requestAnimationFrame(tryScroll);
     }
 
     // Listen for service worker messages (notification tap, etc.)
@@ -25627,8 +25703,9 @@
         if (resp) {
           await cache.delete('/__pending_note__');
           const data = await resp.json();
-          // Only act on recent entries (within last 30s) to avoid stale deep links
-          if (data.noteId && data.ts && (Date.now() - data.ts) < 30000) {
+          // 5-minute window — covers cold-start delays on slow connections.
+          // Below this we'd silently drop the deep link; above this it's stale.
+          if (data.noteId && data.ts && (Date.now() - data.ts) < 5 * 60 * 1000) {
             navigateToNote(data.noteId);
           }
         }
@@ -26299,6 +26376,12 @@
       const d = strToDate(state.weekStart);
       d.setDate(d.getDate() + 7);
       loadWeek(dateToStr(d));
+    }
+
+    function goToCurrentWeek() {
+      const cur = dateToStr(getCurrentFriday());
+      if (state.weekStart === cur) return;
+      loadWeek(cur);
     }
 
     async function setView(v) {
@@ -38243,7 +38326,7 @@
         const badgeHtml = ocType === 'extra'
           ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
           : '';
-        html += `<div style="margin:0 14px 10px;background:var(--bg-card);border-radius:14px;border:1px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
+        html += `<div style="margin:14px 14px 10px;background:var(--bg-card);border-radius:14px;border:1px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
           <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
             <div class="task-num" style="background:${badgeBg};color:${badgeColor}">${cnt}</div>
             <div style="flex:1;min-width:0">
@@ -38273,7 +38356,7 @@
 
       if (sortedPast.length > 0) {
         // Stats bar
-        html += `<div style="margin:6px 14px 8px">`;
+        html += `<div style="margin:14px 14px 8px">`;
         html += `<div class="oc-stats">
           <div class="oc-stat"><div class="oc-stat-val" style="color:var(--accent)">${totalOnCall + totalExtra}</div><div class="oc-stat-label">On-Call<br>Weeks</div></div>
           <div class="oc-stat"><div class="oc-stat-val" style="color:#F59E0B">${totalExtra}</div><div class="oc-stat-label">Extra<br>Shifts</div></div>

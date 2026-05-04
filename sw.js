@@ -42,7 +42,10 @@ self.addEventListener('notificationclick', e => {
   e.notification.close();
   const noteId = e.notification.data && e.notification.data.noteId;
   e.waitUntil(
-    // Store noteId for the app to read on load (hash/query params unreliable in PWA)
+    // Store noteId for the app to read on load (cache + URL hash, both checked).
+    // Two channels because either alone has been observed to fail in production:
+    //   - Cache: works if storage is intact, but app load > 5 min misses it.
+    //   - URL hash: survives any storage clear, but only fires on fresh window open.
     (noteId
       ? caches.open('rian-pending-note').then(c =>
           c.put('/__pending_note__', new Response(JSON.stringify({ noteId, ts: Date.now() })))
@@ -56,7 +59,7 @@ self.addEventListener('notificationclick', e => {
             return c.focus();
           }
         }
-        return clients.openWindow(BASE + 'app.html');
+        return clients.openWindow(BASE + 'app.html' + (noteId ? '#note=' + encodeURIComponent(noteId) : ''));
       })
     )
   );
