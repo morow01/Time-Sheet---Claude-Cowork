@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.48';
+    const VERSION = '6.1.70';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22506,6 +22506,8 @@
         viewBody = renderTagsFullView();
       } else if (state.view === 'history') {
         viewBody = renderHistoryView();
+      } else if (state.view === 'email-week-v3') {
+        viewBody = renderEmailWeekV3View();
       } else if (state.view === 'ai') {
         viewBody = `<div id="ai-fault-body" style="min-height:calc(100vh - 120px);background:var(--bg-page);"></div>`;
       } else { // Default to 'week' view
@@ -22552,6 +22554,7 @@
       requestAnimationFrame(fixTimelineLines);
       // Sync sticky header width/scroll for Routines view
       if (state.view === 'routines') requestAnimationFrame(initRtnStickyHeader);
+      if (state.view === 'email-week-v3') requestAnimationFrame(ew3UpdateProgress);
       // Show voice FAB on the week view, note voice FAB on the notes view (respects micFabHidden setting)
       _applyMicFabVisibility();
       // Populate AI view content after render
@@ -22604,6 +22607,7 @@
         history: 'Week History',
         conflicts: 'Sync Conflicts',
         'tags-full': 'Tags',
+        'email-week-v3': 'Email / Export Week',
         ai: 'AI Assistant'
       };
       return titles[state.view] || 'Timesheet';
@@ -22721,7 +22725,7 @@
                     <span class="menu-row-body"><span class="menu-row-label">Week History</span><span class="menu-row-sub">Jump to any week · review past work</span></span>
                     ${chev}
                   </button>
-                  <button class="menu-row" onclick="showEmailPreview();closeThemeMenu()">
+                  <button class="menu-row" onclick="setView('email-week-v3');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Email / Export Week</span><span class="menu-row-sub">Preview &amp; copy, or send email</span></span>
                     ${chev}
@@ -23152,6 +23156,201 @@
       if (!state.weekData) return `<div class="p-8 text-center" style="color:var(--text-muted)">Loading…</div>`;
       if (_isDesktop()) return _renderDesktopTimesheet();
       return renderCardView();
+    }
+
+    // ============================================================
+    // EMAIL / EXPORT WEEK 3
+    // ============================================================
+    function renderEmailWeekV3View() {
+      if (!state.weekData) return '<div class="p-8 text-center" style="color:var(--text-muted)">Loading…</div>';
+      const weekData = state.weekData;
+      const summary = calcSummary(weekData);
+      const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
+      const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
+      const adjOrd = adjOrdHrs(summary, totalOrd);
+      const fmtWhole = n => String(Math.round(Number(n) || 0));
+      const fmtCode = n => String(Math.round(Number(n) || 0));
+      const stripLoc = s => String(s || '').replace(/\s*\([^)]+\)$/, '').trim();
+      const copy = (value, key, cls) => {
+        const v = String(value == null ? '' : value);
+        if (!v) return '<span class="ew3-copy ew3-empty ' + (cls || '') + '">—</span>';
+        return '<span class="ew3-copy ' + (cls || '') + '" data-key="' + escAttr(key) + '" data-value="' + escAttr(v) + '" onclick="ew3Copy(this)">' + esc(v) + '</span>';
+      };
+      const dailyRows = (weekData.days || []).map((day, i) => {
+        const acts = (day.activities || []).filter(a => !a._draft && (a.description || a.location || (a.codes || []).length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0));
+        const work = [...new Set(acts.map(a => stripHtml(a.description || '')).filter(Boolean))].join(', ');
+        const site = [...new Set(acts.map(a => stripLoc(a.location || '')).filter(Boolean))].join(', ');
+        const ord = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
+        const ot = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
+        const total = ord + ot;
+        const depart = total > 0 ? '8' : '';
+        const ret = total > 0 ? String(8 + Math.round(total)) : '';
+        return '<tr class="' + (!work && !site ? 'ew3-empty-row' : '') + '">' +
+          '<td class="ew3-day-cell">' + esc(day.dayName || DAY_NAMES[i] || '') + '</td>' +
+          '<td>' + copy(work, 'd-' + i + '-work') + '</td>' +
+          '<td>' + copy(site, 'd-' + i + '-site') + '</td>' +
+          '<td class="ew3-c">' + copy(depart, 'd-' + i + '-depart', 'ew3-num') + '</td>' +
+          '<td class="ew3-c">' + copy(ret, 'd-' + i + '-ret', 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-ot">' + copy(ot > 0 ? fmtWhole(ot) : '', 'd-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+          '</tr>';
+      }).join('');
+      const dailyMobileRows = (weekData.days || []).map((day, i) => {
+        const acts = (day.activities || []).filter(a => !a._draft && (a.description || a.location || (a.codes || []).length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0));
+        const work = [...new Set(acts.map(a => stripHtml(a.description || '')).filter(Boolean))].join(', ');
+        const site = [...new Set(acts.map(a => stripLoc(a.location || '')).filter(Boolean))].join(', ');
+        const ord = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
+        const ot = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
+        const total = ord + ot;
+        const depart = total > 0 ? '8' : '';
+        const ret = total > 0 ? String(8 + Math.round(total)) : '';
+        const empty = !work && !site;
+        return '<tr class="ew3-mobile-day-row ' + (empty ? 'ew3-empty-row' : '') + '">' +
+          '<td colspan="5"><span class="ew3-mobile-day-name">' + esc(day.dayName || DAY_NAMES[i] || '') + '</span></td>' +
+          '</tr>' +
+          '<tr class="ew3-mobile-detail-row ' + (empty ? 'ew3-empty-row' : '') + '">' +
+          '<td>' + copy(work, 'm-d-' + i + '-work') + '</td>' +
+          '<td>' + copy(site, 'm-d-' + i + '-site') + '</td>' +
+          '<td class="ew3-c">' + copy(depart, 'm-d-' + i + '-depart', 'ew3-num') + '</td>' +
+          '<td class="ew3-c">' + copy(ret, 'm-d-' + i + '-ret', 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-ot">' + copy(ot > 0 ? fmtWhole(ot) : '', 'm-d-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+          '</tr>';
+      }).join('');
+      const codeRows = summary.map((row, i) => {
+        return '<tr>' +
+          '<td class="ew3-c">' + copy(fmtCode(adjOrd[i]), 'c-' + i + '-ord', 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-ot">' + copy(fmtCode(row.overtime), 'c-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+          '<td class="ew3-code-cell ew3-c">' + copy(row.code, 'c-' + i + '-code') + '</td>' +
+          '<td class="ew3-desc-cell">' + copy(row.description, 'c-' + i + '-desc') + '</td>' +
+          '</tr>';
+      }).join('');
+      const codeMobileRows = summary.map((row, i) => {
+        return '<tr>' +
+          '<td class="ew3-c ew3-num">' + copy(fmtCode(adjOrd[i]), 'm-c-' + i + '-ord', 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-num ew3-ot">' + copy(fmtCode(row.overtime), 'm-c-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+          '<td class="ew3-code-cell ew3-c">' + copy(row.code, 'm-c-' + i + '-code') + '</td>' +
+          '<td class="ew3-desc-cell">' + copy(row.description, 'm-c-' + i + '-desc') + '</td>' +
+          '</tr>';
+      }).join('');
+      return `
+        <style>
+          .ew3-page{max-width:920px;margin:0 auto;padding:18px 14px 80px;background:var(--bg-page);min-height:calc(100vh - 86px);font-size:14px}
+          .ew3-top{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:16px}
+          .ew3-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:0}
+          .ew3-head h1{margin:0;color:var(--text-primary);font-size:20px;font-weight:800;letter-spacing:0}
+          .ew3-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+          .ew3-copy-guidance{color:var(--text-muted);font-size:12px;font-weight:650;line-height:1.35;min-width:0}
+          .ew3-sub{color:var(--text-muted);font-size:12px;margin:5px 0 0;line-height:1.35}
+          .ew3-reset{width:38px;height:38px;border:1px solid var(--border-strong);background:var(--bg-card);color:var(--text-muted);font-size:12px;font-weight:600;padding:0;border-radius:9px;cursor:pointer;font-family:inherit;display:grid;place-items:center}
+          .ew3-reset:hover{background:var(--bg-input);color:var(--text-primary)}
+          .ew3-send{min-height:38px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;font-weight:800;padding:0 14px;border-radius:9px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;box-shadow:0 5px 14px rgba(var(--accent-rgb),.22)}
+          .ew3-send:hover{filter:brightness(.96)}
+          .ew3-progress{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:0;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-card)}
+          .ew3-track{flex:1;height:6px;background:var(--border);border-radius:999px;overflow:hidden}
+          .ew3-fill{height:100%;width:0;background:var(--accent);transition:width .18s ease}
+          .ew3-count{font-size:12px;font-weight:850;white-space:nowrap;min-width:74px;text-align:right;color:var(--text-primary);font-variant-numeric:tabular-nums}
+          .ew3-label{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--text-muted);margin:16px 4px 8px}
+          .ew3-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-card);overflow:hidden}
+          .ew3-mobile-table{display:block}
+          .ew3-desktop-table{display:none}
+          .ew3-copy{cursor:pointer;user-select:none;color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong);text-decoration-thickness:1px;text-underline-offset:3px;transition:color .12s,text-decoration-color .12s,opacity .12s;display:inline}
+          .ew3-copy:hover{color:var(--accent);text-decoration-color:var(--accent)}
+          .ew3-copy.copied{color:var(--text-dim);text-decoration:none;opacity:.7}
+          .ew3-copy.copied:hover{color:var(--text-secondary);opacity:.9}
+          .ew3-ot,.ew3-ot .ew3-copy,.ew3-copy.ew3-ot-text{color:var(--text-ot)}
+          .ew3-ot .ew3-copy{text-decoration-color:var(--text-ot)}
+          .ew3-empty{color:var(--text-dim);cursor:default;text-decoration:none;pointer-events:none}
+          .ew3-ot .ew3-empty,.ew3-empty.ew3-ot-text{color:var(--text-ot);opacity:1}
+          .ew3-ot .ew3-copy.copied,.ew3-copy.ew3-ot-text.copied{color:var(--text-dim);text-decoration:none;opacity:.7}
+          .ew3-num{font-variant-numeric:tabular-nums}
+          .ew3-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+          .ew3-table th{background:var(--bg-input);border-bottom:1px solid var(--border);padding:9px 12px;text-align:left;font-size:10px;font-weight:850;letter-spacing:.06em;color:var(--text-muted);text-transform:uppercase}
+          .ew3-table th.ew3-r{text-align:right}
+          .ew3-table th.ew3-c{text-align:center}
+          .ew3-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+          .ew3-table td.ew3-r{text-align:right}
+          .ew3-table td.ew3-c{text-align:center}
+          .ew3-table tbody tr:last-child td{border-bottom:none}
+          .ew3-table tfoot td{padding:10px 12px;font-weight:800;background:var(--bg-input);border-top:2px solid var(--border-strong);vertical-align:middle}
+          .ew3-table tfoot td.ew3-r{text-align:right}
+          .ew3-table tfoot .ew3-ot{font-weight:800}
+          .ew3-day-cell{font-weight:700;white-space:nowrap}
+          .ew3-empty-row td{color:var(--text-dim)}
+          .ew3-mobile-day-row td{padding:10px 12px 0;background:var(--bg-card);border-bottom:0}
+          .ew3-mobile-day-name{font-size:13px;font-weight:850;color:var(--text-primary)}
+          .ew3-mobile-detail-row td{padding-top:2px;padding-bottom:12px}
+          .ew3-code-cell{font-family:'DM Mono',monospace;font-size:13px}
+          .ew3-desc-cell{color:var(--text-secondary);font-size:13px}
+          .ew3-work-line{display:block;font-weight:700}
+          .ew3-site-line{display:block;margin-top:3px;color:var(--text-secondary);font-size:12px}
+          .ew3-time-summary{text-align:right;white-space:nowrap;font-weight:850;line-height:1.35;font-variant-numeric:tabular-nums}
+          .ew3-time-summary span:not(.ew3-copy):not(.ew3-empty){color:var(--text-muted);font-weight:800}
+          .ew3-time-summary .ew3-ot,.ew3-time-summary .ew3-ot .ew3-copy,.ew3-time-summary .ew3-ot .ew3-empty{color:var(--text-ot)}
+          .ew3-mobile-code{display:block;font-family:'DM Mono',monospace;font-size:13px;font-weight:850;line-height:1.25}
+          .ew3-mobile-desc{display:block;margin-top:3px;color:var(--text-secondary);font-size:12px;line-height:1.25}
+          .ew3-foot{font-size:12px;color:var(--text-muted);text-align:center;margin-top:16px;line-height:1.45}
+          @media(min-width:640px){.ew3-page{padding:24px 20px 80px}.ew3-head h1{font-size:24px}.ew3-sub{font-size:13px}.ew3-send{min-width:128px;justify-content:center}}
+          @media(max-width:599px){.ew3-page{padding:14px 12px 72px}.ew3-table{font-size:12px}.ew3-table th{padding:8px 8px}.ew3-table td{padding:10px 8px}.ew3-table tfoot td{padding:10px 8px}.ew3-mobile-daily col:nth-child(1){width:40%}.ew3-mobile-daily col:nth-child(2){width:30%}.ew3-mobile-daily col:nth-child(3){width:10%}.ew3-mobile-daily col:nth-child(4){width:10%}.ew3-mobile-daily col:nth-child(5){width:10%}.ew3-mobile-day-row td{padding:9px 10px 0}.ew3-mobile-detail-row td{padding-top:1px;padding-bottom:11px}.ew3-mobile-code-table col:nth-child(1){width:13%}.ew3-mobile-code-table col:nth-child(2){width:13%}.ew3-mobile-code-table col:nth-child(3){width:31%}.ew3-mobile-code-table col:nth-child(4){width:43%}.ew3-code-cell{font-size:12px}.ew3-desc-cell{font-size:12px}.ew3-copy{overflow-wrap:anywhere}}
+          @media(min-width:600px){.ew3-top{grid-template-columns:1fr auto;align-items:start}.ew3-progress{grid-column:1/-1}.ew3-mobile-table{display:none}.ew3-desktop-table{display:block}}
+        </style>
+        ${renderSecondaryPageHeader('Email / Export Week', 'Copy and send weekly timesheet', '', "setView('week')")}
+        ${renderPageWeekSelector('email-week-v3')}
+        <div class="ew3-page">
+          <div class="ew3-top">
+            <div class="ew3-head">
+              <div class="ew3-copy-guidance">${esc(formatWeekRange(weekData.weekStart))} · Tap values to copy. Copied values fade so you can work down the page.</div>
+              <div class="ew3-actions"><button class="ew3-send" onclick="sendWeeklyEmail(false)">Send Email</button><button class="ew3-reset" onclick="ew3Reset()" title="Clear copied marks" aria-label="Clear copied marks"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 3v6h-6"></path></svg></button></div>
+            </div>
+            <div class="ew3-progress"><div class="ew3-track"><div id="ew3-progress-fill" class="ew3-fill"></div></div><div id="ew3-progress-count" class="ew3-count">0 / 0</div></div>
+          </div>
+          <div class="ew3-label">Daily Log</div>
+          <div class="ew3-card ew3-mobile-table"><table class="ew3-table ew3-mobile-daily"><colgroup><col><col><col><col><col></colgroup><thead><tr><th>Work</th><th>Site</th><th class="ew3-c">D</th><th class="ew3-c">R</th><th class="ew3-c">OT</th></tr></thead><tbody>${dailyMobileRows}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td class="ew3-c ew3-num">${fmtWhole(totalOrd)}</td><td class="ew3-c ew3-num ew3-ot">${fmtWhole(totalOT)}</td></tr></tfoot></table></div>
+          <div class="ew3-card ew3-desktop-table"><table class="ew3-table"><colgroup><col style="width:15%"><col style="width:28%"><col style="width:30%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th>Day</th><th>Work</th><th>Site</th><th class="ew3-c">Depart</th><th class="ew3-c">Return</th><th class="ew3-c">OT</th></tr></thead><tbody>${dailyRows}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td></td><td class="ew3-c ew3-num">${fmtWhole(totalOrd)}</td><td class="ew3-c ew3-num ew3-ot">${fmtWhole(totalOT)}</td></tr></tfoot></table></div>
+          <div class="ew3-label">Appropriation Codes</div>
+          <div class="ew3-card ew3-mobile-table"><table class="ew3-table ew3-mobile-code-table"><colgroup><col><col><col><col></colgroup><thead><tr><th class="ew3-c">Ord</th><th class="ew3-c">OT</th><th class="ew3-c">Code</th><th>Description</th></tr></thead><tbody>${codeMobileRows}</tbody><tfoot><tr><td class="ew3-c ew3-num">${fmtCode(Math.round(totalOrd))}</td><td class="ew3-c ew3-num ew3-ot">${fmtCode(totalOT)}</td><td colspan="2"></td></tr></tfoot></table></div>
+          <div class="ew3-card ew3-desktop-table"><table class="ew3-table ew3-code-table"><colgroup><col style="width:14%"><col style="width:14%"><col style="width:26%"><col style="width:46%"></colgroup><thead><tr><th class="ew3-c">Ord</th><th class="ew3-c">OT</th><th class="ew3-c">Code</th><th>Description</th></tr></thead><tbody>${codeRows}</tbody><tfoot><tr><td class="ew3-c ew3-num">${fmtCode(Math.round(totalOrd))}</td><td class="ew3-c ew3-num ew3-ot">${fmtCode(totalOT)}</td><td colspan="2"></td></tr></tfoot></table></div>
+          <p class="ew3-foot">Hours auto-calculated. Per-day cap: Mon–Thu 8h · Fri 7h · Sat/Sun 0h. Anything over → OT (you place the band).</p>
+        </div>`;
+    }
+
+    function ew3UpdateProgress() {
+      const isVisible = el => !!(el && el.getClientRects && el.getClientRects().length);
+      const keys = new Set();
+      document.querySelectorAll('.ew3-copy:not(.ew3-empty)').forEach(el => {
+        if (isVisible(el)) keys.add(el.getAttribute('data-key'));
+      });
+      const done = new Set();
+      document.querySelectorAll('.ew3-copy.copied').forEach(el => {
+        if (isVisible(el)) done.add(el.getAttribute('data-key'));
+      });
+      const total = keys.size;
+      const count = done.size;
+      const pct = total ? Math.round((count / total) * 100) : 0;
+      const fill = document.getElementById('ew3-progress-fill');
+      const label = document.getElementById('ew3-progress-count');
+      if (fill) fill.style.width = pct + '%';
+      if (label) label.textContent = count + ' / ' + total;
+    }
+
+    function ew3Copy(el) {
+      if (!el || el.classList.contains('ew3-empty')) return;
+      const key = el.getAttribute('data-key');
+      const value = el.getAttribute('data-value') || el.textContent.trim();
+      const next = !el.classList.contains('copied');
+      document.querySelectorAll('.ew3-copy[data-key="' + key + '"]').forEach(x => x.classList.toggle('copied', next));
+      if (next) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(() => showToast('Copied: ' + value, 1200)).catch(() => { legacyCopy(value); showToast('Copied: ' + value, 1200); });
+        } else {
+          legacyCopy(value);
+          showToast('Copied: ' + value, 1200);
+        }
+      }
+      ew3UpdateProgress();
+    }
+
+    function ew3Reset() {
+      document.querySelectorAll('.ew3-copy.copied').forEach(el => el.classList.remove('copied'));
+      ew3UpdateProgress();
     }
 
     function renderPageWeekSelector(context) {
@@ -40800,7 +40999,7 @@ Rules:
 
       try {
         const lastView = localStorage.getItem('lastView');
-        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal') state.view = lastView;
+        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal' || lastView === 'email-week-v3') state.view = lastView;
         if (lastView === 'journal') {
           const ljScreen = localStorage.getItem('jScreen'); if (ljScreen) state.jScreen = ljScreen;
           const ljNbId = localStorage.getItem('jNotebookId'); if (ljNbId) state.jNotebookId = ljNbId;
