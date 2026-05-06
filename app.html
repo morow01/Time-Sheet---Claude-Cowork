@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.72';
+    const VERSION = '6.1.74';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22022,6 +22022,14 @@
       const stripLoc = s => String(s || '').replace(/\s*\([^)]+\)$/, '').trim();
       const cleanDesc = s => stripHtml(String(s || '')).trim();
       const dash = '<span style="color:#8BA5BE;">&mdash;</span>';
+      const calloutEntries = ((state.callouts && state.callouts.weeks && state.callouts.weeks[weekData.weekStart] && state.callouts.weeks[weekData.weekStart].callouts) || []).filter(co => !co._draft);
+      const formatCalloutDate = dateStr => {
+        if (!dateStr) return '';
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const parts = String(dateStr).split('-');
+        const monthIdx = parseInt(parts[1], 10) - 1;
+        return (parts[2] || '').replace(/^0/, '') + '. ' + (months[monthIdx] || '');
+      };
 
       const C = {
         outerBg: '#E8EEF5',
@@ -22072,6 +22080,36 @@
         '</tr>';
       }).join('');
 
+      const calloutRows = calloutEntries.map(co => {
+        const dateLabel = formatCalloutDate(co.date);
+        const ticket = String(co.ticket || '').trim();
+        const location = stripLoc(co.site || co.location || '');
+        return '<tr>' +
+          '<td style="' + td + 'text-align:left;">' + (dateLabel ? esc(dateLabel) : dash) + '</td>' +
+          '<td style="' + td + num + 'text-align:left;">' + (ticket ? esc(ticket) : dash) + '</td>' +
+          '<td style="' + td + 'color:' + C.txtSec + ';">' + (location ? esc(location) : dash) + '</td>' +
+        '</tr>';
+      }).join('');
+      const calloutsHtml = calloutEntries.length ? (
+        '<tr><td style="height:18px;line-height:18px;">&nbsp;</td></tr>' +
+        '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Callouts</td></tr>' +
+        '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
+          '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
+            '<colgroup><col style="width:24%"><col style="width:34%"><col style="width:42%"></colgroup>' +
+            '<thead><tr>' +
+              '<th style="' + th + 'text-align:left;">Date</th>' +
+              '<th style="' + th + 'text-align:left;">Ticket Number</th>' +
+              '<th style="' + th + 'text-align:left;">Location</th>' +
+            '</tr></thead>' +
+            '<tbody>' + calloutRows + '</tbody>' +
+            '<tfoot><tr style="background:' + C.totalBg + ';">' +
+              '<td colspan="2" style="' + td + 'font-weight:850;border-bottom:none;">Total Callouts</td>' +
+              '<td style="' + td + num + 'font-size:15px;font-weight:850;text-align:right;border-bottom:none;">' + calloutEntries.length + '</td>' +
+            '</tr></tfoot>' +
+          '</table>' +
+        '</td></tr>'
+      ) : '';
+
       return '<!doctype html><html><body style="margin:0;padding:0;background:' + C.outerBg + ';font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;color:' + C.txt + ';">' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="background:' + C.outerBg + ';padding:22px 10px;"><tr><td align="center">' +
         '<table width="760" cellpadding="0" cellspacing="0" style="width:100%;max-width:760px;">' +
@@ -22099,11 +22137,12 @@
               '</tr></tfoot>' +
             '</table>' +
           '</td></tr>' +
+          calloutsHtml +
           '<tr><td style="height:18px;line-height:18px;">&nbsp;</td></tr>' +
           '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Appropriation Codes</td></tr>' +
           '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
             '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
-              '<colgroup><col style="width:14%"><col style="width:14%"><col style="width:26%"><col style="width:46%"></colgroup>' +
+              '<colgroup><col style="width:10%"><col style="width:10%"><col style="width:24%"><col style="width:56%"></colgroup>' +
               '<thead><tr>' +
                 '<th style="' + th + 'text-align:center;">Ord</th>' +
                 '<th style="' + th + 'text-align:center;">OT</th>' +
@@ -23099,6 +23138,14 @@
       const fmtWhole = n => String(Math.round(Number(n) || 0));
       const fmtCode = n => String(Math.round(Number(n) || 0));
       const stripLoc = s => String(s || '').replace(/\s*\([^)]+\)$/, '').trim();
+      const calloutEntries = ((state.callouts && state.callouts.weeks && state.callouts.weeks[weekData.weekStart] && state.callouts.weeks[weekData.weekStart].callouts) || []).filter(co => !co._draft);
+      const formatCalloutDate = dateStr => {
+        if (!dateStr) return '';
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const parts = String(dateStr).split('-');
+        const monthIdx = parseInt(parts[1], 10) - 1;
+        return (parts[2] || '').replace(/^0/, '') + '. ' + (months[monthIdx] || '');
+      };
       const copy = (value, key, cls) => {
         const v = String(value == null ? '' : value);
         if (!v) return '<span class="ew3-copy ew3-empty ' + (cls || '') + '">—</span>';
@@ -23159,6 +23206,20 @@
           '<td class="ew3-desc-cell">' + copy(row.description, 'm-c-' + i + '-desc') + '</td>' +
           '</tr>';
       }).join('');
+      const calloutRows = calloutEntries.map((co, i) => {
+        const dateLabel = formatCalloutDate(co.date);
+        const ticket = String(co.ticket || '').trim();
+        const location = stripLoc(co.site || co.location || '');
+        return '<tr>' +
+          '<td class="ew3-callout-date">' + copy(dateLabel, 'co-' + i + '-date') + '</td>' +
+          '<td class="ew3-code-cell">' + copy(ticket, 'co-' + i + '-ticket') + '</td>' +
+          '<td class="ew3-desc-cell">' + copy(location, 'co-' + i + '-location') + '</td>' +
+          '</tr>';
+      }).join('');
+      const calloutsHtml = calloutEntries.length ? (
+        '<div class="ew3-label">Callouts <span class="ew3-section-count">' + calloutEntries.length + '</span></div>' +
+        '<div class="ew3-card"><table class="ew3-table ew3-callout-table"><colgroup><col style="width:24%"><col style="width:34%"><col style="width:42%"></colgroup><thead><tr><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="2">Total Callouts</td><td class="ew3-num">' + calloutEntries.length + '</td></tr></tfoot></table></div>'
+      ) : '';
       return `
         <style>
           .ew3-page{max-width:920px;margin:0 auto;padding:18px 14px 80px;background:var(--bg-page);min-height:calc(100vh - 86px);font-size:14px}
@@ -23177,6 +23238,7 @@
           .ew3-fill{height:100%;width:0;background:var(--accent);transition:width .18s ease}
           .ew3-count{font-size:12px;font-weight:850;white-space:nowrap;min-width:74px;text-align:right;color:var(--text-primary);font-variant-numeric:tabular-nums}
           .ew3-label{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--text-muted);margin:16px 4px 8px}
+          .ew3-section-count{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid var(--border);border-radius:999px;background:var(--bg-card);color:var(--text-secondary);font-size:10px;font-weight:850;letter-spacing:0;text-transform:none;vertical-align:1px}
           .ew3-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-card);overflow:hidden}
           .ew3-mobile-table{display:block}
           .ew3-desktop-table{display:none}
@@ -23204,11 +23266,15 @@
           .ew3-table tfoot .ew3-ot{font-weight:800}
           .ew3-day-cell{font-weight:700;white-space:nowrap}
           .ew3-empty-row td{color:var(--text-dim)}
+          .ew3-desktop-table .ew3-empty-row td{padding-top:8px;padding-bottom:8px}
           .ew3-mobile-day-row td{padding:10px 12px 0;background:var(--bg-card);border-bottom:0}
           .ew3-mobile-day-name{font-size:13px;font-weight:850;color:var(--text-primary)}
           .ew3-mobile-detail-row td{padding-top:2px;padding-bottom:12px}
           .ew3-code-cell{font-family:'DM Mono',monospace;font-size:13px}
+          .ew3-callout-date{font-size:13px;color:var(--text-primary)}
           .ew3-desc-cell{color:var(--text-secondary);font-size:13px}
+          .ew3-callout-table .ew3-code-cell{font-weight:400}
+          .ew3-callout-table tfoot td:last-child{text-align:right}
           .ew3-work-line{display:block;font-weight:700}
           .ew3-site-line{display:block;margin-top:3px;color:var(--text-secondary);font-size:12px}
           .ew3-time-summary{text-align:right;white-space:nowrap;font-weight:850;line-height:1.35;font-variant-numeric:tabular-nums}
@@ -23234,9 +23300,10 @@
           <div class="ew3-label">Daily Log</div>
           <div class="ew3-card ew3-mobile-table"><table class="ew3-table ew3-mobile-daily"><colgroup><col><col><col><col><col></colgroup><thead><tr><th>Work</th><th>Site</th><th class="ew3-c">D</th><th class="ew3-c">R</th><th class="ew3-c">OT</th></tr></thead><tbody>${dailyMobileRows}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td class="ew3-c ew3-num">${fmtWhole(totalOrd)}</td><td class="ew3-c ew3-num ew3-ot">${fmtWhole(totalOT)}</td></tr></tfoot></table></div>
           <div class="ew3-card ew3-desktop-table"><table class="ew3-table"><colgroup><col style="width:15%"><col style="width:28%"><col style="width:30%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th>Day</th><th>Work</th><th>Site</th><th class="ew3-c">Depart</th><th class="ew3-c">Return</th><th class="ew3-c">OT</th></tr></thead><tbody>${dailyRows}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td></td><td class="ew3-c ew3-num">${fmtWhole(totalOrd)}</td><td class="ew3-c ew3-num ew3-ot">${fmtWhole(totalOT)}</td></tr></tfoot></table></div>
+          ${calloutsHtml}
           <div class="ew3-label">Appropriation Codes</div>
           <div class="ew3-card ew3-mobile-table"><table class="ew3-table ew3-mobile-code-table"><colgroup><col><col><col><col></colgroup><thead><tr><th class="ew3-c">Ord</th><th class="ew3-c">OT</th><th class="ew3-c">Code</th><th>Description</th></tr></thead><tbody>${codeMobileRows}</tbody><tfoot><tr><td class="ew3-c ew3-num">${fmtCode(Math.round(totalOrd))}</td><td class="ew3-c ew3-num ew3-ot">${fmtCode(totalOT)}</td><td colspan="2"></td></tr></tfoot></table></div>
-          <div class="ew3-card ew3-desktop-table"><table class="ew3-table ew3-code-table"><colgroup><col style="width:14%"><col style="width:14%"><col style="width:26%"><col style="width:46%"></colgroup><thead><tr><th class="ew3-c">Ord</th><th class="ew3-c">OT</th><th class="ew3-c">Code</th><th>Description</th></tr></thead><tbody>${codeRows}</tbody><tfoot><tr><td class="ew3-c ew3-num">${fmtCode(Math.round(totalOrd))}</td><td class="ew3-c ew3-num ew3-ot">${fmtCode(totalOT)}</td><td colspan="2"></td></tr></tfoot></table></div>
+          <div class="ew3-card ew3-desktop-table"><table class="ew3-table ew3-code-table"><colgroup><col style="width:10%"><col style="width:10%"><col style="width:24%"><col style="width:56%"></colgroup><thead><tr><th class="ew3-c">Ord</th><th class="ew3-c">OT</th><th class="ew3-c">Code</th><th>Description</th></tr></thead><tbody>${codeRows}</tbody><tfoot><tr><td class="ew3-c ew3-num">${fmtCode(Math.round(totalOrd))}</td><td class="ew3-c ew3-num ew3-ot">${fmtCode(totalOT)}</td><td colspan="2"></td></tr></tfoot></table></div>
           <p class="ew3-foot">Hours auto-calculated. Per-day cap: Mon–Thu 8h · Fri 7h · Sat/Sun 0h. Anything over → OT (you place the band).</p>
         </div>`;
     }
