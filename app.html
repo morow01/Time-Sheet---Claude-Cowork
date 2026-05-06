@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.74';
+    const VERSION = '6.1.76';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -19542,7 +19542,7 @@
     }
     const DAY_NAMES = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const DB_NAME = 'timesheet-db';
-    const DB_VERSION = 2;
+    const DB_VERSION = 3;
     const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const escAttr = s => esc(s).replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/\n/g, ' ').replace(/\r/g, '');
     const stripHtml = s => String(s || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
@@ -20516,6 +20516,125 @@
       return await ref.getDownloadURL();
     }
 
+    function _activityNoteImageKey(weekStart, actId) {
+      return 'activityNotes/' + (weekStart || state.weekStart || 'unknown-week') + '/' + (actId || uid());
+    }
+
+    function _currentTipTapImageKey() {
+      if (_fnFsNoteId) return _fnFsNoteId;
+      if (_noteFsActId) return _activityNoteImageKey(state.weekStart, _noteFsActId);
+      return null;
+    }
+
+    async function _uploadTipTapImage(dataUrl) {
+      const key = _currentTipTapImageKey();
+      if (!key || !state.currentUser || !storage_fb) return { src: dataUrl, uploaded: false, key: null };
+      const src = await _uploadNoteImage(dataUrl, key);
+      return { src: src, uploaded: true, key: key };
+    }
+
+    function _htmlImageCount(html) {
+      return (String(html || '').match(/<img\b/gi) || []).length;
+    }
+
+    function _htmlDataImageCount(html) {
+      return (String(html || '').match(/src=["']data:image/gi) || []).length;
+    }
+
+    function _jsonBytes(obj) {
+      try { return new Blob([JSON.stringify(obj || {})]).size; }
+      catch (e) { return JSON.stringify(obj || {}).length; }
+    }
+
+    function _weekContentFingerprint(weekData) {
+      if (!weekData || !weekData.days) return '';
+      return weekData.days.map(function (day, di) {
+        return (day.activities || []).map(function (a) {
+          const notes = a.notes || '';
+          return [
+            di,
+            a.id || '',
+            a.description || '',
+            a.location || '',
+            a.ordinary || 0,
+            a.overtime || 0,
+            (a.codes || []).map(function (c) { return (c.c || '') + ':' + (c.d || ''); }).join(','),
+            notes.length,
+            _htmlImageCount(notes),
+            _htmlDataImageCount(notes)
+          ].join('~');
+        }).join('|');
+      }).join('||');
+    }
+
+    function _protectRicherRemoteActivityNotes(localAct, remoteAct) {
+      if (!localAct || !remoteAct) return localAct;
+      const localNotes = localAct.notes || '';
+      const remoteNotes = remoteAct.notes || '';
+      if (!remoteNotes || remoteNotes === localNotes) return localAct;
+      const localImgs = _htmlImageCount(localNotes);
+      const remoteImgs = _htmlImageCount(remoteNotes);
+      const localDataImgs = _htmlDataImageCount(localNotes);
+      const remoteDataImgs = _htmlDataImageCount(remoteNotes);
+      const remoteLooksRicher = remoteImgs > localImgs || remoteNotes.length > localNotes.length + 1000;
+      const localIsInlineOnly = localDataImgs > 0 && remoteDataImgs === 0 && remoteImgs >= localImgs;
+      if (remoteLooksRicher && !localIsInlineOnly) {
+        console.warn('[Rian] Merge-on-save protected richer remote notes for activity', remoteAct.id);
+        return Object.assign({}, localAct, { notes: remoteNotes, _notesProtectedAt: Date.now() });
+      }
+      return localAct;
+    }
+
+    async function _migrateActivityNoteImagesToStorage(weekData, weekStart) {
+      if (!weekData || !weekData.days || !state.currentUser || !storage_fb) return 0;
+      let migrated = 0;
+      for (let di = 0; di < weekData.days.length; di++) {
+        const day = weekData.days[di];
+        const acts = day.activities || [];
+        for (let ai = 0; ai < acts.length; ai++) {
+          const act = acts[ai];
+          if (!act || !act.notes || act.notes.indexOf('data:image') === -1) continue;
+          const doc = new DOMParser().parseFromString('<div>' + act.notes + '</div>', 'text/html');
+          const imgs = doc.querySelectorAll('img[src^="data:image"]');
+          if (!imgs.length) continue;
+          let changed = false;
+          const key = _activityNoteImageKey(weekStart, act.id);
+          for (let j = 0; j < imgs.length; j++) {
+            try {
+              const compressed = await _compressDataUrl(imgs[j].src, 1400, 0.75);
+              imgs[j].src = await _uploadNoteImage(compressed, key);
+              changed = true;
+              migrated++;
+            } catch (e) {
+              console.warn('[Rian] Activity note image upload failed for activity', act.id, e);
+            }
+          }
+          if (changed) {
+            act.notes = doc.querySelector('div').innerHTML;
+            act._imagesMigratedAt = Date.now();
+          }
+        }
+      }
+      return migrated;
+    }
+
+    function _applySavedActivityNotesToState(savedWeek) {
+      if (!savedWeek || !savedWeek.days || !state.weekData || !state.weekData.days) return;
+      savedWeek.days.forEach(function (day, di) {
+        const stateDay = state.weekData.days[di];
+        if (!stateDay) return;
+        const byId = {};
+        (stateDay.activities || []).forEach(function (a) { if (a.id) byId[a.id] = a; });
+        (day.activities || []).forEach(function (savedAct) {
+          const stateAct = savedAct.id ? byId[savedAct.id] : null;
+          if (stateAct && savedAct.notes && stateAct.notes !== savedAct.notes) {
+            stateAct.notes = savedAct.notes;
+            stateAct._imagesMigratedAt = savedAct._imagesMigratedAt || stateAct._imagesMigratedAt;
+          }
+        });
+      });
+    }
+
     // Delete all Storage images for a note (called on permanent delete).
     async function _deleteNoteImages(noteId) {
       if (!storage_fb || !state.currentUser) return;
@@ -20597,6 +20716,7 @@
           const d = e.target.result;
           if (!d.objectStoreNames.contains('weeks')) d.createObjectStore('weeks', { keyPath: 'weekStart' });
           if (!d.objectStoreNames.contains('notes')) d.createObjectStore('notes', { keyPath: 'id' });
+          if (!d.objectStoreNames.contains('weekBackups')) d.createObjectStore('weekBackups', { keyPath: 'id' });
         };
         req.onsuccess = e => { db = e.target.result; res(); };
         req.onblocked = () => { console.warn('[Rian] IDB upgrade blocked — reloading'); window.location.reload(); };
@@ -20644,6 +20764,48 @@
       });
     }
 
+    async function _safeBackupWeek(reason, weekStart, weekData) {
+      if (!db || !weekStart || !weekData || !weekData.days) return;
+      const uid = state.currentUser?.uid || 'local';
+      const now = Date.now();
+      const fp = _weekContentFingerprint(weekData);
+      const size = _jsonBytes(weekData);
+      const key = uid + '|' + weekStart;
+      window._weekBackupLast = window._weekBackupLast || {};
+      const last = window._weekBackupLast[key];
+      if (last && last.fp === fp && now - last.ts < 30000) return;
+      window._weekBackupLast[key] = { fp: fp, ts: now };
+      const backup = {
+        id: uid + '_' + weekStart + '_' + now,
+        userId: uid,
+        weekStart: weekStart,
+        reason: reason || 'backup',
+        createdAt: now,
+        updatedAt: weekData._updatedAt || now,
+        bytes: size,
+        data: deepCopy(weekData)
+      };
+      try {
+        await dbPut('weekBackups', backup);
+        const all = await dbGetAll('weekBackups');
+        const mine = all
+          .filter(function (b) { return b.userId === uid && b.weekStart === weekStart; })
+          .sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+        const stale = mine.slice(80);
+        if (stale.length) {
+          await new Promise(function (res, rej) {
+            const tx = db.transaction('weekBackups', 'readwrite');
+            const store = tx.objectStore('weekBackups');
+            stale.forEach(function (b) { store.delete(b.id); });
+            tx.oncomplete = res;
+            tx.onerror = rej;
+          });
+        }
+      } catch (e) {
+        console.warn('[Rian] Local week backup failed:', e);
+      }
+    }
+
     // ============================================================
     // FIREBASE SYNC HELPERS
     // ============================================================
@@ -20676,8 +20838,13 @@
               var remoteMap = {};
               (remoteDay.activities || []).forEach(function (a) { if (a.id) remoteMap[a.id] = a; });
 
-              // Start with all local activities (user's edits take priority)
-              var mergedActs = (localDay.activities || []).slice();
+              // Start with local activities, but protect richer remote note
+              // content so stale tabs cannot silently remove screenshots.
+              var mergedActs = (localDay.activities || []).map(function (la) {
+                return la && la.id && remoteMap[la.id]
+                  ? _protectRicherRemoteActivityNotes(la, remoteMap[la.id])
+                  : la;
+              });
 
               // Add remote-only activities (created on another browser, missed by snapshot)
               _pruneDeletedIds();
@@ -20706,6 +20873,23 @@
         console.warn('[Rian] Merge-on-save: server fetch failed, saving local only —', e.message);
       }
 
+      const migratedActivityImages = await _migrateActivityNoteImagesToStorage(merged, weekStart);
+      if (migratedActivityImages > 0) {
+        showToast('Moved ' + migratedActivityImages + ' note image' + (migratedActivityImages === 1 ? '' : 's') + ' to safe storage');
+        _applySavedActivityNotesToState(merged);
+        if (state.weekStart === weekStart) {
+          await dbPut('weeks', { weekStart, userId: state.currentUser?.uid || null, data: state.weekData, updatedAt: merged._updatedAt || Date.now() });
+        }
+      }
+
+      const payloadBytes = _jsonBytes(merged);
+      if (payloadBytes > 900000) {
+        console.warn('[Rian] Week document is large after image migration:', payloadBytes, 'bytes');
+        showToast('This week is large. Images are being protected, but cloud sync may be slower.');
+      }
+      const expectedFingerprint = _weekContentFingerprint(merged);
+
+      await _safeBackupWeek('before-cloud-write', weekStart, merged);
       await ref.set(merged);
       // Verify the write landed on the server (Firestore persistence
       // resolves set() from local cache, not server confirmation).
@@ -20724,9 +20908,18 @@
           } else {
             console.info('[Rian] Write verified on server (' + _vTotal + ' activities)');
           }
+          if (_weekContentFingerprint(_vData) !== expectedFingerprint) {
+            console.warn('[Rian] Write verification: server content fingerprint mismatch — retrying write');
+            await ref.set(merged);
+            var _verify2 = await ref.get({ source: 'server' });
+            if (!_verify2.exists || _weekContentFingerprint(_verify2.data()) !== expectedFingerprint) {
+              throw new Error('Cloud save verification failed: note content did not match after save');
+            }
+          }
         }
       } catch (_ve) {
-        console.warn('[Rian] Write verification failed (offline?) —', _ve.message);
+        console.warn('[Rian] Write verification failed —', _ve.message);
+        throw _ve;
       }
       // Also update local state with the merged data so it reflects recovered activities
       if (state.weekStart === weekStart && merged.days) {
@@ -21806,6 +21999,10 @@
           const editingActId = userEditing ? active.dataset.act : null;
           const editingDayIdx = userEditing ? parseInt(active.dataset.day) : null;
           const editingValue = userEditing ? active.value : null;
+          const noteModal = document.getElementById('note-fs-modal');
+          const activityNoteEditing = _noteFsActId != null && _noteFsDi != null &&
+            noteModal && !noteModal.classList.contains('hidden') && _tiptapEditor;
+          const activityNoteHtml = activityNoteEditing ? _ttGetHTML() : null;
 
           // Collect draft activities before overwriting — drafts are local-only
           // and never synced, so incoming remote data won't have them.
@@ -21817,6 +22014,7 @@
             });
           }
 
+          _safeBackupWeek('before-cloud-snapshot', weekStart, state.weekData).catch(function () { });
           state.weekData = deepCopy(remote);
           // Ensure the local updatedAt reflects the server time (as a number)
           state.weekData._updatedAt = remoteTs;
@@ -21893,10 +22091,17 @@
               if (act) act[editingField] = editingValue;
             }
           }
+          if (activityNoteEditing) {
+            const day = state.weekData.days[_noteFsDi];
+            if (day) {
+              const act = day.activities.find(a => a.id === _noteFsActId);
+              if (act) act.notes = activityNoteHtml;
+            }
+          }
 
           dbPut('weeks', { weekStart, userId: state.currentUser?.uid || null, data: state.weekData, updatedAt: remoteTs || Date.now() });
 
-          if (!userEditing) {
+          if (!userEditing && !activityNoteEditing) {
             render();
           } else if (_isDesktop()) {
             // Desktop: user is editing a field in the detail panel — don't full-render
@@ -21938,6 +22143,7 @@
       saveTimer = setTimeout(async () => {
         const dataToSave = capturedWeekData;
         const uid = state.currentUser?.uid || null;
+        await _safeBackupWeek('autosave', capturedWeekStart, dataToSave);
         await dbPut('weeks', { weekStart: capturedWeekStart, userId: uid, data: dataToSave, updatedAt: dataToSave._updatedAt });
         // First-snapshot gate (v5.1.90) — if we haven't heard from Firestore
         // yet for this freshly-scaffolded week, do NOT push to cloud. This
@@ -42735,11 +42941,12 @@ QUESTION: ${query}`;
                   const dataUrl = await _compressDataUrl(ev.target.result, 1400, 0.75);
                   let src = dataUrl;
                   let _uploadedToStorage = false;
-                  if (state.currentUser && storage_fb && _fnFsNoteId) {
+                  if (state.currentUser && storage_fb && _currentTipTapImageKey()) {
                     try {
                       showToast('⬆️ Uploading…');
-                      src = await _uploadNoteImage(dataUrl, _fnFsNoteId);
-                      _uploadedToStorage = true;
+                      const uploaded = await _uploadTipTapImage(dataUrl);
+                      src = uploaded.src;
+                      _uploadedToStorage = uploaded.uploaded;
                     } catch (e) {
                       console.warn('[Rian] Storage paste upload failed, using base64:', e);
                       showToast('⚠️ Upload failed — image stored locally');
@@ -44049,11 +44256,12 @@ QUESTION: ${query}`;
       // Upload to Firebase Storage if signed in, else fall back to base64
       let src = dataUrl;
       let _uploadedToStorage = false;
-      if (state.currentUser && storage_fb && _fnFsNoteId) {
+      if (state.currentUser && storage_fb && _currentTipTapImageKey()) {
         try {
           showToast('⬆️ Uploading…');
-          src = await _uploadNoteImage(dataUrl, _fnFsNoteId);
-          _uploadedToStorage = true;
+          const uploaded = await _uploadTipTapImage(dataUrl);
+          src = uploaded.src;
+          _uploadedToStorage = uploaded.uploaded;
         } catch (e) {
           console.warn('[Rian] Storage upload failed, using base64:', e);
           showToast('⚠️ Upload failed — image stored locally');
