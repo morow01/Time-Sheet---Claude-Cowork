@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.97';
+    const VERSION = '6.1.98';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44878,8 +44878,20 @@ QUESTION: ${query}`;
       const h = _tiptapEditor.getHTML();
       return (h === '<p></p>' || h === '') ? '' : h;
     }
+    function _findActivityById(actId) {
+      if (!state.weekData || !state.weekData.days) return null;
+      for (let di = 0; di < state.weekData.days.length; di++) {
+        const act = (state.weekData.days[di].activities || []).find(a => a.id === actId);
+        if (act) return { act, di };
+      }
+      return null;
+    }
     function openNoteFullscreen(actId, di) {
-      _noteFsActId = actId; _noteFsDi = di;
+      _coNoteFsActive = false;
+      _fnFsNoteId = null;
+      _fnFsSource = null;
+      const foundAct = _findActivityById(actId);
+      _noteFsActId = actId; _noteFsDi = foundAct ? foundAct.di : di;
       window._actNoteDirty = false; // track if user actually edited
       window._actNoteOpenTs = Date.now(); // track when opened for stale-editor guard
       window._actNoteOpenContent = '';
@@ -44888,13 +44900,13 @@ QUESTION: ${query}`;
       history.pushState({ noteFs: true }, '');
       const ta = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
       // Desktop mode: no hidden textarea — read directly from activity data
-      const _actForNote = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
+      const _actForNote = foundAct?.act || state.weekData?.days[di]?.activities?.find(a => a.id === actId);
       const currentValue = ta ? ta.value : (_actForNote?.notes || '');
       window._actNoteOpenContent = currentValue || '';
       window._actNoteBaseUpdatedAt = _actForNote?._notesUpdatedAt || state.weekData?._updatedAt || 0;
       window._actNoteBaseHash = _noteContentHash(currentValue || '');
       // Populate header with description + location context
-      const act = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
+      const act = _actForNote;
       const titleEl = document.getElementById('note-fs-title');
       const subEl = document.getElementById('note-fs-subtitle');
       if (titleEl) titleEl.textContent = act?.description || 'Edit Note';
@@ -45024,7 +45036,7 @@ QUESTION: ${query}`;
         // Destroy editor AFTER content is saved
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
         render();
-      } else if (_noteFsActId != null && _noteFsDi != null) {
+      } else if (_noteFsActId != null) {
         // Activity inline note (timesheet) — flush final TipTap content
         if (_tiptapEditor) {
           if (shouldSave) {
@@ -45033,7 +45045,9 @@ QUESTION: ${query}`;
             if (!noteChanged) {
               _tiptapEditor.destroy(); _tiptapEditor = null;
             } else {
-            const _clAct = state.weekData?.days[_noteFsDi]?.activities?.find(a => a.id === _noteFsActId);
+            const foundAct = _findActivityById(_noteFsActId);
+            const _clAct = foundAct?.act;
+            if (foundAct) _noteFsDi = foundAct.di;
             if (_clAct) {
               // Stale-editor guard: if the activity's note was updated remotely
               // while TipTap was open, warn the user before overwriting
@@ -46386,7 +46400,7 @@ The state block is invisible to the user.`;
         </button>
         <button onclick="cancelNoteFullscreen()"
           style="font-size:13px;color:#fff;padding:5px 12px;border-radius:8px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);cursor:pointer;font-weight:700;flex-shrink:0;">Cancel</button>
-        <button id="note-fs-save-btn" onclick="saveNoteFullscreen()" disabled
+        <button id="note-fs-save-btn" onclick="saveNoteFullscreen()"
           style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:var(--accent);border:none;cursor:pointer;font-weight:800;flex-shrink:0;opacity:.55">Save</button>
       </div>
       <!-- TipTap toolbar row + colour dropdown wrapper -->
