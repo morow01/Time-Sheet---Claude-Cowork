@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.0';
+    const VERSION = '6.2.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21365,6 +21365,7 @@
         expanded: [...state.expandedDays],
         notes: Object.fromEntries(state.notesOpen),
         deskSelectedDay: state.deskSelectedDay,
+        deskSelectedAct: state.deskSelectedAct,
       }));
     }
 
@@ -21377,6 +21378,7 @@
           state.expandedDays = new Set(saved.expanded || []);
           state.notesOpen = new Map(Object.entries(saved.notes || {}));
           if (Number.isInteger(saved.deskSelectedDay)) state.deskSelectedDay = saved.deskSelectedDay;
+          if (saved.deskSelectedAct) state.deskSelectedAct = saved.deskSelectedAct;
           return true;
         }
       } catch (e) { /* expected: localStorage unavailable or corrupt */ }
@@ -24495,6 +24497,7 @@
 
     function deskSelectAct(actId) {
       state.deskSelectedAct = actId;
+      saveUiState();
       // Surgical update: re-render tasks + detail panels only
       var tasksPanel = document.getElementById('desk-tasks-panel');
       var detailPanel = document.getElementById('desk-detail-panel');
@@ -24511,6 +24514,7 @@
       var day = state.weekData.days[di];
       if (day.activities.length > 0) {
         state.deskSelectedAct = day.activities[day.activities.length - 1].id;
+        saveUiState();
       }
     }
 
@@ -28392,6 +28396,7 @@
       // Clamp selected note — only reset if current selection is not in the list; don't auto-pick first
       if (state.deskSelectedNote && !listNotes.find(function (n) { return n.id === state.deskSelectedNote; })) {
         state.deskSelectedNote = null;
+        _dnotesSaveNav();
       }
       var selNote = state.deskSelectedNote ? state.notes.find(function (n) { return n.id === state.deskSelectedNote; }) : null;
 
@@ -28751,6 +28756,7 @@
         state.deskNotesCatFilter = key;
       }
       state.deskSelectedNote = null; // reset selection — new filter context
+      _dnotesSaveNav();
       render();
     }
 
