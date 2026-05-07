@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.103';
+    const VERSION = '6.2.0';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21364,6 +21364,7 @@
       localStorage.setItem('ui_' + state.weekStart, JSON.stringify({
         expanded: [...state.expandedDays],
         notes: Object.fromEntries(state.notesOpen),
+        deskSelectedDay: state.deskSelectedDay,
       }));
     }
 
@@ -21375,6 +21376,7 @@
         if (saved) {
           state.expandedDays = new Set(saved.expanded || []);
           state.notesOpen = new Map(Object.entries(saved.notes || {}));
+          if (Number.isInteger(saved.deskSelectedDay)) state.deskSelectedDay = saved.deskSelectedDay;
           return true;
         }
       } catch (e) { /* expected: localStorage unavailable or corrupt */ }
@@ -21392,8 +21394,10 @@
       const idx = state.weekData.days.findIndex(d => d.date === today);
       if (idx >= 0) {
         state.expandedDays.add(idx);
+        state.deskSelectedDay = idx;
       } else {
         state.expandedDays.add(0); // default expand first day
+        state.deskSelectedDay = 0;
       }
     }
 
@@ -24485,6 +24489,7 @@
     function deskSelectDay(di) {
       state.deskSelectedDay = di;
       state.deskSelectedAct = null; // reset to first task of new day
+      saveUiState();
       render();
     }
 
