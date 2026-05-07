@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.101';
+    const VERSION = '6.1.102';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -43697,11 +43697,48 @@ QUESTION: ${query}`;
       // default-browser support on Android. No auto-navigate on click.
     }
 
+    function _ttRunUndo() {
+      const ed = _tiptapEditor;
+      if (!ed) return false;
+      const ok = ed.commands.undo();
+      _ttUpdateToolbar(ed);
+      return ok;
+    }
+
+    function _ttRunRedo() {
+      const ed = _tiptapEditor;
+      if (!ed) return false;
+      const ok = ed.commands.redo();
+      _ttUpdateToolbar(ed);
+      return ok;
+    }
+
+    document.addEventListener('keydown', function (ev) {
+      const modal = document.getElementById('note-fs-modal');
+      if (!modal || modal.classList.contains('hidden') || !_tiptapEditor) return;
+      const target = ev.target;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) return;
+      if (!(ev.metaKey || ev.ctrlKey) || ev.altKey) return;
+      const key = (ev.key || '').toLowerCase();
+      if (key === 'z' && !ev.shiftKey) {
+        ev.preventDefault();
+        _ttRunUndo();
+      } else if (key === 'y' || (key === 'z' && ev.shiftKey)) {
+        ev.preventDefault();
+        _ttRunRedo();
+      }
+    }, true);
+
     let _ttToolbarBound = false;
     function _ttBindToolbar() {
       if (_ttToolbarBound) return; // prevent duplicate bindings on editor recreate
       _ttToolbarBound = true;
-      const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+      const on = (id, fn) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('mousedown', ev => ev.preventDefault());
+        el.addEventListener('click', fn);
+      };
       // Dropdown toggle — positions menu as position:fixed so it escapes overflow-x:auto toolbar clipping on mobile
       const _openToolbarDrop = (btnId, menuId) => {
         const btn = document.getElementById(btnId);
@@ -43897,8 +43934,8 @@ QUESTION: ${query}`;
       const imgInput = document.getElementById('tt-image-input');
       if (imgInput) imgInput.addEventListener('change', (ev) => _ttHandleImageUpload(ev));
       // Undo / Redo / Clear
-      on('tt-undo', () => e.chain().focus().undo().run());
-      on('tt-redo', () => e.chain().focus().redo().run());
+      on('tt-undo', () => _ttRunUndo());
+      on('tt-redo', () => _ttRunRedo());
       on('tt-clear', () => { e.chain().focus().unsetAllMarks().clearNodes().run(); _ttUpdateToolbar(e); });
       // Helper: close colour palette after picking
       const _closePalette = () => {
