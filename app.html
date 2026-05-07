@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.92';
+    const VERSION = '6.1.94';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22289,6 +22289,37 @@
           }
         }
       }, 1000);
+    }
+
+    async function saveWeekNow() {
+      clearTimeout(saveTimer);
+      state.syncStatus = 'pending';
+      state.weekData._updatedAt = Date.now();
+      const capturedWeekStart = state.weekStart;
+      const uid = state.currentUser?.uid || null;
+      const dataToSave = deepCopy(state.weekData);
+      if (dataToSave.days) {
+        dataToSave.days.forEach(d => {
+          d.activities = (d.activities || []).filter(a => !a._draft);
+        });
+      }
+      updateHeaderStatus();
+      await _safeBackupWeek('explicit-save', capturedWeekStart, dataToSave);
+      await dbPut('weeks', { weekStart: capturedWeekStart, userId: uid, data: dataToSave, updatedAt: dataToSave._updatedAt });
+      if (state.currentUser) {
+        try {
+          await fsSetWeek(capturedWeekStart, dataToSave);
+          _setHWM(capturedWeekStart, _weekTotalHours(dataToSave));
+          if (state.weekStart === capturedWeekStart) state.syncStatus = 'synced';
+        } catch (e) {
+          if (state.weekStart === capturedWeekStart) state.syncStatus = 'error';
+          updateHeaderStatus();
+          throw e;
+        }
+      } else {
+        state.syncStatus = 'synced';
+      }
+      updateHeaderStatus();
     }
 
 
@@ -27186,6 +27217,51 @@
       }, 1000);
     }
 
+    async function saveNotesNow() {
+      clearTimeout(notesSaveTimer);
+      notesSaveTimer = null;
+      state.notesSyncStatus = 'pending';
+      updateHeaderStatus();
+      const ts = Date.now();
+      let _notesToFs = state.notes.filter(n => !n._draft);
+      await dbPut('notes', { id: 'notes_all', userId: state.currentUser?.uid || null, data: _notesToFs, updatedAt: ts });
+      if (state.currentUser) {
+        try {
+          if (JSON.stringify(_notesToFs).length > 800000) {
+            const _cr = await _compressNotesForFs(_notesToFs);
+            if (_cr.didCompress) {
+              state.notes = _cr.notes;
+              for (const _cid of _cr.compressedIds) {
+                const _cn = state.notes.find(function (n) { return n.id === _cid; });
+                if (_cn) {
+                  const _cSize = (_cn.noteContent || '').length;
+                  _setNoteHWMExplicit(_cid, _cSize);
+                  _setNoteHWMCat(_cid, _cn._compressedAt || Date.now());
+                }
+              }
+              _notesToFs = state.notes.filter(n => !n._draft);
+              await dbPut('notes', { id: 'notes_all', userId: state.currentUser?.uid || null, data: _notesToFs, updatedAt: ts });
+              showToast('📦 Images compressed — notes syncing');
+              console.log('[Rian] Notes after compression:', JSON.stringify(_notesToFs).length, 'bytes');
+            }
+          }
+          for (const _n of _notesToFs) {
+            _setNoteHWMExplicit(_n.id, (_n.noteContent || '').length);
+          }
+          await fsSetNotes(_notesToFs);
+          state.notesSyncStatus = 'synced';
+        } catch (e) {
+          state.notesSyncStatus = 'error';
+          _tiptapLastSaveAt = Date.now();
+          updateHeaderStatus();
+          throw e;
+        }
+      } else {
+        state.notesSyncStatus = 'synced';
+      }
+      updateHeaderStatus();
+    }
+
     // Decode HTML entities like &amp; &lt; etc.
     function decodeEntities(str) {
       const el = document.createElement('textarea');
@@ -27481,6 +27557,37 @@
         }
         updateHeaderStatus();
       }, 1000);
+    }
+
+    async function saveJNow() {
+      if (_jSaveTimer) clearTimeout(_jSaveTimer);
+      _jSaveTimer = null;
+      state.jSyncStatus = 'pending';
+      updateHeaderStatus();
+      const ts = Date.now();
+      const userId = state.currentUser?.uid || null;
+      await Promise.all([
+        dbPut('notes', { id: 'j_notebooks', userId, data: state.jNotebooks, updatedAt: ts }),
+        dbPut('notes', { id: 'j_sections', userId, data: state.jSections, updatedAt: ts }),
+        dbPut('notes', { id: 'j_pages', userId, data: state.jPages, updatedAt: ts }),
+      ]);
+      if (state.currentUser) {
+        try {
+          await Promise.all([
+            fsSetJNotebooks(state.jNotebooks),
+            fsSetJSections(state.jSections),
+            fsSetJPages(state.jPages),
+          ]);
+          state.jSyncStatus = 'synced';
+        } catch (e) {
+          state.jSyncStatus = 'error';
+          updateHeaderStatus();
+          throw e;
+        }
+      } else {
+        state.jSyncStatus = 'synced';
+      }
+      updateHeaderStatus();
     }
 
     async function loadJournal() {
@@ -31253,10 +31360,20 @@
       window._tiptapNoteEdited = false;
       window._actNoteDirty = false;
       const saveBtn = document.getElementById('note-fs-save-btn');
-      if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '.55'; }
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '.55'; saveBtn.textContent = 'Save'; }
     }
 
-    function saveNoteFullscreen() { closeNoteFullscreen('save'); }
+    async function saveNoteFullscreen() {
+      const saveBtn = document.getElementById('note-fs-save-btn');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '.75'; saveBtn.textContent = 'Saving...'; }
+      try {
+        await closeNoteFullscreen('save');
+      } catch (e) {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; saveBtn.textContent = 'Save'; }
+        console.warn('[Rian] TipTap save failed:', e);
+        showToast('Save failed — try again');
+      }
+    }
     function cancelNoteFullscreen() { closeNoteFullscreen('cancel'); }
 
     function toggleFieldNotePanel(noteId) {
@@ -39438,6 +39555,18 @@
         saveCallouts().finally(() => { _coSavePending = false; });
       }
     }
+    async function _coSaveNow() {
+      if (_coSaveTimer) {
+        clearTimeout(_coSaveTimer);
+        _coSaveTimer = null;
+      }
+      _coSavePending = true;
+      try {
+        await saveCallouts();
+      } finally {
+        _coSavePending = false;
+      }
+    }
 
     // Get or create the currently-expanded callout object.
     // For __new__ cards, auto-promotes to a real record on first field edit.
@@ -44741,6 +44870,7 @@ QUESTION: ${query}`;
         if (shouldSave && coTa) {
           coTa.value = html;
           coAutoSave();
+          await _coSaveNow();
         }
         if (coTa && preview) {
           preview.innerHTML = coTa.value && coTa.value.trim()
@@ -44790,9 +44920,9 @@ QUESTION: ${query}`;
           if (_fnFsSource === 'notes') _setNoteHWMExplicit(_fnFsNoteId, (html || '').length);
           _tiptapLastSavedNoteId = _fnFsNoteId;
           _tiptapLastSaveAt = Date.now();
-          if (_fnFsSource === 'jpage') scheduleJSave();
+          if (_fnFsSource === 'jpage') await saveJNow();
           else if (_fnFsSource === 'journal') scheduleJournalSave();
-          else scheduleNotesSave();
+          else await saveNotesNow();
         }
         window._tiptapNoteEdited = false;
         window._ttFsDirty = false;
@@ -44832,7 +44962,7 @@ QUESTION: ${query}`;
               }
               _clAct.notes = html;
               _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
-              scheduleAutoSave();
+              await saveWeekNow();
             }
           }
           _tiptapEditor.destroy(); _tiptapEditor = null;
