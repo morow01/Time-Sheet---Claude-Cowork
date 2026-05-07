@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.88';
+    const VERSION = '6.1.90';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -31240,6 +31240,24 @@
 
     // ── Field Note panel (inside Notes section cards) ──
     let _fnFsNoteId = null;
+    function _ttMarkDraftDirty() {
+      window._ttFsDirty = true;
+      window._tiptapNoteEdited = true;
+      window._actNoteDirty = true;
+      const saveBtn = document.getElementById('note-fs-save-btn');
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; }
+    }
+
+    function _ttResetDraftState() {
+      window._ttFsDirty = false;
+      window._tiptapNoteEdited = false;
+      window._actNoteDirty = false;
+      const saveBtn = document.getElementById('note-fs-save-btn');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '.55'; }
+    }
+
+    function saveNoteFullscreen() { closeNoteFullscreen('save'); }
+    function cancelNoteFullscreen() { closeNoteFullscreen('cancel'); }
 
     function toggleFieldNotePanel(noteId) {
       const wrap = document.querySelector(`[data-fn-wrap="${noteId}"]`);
@@ -31292,6 +31310,7 @@
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
       document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
+      _ttResetDraftState();
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -31300,27 +31319,12 @@
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
         _tiptapLastSavedNoteId = noteId;
-        window._tiptapNoteEdited = false; // track whether user actually changed anything
         window._tiptapOpenedEmpty = !(note.noteContent || '').trim(); // was editor empty at open?
         _tiptapOnUpdate = (editor) => {
           const html = _ttGetHTML();
           const hasContent = html && html.replace(/<[^>]*>/g, '').trim().length > 0;
-          // SAFETY: if editor was opened empty (stale cache), don't save empty content
-          // back to Firestore — it would overwrite fresh content from another device.
-          // Only save once the user actually adds real content.
-          if (window._tiptapOpenedEmpty && !hasContent) return;
           if (hasContent) window._tiptapOpenedEmpty = false; // user typed → safe to save now
-          const _fsArr = _fnFsSource === 'jpage' ? state.jPages
-            : _fnFsSource === 'journal' ? state.journal
-              : state.notes;
-          const n = _fsArr.find(x => x.id === noteId);
-          if (n) {
-            n.noteContent = html; n.updatedAt = Date.now();
-            _tiptapLastSaveAt = Date.now(); _tiptapLastSavedNoteId = noteId; window._tiptapNoteEdited = true;
-            if (_fnFsSource === 'jpage') scheduleJSave();
-            else if (_fnFsSource === 'journal') scheduleJournalSave();
-            else scheduleNotesSave();
-          }
+          _ttMarkDraftDirty();
         };
         _ttUpdateToolbar(_tiptapEditor);
       }, 80);
@@ -39563,6 +39567,7 @@
       if (subEl) { subEl.textContent = ''; subEl.style.display = 'none'; }
       document.getElementById('note-fs-modal').classList.remove('hidden');
       document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
+      _ttResetDraftState();
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -39570,14 +39575,7 @@
         // Blur so cursor isn't visible at top — user taps to edit
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapOnUpdate = (editor) => {
-          const html = _ttGetHTML();
-          const coTa = document.getElementById('co-notes-ta');
-          if (coTa) {
-            coTa.value = html;
-            coAutoSave();
-            const preview = document.querySelector('[data-co-notes-preview]');
-            if (preview) preview.innerHTML = html || '<span class="notes-rich-placeholder">Tap to add a note…</span>';
-          }
+          _ttMarkDraftDirty();
         };
         _ttUpdateToolbar(_tiptapEditor);
       }, 80);
@@ -44689,6 +44687,7 @@ QUESTION: ${query}`;
       }
       document.getElementById('note-fs-modal').classList.remove('hidden');
       document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
+      _ttResetDraftState();
       setTimeout(async () => {
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
@@ -44696,26 +44695,19 @@ QUESTION: ${query}`;
         // Blur so cursor isn't visible at top — user taps to edit
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapOnUpdate = (editor) => {
-          window._actNoteDirty = true;
-          const html = _ttGetHTML();
-          const mainTa = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
-          if (mainTa) { mainTa.value = html; updateField(mainTa); }
-          else {
-            // Desktop mode: no hidden textarea, write directly to activity data
-            const _dAct = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
-            if (_dAct) {
-              _dAct.notes = html;
-              _stampActivityNotes(_dAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
-              scheduleAutoSave();
-            }
-          }
+          _ttMarkDraftDirty();
         };
         // Don't auto-focus — user may just want to read, not edit
         // Keyboard opens on first tap in the editor
         _ttUpdateToolbar(_tiptapEditor);
       }, 80);
     }
-    function closeNoteFullscreen() {
+    function closeNoteFullscreen(action) {
+      const shouldSave = action === 'save';
+      if (!shouldSave && _tiptapEditor && window._ttFsDirty) {
+        const discard = confirm('Discard changes to this note?');
+        if (!discard) return;
+      }
       // Stop any active dictation
       if (_fsDictRecognition) { _fsDictRecognition.stop(); _fsDictRecognition = null; }
       const micBtn = document.getElementById('fs-mic-btn');
@@ -44737,8 +44729,13 @@ QUESTION: ${query}`;
       // If we were editing a callout note, update preview
       if (_coNoteFsActive) {
         _coNoteFsActive = false;
+        const html = _tiptapEditor ? _ttGetHTML() : '';
         const coTa = document.getElementById('co-notes-ta');
         const preview = document.querySelector('[data-co-notes-preview]');
+        if (shouldSave && coTa) {
+          coTa.value = html;
+          coAutoSave();
+        }
         if (coTa && preview) {
           preview.innerHTML = coTa.value && coTa.value.trim()
             ? (coTa.value.trim().startsWith('<') ? sanitizeHtml(coTa.value) : esc(coTa.value).replace(/\n/g, '<br>'))
@@ -44746,12 +44743,14 @@ QUESTION: ${query}`;
         }
         // Destroy editor AFTER content is handled
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+        window._ttFsDirty = false;
+        _ttResetDraftState();
         return;
       }
       // If we were editing a field note's noteContent, flush final content + re-render
       if (_fnFsNoteId) {
-        // Only save if the user actually changed something — never overwrite with stale content
-        if (_tiptapEditor && window._tiptapNoteEdited) {
+        // Only Save writes the draft back. Cancel/ESC/back discard editor-only changes.
+        if (shouldSave && _tiptapEditor && window._tiptapNoteEdited) {
           const html = _ttGetHTML();
           const _closeArr = _fnFsSource === 'jpage' ? state.jPages
             : _fnFsSource === 'journal' ? state.journal
@@ -44760,7 +44759,7 @@ QUESTION: ${query}`;
           // v5.8.14: Stale-editor guard — only warn if the note's CONTENT actually
           // changed while TipTap was open (not just updatedAt from local field edits).
           var _contentChangedRemotely = n && (n.noteContent || '') !== (window._tiptapNoteOpenContent || '') && (n.noteContent || '') !== html;
-          if (_contentChangedRemotely) {
+          if (_contentChangedRemotely && !_activityNoteContainsRemote(html, n.noteContent || '')) {
             // Remote content change arrived after we opened the editor
             const keepLocal = confirm(
               'This note was updated on another device while you were editing.\n\n' +
@@ -44773,6 +44772,7 @@ QUESTION: ${query}`;
               if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
               render();
               _noteFsActId = null; _noteFsDi = null;
+              _ttResetDraftState();
               return;
             }
           }
@@ -44786,6 +44786,7 @@ QUESTION: ${query}`;
           else scheduleNotesSave();
         }
         window._tiptapNoteEdited = false;
+        window._ttFsDirty = false;
         _fnFsNoteId = null;
         // Destroy editor AFTER content is saved
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
@@ -44793,7 +44794,7 @@ QUESTION: ${query}`;
       } else if (_noteFsActId != null && _noteFsDi != null) {
         // Activity inline note (timesheet) — flush final TipTap content
         if (_tiptapEditor) {
-          if (window._actNoteDirty) {
+          if (shouldSave && window._actNoteDirty) {
             const html = _ttGetHTML();
             const _clAct = state.weekData?.days[_noteFsDi]?.activities?.find(a => a.id === _noteFsActId);
             if (_clAct) {
@@ -44802,7 +44803,7 @@ QUESTION: ${query}`;
               const remoteNote = _clAct.notes || '';
               const openTs = window._actNoteOpenTs || 0;
               const localTs = state.weekData._updatedAt || 0;
-              if (openTs > 0 && localTs > openTs + 2000 && remoteNote !== html) {
+              if (openTs > 0 && localTs > openTs + 2000 && remoteNote !== html && !_activityNoteContainsRemote(html, remoteNote)) {
                 const keepLocal = confirm(
                   'This note was updated on another device while you were editing.\n\n' +
                   'Keep YOUR version (OK) or discard your changes and keep the cloud version (Cancel)?'
@@ -44813,6 +44814,7 @@ QUESTION: ${query}`;
                   window._actNoteDirty = false;
                   render();
                   _noteFsActId = null; _noteFsDi = null;
+                  _ttResetDraftState();
                   return;
                 }
               }
@@ -44828,11 +44830,14 @@ QUESTION: ${query}`;
         window._actNoteBaseUpdatedAt = 0;
         window._actNoteBaseHash = '';
         window._actNoteDirty = false;
+        window._ttFsDirty = false;
         render();
       } else {
         // No note context — still destroy to free memory
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
       }
+      window._ttFsDirty = false;
+      _ttResetDraftState();
       _noteFsActId = null; _noteFsDi = null;
     }
 
@@ -46138,8 +46143,10 @@ The state block is invisible to the user.`;
               d="M15 3h-2V1h-2v2H9C7.9 3 7 3.9 7 5v16c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM13 17h-2v-2h2v2zm2-5h-2v-5h2v5z" />
           </svg>
         </button>
-        <button onclick="closeNoteFullscreen()"
-          style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:var(--text-ot);border:none;cursor:pointer;font-weight:700;flex-shrink:0;">Done</button>
+        <button onclick="cancelNoteFullscreen()"
+          style="font-size:13px;color:#fff;padding:5px 12px;border-radius:8px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);cursor:pointer;font-weight:700;flex-shrink:0;">Cancel</button>
+        <button id="note-fs-save-btn" onclick="saveNoteFullscreen()" disabled
+          style="font-size:13px;color:#fff;padding:5px 14px;border-radius:8px;background:var(--accent);border:none;cursor:pointer;font-weight:800;flex-shrink:0;opacity:.55">Save</button>
       </div>
       <!-- TipTap toolbar row + colour dropdown wrapper -->
       <div class="tt-toolbar-wrap">
