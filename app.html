@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.84';
+    const VERSION = '6.1.86';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20541,6 +20541,32 @@
       return (String(html || '').match(/src=["']data:image/gi) || []).length;
     }
 
+    function _noteContentHash(html) {
+      const s = String(html || '');
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return s.length + ':' + (h >>> 0).toString(36);
+    }
+
+    function _stripActivityNoteMergeMeta(act) {
+      if (!act) return act;
+      delete act._notesEditBaseUpdatedAt;
+      delete act._notesEditBaseHash;
+      delete act._notesRemoteWhileOpenUpdatedAt;
+      delete act._notesRemoteWhileOpenHash;
+      return act;
+    }
+
+    function _stampActivityNotes(act, baseUpdatedAt, baseHash) {
+      if (!act) return;
+      act._notesUpdatedAt = Date.now();
+      if (baseUpdatedAt != null) act._notesEditBaseUpdatedAt = baseUpdatedAt || 0;
+      if (baseHash) act._notesEditBaseHash = baseHash;
+    }
+
     function _jsonBytes(obj) {
       try { return new Blob([JSON.stringify(obj || {})]).size; }
       catch (e) { return JSON.stringify(obj || {}).length; }
@@ -20567,11 +20593,47 @@
       }).join('||');
     }
 
-    function _protectRicherRemoteActivityNotes(localAct, remoteAct) {
+    function _protectRicherRemoteActivityNotes(localAct, remoteAct, remoteWeekUpdatedAt) {
       if (!localAct || !remoteAct) return localAct;
       const localNotes = localAct.notes || '';
       const remoteNotes = remoteAct.notes || '';
-      if (!remoteNotes || remoteNotes === localNotes) return localAct;
+      if (remoteNotes === localNotes) return _stripActivityNoteMergeMeta(localAct);
+
+      const baseTs = localAct._notesEditBaseUpdatedAt || 0;
+      const baseHash = localAct._notesEditBaseHash || '';
+      const remoteHash = _noteContentHash(remoteNotes);
+      const localNoteTs = localAct._notesUpdatedAt || 0;
+      const remoteNoteTs = remoteAct._notesUpdatedAt || remoteWeekUpdatedAt || 0;
+      const remoteWhileOpenTs = localAct._notesRemoteWhileOpenUpdatedAt || 0;
+      if (remoteAct._notesUpdatedAt && localNoteTs && remoteAct._notesUpdatedAt > localNoteTs) {
+        console.warn('[Rian] Merge-on-save kept newer remote activity note for', remoteAct.id);
+        return _stripActivityNoteMergeMeta(Object.assign({}, localAct, {
+          notes: remoteNotes,
+          _notesUpdatedAt: remoteAct._notesUpdatedAt,
+          _notesProtectedAt: Date.now()
+        }));
+      }
+      const remoteChangedAfterOpen =
+        (baseTs && remoteNoteTs && remoteNoteTs > baseTs && (!baseHash || remoteHash !== baseHash)) ||
+        (remoteWhileOpenTs && remoteWhileOpenTs >= baseTs && localAct._notesRemoteWhileOpenHash === remoteHash);
+      if (remoteChangedAfterOpen) {
+        const out = Object.assign({}, localAct, {
+          notes: remoteNotes,
+          _notesUpdatedAt: remoteAct._notesUpdatedAt || remoteNoteTs,
+          _notesProtectedAt: Date.now()
+        });
+        const openContent = (typeof window !== 'undefined' && window._actNoteOpenContent) ? window._actNoteOpenContent : '';
+        if (localNotes && localNotes !== openContent && localNotes !== remoteNotes) {
+          const backups = Array.isArray(localAct._notesConflictBackups) ? localAct._notesConflictBackups.slice(-2) : [];
+          backups.push({ at: Date.now(), reason: 'stale-editor-save-blocked', html: localNotes });
+          out._notesConflictBackups = backups;
+        }
+        console.warn('[Rian] Merge-on-save blocked stale activity note overwrite for', remoteAct.id);
+        return _stripActivityNoteMergeMeta(out);
+      }
+
+      if (!remoteNotes) return _stripActivityNoteMergeMeta(localAct);
+
       const localImgs = _htmlImageCount(localNotes);
       const remoteImgs = _htmlImageCount(remoteNotes);
       const localDataImgs = _htmlDataImageCount(localNotes);
@@ -20580,9 +20642,9 @@
       const localIsInlineOnly = localDataImgs > 0 && remoteDataImgs === 0 && remoteImgs >= localImgs;
       if (remoteLooksRicher && !localIsInlineOnly) {
         console.warn('[Rian] Merge-on-save protected richer remote notes for activity', remoteAct.id);
-        return Object.assign({}, localAct, { notes: remoteNotes, _notesProtectedAt: Date.now() });
+        return _stripActivityNoteMergeMeta(Object.assign({}, localAct, { notes: remoteNotes, _notesUpdatedAt: remoteAct._notesUpdatedAt || remoteNoteTs, _notesProtectedAt: Date.now() }));
       }
-      return localAct;
+      return _stripActivityNoteMergeMeta(localAct);
     }
 
     async function _migrateActivityNoteImagesToStorage(weekData, weekStart) {
@@ -20827,6 +20889,9 @@
         const snap = await ref.get({ source: 'server' });
         if (snap.exists) {
           const remote = snap.data();
+          const remoteWeekUpdatedAt = (remote._updatedAt && remote._updatedAt.toMillis)
+            ? remote._updatedAt.toMillis()
+            : (remote._updatedAt || 0);
           if (remote.days && merged.days && remote.days.length === merged.days.length) {
             merged.days = merged.days.map(function (localDay, di) {
               var remoteDay = remote.days[di];
@@ -20842,8 +20907,8 @@
               // content so stale tabs cannot silently remove screenshots.
               var mergedActs = (localDay.activities || []).map(function (la) {
                 return la && la.id && remoteMap[la.id]
-                  ? _protectRicherRemoteActivityNotes(la, remoteMap[la.id])
-                  : la;
+                  ? _protectRicherRemoteActivityNotes(la, remoteMap[la.id], remoteWeekUpdatedAt)
+                  : _stripActivityNoteMergeMeta(la);
               });
 
               // Add remote-only activities (created on another browser, missed by snapshot)
@@ -20855,7 +20920,8 @@
                   var ra = remoteMap[rid];
                   if ((ra.description || '').trim() || (ra.location || '').trim() ||
                     (parseFloat(ra.ordinary) || 0) > 0 || (parseFloat(ra.overtime) || 0) > 0 ||
-                    (ra.codes && ra.codes.length > 0)) {
+                    (ra.codes && ra.codes.length > 0) ||
+                    (ra.notes || '').trim()) {
                     mergedActs.push(ra);
                     console.info('[Rian] Merge-on-save: recovered remote activity "' +
                       (ra.description || '').substring(0, 30) + '" on day ' + di);
@@ -20871,6 +20937,14 @@
       } catch (e) {
         // If server fetch fails (offline, etc.), save local data as-is
         console.warn('[Rian] Merge-on-save: server fetch failed, saving local only —', e.message);
+      }
+
+      if (merged.days) {
+        merged.days.forEach(function (d) {
+          d.activities = (d.activities || []).map(function (a) {
+            return _stripActivityNoteMergeMeta(a);
+          });
+        });
       }
 
       const migratedActivityImages = await _migrateActivityNoteImagesToStorage(merged, weekStart);
@@ -22002,7 +22076,7 @@
           const noteModal = document.getElementById('note-fs-modal');
           const activityNoteEditing = _noteFsActId != null && _noteFsDi != null &&
             noteModal && !noteModal.classList.contains('hidden') && _tiptapEditor;
-          const activityNoteHtml = activityNoteEditing ? _ttGetHTML() : null;
+          let activityNoteHtml = activityNoteEditing ? _ttGetHTML() : null;
 
           // Collect draft activities before overwriting — drafts are local-only
           // and never synced, so incoming remote data won't have them.
@@ -22095,7 +22169,34 @@
             const day = state.weekData.days[_noteFsDi];
             if (day) {
               const act = day.activities.find(a => a.id === _noteFsActId);
-              if (act) act.notes = activityNoteHtml;
+              if (act) {
+                const remoteNoteHtml = act.notes || '';
+                const remoteNoteTs = act._notesUpdatedAt || remoteTs || 0;
+                const openHash = window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || '');
+                const remoteChangedSinceOpen = remoteNoteHtml !== activityNoteHtml &&
+                  remoteNoteHtml !== (window._actNoteOpenContent || '') &&
+                  (!openHash || _noteContentHash(remoteNoteHtml) !== openHash);
+
+                if (!window._actNoteDirty && remoteChangedSinceOpen) {
+                  const oldHandler = _tiptapOnUpdate;
+                  _tiptapOnUpdate = null;
+                  _ttSetContent(remoteNoteHtml);
+                  _tiptapOnUpdate = oldHandler;
+                  activityNoteHtml = remoteNoteHtml;
+                  window._actNoteOpenContent = remoteNoteHtml;
+                  window._actNoteBaseUpdatedAt = remoteNoteTs;
+                  window._actNoteBaseHash = _noteContentHash(remoteNoteHtml);
+                  console.info('[Rian] Refreshed open activity note from cloud');
+                }
+
+                act.notes = activityNoteHtml;
+                if (window._actNoteDirty && remoteChangedSinceOpen) {
+                  act._notesRemoteWhileOpenUpdatedAt = remoteNoteTs;
+                  act._notesRemoteWhileOpenHash = _noteContentHash(remoteNoteHtml);
+                  act._notesEditBaseUpdatedAt = window._actNoteBaseUpdatedAt || 0;
+                  act._notesEditBaseHash = window._actNoteBaseHash || openHash;
+                }
+              }
             }
           }
 
@@ -25423,6 +25524,11 @@
 
       // Live-update note inline preview when notes change
       if (field === 'notes') {
+        if (_noteFsActId === actId) {
+          _stampActivityNotes(act, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
+        } else {
+          _stampActivityNotes(act);
+        }
         const inline = document.querySelector(`[data-notes-inline="${actId}"]`);
         if (inline && inline.parentNode) {
           const wrapper = document.createElement('div');
@@ -44542,11 +44648,17 @@ QUESTION: ${query}`;
       _noteFsActId = actId; _noteFsDi = di;
       window._actNoteDirty = false; // track if user actually edited
       window._actNoteOpenTs = Date.now(); // track when opened for stale-editor guard
+      window._actNoteOpenContent = '';
+      window._actNoteBaseUpdatedAt = 0;
+      window._actNoteBaseHash = '';
       history.pushState({ noteFs: true }, '');
       const ta = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
       // Desktop mode: no hidden textarea — read directly from activity data
       const _actForNote = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
       const currentValue = ta ? ta.value : (_actForNote?.notes || '');
+      window._actNoteOpenContent = currentValue || '';
+      window._actNoteBaseUpdatedAt = _actForNote?._notesUpdatedAt || state.weekData?._updatedAt || 0;
+      window._actNoteBaseHash = _noteContentHash(currentValue || '');
       // Populate header with description + location context
       const act = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
       const titleEl = document.getElementById('note-fs-title');
@@ -44573,7 +44685,11 @@ QUESTION: ${query}`;
           else {
             // Desktop mode: no hidden textarea, write directly to activity data
             const _dAct = state.weekData?.days[di]?.activities?.find(a => a.id === actId);
-            if (_dAct) { _dAct.notes = html; scheduleAutoSave(); }
+            if (_dAct) {
+              _dAct.notes = html;
+              _stampActivityNotes(_dAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
+              scheduleAutoSave();
+            }
           }
         };
         // Don't auto-focus — user may just want to read, not edit
@@ -44683,12 +44799,16 @@ QUESTION: ${query}`;
                 }
               }
               _clAct.notes = html;
+              _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
               scheduleAutoSave();
             }
           }
           _tiptapEditor.destroy(); _tiptapEditor = null;
         }
         window._actNoteOpenTs = 0;
+        window._actNoteOpenContent = '';
+        window._actNoteBaseUpdatedAt = 0;
+        window._actNoteBaseHash = '';
         window._actNoteDirty = false;
         render();
       } else {
