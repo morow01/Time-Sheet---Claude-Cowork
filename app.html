@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.98';
+    const VERSION = '6.1.99';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22304,6 +22304,10 @@
       clearTimeout(saveTimer);
       state.syncStatus = 'pending';
       state.weekData._updatedAt = Date.now();
+      if (_noteFsActId != null && _tiptapEditor) {
+        const act = _syncOpenActivityNoteDraft(_ttGetHTML());
+        if (act) _stampActivityNotes(act, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
+      }
       const capturedWeekStart = state.weekStart;
       updateHeaderStatus();
       // Deep-copy weekData so a week switch mid-debounce saves the correct
@@ -22351,6 +22355,10 @@
       clearTimeout(saveTimer);
       state.syncStatus = 'pending';
       state.weekData._updatedAt = Date.now();
+      if (_noteFsActId != null && _tiptapEditor) {
+        const act = _syncOpenActivityNoteDraft(_ttGetHTML());
+        if (act) _stampActivityNotes(act, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
+      }
       const capturedWeekStart = state.weekStart;
       const uid = state.currentUser?.uid || null;
       const dataToSave = deepCopy(state.weekData);
@@ -44886,6 +44894,14 @@ QUESTION: ${query}`;
       }
       return null;
     }
+    function _syncOpenActivityNoteDraft(html) {
+      if (_noteFsActId == null) return null;
+      const found = _findActivityById(_noteFsActId);
+      if (!found) return null;
+      _noteFsDi = found.di;
+      found.act.notes = html || '';
+      return found.act;
+    }
     function openNoteFullscreen(actId, di) {
       _coNoteFsActive = false;
       _fnFsNoteId = null;
@@ -44926,6 +44942,9 @@ QUESTION: ${query}`;
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapOnUpdate = (editor) => {
           _ttMarkDraftDirty();
+          if (_noteFsActId != null) {
+            _syncOpenActivityNoteDraft(_ttGetHTML());
+          }
         };
         // Don't auto-focus — user may just want to read, not edit
         // Keyboard opens on first tap in the editor
@@ -45041,12 +45060,13 @@ QUESTION: ${query}`;
         if (_tiptapEditor) {
           if (shouldSave) {
             const html = _ttGetHTML();
+            const mirroredAct = _syncOpenActivityNoteDraft(html);
             const noteChanged = window._actNoteDirty || html !== (window._actNoteOpenContent || '');
             if (!noteChanged) {
               _tiptapEditor.destroy(); _tiptapEditor = null;
             } else {
             const foundAct = _findActivityById(_noteFsActId);
-            const _clAct = foundAct?.act;
+            const _clAct = mirroredAct || foundAct?.act;
             if (foundAct) _noteFsDi = foundAct.di;
             if (_clAct) {
               // Stale-editor guard: if the activity's note was updated remotely
