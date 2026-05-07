@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.90';
+    const VERSION = '6.1.92';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44702,10 +44702,16 @@ QUESTION: ${query}`;
         _ttUpdateToolbar(_tiptapEditor);
       }, 80);
     }
-    function closeNoteFullscreen(action) {
+    async function closeNoteFullscreen(action) {
       const shouldSave = action === 'save';
       if (!shouldSave && _tiptapEditor && window._ttFsDirty) {
-        const discard = confirm('Discard changes to this note?');
+        const discard = await showRianDialog({
+          title: 'Discard changes?',
+          message: 'Your edits have not been saved. Cancel will keep you in the editor.',
+          confirmText: 'Discard',
+          cancelText: 'Keep editing',
+          danger: true
+        });
         if (!discard) return;
       }
       // Stop any active dictation
@@ -44761,10 +44767,13 @@ QUESTION: ${query}`;
           var _contentChangedRemotely = n && (n.noteContent || '') !== (window._tiptapNoteOpenContent || '') && (n.noteContent || '') !== html;
           if (_contentChangedRemotely && !_activityNoteContainsRemote(html, n.noteContent || '')) {
             // Remote content change arrived after we opened the editor
-            const keepLocal = confirm(
-              'This note was updated on another device while you were editing.\n\n' +
-              'Keep YOUR version (OK) or discard your changes and keep the cloud version (Cancel)?'
-            );
+            const keepLocal = await showRianDialog({
+              title: 'Note changed elsewhere',
+              message: 'This note was updated on another device while you were editing. Save your version anyway?',
+              confirmText: 'Save mine',
+              cancelText: 'Keep cloud version',
+              danger: true
+            });
             if (!keepLocal) {
               // Discard local — don't save, keep remote content
               window._tiptapNoteEdited = false;
@@ -44804,10 +44813,13 @@ QUESTION: ${query}`;
               const openTs = window._actNoteOpenTs || 0;
               const localTs = state.weekData._updatedAt || 0;
               if (openTs > 0 && localTs > openTs + 2000 && remoteNote !== html && !_activityNoteContainsRemote(html, remoteNote)) {
-                const keepLocal = confirm(
-                  'This note was updated on another device while you were editing.\n\n' +
-                  'Keep YOUR version (OK) or discard your changes and keep the cloud version (Cancel)?'
-                );
+                const keepLocal = await showRianDialog({
+                  title: 'Note changed elsewhere',
+                  message: 'This task note was updated on another device while you were editing. Save your version anyway?',
+                  confirmText: 'Save mine',
+                  cancelText: 'Keep cloud version',
+                  danger: true
+                });
                 if (!keepLocal) {
                   _tiptapEditor.destroy(); _tiptapEditor = null;
                   window._actNoteOpenTs = 0;
