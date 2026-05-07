@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.86';
+    const VERSION = '6.1.88';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20551,6 +20551,20 @@
       return s.length + ':' + (h >>> 0).toString(36);
     }
 
+    function _notePlainText(html) {
+      return stripHtml(html).replace(/\s+/g, ' ').trim();
+    }
+
+    function _activityNoteContainsRemote(localNotes, remoteNotes) {
+      const local = String(localNotes || '');
+      const remote = String(remoteNotes || '');
+      if (!local || !remote) return false;
+      if (local === remote || local.indexOf(remote) !== -1) return true;
+      const lp = _notePlainText(local);
+      const rp = _notePlainText(remote);
+      return !!rp && (lp === rp || lp.indexOf(rp) !== -1);
+    }
+
     function _stripActivityNoteMergeMeta(act) {
       if (!act) return act;
       delete act._notesEditBaseUpdatedAt;
@@ -20617,6 +20631,10 @@
         (baseTs && remoteNoteTs && remoteNoteTs > baseTs && (!baseHash || remoteHash !== baseHash)) ||
         (remoteWhileOpenTs && remoteWhileOpenTs >= baseTs && localAct._notesRemoteWhileOpenHash === remoteHash);
       if (remoteChangedAfterOpen) {
+        if (_activityNoteContainsRemote(localNotes, remoteNotes)) {
+          console.info('[Rian] Merge-on-save accepted activity note that includes newer remote content for', remoteAct.id);
+          return _stripActivityNoteMergeMeta(localAct);
+        }
         const out = Object.assign({}, localAct, {
           notes: remoteNotes,
           _notesUpdatedAt: remoteAct._notesUpdatedAt || remoteNoteTs,
