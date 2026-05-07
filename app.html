@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.100';
+    const VERSION = '6.1.101';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20652,8 +20652,9 @@
       }).join('||');
     }
 
-    function _protectRicherRemoteActivityNotes(localAct, remoteAct, remoteWeekUpdatedAt) {
+    function _protectRicherRemoteActivityNotes(localAct, remoteAct, remoteWeekUpdatedAt, forceActivityNoteId) {
       if (!localAct || !remoteAct) return localAct;
+      if (forceActivityNoteId && localAct.id === forceActivityNoteId) return _stripActivityNoteMergeMeta(localAct);
       const localNotes = localAct.notes || '';
       const remoteNotes = remoteAct.notes || '';
       if (remoteNotes === localNotes) return _stripActivityNoteMergeMeta(localAct);
@@ -20944,9 +20945,10 @@
       return db_fs.doc(`users/${state.currentUser.uid}/${path}`);
     }
 
-    async function fsSetWeek(weekStart, weekData) {
+    async function fsSetWeek(weekStart, weekData, options) {
       const ref = userDoc(`weeks/${weekStart}`);
       if (!ref) return;
+      options = options || {};
 
       // v5.8.8 MERGE-ON-SAVE: Before writing, fetch the latest remote data
       // and merge activities per-day so we never overwrite tasks added by
@@ -20975,7 +20977,7 @@
               // content so stale tabs cannot silently remove screenshots.
               var mergedActs = (localDay.activities || []).map(function (la) {
                 return la && la.id && remoteMap[la.id]
-                  ? _protectRicherRemoteActivityNotes(la, remoteMap[la.id], remoteWeekUpdatedAt)
+                  ? _protectRicherRemoteActivityNotes(la, remoteMap[la.id], remoteWeekUpdatedAt, options.forceActivityNoteId)
                   : _stripActivityNoteMergeMeta(la);
               });
 
@@ -22346,7 +22348,8 @@
       }, 1000);
     }
 
-    async function saveWeekNow() {
+    async function saveWeekNow(options) {
+      options = options || {};
       clearTimeout(saveTimer);
       state.syncStatus = 'pending';
       state.weekData._updatedAt = Date.now();
@@ -22367,7 +22370,7 @@
       await dbPut('weeks', { weekStart: capturedWeekStart, userId: uid, data: dataToSave, updatedAt: dataToSave._updatedAt });
       if (state.currentUser) {
         try {
-          await fsSetWeek(capturedWeekStart, dataToSave);
+          await fsSetWeek(capturedWeekStart, dataToSave, options);
           _setHWM(capturedWeekStart, _weekTotalHours(dataToSave));
           if (state.weekStart === capturedWeekStart) state.syncStatus = 'synced';
         } catch (e) {
@@ -34360,6 +34363,8 @@
       if (_fsPollBusy) return;
       if (!state.currentUser) return;
       if (state.syncStatus === 'pending') return; // don't overwrite unsaved edits
+      var noteModal = document.getElementById('note-fs-modal');
+      if (_noteFsActId != null && noteModal && !noteModal.classList.contains('hidden')) return; // Save/Cancel owns open task notes
       if (!state.weekStart || !state.weekData) return;
       var ref = userDoc('weeks/' + state.weekStart);
       if (!ref) return;
@@ -45089,7 +45094,7 @@ QUESTION: ${query}`;
               }
               _clAct.notes = html;
               _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
-              await saveWeekNow();
+              await saveWeekNow({ forceActivityNoteId: _noteFsActId });
             }
             }
           }
