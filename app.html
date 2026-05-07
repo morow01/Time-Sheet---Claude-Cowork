@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.102';
+    const VERSION = '6.1.103';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20565,6 +20565,43 @@
       return !!rp && (lp === rp || lp.indexOf(rp) !== -1);
     }
 
+    function _stripVisibleActivityNoteRecovery(html) {
+      html = String(html || '');
+      if (!html || (html.indexOf('Recovered from another device') === -1 && html.indexOf('data-rian-note-merge') === -1)) return html;
+      try {
+        const wrap = document.createElement('div');
+        wrap.innerHTML = html;
+        let start = wrap.querySelector('hr[data-rian-note-merge]');
+        if (!start) {
+          const nodes = Array.from(wrap.querySelectorAll('p,h1,h2,h3,h4,h5,h6,strong,b,div'));
+          const marker = nodes.find(function (el) {
+            return (el.textContent || '').trim() === 'Recovered from another device';
+          });
+          start = marker || null;
+          if (start && start.previousElementSibling && start.previousElementSibling.tagName === 'HR') {
+            start = start.previousElementSibling;
+          }
+        }
+        if (!start) return html;
+        let node = start;
+        while (node) {
+          const next = node.nextSibling;
+          node.remove();
+          node = next;
+        }
+        return wrap.innerHTML;
+      } catch (e) {
+        const markerIdx = html.indexOf('Recovered from another device');
+        const hrIdx = html.indexOf('data-rian-note-merge');
+        let cut = markerIdx >= 0 ? markerIdx : hrIdx;
+        if (hrIdx >= 0 && hrIdx < cut) cut = hrIdx;
+        if (cut < 0) return html;
+        const beforeHr = html.lastIndexOf('<hr', cut);
+        if (beforeHr >= 0) cut = beforeHr;
+        return html.slice(0, cut);
+      }
+    }
+
     function _stripActivityNoteMergeMeta(act) {
       if (!act) return act;
       delete act._notesEditBaseUpdatedAt;
@@ -20576,8 +20613,8 @@
 
     function _mergeActivityNotesNoLoss(primaryAct, secondaryAct, secondaryWeekUpdatedAt, reason) {
       if (!primaryAct || !secondaryAct) return null;
-      const primaryNotes = primaryAct.notes || '';
-      const secondaryNotes = secondaryAct.notes || '';
+      const primaryNotes = _stripVisibleActivityNoteRecovery(primaryAct.notes || '');
+      const secondaryNotes = _stripVisibleActivityNoteRecovery(secondaryAct.notes || '');
       if (!secondaryNotes || primaryNotes === secondaryNotes || _activityNoteContainsRemote(primaryNotes, secondaryNotes)) return null;
 
       const out = Object.assign({}, primaryAct);
@@ -44892,7 +44929,7 @@ QUESTION: ${query}`;
     function _ttSetContent(html) {
       if (!_tiptapEditor) return;
       // Strip target="_blank" from stored links, then clean table sizing
-      const cleaned = _ttCleanTableHtml((html || '').replace(/\s+target="_blank"/g, ''));
+      const cleaned = _ttCleanTableHtml(_stripVisibleActivityNoteRecovery(html || '').replace(/\s+target="_blank"/g, ''));
       try {
         // Parse HTML via ProseMirror's DOMParser, then dispatch with addToHistory:false
         // so the initial page load NEVER enters the undo stack. This prevents undo from
@@ -44921,7 +44958,8 @@ QUESTION: ${query}`;
     function _ttGetHTML() {
       if (!_tiptapEditor) return '';
       const h = _tiptapEditor.getHTML();
-      return (h === '<p></p>' || h === '') ? '' : h;
+      const cleaned = _stripVisibleActivityNoteRecovery(h);
+      return (cleaned === '<p></p>' || cleaned === '') ? '' : cleaned;
     }
     function _findActivityById(actId) {
       if (!state.weekData || !state.weekData.days) return null;
@@ -44936,7 +44974,7 @@ QUESTION: ${query}`;
       const found = _findActivityById(_noteFsActId);
       if (!found) return null;
       _noteFsDi = found.di;
-      found.act.notes = html || '';
+      found.act.notes = _stripVisibleActivityNoteRecovery(html || '');
       return found.act;
     }
     function openNoteFullscreen(actId, di) {
@@ -45129,7 +45167,7 @@ QUESTION: ${query}`;
                   return;
                 }
               }
-              _clAct.notes = html;
+              _clAct.notes = _stripVisibleActivityNoteRecovery(html);
               _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
               await saveWeekNow({ forceActivityNoteId: _noteFsActId });
             }
