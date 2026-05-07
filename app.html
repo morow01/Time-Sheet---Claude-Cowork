@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.2';
+    const VERSION = '6.2.3';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20059,6 +20059,7 @@
       deskSelectedAct: null, // desktop: selected activity id
       deskPendingActRestore: null, // desktop: keeps selected task id alive while refresh data catches up
       deskSelectedNote: null, // desktop notes: selected note id
+      deskPendingNoteRestore: null, // desktop notes: keeps selected note id alive while refresh data catches up
       deskNotesCatFilter: '', // desktop notes: sidebar category filter
       dcoSelectedWeek: null,   // desktop callouts: selected week key
       dcoSelectedCo: null,     // desktop callouts: selected callout id
@@ -28417,10 +28418,21 @@
         return (b.updatedAt || 0) - (a.updatedAt || 0);
       });
 
-      // Clamp selected note — only reset if current selection is not in the list; don't auto-pick first
-      if (state.deskSelectedNote && !listNotes.find(function (n) { return n.id === state.deskSelectedNote; })) {
-        state.deskSelectedNote = null;
-        _dnotesSaveNav();
+      // Clamp selected note — but keep a restored note ID alive while cached/remote notes are still loading.
+      var selectedInList = state.deskSelectedNote && listNotes.find(function (n) { return n.id === state.deskSelectedNote; });
+      var pendingNoteRestore = state.deskPendingNoteRestore;
+      var keepPendingNote = pendingNoteRestore &&
+        pendingNoteRestore.id === state.deskSelectedNote &&
+        pendingNoteRestore.tab === notesTab &&
+        Date.now() < pendingNoteRestore.until;
+      if (state.deskSelectedNote && !selectedInList) {
+        if (!keepPendingNote) {
+          state.deskSelectedNote = null;
+          state.deskPendingNoteRestore = null;
+          _dnotesSaveNav();
+        }
+      } else if (selectedInList && state.deskPendingNoteRestore) {
+        state.deskPendingNoteRestore = null;
       }
       var selNote = state.deskSelectedNote ? state.notes.find(function (n) { return n.id === state.deskSelectedNote; }) : null;
 
@@ -28725,6 +28737,7 @@
     function deskOpenTagManager() {
       state.deskTagManagerOpen = true;
       state.deskSelectedNote = null;
+      state.deskPendingNoteRestore = null;
       _teFormOpen = false;
       _teEditKey = null;
       render();
@@ -28739,6 +28752,7 @@
     function deskSelectNote(id) {
       state.deskTagManagerOpen = false;
       state.deskSelectedNote = id;
+      state.deskPendingNoteRestore = null;
       // Remember selection for current tab
       var curTab = state.notesTab || 'notes';
       if (id) _deskNotesTabMemory[curTab] = id;
@@ -28767,6 +28781,7 @@
       state.notesArchiveOpen = (tab === 'archive');
       state.notesBinOpen = (tab === 'bin');
       state.deskSelectedNote = _deskNotesTabMemory[tab] || null; // restore or empty state
+      state.deskPendingNoteRestore = state.deskSelectedNote ? { id: state.deskSelectedNote, tab: tab, until: Date.now() + 30000 } : null;
       state.deskNotesCatFilter = ''; // reset category filter on tab change
       _dnotesSaveNav();
       render();
@@ -28780,6 +28795,7 @@
         state.deskNotesCatFilter = key;
       }
       state.deskSelectedNote = null; // reset selection — new filter context
+      state.deskPendingNoteRestore = null;
       _dnotesSaveNav();
       render();
     }
@@ -28790,6 +28806,7 @@
       if (state.deskNotesCatFilter && state.deskNotesCatFilter !== 'untagged') note.category = state.deskNotesCatFilter;
       state.notes.unshift(note);
       state.deskSelectedNote = note.id;
+      state.deskPendingNoteRestore = null;
       _deskNotesTabMemory['notes'] = note.id;
       state.notesTab = 'notes'; // switch to active tab
       _dnotesSaveNav();
@@ -41770,7 +41787,10 @@ Rules:
         // Restore desktop notes nav state
         if (lastView === 'notes') {
           const lnTab = localStorage.getItem('dnotesTab'); if (lnTab) { state.notesTab = lnTab; state.notesArchiveOpen = (lnTab === 'archive'); state.notesBinOpen = (lnTab === 'bin'); }
-          const lnNote = localStorage.getItem('dnotesSelectedNote'); if (lnNote) state.deskSelectedNote = lnNote;
+          const lnNote = localStorage.getItem('dnotesSelectedNote'); if (lnNote) {
+            state.deskSelectedNote = lnNote;
+            state.deskPendingNoteRestore = { id: lnNote, tab: state.notesTab || 'notes', until: Date.now() + 30000 };
+          }
           const lnMem = localStorage.getItem('dnotesTabMemory'); if (lnMem) try { _deskNotesTabMemory = JSON.parse(lnMem); } catch (e) { }
         }
       } catch (e) { console.warn('[Rian] LocalStorage blocked:', e); }
@@ -41891,7 +41911,10 @@ Rules:
                 if (ns.djExp && !Object.keys(state.djExpanded || {}).length) state.djExpanded = ns.djExp;
                 if (ns.djMem) try { Object.assign(_djSecPageMemory, ns.djMem); } catch (e) { }
                 if (ns.dnTab && !localStorage.getItem('dnotesTab')) { state.notesTab = ns.dnTab; state.notesArchiveOpen = (ns.dnTab === 'archive'); state.notesBinOpen = (ns.dnTab === 'bin'); }
-                if (ns.dnNote && !state.deskSelectedNote) state.deskSelectedNote = ns.dnNote;
+                if (ns.dnNote && !state.deskSelectedNote) {
+                  state.deskSelectedNote = ns.dnNote;
+                  state.deskPendingNoteRestore = { id: ns.dnNote, tab: state.notesTab || 'notes', until: Date.now() + 30000 };
+                }
                 if (ns.dnMem) try { Object.assign(_deskNotesTabMemory, ns.dnMem); } catch (e) { }
               }
               console.log('[Rian] Profile patched from Firestore:', prof.email || user.email);
