@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.1';
+    const VERSION = '6.2.2';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20057,6 +20057,7 @@
       weekendOpen: false,
       deskSelectedDay: 0,   // desktop: selected day index (0=Fri, 1=Sat, ...)
       deskSelectedAct: null, // desktop: selected activity id
+      deskPendingActRestore: null, // desktop: keeps selected task id alive while refresh data catches up
       deskSelectedNote: null, // desktop notes: selected note id
       deskNotesCatFilter: '', // desktop notes: sidebar category filter
       dcoSelectedWeek: null,   // desktop callouts: selected week key
@@ -21378,7 +21379,15 @@
           state.expandedDays = new Set(saved.expanded || []);
           state.notesOpen = new Map(Object.entries(saved.notes || {}));
           if (Number.isInteger(saved.deskSelectedDay)) state.deskSelectedDay = saved.deskSelectedDay;
-          if (saved.deskSelectedAct) state.deskSelectedAct = saved.deskSelectedAct;
+          if (saved.deskSelectedAct) {
+            state.deskSelectedAct = saved.deskSelectedAct;
+            state.deskPendingActRestore = {
+              weekStart: state.weekStart,
+              day: Number.isInteger(saved.deskSelectedDay) ? saved.deskSelectedDay : state.deskSelectedDay,
+              id: saved.deskSelectedAct,
+              until: Date.now() + 30000
+            };
+          }
           return true;
         }
       } catch (e) { /* expected: localStorage unavailable or corrupt */ }
@@ -21391,6 +21400,7 @@
       state.expandedDays.clear();
       state.notesOpen = new Map();
       state.activitiesExpanded.clear(); // Clear expanded activities on first visit
+      state.deskPendingActRestore = null;
       if (!state.weekData) return;
       const today = dateToStr(new Date());
       const idx = state.weekData.days.findIndex(d => d.date === today);
@@ -24160,11 +24170,23 @@
       });
       // Include drafts too so they show up
       var allActs = selDay.activities;
+      var pendingActRestore = state.deskPendingActRestore;
+      var keepPendingAct = pendingActRestore &&
+        pendingActRestore.weekStart === state.weekStart &&
+        pendingActRestore.day === selDi &&
+        pendingActRestore.id === state.deskSelectedAct &&
+        Date.now() < pendingActRestore.until;
       if (state.deskSelectedAct && !allActs.find(function (a) { return a.id === state.deskSelectedAct; })) {
-        state.deskSelectedAct = allActs.length > 0 ? allActs[0].id : null;
+        if (!keepPendingAct) {
+          state.deskSelectedAct = allActs.length > 0 ? allActs[0].id : null;
+          state.deskPendingActRestore = null;
+        }
       }
       if (!state.deskSelectedAct && allActs.length > 0) {
         state.deskSelectedAct = allActs[0].id;
+      }
+      if (state.deskPendingActRestore && allActs.find(function (a) { return a.id === state.deskSelectedAct; })) {
+        state.deskPendingActRestore = null;
       }
 
       // ── Days panel ──
@@ -24491,12 +24513,14 @@
     function deskSelectDay(di) {
       state.deskSelectedDay = di;
       state.deskSelectedAct = null; // reset to first task of new day
+      state.deskPendingActRestore = null;
       saveUiState();
       render();
     }
 
     function deskSelectAct(actId) {
       state.deskSelectedAct = actId;
+      state.deskPendingActRestore = null;
       saveUiState();
       // Surgical update: re-render tasks + detail panels only
       var tasksPanel = document.getElementById('desk-tasks-panel');
