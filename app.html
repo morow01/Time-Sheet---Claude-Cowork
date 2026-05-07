@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.99';
+    const VERSION = '6.1.100';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20591,17 +20591,12 @@
         return out;
       }
 
-      const alreadyMerged = primaryNotes.indexOf('data-rian-note-merge="' + (secondaryAct.id || '') + '"') !== -1;
-      if (alreadyMerged) return null;
-      out.notes = primaryNotes
-        + '<hr data-rian-note-merge="' + esc(secondaryAct.id || '') + '">'
-        + '<p><strong>Recovered from another device</strong></p>'
-        + secondaryNotes;
+      out.notes = primaryNotes;
       out._notesUpdatedAt = Math.max(primaryTs, secondaryTs, Date.now());
       out._notesProtectedAt = Date.now();
-      out._notesProtectedReason = reason || 'no-loss-note-merge';
-      const backups = Array.isArray(primaryAct._notesConflictBackups) ? primaryAct._notesConflictBackups.slice(-2) : [];
-      backups.push({ at: Date.now(), reason: reason || 'no-loss-note-merge', html: secondaryNotes });
+      out._notesProtectedReason = reason || 'hidden-note-conflict-backup';
+      const backups = Array.isArray(primaryAct._notesConflictBackups) ? primaryAct._notesConflictBackups.slice(-4) : [];
+      backups.push({ at: Date.now(), reason: reason || 'hidden-note-conflict-backup', html: secondaryNotes });
       out._notesConflictBackups = backups;
       return out;
     }
