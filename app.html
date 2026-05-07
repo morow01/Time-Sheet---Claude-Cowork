@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.96';
+    const VERSION = '6.1.97';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -31416,7 +31416,7 @@
       window._tiptapNoteEdited = false;
       window._actNoteDirty = false;
       const saveBtn = document.getElementById('note-fs-save-btn');
-      if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '.55'; saveBtn.textContent = 'Save'; }
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.style.opacity = '1'; saveBtn.textContent = 'Save'; }
     }
 
     async function saveNoteFullscreen() {
@@ -44975,8 +44975,12 @@ QUESTION: ${query}`;
       // If we were editing a field note's noteContent, flush final content + re-render
       if (_fnFsNoteId) {
         // Only Save writes the draft back. Cancel/ESC/back discard editor-only changes.
-        if (shouldSave && _tiptapEditor && window._tiptapNoteEdited) {
+        if (shouldSave && _tiptapEditor) {
           const html = _ttGetHTML();
+          const noteChanged = window._tiptapNoteEdited || html !== (window._tiptapNoteOpenContent || '');
+          if (!noteChanged) {
+            // Save was tapped but the editor content is unchanged.
+          } else {
           const _closeArr = _fnFsSource === 'jpage' ? state.jPages
             : _fnFsSource === 'journal' ? state.journal
               : state.notes;
@@ -45012,6 +45016,7 @@ QUESTION: ${query}`;
           if (_fnFsSource === 'jpage') await saveJNow();
           else if (_fnFsSource === 'journal') scheduleJournalSave();
           else await saveNotesNow();
+          }
         }
         window._tiptapNoteEdited = false;
         window._ttFsDirty = false;
@@ -45022,8 +45027,12 @@ QUESTION: ${query}`;
       } else if (_noteFsActId != null && _noteFsDi != null) {
         // Activity inline note (timesheet) — flush final TipTap content
         if (_tiptapEditor) {
-          if (shouldSave && window._actNoteDirty) {
+          if (shouldSave) {
             const html = _ttGetHTML();
+            const noteChanged = window._actNoteDirty || html !== (window._actNoteOpenContent || '');
+            if (!noteChanged) {
+              _tiptapEditor.destroy(); _tiptapEditor = null;
+            } else {
             const _clAct = state.weekData?.days[_noteFsDi]?.activities?.find(a => a.id === _noteFsActId);
             if (_clAct) {
               // Stale-editor guard: if the activity's note was updated remotely
@@ -45053,8 +45062,9 @@ QUESTION: ${query}`;
               _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
               await saveWeekNow();
             }
+            }
           }
-          _tiptapEditor.destroy(); _tiptapEditor = null;
+          if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
         }
         window._actNoteOpenTs = 0;
         window._actNoteOpenContent = '';
