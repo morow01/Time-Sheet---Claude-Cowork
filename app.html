@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.80';
+    const VERSION = '6.1.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23357,6 +23357,11 @@
         if (!v) return '<span class="ew3-copy ew3-empty ' + (cls || '') + '">—</span>';
         return '<span class="ew3-copy ' + (cls || '') + '" data-key="' + escAttr(key) + '" data-value="' + escAttr(v) + '" onclick="ew3Copy(this)">' + esc(v) + '</span>';
       };
+      const plain = (value, cls) => {
+        const v = String(value == null ? '' : value);
+        if (!v) return '<span class="ew3-empty ' + (cls || '') + '">—</span>';
+        return '<span class="' + (cls || '') + '">' + esc(v) + '</span>';
+      };
       const dailyRows = (weekData.days || []).map((day, i) => {
         const acts = (day.activities || []).filter(a => !a._draft && (a.description || a.location || (a.codes || []).length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0));
         const work = [...new Set(acts.map(a => stripHtml(a.description || '')).filter(Boolean))].join(', ');
@@ -23370,9 +23375,9 @@
           '<td class="ew3-day-cell">' + esc(day.dayName || DAY_NAMES[i] || '') + '</td>' +
           '<td>' + copy(work, 'd-' + i + '-work') + '</td>' +
           '<td>' + copy(site, 'd-' + i + '-site') + '</td>' +
-          '<td class="ew3-c">' + copy(depart, 'd-' + i + '-depart', 'ew3-num') + '</td>' +
-          '<td class="ew3-c">' + copy(ret, 'd-' + i + '-ret', 'ew3-num') + '</td>' +
-          '<td class="ew3-c ew3-ot">' + copy(ot > 0 ? fmtWhole(ot) : '', 'd-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+          '<td class="ew3-c">' + plain(depart, 'ew3-num') + '</td>' +
+          '<td class="ew3-c">' + plain(ret, 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-ot">' + plain(ot > 0 ? fmtWhole(ot) : '', 'ew3-num ew3-ot-text') + '</td>' +
           '</tr>';
       }).join('');
       const dailyMobileRows = (weekData.days || []).map((day, i) => {
@@ -23391,23 +23396,23 @@
           '<tr class="ew3-mobile-detail-row ' + (empty ? 'ew3-empty-row' : '') + '">' +
           '<td>' + copy(work, 'm-d-' + i + '-work') + '</td>' +
           '<td>' + copy(site, 'm-d-' + i + '-site') + '</td>' +
-          '<td class="ew3-c">' + copy(depart, 'm-d-' + i + '-depart', 'ew3-num') + '</td>' +
-          '<td class="ew3-c">' + copy(ret, 'm-d-' + i + '-ret', 'ew3-num') + '</td>' +
-          '<td class="ew3-c ew3-ot">' + copy(ot > 0 ? fmtWhole(ot) : '', 'm-d-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+          '<td class="ew3-c">' + plain(depart, 'ew3-num') + '</td>' +
+          '<td class="ew3-c">' + plain(ret, 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-ot">' + plain(ot > 0 ? fmtWhole(ot) : '', 'ew3-num ew3-ot-text') + '</td>' +
           '</tr>';
       }).join('');
       const codeRows = summary.map((row, i) => {
-        return '<tr>' +
-          '<td class="ew3-c">' + copy(fmtCode(adjOrd[i]), 'c-' + i + '-ord', 'ew3-num') + '</td>' +
-          '<td class="ew3-c ew3-ot">' + copy(fmtCode(row.overtime), 'c-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+        return '<tr class="' + ((parseFloat(row.overtime) || 0) > 0 ? 'ew3-ot-code-row' : '') + '">' +
+          '<td class="ew3-c">' + plain(fmtCode(adjOrd[i]), 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-ot">' + plain(fmtCode(row.overtime), 'ew3-num ew3-ot-text') + '</td>' +
           '<td class="ew3-code-cell ew3-c">' + copy(row.code, 'c-' + i + '-code') + '</td>' +
           '<td class="ew3-desc-cell">' + copy(row.description, 'c-' + i + '-desc') + '</td>' +
           '</tr>';
       }).join('');
       const codeMobileRows = summary.map((row, i) => {
         return '<tr>' +
-          '<td class="ew3-c ew3-num">' + copy(fmtCode(adjOrd[i]), 'm-c-' + i + '-ord', 'ew3-num') + '</td>' +
-          '<td class="ew3-c ew3-num ew3-ot">' + copy(fmtCode(row.overtime), 'm-c-' + i + '-ot', 'ew3-num ew3-ot-text') + '</td>' +
+          '<td class="ew3-c ew3-num">' + plain(fmtCode(adjOrd[i]), 'ew3-num') + '</td>' +
+          '<td class="ew3-c ew3-num ew3-ot">' + plain(fmtCode(row.overtime), 'ew3-num ew3-ot-text') + '</td>' +
           '<td class="ew3-code-cell ew3-c">' + copy(row.code, 'm-c-' + i + '-code') + '</td>' +
           '<td class="ew3-desc-cell">' + copy(row.description, 'm-c-' + i + '-desc') + '</td>' +
           '</tr>';
@@ -23417,7 +23422,7 @@
         const ticket = String(co.ticket || '').trim();
         const location = stripLoc(co.site || co.location || '');
         return '<tr>' +
-          '<td class="ew3-callout-date">' + copy(dateLabel, 'co-' + i + '-date') + '</td>' +
+          '<td class="ew3-callout-date">' + plain(dateLabel) + '</td>' +
           '<td class="ew3-code-cell">' + copy(ticket, 'co-' + i + '-ticket') + '</td>' +
           '<td class="ew3-desc-cell">' + copy(location, 'co-' + i + '-location') + '</td>' +
           '</tr>';
@@ -23481,6 +23486,7 @@
           .ew3-desk-stat{border:1px solid var(--border);border-radius:10px;background:var(--bg-input);padding:10px;box-shadow:0 1px 2px rgba(var(--shadow-rgb),.03)}
           .ew3-desk-stat span{display:block;color:var(--text-muted);font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
           .ew3-desk-stat strong{font-size:19px;line-height:1;font-weight:850;font-variant-numeric:tabular-nums}
+          .ew3-desk-stat small{display:block;margin-top:4px;color:var(--text-muted);font-size:10px;font-weight:650;line-height:1.2}
           .ew3-desk-foot{margin-top:auto;padding:12px 14px;color:var(--text-muted);font-size:12px;line-height:1.45;border-top:1px solid var(--border-subtle)}
           .ew3-desk-section{height:34px;padding:0 14px;display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--border-subtle);background:var(--bg-input);position:sticky;top:0;z-index:2}
           .ew3-callouts-section{margin-top:12px;border-top:1px solid var(--border);box-shadow:0 -1px 0 var(--bg-card)}
@@ -23510,6 +23516,8 @@
           .ew3-callout-table .ew3-code-cell{font-weight:400}
           .ew3-callout-total-inline{display:inline-flex;align-items:center;gap:10px}
           .ew3-callout-total-inline strong{font-weight:850;font-variant-numeric:tabular-nums;color:var(--text-primary)}
+          .ew3-ot-code-row td{background:rgba(var(--amber-rgb),.08)}
+          .ew3-ot-code-row:hover td{background:rgba(var(--amber-rgb),.12)}
           .ew3-code-total-label{color:var(--text-muted);font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
         </style>
         ${renderSecondaryPageHeader('Email / Export Week', 'Copy and send weekly timesheet', '', "setView('week')")}
@@ -23531,10 +23539,10 @@
               <div class="ew3-desk-guidance">Tap values to copy. Copied values fade so you can work down the page.</div>
               <div class="ew3-progress"><div class="ew3-track"><div id="ew3-progress-fill" class="ew3-fill"></div></div><div id="ew3-progress-count" class="ew3-count">0 / 0</div></div>
               <div class="ew3-desk-stats">
-                <div class="ew3-desk-stat"><span>Ord</span><strong>${fmtWhole(totalOrd)}</strong></div>
-                <div class="ew3-desk-stat"><span>OT</span><strong class="ew3-ot">${fmtWhole(totalOT)}</strong></div>
-                <div class="ew3-desk-stat"><span>Codes</span><strong>${summary.length}</strong></div>
-                <div class="ew3-desk-stat"><span>Callouts</span><strong>${calloutEntries.length}</strong></div>
+                <div class="ew3-desk-stat"><span>Ord</span><strong>${fmtWhole(totalOrd)}</strong><small>ordinary hours</small></div>
+                <div class="ew3-desk-stat"><span>OT</span><strong class="ew3-ot">${fmtWhole(totalOT)}</strong><small>${totalOT > 0 ? 'overtime hours' : 'no overtime'}</small></div>
+                <div class="ew3-desk-stat"><span>Codes</span><strong>${summary.length}</strong><small>${summary.filter(r => (parseFloat(r.overtime) || 0) > 0).length} with OT</small></div>
+                <div class="ew3-desk-stat"><span>Callouts</span><strong>${calloutEntries.length}</strong><small>${calloutEntries.length === 1 ? 'incident' : 'incidents'}</small></div>
               </div>
             </div>
             <div class="ew3-desk-foot">Hours auto-calculated. Per-day cap: Mon–Thu 8h · Fri 7h · Sat/Sun 0h.</div>
@@ -41383,20 +41391,20 @@ Rules:
 
       try {
         await Promise.race([
-          Promise.all([
-            initDB().catch(e => console.warn('IDB init failed:', e)),
-            loadCodes(),
-            loadTowns(),
-            loadCabinets()
-          ]),
+          initDB().catch(e => console.warn('IDB init failed:', e)),
           new Promise(res => setTimeout(() => {
-            console.warn('[Rian] Initialization took >4s, proceeding anyway...');
+            console.warn('[Rian] IndexedDB init took >1.5s, proceeding with network data...');
             res();
-          }, 4000))
+          }, 1500))
         ]);
       } catch (e) {
         console.warn('[Rian] App data load error:', e);
       }
+
+      // Large lookup files are useful, but they should not hold the whole app hostage on refresh.
+      Promise.allSettled([loadCodes(), loadTowns(), loadCabinets()]).then(() => {
+        if (state.currentUser && ['week', 'email-week-v3', 'exchanges'].includes(state.view)) render();
+      });
 
       // Only call getRedirectResult if we actually came from a redirect sign-in.
       // Calling it unconditionally hits Firebase servers on every page load and is
