@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.1.94';
+    const VERSION = '6.1.96';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20574,6 +20574,55 @@
       return act;
     }
 
+    function _mergeActivityNotesNoLoss(primaryAct, secondaryAct, secondaryWeekUpdatedAt, reason) {
+      if (!primaryAct || !secondaryAct) return null;
+      const primaryNotes = primaryAct.notes || '';
+      const secondaryNotes = secondaryAct.notes || '';
+      if (!secondaryNotes || primaryNotes === secondaryNotes || _activityNoteContainsRemote(primaryNotes, secondaryNotes)) return null;
+
+      const out = Object.assign({}, primaryAct);
+      const secondaryTs = secondaryAct._notesUpdatedAt || secondaryWeekUpdatedAt || 0;
+      const primaryTs = primaryAct._notesUpdatedAt || 0;
+      if (!primaryNotes || _activityNoteContainsRemote(secondaryNotes, primaryNotes)) {
+        out.notes = secondaryNotes;
+        out._notesUpdatedAt = Math.max(primaryTs, secondaryTs, Date.now());
+        out._notesProtectedAt = Date.now();
+        out._notesProtectedReason = reason || 'no-loss-note-merge';
+        return out;
+      }
+
+      const alreadyMerged = primaryNotes.indexOf('data-rian-note-merge="' + (secondaryAct.id || '') + '"') !== -1;
+      if (alreadyMerged) return null;
+      out.notes = primaryNotes
+        + '<hr data-rian-note-merge="' + esc(secondaryAct.id || '') + '">'
+        + '<p><strong>Recovered from another device</strong></p>'
+        + secondaryNotes;
+      out._notesUpdatedAt = Math.max(primaryTs, secondaryTs, Date.now());
+      out._notesProtectedAt = Date.now();
+      out._notesProtectedReason = reason || 'no-loss-note-merge';
+      const backups = Array.isArray(primaryAct._notesConflictBackups) ? primaryAct._notesConflictBackups.slice(-2) : [];
+      backups.push({ at: Date.now(), reason: reason || 'no-loss-note-merge', html: secondaryNotes });
+      out._notesConflictBackups = backups;
+      return out;
+    }
+
+    function _mergeWeekActivityNotesNoLoss(primaryWeek, secondaryWeek, secondaryWeekUpdatedAt, reason) {
+      if (!primaryWeek || !primaryWeek.days || !secondaryWeek || !secondaryWeek.days) return primaryWeek;
+      const out = deepCopy(primaryWeek);
+      out.days.forEach(function (day, di) {
+        const secondaryDay = secondaryWeek.days[di];
+        if (!secondaryDay || !secondaryDay.activities) return;
+        const secondaryMap = {};
+        secondaryDay.activities.forEach(function (a) { if (a.id) secondaryMap[a.id] = a; });
+        day.activities = (day.activities || []).map(function (act) {
+          const other = act && act.id ? secondaryMap[act.id] : null;
+          if (!other) return act;
+          return _stripActivityNoteMergeMeta(_mergeActivityNotesNoLoss(act, other, secondaryWeekUpdatedAt, reason) || act);
+        });
+      });
+      return out;
+    }
+
     function _stampActivityNotes(act, baseUpdatedAt, baseHash) {
       if (!act) return;
       act._notesUpdatedAt = Date.now();
@@ -20600,6 +20649,7 @@
             a.overtime || 0,
             (a.codes || []).map(function (c) { return (c.c || '') + ':' + (c.d || ''); }).join(','),
             notes.length,
+            _noteContentHash(notes),
             _htmlImageCount(notes),
             _htmlDataImageCount(notes)
           ].join('~');
@@ -20612,6 +20662,11 @@
       const localNotes = localAct.notes || '';
       const remoteNotes = remoteAct.notes || '';
       if (remoteNotes === localNotes) return _stripActivityNoteMergeMeta(localAct);
+      const noLossMerge = _mergeActivityNotesNoLoss(localAct, remoteAct, remoteWeekUpdatedAt, 'merge-on-save');
+      if (noLossMerge) {
+        console.warn('[Rian] Merge-on-save preserved both activity note versions for', remoteAct.id);
+        return _stripActivityNoteMergeMeta(noLossMerge);
+      }
 
       const baseTs = localAct._notesEditBaseUpdatedAt || 0;
       const baseHash = localAct._notesEditBaseHash || '';
@@ -21018,7 +21073,7 @@
         // Only update if we actually recovered something
         var localTotal = weekData.days.reduce(function (s, d) { return s + (d.activities || []).length; }, 0);
         var mergedTotal = merged.days.reduce(function (s, d) { return s + (d.activities || []).length; }, 0);
-        if (mergedTotal > localTotal) {
+        if (mergedTotal > localTotal || _weekContentFingerprint(merged) !== _weekContentFingerprint(weekData)) {
           state.weekData.days = deepCopy(merged.days);
           render();
         }
@@ -22047,7 +22102,7 @@
             return;
           }
 
-          const remote = snap.data();
+          let remote = snap.data();
           if (!remote.days) return;
 
           // Convert Firestore Timestamp to JS number for comparison if needed
@@ -22083,6 +22138,7 @@
           _raiseHWM(weekStart, _remoteHrs);
 
           enforceCorrectDates(weekStart, remote);
+          remote = _mergeWeekActivityNotesNoLoss(remote, state.weekData, localTs, 'snapshot-remote-newer');
 
           // Preserve the field being actively edited to prevent echo overwrite
           const active = document.activeElement;
@@ -34291,7 +34347,8 @@
       if (!weekData || !weekData.days) return '';
       return weekData.days.map(function (d, i) {
         return (d.activities || []).filter(function (a) { return !a._draft; }).map(function (a) {
-          return a.id + ':' + (a.description || '') + ':' + (a.ordinary || '') + ':' + (a.overtime || '') + ':' + (a.location || '');
+          const notes = a.notes || '';
+          return a.id + ':' + (a.description || '') + ':' + (a.ordinary || '') + ':' + (a.overtime || '') + ':' + (a.location || '') + ':' + (a._notesUpdatedAt || 0) + ':' + _noteContentHash(notes) + ':' + _htmlImageCount(notes);
         }).sort().join('|');
       }).join('~');
     }
@@ -34325,6 +34382,7 @@
         // (same age = another browser saved at ~same time, trust server as source of truth)
         if (remoteTs >= localTs) {
           console.info('[Rian] Poll sync: server data differs (remote:', remoteTs, 'local:', localTs, ') — accepting server version');
+          remote = _mergeWeekActivityNotesNoLoss(remote, state.weekData, localTs, 'poll-remote-newer');
           // Preserve drafts
           var _draftsPerDay = {};
           if (state.weekData.days) {
@@ -43879,17 +43937,44 @@ QUESTION: ${query}`;
     // bottom padding to the editor equal to the keyboard height, so the text
     // area can scroll above the keyboard. Zoom level is preserved.
     let _ttKbH = 0;
+    function _ttIsSelBarVisible() {
+      const bar = document.getElementById('tt-sel-bar');
+      return !!(bar && getComputedStyle(bar).display !== 'none');
+    }
+    function _ttSetEditorBottomInset(includeSelectionBar) {
+      const ed = document.getElementById('note-fs-editor');
+      if (!ed) return;
+      const bar = document.getElementById('tt-sel-bar');
+      const barH = includeSelectionBar && bar ? bar.offsetHeight : 0;
+      ed.style.paddingBottom = (_ttKbH + barH + (barH ? 12 : 0)) + 'px';
+    }
+    function _ttKeepSelectionAboveBar(editor) {
+      const bar = document.getElementById('tt-sel-bar');
+      const ed = document.getElementById('note-fs-editor');
+      if (!bar || !ed || bar.style.display === 'none' || !editor) return;
+      try {
+        const sel = editor.state.selection;
+        if (!sel || sel.empty) return;
+        const coords = editor.view.coordsAtPos(sel.to);
+        const barH = bar.offsetHeight || 0;
+        const safeBottom = window.innerHeight - (_ttKbH || 0) - barH - 16;
+        const overflow = coords.bottom - safeBottom;
+        if (overflow > 0) {
+          ed.scrollTop += overflow + 18;
+        }
+      } catch (e) { /* selection may be detached during mobile selection changes */ }
+    }
     function _ttAdjustForKeyboard() {
       const modal = document.getElementById('note-fs-modal');
       if (!modal || modal.classList.contains('hidden')) return;
       const vv = window.visualViewport;
       if (!vv) return;
       _ttKbH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      const ed = document.getElementById('note-fs-editor');
-      if (ed) ed.style.paddingBottom = _ttKbH + 'px';
       // Keep selection bar above keyboard
       const bar = document.getElementById('tt-sel-bar');
       if (bar) bar.style.bottom = _ttKbH + 'px';
+      _ttSetEditorBottomInset(_ttIsSelBarVisible());
+      if (_ttIsSelBarVisible() && _tiptapEditor) requestAnimationFrame(() => _ttKeepSelectionAboveBar(_tiptapEditor));
     }
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', _ttAdjustForKeyboard);
@@ -44385,6 +44470,7 @@ QUESTION: ${query}`;
     function _ttHideAiFab() {
       const bar = document.getElementById('tt-sel-bar');
       if (bar) bar.style.display = 'none';
+      _ttSetEditorBottomInset(false);
     }
 
     function _ttUpdateAiFab(editor) {
@@ -44401,10 +44487,13 @@ QUESTION: ${query}`;
         _ttAiSavedSel = { from, to, empty };
         bar.style.bottom = (_ttKbH || 0) + 'px';
         bar.style.display = 'flex';
+        _ttSetEditorBottomInset(true);
+        requestAnimationFrame(() => _ttKeepSelectionAboveBar(editor));
         const hint = document.getElementById('tt-sel-bar-hint');
         if (hint) { hint.style.display = ''; setTimeout(() => { hint.style.display = 'none'; }, 4000); }
       } else {
         bar.style.display = 'none';
+        _ttSetEditorBottomInset(false);
       }
     }
 
