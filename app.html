@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.4';
+    const VERSION = '6.2.5';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26086,6 +26086,7 @@
         if (!sourceAct) { executeCopyTask._running = false; return; }
         const _expectedPushes = selectedDates.size;
         let _actualPushes = 0;
+        let _currentWeekChanged = false;
 
         // Group selected dates by weekStart (Friday-based)
         const datesByWeek = {};
@@ -26118,9 +26119,9 @@
             newAct.notes = sourceAct.notes || '';
             state.weekData.days[dayIdx].activities.push(newAct);
             _actualPushes++;
+            _currentWeekChanged = true;
           });
           delete datesByWeek[state.weekStart];
-          scheduleAutoSave();
         }
 
         // Move mode: delete source BEFORE the async target-week saves.
@@ -26131,7 +26132,14 @@
         if (moveMode) {
           _trackDeletedAct(actId);
           state.weekData.days[sourceDi].activities = state.weekData.days[sourceDi].activities.filter(a => a.id !== actId);
-          scheduleAutoSave();
+          _currentWeekChanged = true;
+        }
+
+        if (_currentWeekChanged) {
+          state.weekData._updatedAt = Date.now();
+          state.syncStatus = 'pending';
+          updateHeaderStatus();
+          await saveWeekNow();
         }
 
         // Copy to other weeks (load, modify, save)
