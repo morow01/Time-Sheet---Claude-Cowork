@@ -19403,7 +19403,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.3';
+    const VERSION = '6.2.4';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21050,10 +21050,11 @@
 
       if (merged.days) {
         merged.days.forEach(function (d) {
-          d.activities = (d.activities || []).map(function (a) {
+          d.activities = (d.activities || []).filter(function (a) { return !a._draft; }).map(function (a) {
             return _stripActivityNoteMergeMeta(a);
           });
         });
+        _dedupeWeekActivities(merged);
       }
 
       const migratedActivityImages = await _migrateActivityNoteImagesToStorage(merged, weekStart);
@@ -21416,6 +21417,75 @@
 
     function createActivity() {
       return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false, _draft: true };
+    }
+
+    function _activityHasContent(a) {
+      if (!a) return false;
+      return !!((a.description || '').trim() ||
+        (a.location || '').trim() ||
+        (parseFloat(a.ordinary) || 0) > 0 ||
+        (parseFloat(a.overtime) || 0) > 0 ||
+        (a.codes && a.codes.length > 0) ||
+        (a.notes || '').trim());
+    }
+
+    function _activityDedupeKey(a) {
+      if (!a || !_activityHasContent(a)) return '';
+      const codes = (a.codes || []).map(function (c) { return c && c.c ? String(c.c).trim().toUpperCase() : ''; }).filter(Boolean).sort().join(',');
+      const ord = String(parseFloat(a.ordinary) || 0);
+      const ot = String(parseFloat(a.overtime) || 0);
+      return [
+        String(a.description || '').trim().toLowerCase(),
+        String(a.location || '').trim().toLowerCase(),
+        codes,
+        ord,
+        ot,
+        String(a.tasks || '').trim(),
+        String(a.timePerTask || '').trim(),
+        String(a.otPerTask || '').trim(),
+        _noteContentHash(a.notes || '')
+      ].join('|');
+    }
+
+    function _activityDedupeScore(a) {
+      if (!a) return -1;
+      let score = a._draft ? 0 : 1000;
+      score += String(a.notes || '').length;
+      score += (a.codes || []).length * 10;
+      score += (a.description || '').length + (a.location || '').length;
+      if (a.remedyPending) score += 5;
+      return score;
+    }
+
+    function _dedupeActivitiesInDay(activities) {
+      const seen = {};
+      const out = [];
+      (activities || []).forEach(function (a) {
+        const key = _activityDedupeKey(a);
+        if (!key) {
+          out.push(a);
+          return;
+        }
+        if (seen[key] == null) {
+          seen[key] = out.length;
+          out.push(a);
+          return;
+        }
+        const idx = seen[key];
+        if (_activityDedupeScore(a) > _activityDedupeScore(out[idx])) out[idx] = a;
+      });
+      return out;
+    }
+
+    function _dedupeWeekActivities(weekData) {
+      if (!weekData || !weekData.days) return false;
+      let changed = false;
+      weekData.days.forEach(function (d) {
+        const before = (d.activities || []).length;
+        d.activities = _dedupeActivitiesInDay(d.activities || []);
+        if (d.activities.length !== before) changed = true;
+      });
+      return changed;
     }
 
     function toggleRemedyFlag(di, actId) {
@@ -22052,9 +22122,16 @@
         if (saveTimer && state.weekStart && state.weekData) {
           clearTimeout(saveTimer);
           saveTimer = null;
-          const flushTs = state.weekData._updatedAt || Date.now();
-          await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser?.uid || null, data: state.weekData, updatedAt: flushTs });
-          if (state.currentUser) await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+          const flushData = deepCopy(state.weekData);
+          if (flushData.days) {
+            flushData.days.forEach(function (d) {
+              d.activities = (d.activities || []).filter(function (a) { return !a._draft; });
+            });
+            _dedupeWeekActivities(flushData);
+          }
+          const flushTs = flushData._updatedAt || Date.now();
+          await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser?.uid || null, data: flushData, updatedAt: flushTs });
+          if (state.currentUser) await fsSetWeek(state.weekStart, flushData).catch(e => console.warn('[Rian]', e));
         }
 
         // Unsubscribe from previous week listener
@@ -22079,16 +22156,8 @@
             (a.codes && a.codes.length > 0) || (a.notes || '').trim()
           );
         });
-        // Auto-dedup local cache (fixes copy-task multiplication bug)
-        state.weekData.days.forEach(d => {
-          const seen = {};
-          d.activities = (d.activities || []).filter(a => {
-            const key = (a.id || '') + '|' + (a.description || '') + '|' + (a.location || '') + '|' + (a.codes || []).map(function (c) { return c.c }).join(',') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
-            if (seen[key]) return false;
-            seen[key] = true;
-            return true;
-          });
-        });
+        // Auto-dedup local cache (fixes local draft/copy multiplication)
+        _dedupeWeekActivities(state.weekData);
         // Seed the HWM from local cache so we have a reference before Firestore arrives
         if (localIsOwn) _raiseHWM(weekStart, _weekTotalHours(state.weekData));
         autoExpandToday();
@@ -22251,21 +22320,8 @@
             console.log('[Rian] Stripped ghost tasks locally (not writing back — will save on next edit)');
           }
 
-          // Auto-dedup: remove duplicate activities with identical content
-          // (same description + workCode + hours). Fixes the copy-task
-          // multiplication bug that leaked duplicates across devices.
-          let _dupsRemoved = false;
-          state.weekData.days.forEach(d => {
-            const seen = {};
-            const before = d.activities.length;
-            d.activities = d.activities.filter(a => {
-              const key = (a.id || '') + '|' + (a.description || '') + '|' + (a.location || '') + '|' + (a.codes || []).map(function (c) { return c.c }).join(',') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
-              if (seen[key]) return false;
-              seen[key] = true;
-              return true;
-            });
-            if (d.activities.length < before) _dupsRemoved = true;
-          });
+          // Auto-dedup: remove duplicate activities with identical content.
+          let _dupsRemoved = _dedupeWeekActivities(state.weekData);
           if (_dupsRemoved) {
             console.log('[Rian] Auto-deduped activities locally (will save on next edit)');
           }
@@ -22277,10 +22333,12 @@
           for (const [di, drafts] of Object.entries(_draftsPerDay)) {
             if (state.weekData.days[di]) {
               const existingIds = new Set(state.weekData.days[di].activities.map(a => a.id));
-              const newDrafts = drafts.filter(d => !existingIds.has(d.id));
+              const existingKeys = new Set(state.weekData.days[di].activities.map(_activityDedupeKey).filter(Boolean));
+              const newDrafts = drafts.filter(d => !existingIds.has(d.id) && !existingKeys.has(_activityDedupeKey(d)));
               state.weekData.days[di].activities.push(...newDrafts);
             }
           }
+          _dedupeWeekActivities(state.weekData);
 
           // Restore the value the user is currently typing (prevent echo truncation)
           if (editingField && editingActId != null && editingDayIdx != null && !isNaN(editingDayIdx)) {
@@ -22369,6 +22427,7 @@
         capturedWeekData.days.forEach(d => {
           d.activities = (d.activities || []).filter(a => !a._draft);
         });
+        _dedupeWeekActivities(capturedWeekData);
       }
       saveTimer = setTimeout(async () => {
         const dataToSave = capturedWeekData;
@@ -22418,6 +22477,7 @@
         dataToSave.days.forEach(d => {
           d.activities = (d.activities || []).filter(a => !a._draft);
         });
+        _dedupeWeekActivities(dataToSave);
       }
       updateHeaderStatus();
       await _safeBackupWeek('explicit-save', capturedWeekStart, dataToSave);
@@ -34413,8 +34473,15 @@
       if (flushWeek) {
         clearTimeout(saveTimer);
         saveTimer = null;
-        await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
-        await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+        const toSave = deepCopy(state.weekData);
+        if (toSave.days) {
+          toSave.days.forEach(function (d) {
+            d.activities = (d.activities || []).filter(function (a) { return !a._draft; });
+          });
+          _dedupeWeekActivities(toSave);
+        }
+        await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: toSave, updatedAt: toSave._updatedAt || Date.now() });
+        await fsSetWeek(state.weekStart, toSave).catch(e => console.warn('[Rian]', e));
       }
       if (flushNotes) {
         clearTimeout(notesSaveTimer);
@@ -34502,9 +34569,16 @@
           // Re-attach drafts
           Object.keys(_draftsPerDay).forEach(function (i) {
             if (state.weekData.days[parseInt(i)]) {
-              state.weekData.days[parseInt(i)].activities = state.weekData.days[parseInt(i)].activities.concat(_draftsPerDay[i]);
+              const day = state.weekData.days[parseInt(i)];
+              const existingIds = new Set(day.activities.map(function (a) { return a.id; }));
+              const existingKeys = new Set(day.activities.map(_activityDedupeKey).filter(Boolean));
+              const safeDrafts = _draftsPerDay[i].filter(function (d) {
+                return !existingIds.has(d.id) && !existingKeys.has(_activityDedupeKey(d));
+              });
+              day.activities = day.activities.concat(safeDrafts);
             }
           });
+          _dedupeWeekActivities(state.weekData);
           state.syncStatus = 'synced';
           updateHeaderStatus();
           _fsPollFingerprint = _weekFingerprint(state.weekData);
@@ -34520,18 +34594,21 @@
             if (!remoteDay || !remoteDay.activities) return;
             var localIds = {};
             (localDay.activities || []).forEach(function (a) { if (a.id) localIds[a.id] = true; });
+            var localKeys = new Set((localDay.activities || []).map(_activityDedupeKey).filter(Boolean));
             remoteDay.activities.forEach(function (ra) {
-              if (ra.id && !localIds[ra.id] && !_isRecentlyDeleted(ra.id)) {
+              if (ra.id && !localIds[ra.id] && !localKeys.has(_activityDedupeKey(ra)) && !_isRecentlyDeleted(ra.id)) {
                 if ((ra.description || '').trim() || (ra.location || '').trim() ||
                   (parseFloat(ra.ordinary) || 0) > 0 || (parseFloat(ra.overtime) || 0) > 0 ||
                   (ra.codes && ra.codes.length > 0)) {
                   localDay.activities.push(ra);
+                  localKeys.add(_activityDedupeKey(ra));
                   merged = true;
                   console.info('[Rian] Poll sync: recovered "' + (ra.description || '').substring(0, 30) + '" on day ' + di);
                 }
               }
             });
           });
+          if (_dedupeWeekActivities(state.weekData)) merged = true;
           if (merged) render();
         }
         _lastFirestoreSnapAt = Date.now();
@@ -34968,16 +35045,8 @@
             if (conflict.id.startsWith('test_')) { conflict.resolved = true; conflict.resolvedChoice = 'cloud'; continue; }
             if (conflict.section === 'Timesheet' && conflict.remoteData) {
               state.weekData = deepCopy(conflict.remoteData);
-              // Auto-dedup before saving (fixes copy-task multiplication)
-              state.weekData.days.forEach(d => {
-                const seen = {};
-                d.activities = (d.activities || []).filter(a => {
-                  const key = (a.id || '') + '|' + (a.description || '') + '|' + (a.location || '') + '|' + (a.codes || []).map(function (c) { return c.c }).join(',') + '|' + (a.ordinary || 0) + '|' + (a.overtime || 0);
-                  if (seen[key]) return false;
-                  seen[key] = true;
-                  return true;
-                });
-              });
+              // Auto-dedup before saving (fixes local draft/copy multiplication)
+              _dedupeWeekActivities(state.weekData);
               state.weekData._updatedAt = Date.now();
               const uid = state.currentUser?.uid || null;
               await dbPut('weeks', { weekStart: state.weekStart, userId: uid, data: state.weekData, updatedAt: state.weekData._updatedAt });
@@ -40982,6 +41051,7 @@
       if (isNaN(di)) return;
 
       const act = createActivity();
+      delete act._draft; // Voice confirm is an explicit save action, not a draft.
       act.description = (document.getElementById('vc-desc').value || '').trim();
       act.location = (document.getElementById('vc-loc').value || '').trim();
       act.ordinary = String(parseFloat(document.getElementById('vc-hrs').value) || 0);
