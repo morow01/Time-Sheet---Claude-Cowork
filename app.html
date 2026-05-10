@@ -212,6 +212,30 @@
       --pill-oncall-text: #A32D2D;
       --pill-extra-bg: #FAEEDA;
       --pill-extra-text: #854F0B;
+      /* CTO availability tracker colours — modernised palette,
+         still recognisable as the same codes used by the company tracker */
+      --cto-al-bg: #D6F0BF;
+      --cto-al-text: #2D6B30;
+      --cto-oc-bg: #FFF0A8;
+      --cto-oc-text: #9A6500;
+      --cto-sa-bg: #FFE7BA;
+      --cto-sa-text: #A15C13;
+      --cto-sd-bg: #D6E4FF;
+      --cto-sd-text: #1D4ED8;
+      --cto-sl-bg: #FECACA;
+      --cto-sl-text: #991B1B;
+      --cto-off-bg: #EDF2F7;
+      --cto-off-text: #94A3B8;
+      --cto-bh-bg: #E2E8F0;
+      --cto-bh-text: #475569;
+      --cto-spl-bg: #E9D5FF;
+      --cto-spl-text: #6B21A8;
+      --cto-uwu-bg: #FBCFE8;
+      --cto-uwu-text: #9D174D;
+      --cto-wtt-bg: #FCE7F3;
+      --cto-wtt-text: #BE185D;
+      --cto-rota-bg: #FFE2C2;
+      --cto-rota-text: #9A4A12;
       /* Location pin SVG fill — themes desaturate for monochrome looks */
       --pin-color: #e8453c;
       /* Chevron arrows on day cards, task rows, weekend divider, etc. */
@@ -3572,10 +3596,12 @@
       white-space: nowrap;
       line-height: 1.4;
     }
+
     .week-status-pill.is-oncall {
       background: var(--pill-oncall-bg);
       color: var(--pill-oncall-text);
     }
+
     .week-status-pill.is-extra {
       background: var(--pill-extra-bg);
       color: var(--pill-extra-text);
@@ -5806,6 +5832,1035 @@
 
     .day-weekend .day-header {
       background: var(--bg-day-header-we);
+    }
+
+    .av-pill,
+    .av-code {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.3;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+
+    .av-code {
+      min-width: 42px;
+      border-radius: 7px;
+      padding: 5px 7px;
+      font-weight: 800;
+    }
+
+    .av-al {
+      background: var(--cto-al-bg);
+      color: var(--cto-al-text);
+    }
+
+    .av-oc,
+    .av-50 {
+      background: var(--cto-oc-bg);
+      color: var(--cto-oc-text);
+    }
+
+    .av-sa {
+      background: var(--cto-sa-bg);
+      color: var(--cto-sa-text);
+    }
+
+    .av-sd {
+      background: var(--cto-sd-bg);
+      color: var(--cto-sd-text);
+    }
+
+    .av-sl {
+      background: var(--cto-sl-bg);
+      color: var(--cto-sl-text);
+    }
+
+    .av-off {
+      background: var(--cto-off-bg);
+      color: var(--cto-off-text);
+    }
+
+    .av-bh {
+      background: var(--cto-bh-bg);
+      color: var(--cto-bh-text);
+    }
+
+    .av-spl {
+      background: var(--cto-spl-bg);
+      color: var(--cto-spl-text);
+    }
+
+    .av-uwu {
+      background: var(--cto-uwu-bg);
+      color: var(--cto-uwu-text);
+    }
+
+    .av-wtt {
+      background: var(--cto-wtt-bg);
+      color: var(--cto-wtt-text);
+    }
+
+    .av-r,
+    .av-d,
+    .av-d1,
+    .av-d2,
+    .av-l,
+    .av-l1,
+    .av-l2 {
+      background: var(--cto-rota-bg);
+      color: var(--cto-rota-text);
+    }
+
+    .av-week-banner {
+      margin: 10px 12px 0;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-shadow: 0 2px 10px rgba(var(--shadow-rgb), 0.05);
+    }
+
+    .av-week-banner strong {
+      color: var(--text-primary);
+      font-weight: 900;
+    }
+
+    .av-page {
+      background: var(--bg-page);
+      min-height: calc(100vh - 70px);
+      padding-bottom: 40px;
+    }
+
+    .av-wrap {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr) 360px;
+      min-height: calc(100vh - 150px);
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+    }
+
+    .av-panel {
+      min-width: 0;
+      border-right: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .av-panel:last-child {
+      border-right: 0;
+      border-left: 1px solid var(--border);
+    }
+
+    .av-section-label {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .av-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .av-stat {
+      padding: 14px 16px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .av-stat:nth-child(2n) {
+      border-right: 0;
+    }
+
+    .av-stat:nth-last-child(-n+2) {
+      border-bottom: 0;
+    }
+
+    .av-stat span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .av-stat strong {
+      color: var(--text-primary);
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .av-card {
+      margin: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-card-alt);
+      padding: 14px;
+    }
+
+    .av-card p {
+      margin: 6px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .av-btn {
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      padding: 0 14px;
+    }
+
+    .av-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .av-legend,
+    .av-abbr {
+      display: grid;
+      gap: 8px;
+      padding: 14px 16px;
+    }
+
+    .av-abbr {
+      display: block;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .av-abbr-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+
+    .av-abbr-table th,
+    .av-abbr-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .av-abbr-table th {
+      background: var(--bg-card-alt);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .av-abbr-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .av-abbr-table td:last-child {
+      color: var(--text-secondary);
+      font-weight: 800;
+    }
+
+    .av-abbr-code-col {
+      width: 104px;
+    }
+
+    .av-legend-row,
+    .av-abbr-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .av-abbr-row {
+      grid-template-columns: auto 1fr;
+    }
+
+    .av-calendar-wrap {
+      padding: 18px 22px 28px;
+      min-width: 0;
+      background: var(--bg-page);
+    }
+
+    .av-month-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .av-month-title {
+      color: var(--text-primary);
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .av-calendar {
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg-card);
+      box-shadow: 0 8px 22px rgba(var(--shadow-rgb), 0.08);
+    }
+
+    .av-calendar .av-month-head {
+      padding: 12px 14px;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .av-dow {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(82px, 1fr));
+    }
+
+    .av-grid {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .av-week-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(82px, 1fr));
+    }
+
+    /* tint on the whole row — cells are transparent so the band is solid */
+    .av-week-row.av-tint-sd {
+      background: rgba(45, 107, 228, 0.07);
+    }
+
+    .av-week-row.av-tint-sa {
+      background: rgba(200, 130, 40, 0.08);
+    }
+
+    .av-week-row.av-tint-oc {
+      background: rgba(200, 160, 0, 0.10);
+    }
+
+    .av-week-row.av-tint-r {
+      background: rgba(180, 100, 30, 0.08);
+    }
+
+    .av-dow div {
+      padding: 11px 9px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .av-dow div:last-child {
+      border-right: 0;
+    }
+
+    .av-day {
+      min-height: 96px;
+      padding: 10px 9px 8px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      position: relative;
+    }
+
+    .av-day:hover {
+      background: rgba(var(--accent-rgb), 0.07) !important;
+    }
+
+    .av-day:nth-child(7n) {
+      border-right: 0;
+    }
+
+    .av-day.weekend {
+      background: rgba(var(--shadow-rgb), 0.03);
+    }
+
+    .av-day.muted {
+      color: var(--text-dim);
+      background: var(--bg-card-alt);
+    }
+
+    .av-day.muted .av-day-num {
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .av-day.muted .av-pill {
+      opacity: 0.55;
+    }
+
+    .av-day.today .av-day-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .av-day.selected {
+      background: rgba(var(--accent-rgb), 0.08);
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
+
+    .av-day.selected.today .av-day-num {
+      box-shadow: none;
+    }
+
+    .av-day-num {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .av-day-pills {
+      align-self: end;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .av-editor {
+      padding: 14px 0 18px;
+    }
+
+    .av-cal-sel-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .av-field {
+      margin-bottom: 18px;
+    }
+
+    .av-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .av-field label {
+      display: block;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      padding: 0 16px;
+    }
+
+    /* 2-column grid, flat item style — no individual button borders */
+    .av-choice-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--border);
+    }
+
+    .av-choice {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 14px;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-left: 3px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.1s;
+      min-width: 0;
+    }
+
+    .av-choice:nth-child(even) {
+      border-right: none;
+    }
+
+    .av-choice:hover {
+      background: var(--bg-input);
+    }
+
+    .av-choice.active {
+      background: rgba(var(--accent-rgb), 0.05);
+      border-left-color: var(--accent);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .av-choice-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    /* pill inside choice rows */
+    .av-choice-pill {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      min-width: 32px;
+      background: var(--bg-input);
+      color: var(--text-muted);
+      border: 1px dashed rgba(0, 0, 0, 0.12);
+    }
+
+    .av-choice-pill.av-al {
+      border: none;
+      background: var(--cto-al-bg);
+      color: var(--cto-al-text);
+    }
+
+    .av-choice-pill.av-oc,
+    .av-choice-pill.av-50 {
+      border: none;
+      background: var(--cto-oc-bg);
+      color: var(--cto-oc-text);
+    }
+
+    .av-choice-pill.av-sa {
+      border: none;
+      background: var(--cto-sa-bg);
+      color: var(--cto-sa-text);
+    }
+
+    .av-choice-pill.av-sd {
+      border: none;
+      background: var(--cto-sd-bg);
+      color: var(--cto-sd-text);
+    }
+
+    .av-choice-pill.av-sl {
+      border: none;
+      background: var(--cto-sl-bg);
+      color: var(--cto-sl-text);
+    }
+
+    .av-choice-pill.av-off {
+      border: none;
+      background: var(--cto-off-bg);
+      color: var(--cto-off-text);
+    }
+
+    .av-choice-pill.av-bh {
+      border: none;
+      background: var(--cto-bh-bg);
+      color: var(--cto-bh-text);
+    }
+
+    .av-choice-pill.av-spl {
+      border: none;
+      background: var(--cto-spl-bg);
+      color: var(--cto-spl-text);
+    }
+
+    .av-choice-pill.av-uwu {
+      border: none;
+      background: var(--cto-uwu-bg);
+      color: var(--cto-uwu-text);
+    }
+
+    .av-choice-pill.av-wtt {
+      border: none;
+      background: var(--cto-wtt-bg);
+      color: var(--cto-wtt-text);
+    }
+
+    .av-choice-pill.av-r,
+    .av-choice-pill.av-d,
+    .av-choice-pill.av-l {
+      border: none;
+      background: var(--cto-rota-bg);
+      color: var(--cto-rota-text);
+    }
+
+    .av-cal-sel-weekday {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 3px;
+    }
+
+    .av-cal-sel-dmy {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .av-hero-badges {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* strip badge = same calendar pill + label side by side */
+    .av-strip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .av-info-card {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(var(--accent-rgb), 0.06);
+      border: 1px solid rgba(var(--accent-rgb), 0.18);
+    }
+
+    .av-info-card strong {
+      display: block;
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .av-info-card p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1279px) {
+      .av-wrap {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-page);
+      }
+
+      .av-panel {
+        border: 0;
+      }
+
+      .av-panel:first-child {
+        order: 3;
+      }
+
+      .av-calendar-wrap {
+        order: 1;
+      }
+
+      .av-panel:last-child {
+        order: 2;
+      }
+
+      .av-calendar-wrap {
+        padding: 14px 12px;
+      }
+
+      .av-dow,
+      .av-week-row {
+        grid-template-columns: repeat(7, minmax(42px, 1fr));
+      }
+
+      .av-day {
+        min-height: 70px;
+        padding: 6px;
+      }
+
+      .av-day .av-pill {
+        padding: 4px 5px;
+        font-size: 10px;
+      }
+
+      .av-panel:last-child {
+        margin: 12px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .av-page .hist-hdr {
+        padding: 10px 14px;
+        gap: 9px;
+      }
+
+      .av-page .hist-hdr h2 {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .av-page .hist-hdr p {
+        font-size: 13px;
+        line-height: 1.25;
+      }
+
+      .av-page .hist-icon-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 13px;
+      }
+
+      .av-calendar-wrap {
+        padding: 4px 8px 10px;
+      }
+
+      .av-month-head {
+        margin-bottom: 8px;
+      }
+
+      .av-calendar .av-month-head {
+        padding: 8px 9px;
+        border-bottom: 0;
+      }
+
+      .av-btn {
+        height: 28px;
+        min-width: 28px;
+        padding: 0 8px;
+        border-radius: 8px;
+        background: transparent;
+        border-color: transparent;
+        font-weight: 700;
+      }
+
+      .av-month-title {
+        font-size: 15px;
+        font-weight: 750;
+      }
+
+      .av-calendar {
+        border-radius: 13px;
+        box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.045);
+      }
+
+      .av-dow {
+        padding: 0 8px;
+      }
+
+      .av-grid {
+        gap: 3px;
+        padding: 0 15px 14px;
+      }
+
+      .av-week-row {
+        grid-template-columns: repeat(7, 1fr);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .av-week-row.av-tint-sd,
+      .av-week-row.av-tint-sa,
+      .av-week-row.av-tint-oc,
+      .av-week-row.av-tint-r {
+        border-radius: 10px;
+      }
+
+      .av-dow div {
+        padding: 5px 2px 4px;
+        border: 0;
+        background: transparent;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-align: center;
+      }
+
+      .av-day {
+        min-height: 46px;
+        padding: 4px 2px;
+        border: 0;
+        border-radius: 0;
+        display: grid;
+        grid-template-rows: 16px 12px;
+        align-items: center;
+        justify-content: center;
+        justify-items: center;
+        align-content: center;
+        gap: 4px;
+      }
+
+      .av-day.today .av-day-num,
+      .av-day.selected.today .av-day-num {
+        display: block !important;
+        width: auto !important;
+        height: 16px !important;
+        border-radius: 0;
+        background: transparent !important;
+        box-shadow: none;
+        color: var(--text-primary);
+      }
+
+      .av-day>div:nth-child(2) {
+        display: none;
+      }
+
+      .av-day.selected {
+        outline: 0;
+        background: rgba(var(--accent-rgb), 0.08);
+        box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.58);
+      }
+
+      .av-day.selected .av-day-num {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .av-day.today.selected .av-day-num {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .av-day.selected .av-pill {
+        opacity: 1;
+        transform: none;
+      }
+
+      .av-day.today:not(.selected) .av-day-num {
+        width: auto !important;
+        height: 16px !important;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+      }
+
+      .av-day.muted {
+        background: transparent;
+      }
+
+      .av-day.muted .av-day-num {
+        color: var(--text-muted);
+      }
+
+      .av-day.past:not(.selected) {
+        opacity: .58;
+      }
+
+      .av-day.past:not(.selected) .av-pill {
+        opacity: .72;
+      }
+
+      .av-day-num {
+        font-size: 14px;
+        line-height: 16px;
+        font-weight: 500;
+        text-align: center;
+        height: 16px;
+      }
+
+      .av-day-pills {
+        display: flex;
+        justify-content: center;
+        align-self: center;
+        align-items: center;
+        width: 100%;
+        min-height: 12px;
+        gap: 3px;
+      }
+
+      .av-day .av-pill {
+        padding: 2px 5px;
+        min-width: 24px;
+        border-radius: 5px;
+        font-size: 8px;
+        font-weight: 650;
+        line-height: 1;
+        letter-spacing: .01em;
+        text-transform: uppercase;
+      }
+
+      .av-panel:last-child {
+        margin: 10px 8px;
+        border-radius: 14px;
+      }
+
+      .av-section-label {
+        padding: 11px 14px;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: .08em;
+      }
+
+      .av-editor {
+        padding: 14px;
+      }
+
+      .av-editor-title {
+        font-size: 18px;
+        line-height: 1.15;
+        font-weight: 750;
+      }
+
+      .av-editor-sub {
+        margin-bottom: 14px;
+      }
+
+      .av-field {
+        margin-bottom: 14px;
+      }
+
+      .av-choice {
+        padding: 9px 14px;
+        font-size: 13px;
+      }
+
+      .av-abbr {
+        padding: 0;
+      }
+
+      .av-abbr-table,
+      .av-abbr-table tbody {
+        display: block;
+        width: 100%;
+      }
+
+      .av-abbr-table thead {
+        display: none;
+      }
+
+      .av-abbr-table tr {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 16px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .av-abbr-table tr:last-child {
+        border-bottom: 0;
+      }
+
+      .av-abbr-table td {
+        display: block;
+        padding: 0;
+        border: 0;
+      }
+
+      .av-abbr-table td:last-child {
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 500;
+        flex: 1;
+      }
+
+      .av-abbr .av-code {
+        min-width: 38px;
+        padding: 4px 6px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .av-cal-sel-strip {
+        padding: 12px 22px;
+      }
+
+      .av-cal-sel-weekday {
+        font-size: 12px;
+      }
+
+      .av-cal-sel-dmy {
+        font-size: 15px;
+      }
+
+      .av-info-card {
+        margin-top: 14px;
+        padding: 11px 12px;
+        border-radius: 11px;
+        background: var(--bg-card-alt);
+        border-color: var(--border);
+      }
+
+      .av-info-card strong {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .av-info-card p {
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.45;
+      }
+
+      .av-panel:first-child {
+        margin: 0 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+      }
     }
 
     .day-header .expand-arrow {
@@ -19296,6 +20351,37 @@
     </div>
   </div>
 
+  <!-- Availability Import dialog -->
+  <div id="av-import-modal" class="hidden fixed inset-0 flex items-center justify-center p-4" style="z-index:9999;background:rgba(var(--shadow-rgb),0.55)">
+    <div style="background:var(--bg-modal);border-radius:18px;padding:22px 22px 20px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.22)">
+      <h2 style="font-size:17px;font-weight:800;color:var(--text-primary);margin:0 0 16px">Import CTO Tracker</h2>
+
+      <!-- File picker -->
+      <div id="av-import-file-area" onclick="document.getElementById('av-import-file').click()"
+        style="border:2px dashed var(--border);border-radius:12px;padding:16px 14px;text-align:center;cursor:pointer;margin-bottom:12px;transition:border-color .15s">
+        <div style="font-size:22px;margin-bottom:5px">📂</div>
+        <div id="av-import-file-label" style="font-size:13px;font-weight:600;color:var(--text-secondary)">Choose Excel file (.xlsx)</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">CTO Resource Availability Tracker</div>
+      </div>
+      <input id="av-import-file" type="file" accept=".xlsx,.xls" style="display:none" onchange="avHandleImportFile(this)">
+
+      <!-- Status / result message -->
+      <div id="av-import-status" style="display:none;font-size:12px;line-height:1.5;margin-bottom:12px;padding:9px 12px;border-radius:10px"></div>
+
+      <!-- Name picker — shown after successful parse -->
+      <div id="av-import-name-row" style="display:none;margin-bottom:14px">
+        <label style="display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--text-muted);margin-bottom:6px">Select your name</label>
+        <select id="av-import-name-select" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg-input);color:var(--text-primary);font-family:inherit;font-size:14px;font-weight:500"></select>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="avCloseImportDialog()" style="flex:1;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-secondary);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">Cancel</button>
+        <button id="av-import-confirm-btn" onclick="avConfirmImport()" disabled style="flex:1;padding:11px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;opacity:0.45">Import</button>
+      </div>
+      <button onclick="avConfirmImportBuiltin()" style="width:100%;margin-top:10px;padding:9px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-family:inherit;font-size:13px;cursor:pointer">Use built-in 2026 data instead</button>
+    </div>
+  </div>
+
   <!-- Cloud Backups modal -->
   <div id="backup-modal" class="hidden fixed inset-0 flex flex-col"
     style="background:rgba(var(--shadow-rgb), 0.6);z-index:900;overflow-y:auto">
@@ -19403,7 +20489,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.5';
+    const VERSION = '6.2.32';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20018,6 +21104,29 @@
       { a: 'Provide / Move', d: 'Capital Offload Field', c: 'CGN7012H14' },
     ];
 
+    const AVAILABILITY_CODE_META = {
+      'A/L': { label: 'Annual Leave', cls: 'av-al', kind: 'daily' },
+      'OC': { label: 'On Call', cls: 'av-oc', kind: 'weekly' },
+      '50': { label: 'On Call (50/50)', cls: 'av-50', kind: 'weekly' },
+      'SA': { label: 'Service Assurance', cls: 'av-sa', kind: 'weekly' },
+      'SD': { label: 'Service Delivery', cls: 'av-sd', kind: 'weekly' },
+      'S/L': { label: 'Sick Leave', cls: 'av-sl', kind: 'daily' },
+      'off': { label: 'Off Duty', cls: 'av-off', kind: 'daily' },
+      'BH': { label: 'Bank Holiday', cls: 'av-bh', kind: 'daily' },
+      'Sp/L': { label: 'Special Leave', cls: 'av-spl', kind: 'daily' },
+      'UWU': { label: 'Union Business', cls: 'av-uwu', kind: 'daily' },
+      'WTT': { label: 'Training', cls: 'av-wtt', kind: 'daily' },
+      'R': { label: 'Rota', cls: 'av-r', kind: 'weekly' },
+      'D': { label: 'Dublin Rota (Days)', cls: 'av-d', kind: 'weekly' },
+      'D1': { label: 'Dublin Rota (Days)', cls: 'av-d1', kind: 'weekly' },
+      'D2': { label: 'Dublin Rota (Days)', cls: 'av-d2', kind: 'weekly' },
+      'L': { label: 'Dublin Rota (Late)', cls: 'av-l', kind: 'weekly' },
+      'L1': { label: 'Dublin Rota (Late)', cls: 'av-l1', kind: 'weekly' },
+      'L2': { label: 'Dublin Rota (Late)', cls: 'av-l2', kind: 'weekly' }
+    };
+
+    const CTO_AVAILABILITY_RANGES_2026 = [["2026-01-01", "2026-01-01", "OC"], ["2026-01-02", "2026-01-02", "SD"], ["2026-01-03", "2026-01-04", "off"], ["2026-01-05", "2026-01-05", "SD"], ["2026-01-06", "2026-01-08", "WTT"], ["2026-01-09", "2026-01-09", "SD"], ["2026-01-10", "2026-01-11", "off"], ["2026-01-12", "2026-01-15", "SD"], ["2026-01-16", "2026-01-16", "SA"], ["2026-01-17", "2026-01-18", "off"], ["2026-01-19", "2026-01-22", "SA"], ["2026-01-23", "2026-01-29", "OC"], ["2026-01-30", "2026-01-30", "SD"], ["2026-01-31", "2026-02-01", "off"], ["2026-02-02", "2026-02-06", "SD"], ["2026-02-07", "2026-02-08", "off"], ["2026-02-09", "2026-02-12", "SD"], ["2026-02-13", "2026-02-13", "SA"], ["2026-02-14", "2026-02-15", "off"], ["2026-02-16", "2026-02-19", "SA"], ["2026-02-20", "2026-02-26", "OC"], ["2026-02-27", "2026-02-27", "SD"], ["2026-02-28", "2026-03-01", "off"], ["2026-03-02", "2026-03-06", "SD"], ["2026-03-07", "2026-03-08", "off"], ["2026-03-09", "2026-03-12", "SD"], ["2026-03-13", "2026-03-13", "SA"], ["2026-03-14", "2026-03-15", "off"], ["2026-03-16", "2026-03-16", "SA"], ["2026-03-17", "2026-03-17", "BH"], ["2026-03-18", "2026-03-20", "SA"], ["2026-03-21", "2026-03-26", "OC"], ["2026-03-27", "2026-03-27", "SD"], ["2026-03-28", "2026-03-29", "off"], ["2026-03-30", "2026-04-03", "SD"], ["2026-04-04", "2026-04-05", "off"], ["2026-04-06", "2026-04-09", "SD"], ["2026-04-10", "2026-04-10", "SA"], ["2026-04-11", "2026-04-12", "off"], ["2026-04-13", "2026-04-16", "SA"], ["2026-04-17", "2026-04-23", "OC"], ["2026-04-24", "2026-04-24", "SD"], ["2026-04-25", "2026-04-26", "off"], ["2026-04-27", "2026-04-28", "SD"], ["2026-04-29", "2026-05-01", "A/L"], ["2026-05-02", "2026-05-03", "off"], ["2026-05-04", "2026-05-04", "BH"], ["2026-05-05", "2026-05-05", "SD"], ["2026-05-06", "2026-05-06", "WTT"], ["2026-05-07", "2026-05-07", "SD"], ["2026-05-08", "2026-05-08", "SA"], ["2026-05-09", "2026-05-10", "off"], ["2026-05-11", "2026-05-14", "SA"], ["2026-05-15", "2026-05-21", "OC"], ["2026-05-22", "2026-05-22", "SD"], ["2026-05-23", "2026-05-24", "off"], ["2026-05-25", "2026-05-29", "SD"], ["2026-05-30", "2026-05-31", "off"], ["2026-06-01", "2026-06-01", "BH"], ["2026-06-02", "2026-06-04", "SD"], ["2026-06-05", "2026-06-18", "OC"], ["2026-06-19", "2026-06-19", "SD"], ["2026-06-20", "2026-06-21", "off"], ["2026-06-22", "2026-06-25", "SD"], ["2026-06-26", "2026-07-09", "A/L"], ["2026-07-10", "2026-07-16", "OC"], ["2026-07-17", "2026-07-17", "SD"], ["2026-07-18", "2026-07-19", "off"], ["2026-07-20", "2026-07-24", "SD"], ["2026-07-25", "2026-07-26", "off"], ["2026-07-27", "2026-07-30", "SD"], ["2026-07-31", "2026-08-13", "OC"], ["2026-08-14", "2026-08-14", "SD"], ["2026-08-15", "2026-08-16", "off"], ["2026-08-17", "2026-08-21", "SD"], ["2026-08-22", "2026-08-23", "off"], ["2026-08-24", "2026-08-27", "SD"], ["2026-08-28", "2026-08-28", "SA"], ["2026-08-29", "2026-08-30", "off"], ["2026-08-31", "2026-09-03", "SA"], ["2026-09-04", "2026-09-10", "OC"], ["2026-09-11", "2026-09-11", "SD"], ["2026-09-12", "2026-09-13", "off"], ["2026-09-14", "2026-09-18", "SD"], ["2026-09-19", "2026-09-20", "off"], ["2026-09-21", "2026-09-24", "SD"], ["2026-09-25", "2026-09-25", "SA"], ["2026-09-26", "2026-09-27", "off"], ["2026-09-28", "2026-10-01", "SA"], ["2026-10-02", "2026-10-08", "OC"], ["2026-10-09", "2026-10-09", "SD"], ["2026-10-10", "2026-10-11", "off"], ["2026-10-12", "2026-10-16", "SD"], ["2026-10-17", "2026-10-18", "off"], ["2026-10-19", "2026-10-22", "SD"], ["2026-10-23", "2026-10-23", "SA"], ["2026-10-24", "2026-10-25", "off"], ["2026-10-26", "2026-10-29", "SA"], ["2026-10-30", "2026-11-05", "OC"], ["2026-11-06", "2026-11-06", "SD"], ["2026-11-07", "2026-11-08", "off"], ["2026-11-09", "2026-11-13", "SD"], ["2026-11-14", "2026-11-15", "off"], ["2026-11-16", "2026-11-19", "SD"], ["2026-11-20", "2026-11-20", "SA"], ["2026-11-21", "2026-11-22", "off"], ["2026-11-23", "2026-11-26", "SA"], ["2026-11-27", "2026-12-03", "OC"], ["2026-12-04", "2026-12-04", "SD"], ["2026-12-05", "2026-12-06", "off"], ["2026-12-07", "2026-12-11", "SD"], ["2026-12-12", "2026-12-13", "off"], ["2026-12-14", "2026-12-17", "SD"], ["2026-12-18", "2026-12-18", "SA"], ["2026-12-19", "2026-12-20", "off"], ["2026-12-21", "2026-12-24", "SA"], ["2026-12-25", "2026-12-31", "OC"]];
+
     // ============================================================
     // STATE
     // ============================================================
@@ -20112,6 +21221,12 @@
       calloutsNotesOpen: false,  // whether notes panel is open in expanded callout
       coSelectionMode: false,
       selectedCallouts: new Set(),
+      // My Schedule — per-week role + per-day overrides (work rota, A/L, training, etc.)
+      // Structure: { weeks: { "YYYY-MM-DD": { role, overrides: { fri:'A/L', mon:'WTT', ... } } } }
+      schedule: null,
+      scheduleWeekStart: null, // editor's current week (defaults to state.weekStart)
+      availabilityMonth: null,
+      availabilitySelectedDate: null,
       // ── Journal (v5.1.0 — OneNote-style: Notebooks → Sections → Pages) ──
       jNotebooks: [],      // [{id, title, color, displayOrder, createdAt, updatedAt}]
       conflicts: [],       // [{id, section, icon, description, detectedAt, localData, remoteData, displayType}]
@@ -20875,6 +21990,7 @@
     // ─────────────────────────────────────────────────────────────
     let notesUnsubscribe = null;
     let calloutsUnsubscribe = null;
+    let availabilityUnsubscribe = null;
 
     // ============================================================
     // INDEXEDDB
@@ -21260,6 +22376,534 @@
       _raiseCoHWM(_totalCalloutEntries(toSave));
       await dbPut('notes', { id: 'callouts_all', userId: uid, data: toSave, updatedAt: Date.now() });
       await fsSetCallouts(toSave);
+    }
+
+    function _avExpandCtoRanges() {
+      var days = {};
+      CTO_AVAILABILITY_RANGES_2026.forEach(function (r) {
+        var d = strToDate(r[0]);
+        var end = strToDate(r[1]);
+        while (d <= end) {
+          days[dateToStr(d)] = r[2];
+          d.setDate(d.getDate() + 1);
+        }
+      });
+      return days;
+    }
+
+    function _avSeedSchedule(name) {
+      var n = (name || '').trim() || 'Robert Kamenicky';
+      return {
+        days: _avExpandCtoRanges(),
+        source: 'CTO Resource Availability Tracker.xlsx · 2026 Tracker · ' + n,
+        _seedVersion: '2026-v1',
+        _updatedAt: Date.now()
+      };
+    }
+
+    function _avEnsureSchedule() {
+      if (!state.schedule || !state.schedule.days) state.schedule = _avSeedSchedule();
+      return state.schedule;
+    }
+
+    function _avMeta(code) {
+      return AVAILABILITY_CODE_META[code] || { label: code || 'None', cls: '', kind: 'daily' };
+    }
+
+    function _avClass(code) {
+      var m = _avMeta(code);
+      return m.cls || '';
+    }
+
+    function _avLabel(code) {
+      var m = _avMeta(code);
+      return m.label || code || '';
+    }
+
+    function _avWeekTintClass(role) {
+      if (role === 'SD') return 'av-tint-sd';
+      if (role === 'SA') return 'av-tint-sa';
+      if (role === 'OC' || role === '50') return 'av-tint-oc';
+      if (['R', 'D', 'D1', 'D2', 'L', 'L1', 'L2'].includes(role)) return 'av-tint-r';
+      return '';
+    }
+
+    function _avGetCode(dateStr) {
+      var sched = _avEnsureSchedule();
+      return sched.days ? (sched.days[dateStr] || '') : '';
+    }
+
+    function _avIsDailyCode(code) {
+      return !!code && ['A/L', 'BH', 'WTT', 'S/L', 'Sp/L', 'UWU'].includes(code);
+    }
+
+    function _avIsWeekCode(code) {
+      return !!code && ['SD', 'SA', 'OC', '50', 'R', 'D', 'D1', 'D2', 'L', 'L1', 'L2'].includes(code);
+    }
+
+    function _avWeekDates(weekStart) {
+      var out = [];
+      var d = strToDate(weekStart);
+      for (var i = 0; i < 7; i++) {
+        var x = new Date(d);
+        x.setDate(d.getDate() + i);
+        out.push(dateToStr(x));
+      }
+      return out;
+    }
+
+    function _avWeekRole(weekStart) {
+      var counts = {};
+      _avWeekDates(weekStart).forEach(function (dateStr) {
+        var c = _avGetCode(dateStr);
+        if (['SD', 'SA', 'OC', '50', 'R', 'D', 'D1', 'D2', 'L', 'L1', 'L2'].includes(c)) counts[c] = (counts[c] || 0) + 1;
+      });
+      var best = '';
+      Object.keys(counts).forEach(function (k) {
+        if (!best || counts[k] > counts[best]) best = k;
+      });
+      return best;
+    }
+
+    function _avPill(code, labelOverride) {
+      if (!code) return '';
+      return '<span class="av-pill ' + _avClass(code) + '">' + esc(labelOverride || _avLabel(code)) + '</span>';
+    }
+
+    function _avDayBadgesHtml(dateStr, compact) {
+      var c = _avGetCode(dateStr);
+      if (!c || _avIsWeekCode(c) || c === 'off') return '';
+      return _avPill(c, compact ? c : _avLabel(c));
+    }
+
+    function _avWeekBannerHtml(weekStart) {
+      var role = _avWeekRole(weekStart);
+      if (!role || role === 'OC' || role === '50') return '';
+      return '<div class="av-week-banner"><span><strong>' + esc(_avLabel(role)) + '</strong> from Availability Planner</span>' + _avPill(role, role) + '</div>';
+    }
+
+    async function fsSetAvailability(data) {
+      const ref = userDoc('data/availability');
+      if (!ref) return;
+      await ref.set({ ...(data || {}), _updatedAt: Date.now() });
+    }
+
+    let _avSaveTimer = null;
+    let _avSavePending = false;
+    function scheduleAvailabilitySave() {
+      clearTimeout(_avSaveTimer);
+      _avSaveTimer = setTimeout(async function () {
+        if (!state.currentUser || !state.schedule) return;
+        _avSavePending = true;
+        try {
+          state.schedule._updatedAt = Date.now();
+          await dbPut('notes', { id: 'availability_all', userId: state.currentUser.uid, data: state.schedule, updatedAt: state.schedule._updatedAt });
+          await fsSetAvailability(state.schedule);
+        } catch (e) {
+          console.warn('[Rian] availability save failed', e);
+          showToast('Availability save failed');
+        } finally {
+          _avSavePending = false;
+        }
+      }, 350);
+    }
+
+    async function loadAvailability() {
+      const uid = state.currentUser?.uid;
+      if (!uid) return;
+      if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
+      const stored = await dbGet('notes', 'availability_all').catch(() => null);
+      if (stored?.data && (!stored.userId || stored.userId === uid)) state.schedule = stored.data;
+      if (!state.schedule) state.schedule = _avSeedSchedule();
+
+      const ref = userDoc('data/availability');
+      if (!ref) return;
+      availabilityUnsubscribe = ref.onSnapshot({ includeMetadataChanges: true }, function (snap) {
+        if (snap.metadata.hasPendingWrites || _avSaveTimer || _avSavePending) return;
+        if (snap.exists) {
+          var remote = snap.data();
+          state.schedule = { days: remote.days || {}, source: remote.source || '', _updatedAt: remote._updatedAt || Date.now(), _seedVersion: remote._seedVersion || '' };
+          dbPut('notes', { id: 'availability_all', userId: uid, data: state.schedule, updatedAt: state.schedule._updatedAt || Date.now() });
+          if (state.view === 'availability' || state.view === 'week') render();
+        } else if (!state.schedule) {
+          state.schedule = _avSeedSchedule();
+          if (state.view === 'availability' || state.view === 'week') render();
+        }
+      }, function () {
+        console.warn('[Rian] availability onSnapshot error');
+      });
+    }
+
+    var _avParsedDays = null;
+    var _avParsedFileName = null;
+
+    function avShowImportDialog() {
+      document.getElementById('av-import-file-label').textContent = 'Choose Excel file (.xlsx)';
+      document.getElementById('av-import-file-area').style.borderColor = '';
+      document.getElementById('av-import-status').style.display = 'none';
+      document.getElementById('av-import-confirm-btn').disabled = true;
+      document.getElementById('av-import-confirm-btn').style.opacity = '0.45';
+      document.getElementById('av-import-name-row').style.display = 'none';
+      var fi = document.getElementById('av-import-file');
+      if (fi) fi.value = '';
+      _avParsedDays = null;
+      _avParsedPeople = null;
+      document.getElementById('av-import-modal').classList.remove('hidden');
+    }
+
+    function avCloseImportDialog() {
+      document.getElementById('av-import-modal').classList.add('hidden');
+    }
+
+    function _avSetImportStatus(msg, ok) {
+      var el = document.getElementById('av-import-status');
+      el.style.display = 'block';
+      el.style.background = ok ? 'rgba(22,163,74,0.08)' : 'rgba(239,68,68,0.08)';
+      el.style.border = '1px solid ' + (ok ? 'rgba(22,163,74,0.25)' : 'rgba(239,68,68,0.25)');
+      el.style.color = ok ? 'var(--cto-al-text)' : 'var(--cto-sl-text)';
+      el.textContent = msg;
+      var btn = document.getElementById('av-import-confirm-btn');
+      btn.disabled = !ok;
+      btn.style.opacity = ok ? '1' : '0.45';
+    }
+
+    function avHandleImportFile(input) {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      _avParsedFileName = file.name;
+      document.getElementById('av-import-file-label').textContent = file.name;
+      _avSetImportStatus('Reading file…', false);
+      // Load SheetJS lazily
+      if (typeof XLSX === 'undefined') {
+        var s = document.createElement('script');
+        s.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
+        s.onload = function () { _avParseXlsx(file); };
+        s.onerror = function () { _avSetImportStatus('Could not load Excel parser. Check your connection.', false); };
+        document.head.appendChild(s);
+      } else {
+        _avParseXlsx(file);
+      }
+    }
+
+    var _avParsedPeople = null; // { name: { days: {...} } }
+
+    function _avParseXlsx(file) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          var wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+
+          // Strategy 1: "2026 Tracker" / matrix sheet — dates across columns, people down rows
+          var matrixSheet = wb.SheetNames.find(function (n) { return /2026.*tracker|tracker.*2026/i.test(n); })
+            || wb.SheetNames.find(function (n) { return /tracker/i.test(n); });
+          if (matrixSheet) {
+            var rows = XLSX.utils.sheet_to_json(wb.Sheets[matrixSheet], { header: 1, defval: null, raw: true });
+            var people = _avParseMatrixSheet(rows);
+            if (people && Object.keys(people).length > 0) {
+              _avShowNamePicker(people, matrixSheet);
+              return;
+            }
+          }
+
+          // Strategy 2: "All Days" sheet — Date | Day | Week | Code | Meaning (single person)
+          var allDaysSheet = wb.SheetNames.find(function (n) { return /all.?days/i.test(n); });
+          if (allDaysSheet) {
+            var rows2 = XLSX.utils.sheet_to_json(wb.Sheets[allDaysSheet], { header: 1, defval: null, raw: true });
+            var days2 = _avParseAllDaysSheet(rows2);
+            if (days2 && Object.keys(days2).length > 0) {
+              _avParsedDays = days2;
+              _avParsedPeople = null;
+              document.getElementById('av-import-name-row').style.display = 'none';
+              _avSetImportStatus('Found ' + Object.keys(days2).length + ' days from "' + allDaysSheet + '".', true);
+              return;
+            }
+          }
+
+          // Strategy 3: Calendar sheet — Week | StartDate | Mon–Sun
+          var calSheet = wb.SheetNames.find(function (n) { return /calendar/i.test(n); });
+          if (calSheet) {
+            var rows3 = XLSX.utils.sheet_to_json(wb.Sheets[calSheet], { header: 1, defval: null, raw: true });
+            var days3 = _avParseCalendarSheet(rows3);
+            if (days3 && Object.keys(days3).length > 0) {
+              _avParsedDays = days3;
+              _avParsedPeople = null;
+              document.getElementById('av-import-name-row').style.display = 'none';
+              _avSetImportStatus('Found ' + Object.keys(days3).length + ' days from "' + calSheet + '".', true);
+              return;
+            }
+          }
+
+          _avSetImportStatus('No availability data found. Make sure you selected the CTO Resource Availability Tracker.xlsx file.', false);
+        } catch (err) {
+          _avSetImportStatus('Could not read file: ' + (err.message || 'unknown error'), false);
+        }
+      };
+      reader.onerror = function () { _avSetImportStatus('Could not read file.', false); };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Matrix format: row 6 = dates across columns, col 2 = name, cols 3+ = codes
+    function _avParseMatrixSheet(rows) {
+      var people = {};
+      if (!rows || rows.length < 7) return people;
+      // Find the date row — first row where col 2 is "Tech" or col 3+ has Date objects
+      var dateRowIdx = -1;
+      for (var i = 0; i < Math.min(10, rows.length); i++) {
+        var r = rows[i];
+        if (!r) continue;
+        if (String(r[2] || '').trim() === 'Tech') { dateRowIdx = i; break; }
+        // Also detect by presence of dates in col 3+
+        if (r[3] instanceof Date && r[4] instanceof Date) { dateRowIdx = i; break; }
+      }
+      if (dateRowIdx < 0) return people;
+
+      // Build column → dateStr map
+      var colDate = {};
+      var dateRow = rows[dateRowIdx];
+      for (var c = 3; c < dateRow.length; c++) {
+        var v = dateRow[c];
+        if (v instanceof Date) {
+          colDate[c] = v.getFullYear() + '-' + String(v.getMonth() + 1).padStart(2, '0') + '-' + String(v.getDate()).padStart(2, '0');
+        }
+      }
+      if (Object.keys(colDate).length === 0) return people;
+
+      // Each subsequent row is a person
+      var SKIP = new Set(['Tech', 'Week Day:', 'Week No:', 'SOM', 'Comment', 'SOMS']);
+      for (var r = dateRowIdx + 1; r < rows.length; r++) {
+        var row = rows[r];
+        if (!row) continue;
+        var name = String(row[2] || '').trim();
+        if (!name || SKIP.has(name) || name.length < 3) continue;
+        var days = {};
+        for (var col in colDate) {
+          var code = String(row[col] || '').trim();
+          if (_AV_CODES.has(code)) days[colDate[col]] = code;
+        }
+        if (Object.keys(days).length > 0) people[name] = days;
+      }
+      return people;
+    }
+
+    function _avShowNamePicker(people, sheetName) {
+      _avParsedPeople = people;
+      var names = Object.keys(people).sort();
+      var sel = document.getElementById('av-import-name-select');
+      sel.innerHTML = names.map(function (n) {
+        return '<option value="' + n.replace(/"/g, '&quot;') + '">' + n + '</option>';
+      }).join('');
+      // Try to pre-select the auth display name
+      var authName = (state.currentUser && state.currentUser.displayName) || '';
+      var match = names.find(function (n) { return n.toLowerCase() === authName.toLowerCase(); })
+        || names.find(function (n) { return n.toLowerCase().includes(authName.split(' ')[0].toLowerCase()); });
+      if (match) sel.value = match;
+      document.getElementById('av-import-name-row').style.display = 'block';
+      var count = people[sel.value] ? Object.keys(people[sel.value]).length : 0;
+      _avSetImportStatus('Found ' + names.length + ' people in "' + sheetName + '". Select your name below.', true);
+      sel.onchange = function () {
+        var n = sel.value;
+        var c = people[n] ? Object.keys(people[n]).length : 0;
+        document.getElementById('av-import-status').textContent = c + ' days loaded for ' + n + '.';
+      };
+    }
+
+    function _avDateToStr(v) {
+      if (!v) return null;
+      var dt = v instanceof Date ? v : new Date(v);
+      if (isNaN(dt.getTime())) return null;
+      return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    }
+
+    var _AV_CODES = new Set(['SD','SA','OC','50','A/L','BH','WTT','S/L','Sp/L','UWU','off','R','D','L','D1','D2','L1','L2']);
+
+    // "All Days" sheet: Date | Day | Week | Code | Meaning (header on row 0)
+    function _avParseAllDaysSheet(rows) {
+      var days = {};
+      if (!rows || rows.length < 2) return days;
+      // Find header row
+      var hdr = -1;
+      for (var i = 0; i < Math.min(5, rows.length); i++) {
+        var r = rows[i].map(function (c) { return String(c || '').toLowerCase(); });
+        if (r.indexOf('date') >= 0 && r.indexOf('code') >= 0) { hdr = i; break; }
+      }
+      if (hdr < 0) return days;
+      var hdrs = rows[hdr].map(function (c) { return String(c || '').toLowerCase().trim(); });
+      var dateCol = hdrs.indexOf('date');
+      var codeCol = hdrs.indexOf('code');
+      if (dateCol < 0 || codeCol < 0) return days;
+      for (var r = hdr + 1; r < rows.length; r++) {
+        var row = rows[r];
+        var ds = _avDateToStr(row[dateCol]);
+        var code = String(row[codeCol] || '').trim();
+        if (ds && _AV_CODES.has(code)) days[ds] = code;
+      }
+      return days;
+    }
+
+    // "Calendar" sheet: Week | StartDate(Mon) | Mon | Tue | Wed | Thu | Fri | Sat | Sun
+    function _avParseCalendarSheet(rows) {
+      var days = {};
+      var DAY_OFFSETS = { mon: 0, tue: 1, wed: 2, thu: 3, fri: 4, sat: 5, sun: 6 };
+      // Find header row with Mon/Tue/Wed pattern
+      var hdr = -1;
+      for (var i = 0; i < Math.min(6, rows.length); i++) {
+        var r = rows[i].map(function (c) { return String(c || '').toLowerCase().trim().slice(0, 3); });
+        if (r.indexOf('mon') >= 0 && r.indexOf('fri') >= 0) { hdr = i; break; }
+      }
+      if (hdr < 0) return days;
+      var hdrs = rows[hdr].map(function (c) { return String(c || '').toLowerCase().trim().slice(0, 3); });
+      // Find the "Starts" / date column (contains a date value)
+      var startCol = -1;
+      for (var c = 0; c < hdrs.length; c++) {
+        if (/start|date|week/i.test(hdrs[c])) { startCol = c; break; }
+      }
+      if (startCol < 0) startCol = 1; // default: second column
+      for (var r = hdr + 1; r < rows.length; r++) {
+        var row = rows[r];
+        var weekStart = _avDateToStr(row[startCol]);
+        if (!weekStart) continue;
+        var baseDate = new Date(weekStart);
+        for (var dayKey in DAY_OFFSETS) {
+          var colIdx = hdrs.indexOf(dayKey);
+          if (colIdx < 0) continue;
+          var code = String(row[colIdx] || '').trim();
+          if (!_AV_CODES.has(code)) continue;
+          var d = new Date(baseDate);
+          d.setDate(baseDate.getDate() + DAY_OFFSETS[dayKey]);
+          var ds = _avDateToStr(d);
+          if (ds) days[ds] = code;
+        }
+      }
+      return days;
+    }
+
+    // Generic: scan any sheet for a date column + code column
+    function _avParseGenericSheet(rows, displayName) {
+      var days = {};
+      if (!rows || rows.length < 2) return days;
+      // Find header row
+      var hdr = 0;
+      var hdrs = [];
+      for (var i = 0; i < Math.min(6, rows.length); i++) {
+        var r = rows[i].map(function (c) { return String(c || '').toLowerCase().trim(); });
+        if (r.some(function (c) { return /date/.test(c); })) { hdr = i; hdrs = r; break; }
+      }
+      if (!hdrs.length) hdrs = (rows[0] || []).map(function (c) { return String(c || '').toLowerCase().trim(); });
+      // Prefer column named after display name, then "code"
+      var firstName = displayName ? displayName.split(' ')[0].toLowerCase() : '';
+      var codeCol = -1;
+      hdrs.forEach(function (h, i) {
+        if (firstName && h.includes(firstName)) codeCol = i;
+      });
+      if (codeCol < 0) codeCol = hdrs.findIndex(function (h) { return h === 'code'; });
+      // Score all columns for most known codes
+      if (codeCol < 0) {
+        var scores = {};
+        for (var r = hdr + 1; r < rows.length; r++) {
+          (rows[r] || []).forEach(function (v, i) { if (_AV_CODES.has(String(v || '').trim())) scores[i] = (scores[i] || 0) + 1; });
+        }
+        var best = -1, bestS = 0;
+        Object.keys(scores).forEach(function (i) { if (scores[i] > bestS) { bestS = scores[i]; best = +i; } });
+        codeCol = best;
+      }
+      var dateCol = hdrs.findIndex(function (h) { return /date/.test(h); });
+      if (dateCol < 0) dateCol = 0;
+      if (codeCol < 0) return days;
+      for (var r2 = hdr + 1; r2 < rows.length; r2++) {
+        var row = rows[r2] || [];
+        var ds = _avDateToStr(row[dateCol]);
+        var code = String(row[codeCol] || '').trim();
+        if (ds && _AV_CODES.has(code)) days[ds] = code;
+      }
+      return days;
+    }
+
+    function avConfirmImport() {
+      var name, days;
+      if (_avParsedPeople) {
+        name = document.getElementById('av-import-name-select').value;
+        days = _avParsedPeople[name];
+      } else {
+        name = (state.currentUser && state.currentUser.displayName) || 'Robert Kamenicky';
+        days = _avParsedDays;
+      }
+      if (!days) return;
+      avCloseImportDialog();
+      avImportCtoSeed(name, days);
+    }
+
+    function avConfirmImportBuiltin() {
+      var name = (state.currentUser && state.currentUser.displayName) || 'Robert Kamenicky';
+      avCloseImportDialog();
+      avImportCtoSeed(name, null);
+    }
+
+    function avImportCtoSeed(name, days) {
+      var n = (name || '').trim() || 'Robert Kamenicky';
+      if (days) {
+        var src = (_avParsedFileName || 'CTO Resource Availability Tracker.xlsx') + ' · ' + n;
+        state.schedule = { days: days, source: src, _updatedAt: Date.now() };
+      } else {
+        state.schedule = _avSeedSchedule(n);
+      }
+      scheduleAvailabilitySave();
+      showToast('Availability imported for ' + n);
+      render();
+    }
+
+    function avSetDateCode(dateStr, code) {
+      var sched = _avEnsureSchedule();
+      if (!code) delete sched.days[dateStr];
+      else sched.days[dateStr] = code;
+      sched.source = sched.source || 'Edited in Rian Availability Planner';
+      sched._updatedAt = Date.now();
+      state.availabilitySelectedDate = dateStr;
+      scheduleAvailabilitySave();
+      render();
+    }
+
+    function avRequestDateCode(dateStr, code) {
+      var current = _avGetCode(dateStr) || '';
+      if (current === code) return;
+      var d = strToDate(dateStr);
+      var label = d.toLocaleDateString('en-IE', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+      var next = code ? _avLabel(code) : 'No marker';
+      showConfirm('Change daily marker?', 'Set ' + label + ' to ' + next + '?', function () {
+        avSetDateCode(dateStr, code);
+      }, 'var(--accent)');
+    }
+
+    function avSetWeekRole(weekStart, code) {
+      var sched = _avEnsureSchedule();
+      _avWeekDates(weekStart).forEach(function (dateStr, idx) {
+        var cur = sched.days[dateStr] || '';
+        var isWeekend = idx === 1 || idx === 2;
+        if (code === 'OC' || code === '50') {
+          if (!cur || _avIsWeekCode(cur) || cur === 'off') sched.days[dateStr] = code;
+          return;
+        }
+        if (isWeekend) {
+          if (!cur || cur === 'off') sched.days[dateStr] = 'off';
+          return;
+        }
+        if (!cur || _avIsWeekCode(cur) || cur === 'off') {
+          if (code) sched.days[dateStr] = code;
+          else delete sched.days[dateStr];
+        }
+      });
+      sched.source = sched.source || 'Edited in Rian Availability Planner';
+      sched._updatedAt = Date.now();
+      scheduleAvailabilitySave();
+      render();
+    }
+
+    function avRequestWeekRole(weekStart, code) {
+      var current = _avWeekRole(weekStart) || '';
+      if (current === code) return;
+      var next = code ? _avLabel(code) : 'No week marker';
+      showConfirm('Change week marker?', 'Set ' + formatWeekRange(weekStart) + ' to ' + next + '?', function () {
+        avSetWeekRole(weekStart, code);
+      }, 'var(--accent)');
     }
 
     // Rolling notes backup — separate from main notes doc, never overwritten with empty
@@ -22599,7 +24243,7 @@
           '<td style="' + td + num + '">' + (depart || dash) + '</td>' +
           '<td style="' + td + num + '">' + (ret || dash) + '</td>' +
           '<td style="' + td + num + 'color:' + C.ot + ';">' + (ot > 0 ? fmtWhole(ot) : '&mdash;') + '</td>' +
-        '</tr>';
+          '</tr>';
       }).join('');
 
       const codeRows = summary.map((r, idx) => {
@@ -22609,7 +24253,7 @@
           '<td style="' + td + num + 'color:' + C.ot + ';">' + fmtWhole(ot) + '</td>' +
           '<td style="' + td + num + 'text-align:center;">' + esc(r.code) + '</td>' +
           '<td style="' + td + 'color:' + C.txtSec + ';">' + esc(r.description) + '</td>' +
-        '</tr>';
+          '</tr>';
       }).join('');
 
       const calloutRows = calloutEntries.map(co => {
@@ -22620,80 +24264,80 @@
           '<td style="' + td + 'text-align:left;">' + (dateLabel ? esc(dateLabel) : dash) + '</td>' +
           '<td style="' + td + num + 'text-align:left;">' + (ticket ? esc(ticket) : dash) + '</td>' +
           '<td style="' + td + 'color:' + C.txtSec + ';">' + (location ? esc(location) : dash) + '</td>' +
-        '</tr>';
+          '</tr>';
       }).join('');
       const calloutsHtml = calloutEntries.length ? (
         '<tr><td style="height:18px;line-height:18px;">&nbsp;</td></tr>' +
         '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Callouts</td></tr>' +
         '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
-          '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
-            '<colgroup><col style="width:24%"><col style="width:34%"><col style="width:42%"></colgroup>' +
-            '<thead><tr>' +
-              '<th style="' + th + 'text-align:left;">Date</th>' +
-              '<th style="' + th + 'text-align:left;">Ticket Number</th>' +
-              '<th style="' + th + 'text-align:left;">Location</th>' +
-            '</tr></thead>' +
-            '<tbody>' + calloutRows + '</tbody>' +
-            '<tfoot><tr style="background:' + C.totalBg + ';">' +
-              '<td colspan="2" style="' + td + 'font-weight:850;border-bottom:none;">Total Callouts</td>' +
-              '<td style="' + td + num + 'font-size:15px;font-weight:850;text-align:right;border-bottom:none;">' + calloutEntries.length + '</td>' +
-            '</tr></tfoot>' +
-          '</table>' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
+        '<colgroup><col style="width:24%"><col style="width:34%"><col style="width:42%"></colgroup>' +
+        '<thead><tr>' +
+        '<th style="' + th + 'text-align:left;">Date</th>' +
+        '<th style="' + th + 'text-align:left;">Ticket Number</th>' +
+        '<th style="' + th + 'text-align:left;">Location</th>' +
+        '</tr></thead>' +
+        '<tbody>' + calloutRows + '</tbody>' +
+        '<tfoot><tr style="background:' + C.totalBg + ';">' +
+        '<td colspan="2" style="' + td + 'font-weight:850;border-bottom:none;">Total Callouts</td>' +
+        '<td style="' + td + num + 'font-size:15px;font-weight:850;text-align:right;border-bottom:none;">' + calloutEntries.length + '</td>' +
+        '</tr></tfoot>' +
+        '</table>' +
         '</td></tr>'
       ) : '';
 
       return '<!doctype html><html><body style="margin:0;padding:0;background:' + C.outerBg + ';font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;color:' + C.txt + ';">' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="background:' + C.outerBg + ';padding:22px 10px;"><tr><td align="center">' +
         '<table width="760" cellpadding="0" cellspacing="0" style="width:100%;max-width:760px;">' +
-          '<tr><td style="padding:0 0 14px;">' +
-            '<div style="font-size:24px;font-weight:850;letter-spacing:0;color:' + C.txt + ';">Email / Export Week</div>' +
-            '<div style="margin-top:4px;font-size:14px;font-weight:700;color:' + C.label + ';">' + esc(range) + '</div>' +
-          '</td></tr>' +
-          '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Daily Log</td></tr>' +
-          '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
-            '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
-              '<colgroup><col style="width:15%"><col style="width:28%"><col style="width:30%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup>' +
-              '<thead><tr>' +
-                '<th style="' + th + 'text-align:left;">Day</th>' +
-                '<th style="' + th + 'text-align:left;">Work</th>' +
-                '<th style="' + th + 'text-align:left;">Site</th>' +
-                '<th style="' + th + 'text-align:center;">Depart</th>' +
-                '<th style="' + th + 'text-align:center;">Return</th>' +
-                '<th style="' + th + 'text-align:center;">OT</th>' +
-              '</tr></thead>' +
-              '<tbody>' + dailyRows + '</tbody>' +
-              '<tfoot><tr style="background:' + C.totalBg + ';">' +
-                '<td style="' + td + 'font-weight:850;border-bottom:none;">Total</td><td style="' + td + 'border-bottom:none;"></td><td style="' + td + 'border-bottom:none;"></td><td style="' + td + 'border-bottom:none;"></td>' +
-                '<td style="' + td + num + 'font-size:15px;font-weight:850;border-bottom:none;">' + fmtWhole(totalOrd) + '</td>' +
-                '<td style="' + td + num + 'font-size:15px;font-weight:850;color:' + C.ot + ';border-bottom:none;">' + fmtWhole(totalOT) + '</td>' +
-              '</tr></tfoot>' +
-            '</table>' +
-          '</td></tr>' +
-          calloutsHtml +
-          '<tr><td style="height:18px;line-height:18px;">&nbsp;</td></tr>' +
-          '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Appropriation Codes</td></tr>' +
-          '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
-            '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
-              '<colgroup><col style="width:10%"><col style="width:10%"><col style="width:24%"><col style="width:56%"></colgroup>' +
-              '<thead><tr>' +
-                '<th style="' + th + 'text-align:center;">Ord</th>' +
-                '<th style="' + th + 'text-align:center;">OT</th>' +
-                '<th style="' + th + 'text-align:center;">Code</th>' +
-                '<th style="' + th + 'text-align:left;">Description</th>' +
-              '</tr></thead>' +
-              '<tbody>' + codeRows + '</tbody>' +
-              '<tfoot><tr style="background:' + C.totalBg + ';">' +
-                '<td style="' + td + num + 'font-size:15px;font-weight:850;border-bottom:none;">' + fmtWhole(totalOrd) + '</td>' +
-                '<td style="' + td + num + 'font-size:15px;font-weight:850;color:' + C.ot + ';border-bottom:none;">' + fmtWhole(totalOT) + '</td>' +
-                '<td colspan="2" style="' + td + 'border-bottom:none;"></td>' +
-              '</tr></tfoot>' +
-            '</table>' +
-          '</td></tr>' +
-          '<tr><td style="padding:16px 4px 0;text-align:center;font-size:12px;line-height:1.45;color:' + C.label + ';">Hours auto-calculated. Per-day cap: Mon-Thu 8h · Fri 7h · Sat/Sun 0h. Anything over goes to OT.</td></tr>' +
-          '<tr><td style="padding:12px 4px 0;text-align:center;font-size:11px;color:' + C.footTxt + ';">Rian &mdash; v' + esc(VERSION) + '</td></tr>' +
+        '<tr><td style="padding:0 0 14px;">' +
+        '<div style="font-size:24px;font-weight:850;letter-spacing:0;color:' + C.txt + ';">Email / Export Week</div>' +
+        '<div style="margin-top:4px;font-size:14px;font-weight:700;color:' + C.label + ';">' + esc(range) + '</div>' +
+        '</td></tr>' +
+        '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Daily Log</td></tr>' +
+        '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
+        '<colgroup><col style="width:15%"><col style="width:28%"><col style="width:30%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup>' +
+        '<thead><tr>' +
+        '<th style="' + th + 'text-align:left;">Day</th>' +
+        '<th style="' + th + 'text-align:left;">Work</th>' +
+        '<th style="' + th + 'text-align:left;">Site</th>' +
+        '<th style="' + th + 'text-align:center;">Depart</th>' +
+        '<th style="' + th + 'text-align:center;">Return</th>' +
+        '<th style="' + th + 'text-align:center;">OT</th>' +
+        '</tr></thead>' +
+        '<tbody>' + dailyRows + '</tbody>' +
+        '<tfoot><tr style="background:' + C.totalBg + ';">' +
+        '<td style="' + td + 'font-weight:850;border-bottom:none;">Total</td><td style="' + td + 'border-bottom:none;"></td><td style="' + td + 'border-bottom:none;"></td><td style="' + td + 'border-bottom:none;"></td>' +
+        '<td style="' + td + num + 'font-size:15px;font-weight:850;border-bottom:none;">' + fmtWhole(totalOrd) + '</td>' +
+        '<td style="' + td + num + 'font-size:15px;font-weight:850;color:' + C.ot + ';border-bottom:none;">' + fmtWhole(totalOT) + '</td>' +
+        '</tr></tfoot>' +
+        '</table>' +
+        '</td></tr>' +
+        calloutsHtml +
+        '<tr><td style="height:18px;line-height:18px;">&nbsp;</td></tr>' +
+        '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Appropriation Codes</td></tr>' +
+        '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
+        '<colgroup><col style="width:10%"><col style="width:10%"><col style="width:24%"><col style="width:56%"></colgroup>' +
+        '<thead><tr>' +
+        '<th style="' + th + 'text-align:center;">Ord</th>' +
+        '<th style="' + th + 'text-align:center;">OT</th>' +
+        '<th style="' + th + 'text-align:center;">Code</th>' +
+        '<th style="' + th + 'text-align:left;">Description</th>' +
+        '</tr></thead>' +
+        '<tbody>' + codeRows + '</tbody>' +
+        '<tfoot><tr style="background:' + C.totalBg + ';">' +
+        '<td style="' + td + num + 'font-size:15px;font-weight:850;border-bottom:none;">' + fmtWhole(totalOrd) + '</td>' +
+        '<td style="' + td + num + 'font-size:15px;font-weight:850;color:' + C.ot + ';border-bottom:none;">' + fmtWhole(totalOT) + '</td>' +
+        '<td colspan="2" style="' + td + 'border-bottom:none;"></td>' +
+        '</tr></tfoot>' +
+        '</table>' +
+        '</td></tr>' +
+        '<tr><td style="padding:16px 4px 0;text-align:center;font-size:12px;line-height:1.45;color:' + C.label + ';">Hours auto-calculated. Per-day cap: Mon-Thu 8h · Fri 7h · Sat/Sun 0h. Anything over goes to OT.</td></tr>' +
+        '<tr><td style="padding:12px 4px 0;text-align:center;font-size:11px;color:' + C.footTxt + ';">Rian &mdash; v' + esc(VERSION) + '</td></tr>' +
         '</table>' +
         '</td></tr></table>' +
-      '</body></html>';
+        '</body></html>';
     }
 
     // ── Email preview modal ──────────────────────────────────────
@@ -23007,6 +24651,8 @@
         viewBody = renderHistoryView();
       } else if (state.view === 'email-week-v3') {
         viewBody = renderEmailWeekV3View();
+      } else if (state.view === 'availability') {
+        viewBody = renderAvailabilityView();
       } else if (state.view === 'ai') {
         viewBody = `<div id="ai-fault-body" style="min-height:calc(100vh - 120px);background:var(--bg-page);"></div>`;
       } else { // Default to 'week' view
@@ -23107,6 +24753,7 @@
         conflicts: 'Sync Conflicts',
         'tags-full': 'Tags',
         'email-week-v3': 'Email / Export Week',
+        availability: 'Availability Planner',
         ai: 'AI Assistant'
       };
       return titles[state.view] || 'Timesheet';
@@ -23227,6 +24874,11 @@
                   <button class="menu-row" onclick="setView('email-week-v3');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Email / Export Week</span><span class="menu-row-sub">Preview &amp; copy, or send email</span></span>
+                    ${chev}
+                  </button>
+                  <button class="menu-row" onclick="setView('availability');closeThemeMenu()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 15h3M13 15h3M8 19h3"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Availability Planner</span><span class="menu-row-sub">Leave, training &amp; CTO service week badges</span></span>
                     ${chev}
                   </button>
                   ${_isDesktop() ? '' : `<button class="menu-row" onclick="setView('tags-full');closeThemeMenu()">
@@ -23657,6 +25309,156 @@
       return renderCardView();
     }
 
+    function _avMonthName(m) {
+      return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][m] || '';
+    }
+
+    function _avMonthStart() {
+      if (state.availabilityMonth) return strToDate(state.availabilityMonth + '-01');
+      var base = state.weekStart ? strToDate(state.weekStart) : new Date();
+      return new Date(base.getFullYear(), base.getMonth(), 1);
+    }
+
+    function avMoveMonth(delta) {
+      var d = _avMonthStart();
+      d.setMonth(d.getMonth() + delta);
+      state.availabilityMonth = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      render();
+    }
+
+    function avSelectDate(dateStr) {
+      state.availabilitySelectedDate = dateStr;
+      render();
+    }
+
+    function _avStats() {
+      var sched = _avEnsureSchedule();
+      var counts = {};
+      Object.values(sched.days || {}).forEach(function (c) { counts[c] = (counts[c] || 0) + 1; });
+      return counts;
+    }
+
+    function _avGlossaryHtml() {
+      var rows = ['A/L', 'OC', '50', 'SA', 'SD', 'S/L', 'off', 'BH', 'Sp/L', 'UWU', 'WTT', 'R', 'D', 'L'].map(function (code) {
+        return '<tr><td><span class="av-code ' + _avClass(code) + '">' + esc(code) + '</span></td><td>' + esc(_avLabel(code)) + '</td></tr>';
+      }).join('');
+      return '<table class="av-abbr-table"><thead><tr><th class="av-abbr-code-col">Code</th><th>Meaning</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    }
+
+    function _avCalendarHtml() {
+      var month = _avMonthStart();
+      var year = month.getFullYear();
+      var m = month.getMonth();
+      var first = new Date(year, m, 1);
+      var offset = (first.getDay() + 2) % 7; // Friday-first work week grid
+      var start = new Date(first);
+      start.setDate(first.getDate() - offset);
+      var today = dateToStr(new Date());
+      var selected = state.availabilitySelectedDate || today;
+      var dayNames = _isDesktop() ? ['Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'] : ['F', 'S', 'S', 'M', 'T', 'W', 'T'];
+      // pre-compute week role tint for each of the 6 rows
+      var rowTints = [];
+      for (var ri = 0; ri < 6; ri++) {
+        var rowFri = new Date(start);
+        rowFri.setDate(start.getDate() + ri * 7);
+        rowTints.push(_avWeekTintClass(_avWeekRole(dateToStr(rowFri))));
+      }
+      var cells = '';
+      for (var ri = 0; ri < 6; ri++) {
+        cells += '<div class="av-week-row' + (rowTints[ri] ? ' ' + rowTints[ri] : '') + '">';
+        for (var di = 0; di < 7; di++) {
+          var i = ri * 7 + di;
+          var d = new Date(start);
+          d.setDate(start.getDate() + i);
+          var ds = dateToStr(d);
+          var code = _avGetCode(ds);
+          var isWeekend = d.getDay() === 0 || d.getDay() === 6;
+          var cls = 'av-day' + (d.getMonth() !== m ? ' muted' : '') + (isWeekend ? ' weekend' : '') + (ds < today ? ' past' : '') + (ds === today ? ' today' : '') + (ds === selected ? ' selected' : '');
+          var pill = (_avIsDailyCode(code) ? _avPill(code, code) : '');
+          cells += '<div class="' + cls + '" onclick="avSelectDate(\'' + ds + '\')">' +
+            '<div class="av-day-num">' + d.getDate() + '</div>' +
+            '<div></div>' +
+            '<div class="av-day-pills">' + pill + '</div>' +
+            '</div>';
+        }
+        cells += '</div>';
+      }
+      var selDate = strToDate(selected);
+      var selWeekday = selDate.toLocaleDateString('en-IE', { weekday: 'long' });
+      var selDmy = selDate.toLocaleDateString('en-IE', { day: 'numeric', month: 'long', year: 'numeric' });
+      var selWeekStart = getNearestFriday(selected);
+      var selWeekRole = _avWeekRole(selWeekStart);
+      var selDayCode = _avGetCode(selected);
+      var stripBadges = '';
+      if (selWeekRole) stripBadges += '<span class="av-strip-badge"><span class="av-pill ' + _avClass(selWeekRole) + '">' + esc(selWeekRole) + '</span><span>' + esc(_avLabel(selWeekRole)) + '</span></span>';
+      if (selDayCode && _avIsDailyCode(selDayCode)) stripBadges += '<span class="av-strip-badge"><span class="av-pill ' + _avClass(selDayCode) + '">' + esc(selDayCode) + '</span><span>' + esc(_avLabel(selDayCode)) + '</span></span>';
+      if (!stripBadges) stripBadges = '<span class="av-strip-badge" style="color:var(--text-muted)">No marker</span>';
+      return '<div class="av-calendar">' +
+        '<div class="av-month-head">' +
+        '<button class="av-btn" onclick="avMoveMonth(-1)">‹</button>' +
+        '<div class="av-month-title">' + _avMonthName(m) + ' ' + year + '</div>' +
+        '<button class="av-btn" onclick="avMoveMonth(1)">›</button>' +
+        '</div>' +
+        '<div class="av-dow">' + dayNames.map(function (name) { return '<div>' + name + '</div>'; }).join('') + '</div>' +
+        '<div class="av-grid">' + cells + '</div>' +
+        '<div class="av-cal-sel-strip">' +
+        '<div><div class="av-cal-sel-weekday">' + esc(selWeekday) + '</div><div class="av-cal-sel-dmy">' + esc(selDmy) + '</div></div>' +
+        '<div class="av-hero-badges">' + stripBadges + '</div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    function renderAvailabilityView() {
+      _avEnsureSchedule();
+      var counts = _avStats();
+      var selected = state.availabilitySelectedDate || dateToStr(new Date());
+      var selectedCode = _avGetCode(selected);
+      var weekStart = getNearestFriday(selected);
+      var weekRole = _avWeekRole(weekStart);
+      var action = '<button class="hist-icon-btn" onclick="avShowImportDialog()" title="Import CTO tracker"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button>';
+      var dailyCodes = ['', 'A/L', 'BH', 'WTT', 'S/L', 'Sp/L', 'UWU', 'off'];
+      var weekCodes = ['', 'SD', 'SA', 'OC', '50', 'R', 'D', 'L'];
+      var weekShortLabels = { '': 'Clear', 'SD': 'Delivery', 'SA': 'Assurance', 'OC': 'On Call', '50': 'On Call 50/50', 'R': 'Rota', 'D': 'Dublin Days', 'L': 'Dublin Late' };
+      return '<main class="av-page">' +
+        renderSecondaryPageHeader('Availability Planner', 'CTO tracker colours, leave, training and service week hints', action, "setView('week')") +
+        '<div class="av-wrap">' +
+        '<aside class="av-panel">' +
+        '<div class="av-section-label">2026 Summary</div>' +
+        '<div class="av-stats">' +
+        '<div class="av-stat"><span>Annual Leave</span><strong>' + (counts['A/L'] || 0) + '</strong></div>' +
+        '<div class="av-stat"><span>Training</span><strong>' + (counts.WTT || 0) + '</strong></div>' +
+        '<div class="av-stat"><span>Bank Holidays</span><strong>' + (counts.BH || 0) + '</strong></div>' +
+        '<div class="av-stat"><span>Service Days</span><strong>' + ((counts.SD || 0) + (counts.SA || 0)) + '</strong></div>' +
+        '</div>' +
+        '<div class="av-card"><button class="av-btn primary" style="width:100%" onclick="avShowImportDialog()">Import CTO Tracker</button><p>' + esc((state.schedule && state.schedule.source) || 'No data imported yet.') + '</p></div>' +
+        '</aside>' +
+        '<section class="av-calendar-wrap">' + _avCalendarHtml() + '</section>' +
+        '<aside class="av-panel"><div class="av-section-label">Edit Availability</div><div class="av-editor">' +
+        '<div class="av-field"><label>Daily marker</label></div><div class="av-choice-list">' +
+        dailyCodes.map(function (code) {
+          var label = code ? _avLabel(code) : 'None';
+          var pillCls = code ? _avClass(code) : '';
+          return '<button class="av-choice' + (selectedCode === code || (!selectedCode && !code) ? ' active' : '') + '" onclick="avRequestDateCode(\'' + selected + '\',\'' + code.replace(/'/g, "\\'") + '\')">' +
+            '<span class="av-choice-pill ' + pillCls + '">' + esc(code || '—') + '</span>' +
+            '<span class="av-choice-label">' + esc(label) + '</span>' +
+            '</button>';
+        }).join('') +
+        '</div>' +
+        '<div class="av-field" style="margin-top:14px"><label>Week marker</label></div><div class="av-choice-list">' +
+        weekCodes.map(function (code) {
+          var label = weekShortLabels[code] !== undefined ? weekShortLabels[code] : _avLabel(code);
+          var pillCls = code ? _avClass(code) : '';
+          return '<button class="av-choice' + (weekRole === code || (!weekRole && !code) ? ' active' : '') + '" onclick="avRequestWeekRole(\'' + weekStart + '\',\'' + code + '\')">' +
+            '<span class="av-choice-pill ' + pillCls + '">' + esc(code || '—') + '</span>' +
+            '<span class="av-choice-label">' + esc(label) + '</span>' +
+            '</button>';
+        }).join('') +
+        '</div>' +
+        '<div class="av-info-card"><strong>Timesheet behaviour</strong><p>Service Delivery and Service Assurance appear once at week level. Annual leave, bank holiday and training appear on the individual day.</p></div>' +
+        '</div></aside>' +
+        '</div></main>';
+    }
+
     // ============================================================
     // EMAIL / EXPORT WEEK 3
     // ============================================================
@@ -24042,11 +25844,15 @@
         : ocStatus === 'extra'
           ? `<span class="week-status-pill is-extra" title="You picked up an extra shift this week">${phoneSvg}Extra</span>`
           : '';
+      const avRole = _avWeekRole(weekStart);
+      const avStatusPill = avRole && avRole !== 'OC' && avRole !== '50'
+        ? '<span class="av-pill ' + _avClass(avRole) + '" title="Availability Planner">' + esc(avRole) + '</span>'
+        : '';
       return `<div class="page-week-selector">
         <button onclick="prevWeek()" class="page-week-selector-btn" title="Previous week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div class="page-week-selector-main" onclick="${mainAction}">
           <div class="page-week-selector-kicker">${label}</div>
-          <div class="page-week-selector-range">${esc(range)}${statusPill}</div>
+          <div class="page-week-selector-range">${esc(range)}${statusPill}${avStatusPill}</div>
           <div class="${subClass}">${subInner}</div>
         </div>
         <button onclick="nextWeek()" class="page-week-selector-btn" title="Next week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -24072,10 +25878,14 @@
         : ocStatus === 'extra'
           ? '<span class="week-status-pill is-extra" title="You picked up an extra shift this week">' + phoneSvg + 'Extra</span>'
           : '';
+      const avRole = _avWeekRole(weekStart);
+      const avStatusPill = avRole && avRole !== 'OC' && avRole !== '50'
+        ? '<span class="av-pill ' + _avClass(avRole) + '" title="Availability Planner">' + esc(avRole) + '</span>'
+        : '';
       return '<div class="desk-week-nav-hdr">' +
         '<button onclick="prevWeek()" class="desk-week-nav-btn" title="Previous week"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>' +
         '<div class="desk-week-nav-main" onclick="' + mainAction + '" title="' + (isCurrentWeek ? 'Open Week History' : 'Back to this week') + '">' +
-        '<div class="desk-week-nav-range">' + esc(range) + statusPill + '</div>' +
+        '<div class="desk-week-nav-range">' + esc(range) + statusPill + avStatusPill + '</div>' +
         '<div class="' + subClass + '">' + subInner + '</div>' +
         '</div>' +
         '<button onclick="nextWeek()" class="desk-week-nav-btn" title="Next week"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>' +
@@ -24207,7 +26017,7 @@
   </div>`;
 
       const anomalyHtml = renderAnomalyBanner(state.weekData);
-      return `<main class="pb-6">${renderPageWeekSelector('timesheet')}${anomalyHtml ? `<div style="padding:0 12px 10px">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
+      return `<main class="pb-6">${renderPageWeekSelector('timesheet')}${_avWeekBannerHtml(state.weekData.weekStart)}${anomalyHtml ? `<div style="padding:0 12px 10px">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
     }
 
     // ================================================================
@@ -24282,8 +26092,9 @@
             '<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">' + taskCount + ' task' + (taskCount !== 1 ? 's' : '') + '</span>' +
             (dt.ord > 0 ? '<span class="pill-hrs">' + (Math.round(dt.ord) === dt.ord ? dt.ord : dt.ord.toFixed(1)) + 'h</span>' : '') +
             (dt.ot > 0 ? '<span class="pill-ot">+' + (Math.round(dt.ot) === dt.ot ? dt.ot : dt.ot.toFixed(1)) + ' OT</span>' : '') +
+            _avDayBadgesHtml(day.date, true) +
             '</div>'
-            : '<div class="desk-day-empty">' + (isWe ? '' : 'No entries') + '</div>') +
+            : (_avDayBadgesHtml(day.date, true) ? '<div class="desk-day-pills">' + _avDayBadgesHtml(day.date, true) + '</div>' : '<div class="desk-day-empty">' + (isWe ? '' : 'No entries') + '</div>')) +
           '</div>' +
           '</div>';
         if (di === 2 && weekendEmpty) {
@@ -24345,6 +26156,7 @@
 
       var daysPanel = '<div class="desk-panel-days" style="width:' + _deskDaysWidth + 'px">' +
         renderDesktopWeekDaysHeader() +
+        _avWeekBannerHtml(state.weekData.weekStart) +
         daysHtml +
         '<div class="desk-panel-summary">' +
         '<div class="sum-section-hdr"><div class="sum-section-line"></div><div class="sum-section-label">Weekly Summary</div><div class="sum-section-line"></div></div>' +
@@ -24878,6 +26690,7 @@
         return ((ord > 0 || ot > 0) && a.codes.length === 0) || (a.codes.length > 0 && ord === 0 && ot === 0);
       });
       const remedyCount = day.activities.filter(a => a.remedyPending).length;
+      const availabilityBadges = _avDayBadgesHtml(day.date, false);
 
       return `
 <div class="day-card ${isWeekend ? 'day-weekend' : ''} ${isExpanded ? 'expanded' : ''} ${day.date === dateToStr(new Date()) ? 'day-today' : ''}" data-day-idx="${di}">
@@ -24888,10 +26701,11 @@
     <div class="day-info">
       <div class="day-name">${day.dayName}</div>
       <div class="day-pills" data-day-pills="${di}">
-        ${actCount > 0 ? `<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)}
+        ${actCount > 0 ? `<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (availabilityBadges || isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)}
         ${ord > 0 ? `<span class="pill-hrs">${Math.round(ord) === ord ? ord : ord.toFixed(1)}h</span>` : ''}
         ${ot > 0 ? `<span class="pill-ot">+${Math.round(ot) === ot ? ot : ot.toFixed(1)} OT</span>` : ''}
         ${remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : ''}
+        ${availabilityBadges}
         ${hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : ''}
       </div>
     </div>
@@ -27335,6 +29149,10 @@
       else if (v === 'routines') await loadRoutines();
       else if (v === 'callouts') {
         await loadCallouts();
+      }
+      else if (v === 'availability') {
+        await loadAvailability();
+        render();
       }
       else if (v === 'tags-full') {
         if (_isDesktop()) {
@@ -41854,7 +43672,7 @@ Rules:
 
       try {
         const lastView = localStorage.getItem('lastView');
-        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal' || lastView === 'email-week-v3') state.view = lastView;
+        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal' || lastView === 'email-week-v3' || lastView === 'availability') state.view = lastView;
         if (lastView === 'journal') {
           const ljScreen = localStorage.getItem('jScreen'); if (ljScreen) state.jScreen = ljScreen;
           const ljNbId = localStorage.getItem('jNotebookId'); if (ljNbId) state.jNotebookId = ljNbId;
@@ -41950,6 +43768,7 @@ Rules:
           if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
           if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
           if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
+          if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
           renderLogin();
           return;
         }
@@ -42066,9 +43885,11 @@ Rules:
         else if (state.view === 'journal') loadJournal();
         else if (state.view === 'routines') loadRoutines();
         else if (state.view === 'callouts') loadCallouts();
+        else if (state.view === 'availability') loadAvailability();
 
         // Always pre-load callouts in background so email export works even if user never visits callouts tab
         if (state.view !== 'callouts') loadCallouts();
+        if (state.view !== 'availability') loadAvailability();
 
         // Load user-defined note categories
         loadCustomCategories();
@@ -45223,41 +47044,41 @@ QUESTION: ${query}`;
           if (!noteChanged) {
             // Save was tapped but the editor content is unchanged.
           } else {
-          const _closeArr = _fnFsSource === 'jpage' ? state.jPages
-            : _fnFsSource === 'journal' ? state.journal
-              : state.notes;
-          const n = _closeArr.find(x => x.id === _fnFsNoteId);
-          // v5.8.14: Stale-editor guard — only warn if the note's CONTENT actually
-          // changed while TipTap was open (not just updatedAt from local field edits).
-          var _contentChangedRemotely = n && (n.noteContent || '') !== (window._tiptapNoteOpenContent || '') && (n.noteContent || '') !== html;
-          if (_contentChangedRemotely && !_activityNoteContainsRemote(html, n.noteContent || '')) {
-            // Remote content change arrived after we opened the editor
-            const keepLocal = await showRianDialog({
-              title: 'Note changed elsewhere',
-              message: 'This note was updated on another device while you were editing. Save your version anyway?',
-              confirmText: 'Save mine',
-              cancelText: 'Keep cloud version',
-              danger: true
-            });
-            if (!keepLocal) {
-              // Discard local — don't save, keep remote content
-              window._tiptapNoteEdited = false;
-              _fnFsNoteId = null;
-              if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
-              render();
-              _noteFsActId = null; _noteFsDi = null;
-              _ttResetDraftState();
-              return;
+            const _closeArr = _fnFsSource === 'jpage' ? state.jPages
+              : _fnFsSource === 'journal' ? state.journal
+                : state.notes;
+            const n = _closeArr.find(x => x.id === _fnFsNoteId);
+            // v5.8.14: Stale-editor guard — only warn if the note's CONTENT actually
+            // changed while TipTap was open (not just updatedAt from local field edits).
+            var _contentChangedRemotely = n && (n.noteContent || '') !== (window._tiptapNoteOpenContent || '') && (n.noteContent || '') !== html;
+            if (_contentChangedRemotely && !_activityNoteContainsRemote(html, n.noteContent || '')) {
+              // Remote content change arrived after we opened the editor
+              const keepLocal = await showRianDialog({
+                title: 'Note changed elsewhere',
+                message: 'This note was updated on another device while you were editing. Save your version anyway?',
+                confirmText: 'Save mine',
+                cancelText: 'Keep cloud version',
+                danger: true
+              });
+              if (!keepLocal) {
+                // Discard local — don't save, keep remote content
+                window._tiptapNoteEdited = false;
+                _fnFsNoteId = null;
+                if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+                render();
+                _noteFsActId = null; _noteFsDi = null;
+                _ttResetDraftState();
+                return;
+              }
             }
-          }
-          if (n) { n.noteContent = html; n.updatedAt = Date.now(); }
-          // User explicitly saved — allow intentional shrinkage on THIS device
-          if (_fnFsSource === 'notes') _setNoteHWMExplicit(_fnFsNoteId, (html || '').length);
-          _tiptapLastSavedNoteId = _fnFsNoteId;
-          _tiptapLastSaveAt = Date.now();
-          if (_fnFsSource === 'jpage') await saveJNow();
-          else if (_fnFsSource === 'journal') scheduleJournalSave();
-          else await saveNotesNow();
+            if (n) { n.noteContent = html; n.updatedAt = Date.now(); }
+            // User explicitly saved — allow intentional shrinkage on THIS device
+            if (_fnFsSource === 'notes') _setNoteHWMExplicit(_fnFsNoteId, (html || '').length);
+            _tiptapLastSavedNoteId = _fnFsNoteId;
+            _tiptapLastSaveAt = Date.now();
+            if (_fnFsSource === 'jpage') await saveJNow();
+            else if (_fnFsSource === 'journal') scheduleJournalSave();
+            else await saveNotesNow();
           }
         }
         window._tiptapNoteEdited = false;
@@ -45276,37 +47097,37 @@ QUESTION: ${query}`;
             if (!noteChanged) {
               _tiptapEditor.destroy(); _tiptapEditor = null;
             } else {
-            const foundAct = _findActivityById(_noteFsActId);
-            const _clAct = mirroredAct || foundAct?.act;
-            if (foundAct) _noteFsDi = foundAct.di;
-            if (_clAct) {
-              // Stale-editor guard: if the activity's note was updated remotely
-              // while TipTap was open, warn the user before overwriting
-              const remoteNote = _clAct.notes || '';
-              const openTs = window._actNoteOpenTs || 0;
-              const localTs = state.weekData._updatedAt || 0;
-              if (openTs > 0 && localTs > openTs + 2000 && remoteNote !== html && !_activityNoteContainsRemote(html, remoteNote)) {
-                const keepLocal = await showRianDialog({
-                  title: 'Note changed elsewhere',
-                  message: 'This task note was updated on another device while you were editing. Save your version anyway?',
-                  confirmText: 'Save mine',
-                  cancelText: 'Keep cloud version',
-                  danger: true
-                });
-                if (!keepLocal) {
-                  _tiptapEditor.destroy(); _tiptapEditor = null;
-                  window._actNoteOpenTs = 0;
-                  window._actNoteDirty = false;
-                  render();
-                  _noteFsActId = null; _noteFsDi = null;
-                  _ttResetDraftState();
-                  return;
+              const foundAct = _findActivityById(_noteFsActId);
+              const _clAct = mirroredAct || foundAct?.act;
+              if (foundAct) _noteFsDi = foundAct.di;
+              if (_clAct) {
+                // Stale-editor guard: if the activity's note was updated remotely
+                // while TipTap was open, warn the user before overwriting
+                const remoteNote = _clAct.notes || '';
+                const openTs = window._actNoteOpenTs || 0;
+                const localTs = state.weekData._updatedAt || 0;
+                if (openTs > 0 && localTs > openTs + 2000 && remoteNote !== html && !_activityNoteContainsRemote(html, remoteNote)) {
+                  const keepLocal = await showRianDialog({
+                    title: 'Note changed elsewhere',
+                    message: 'This task note was updated on another device while you were editing. Save your version anyway?',
+                    confirmText: 'Save mine',
+                    cancelText: 'Keep cloud version',
+                    danger: true
+                  });
+                  if (!keepLocal) {
+                    _tiptapEditor.destroy(); _tiptapEditor = null;
+                    window._actNoteOpenTs = 0;
+                    window._actNoteDirty = false;
+                    render();
+                    _noteFsActId = null; _noteFsDi = null;
+                    _ttResetDraftState();
+                    return;
+                  }
                 }
+                _clAct.notes = _stripVisibleActivityNoteRecovery(html);
+                _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
+                await saveWeekNow({ forceActivityNoteId: _noteFsActId });
               }
-              _clAct.notes = _stripVisibleActivityNoteRecovery(html);
-              _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
-              await saveWeekNow({ forceActivityNoteId: _noteFsActId });
-            }
             }
           }
           if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
