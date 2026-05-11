@@ -3580,6 +3580,7 @@
       text-overflow: ellipsis;
     }
 
+    .page-week-selector-range .av-pill { margin-left: 8px; }
     /* On-call / extra-shift pills shown beside the date range */
     .week-status-pill {
       display: inline-flex;
@@ -8046,23 +8047,8 @@
       display: flex;
       align-items: center;
       gap: 2px;
-      /* Mobile: single scrollable row */
-      overflow-x: auto;
-      flex-wrap: nowrap;
-      scrollbar-width: none;
-    }
-
-    #note-fs-tt-toolbar::-webkit-scrollbar {
-      display: none;
-    }
-
-    /* Desktop: wrap into multiple rows instead of scrolling */
-    @media (min-width: 600px) {
-      #note-fs-tt-toolbar {
-        flex-wrap: wrap;
-        overflow-x: visible;
-        row-gap: 2px;
-      }
+      flex-wrap: wrap;
+      row-gap: 2px;
     }
 
     #note-fs-tt-colors {
@@ -9048,8 +9034,14 @@
       cursor: col-resize;
     }
 
-    #note-fs-editor .ProseMirror.resize-cursor,
-    #dj-editor-mount .ProseMirror.resize-cursor {
+    /* Hide ProseMirror gap cursor — the horizontal blinking line between block elements */
+    .ProseMirror-gapcursor { display: none !important; }
+
+    /* Scope col-resize cursor to table cells only — prevents it leaking to content below the table */
+    #note-fs-editor .ProseMirror.resize-cursor td,
+    #note-fs-editor .ProseMirror.resize-cursor th,
+    #dj-editor-mount .ProseMirror.resize-cursor td,
+    #dj-editor-mount .ProseMirror.resize-cursor th {
       cursor: col-resize;
     }
 
@@ -9120,7 +9112,6 @@
     :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) .tableWrapper {
       overflow-x: auto;
       display: block;
-      width: fit-content;
       max-width: 100%;
     }
 
@@ -20489,7 +20480,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.32';
+    const VERSION = '6.2.54';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26017,7 +26008,7 @@
   </div>`;
 
       const anomalyHtml = renderAnomalyBanner(state.weekData);
-      return `<main class="pb-6">${renderPageWeekSelector('timesheet')}${_avWeekBannerHtml(state.weekData.weekStart)}${anomalyHtml ? `<div style="padding:0 12px 10px">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
+      return `<main class="pb-6">${renderPageWeekSelector('timesheet')}${anomalyHtml ? `<div style="padding:0 12px 10px">${anomalyHtml}</div>` : ''}<div class="week-list">${daysHtml}</div>${summaryHtml}</main>`;
     }
 
     // ================================================================
@@ -26156,7 +26147,6 @@
 
       var daysPanel = '<div class="desk-panel-days" style="width:' + _deskDaysWidth + 'px">' +
         renderDesktopWeekDaysHeader() +
-        _avWeekBannerHtml(state.weekData.weekStart) +
         daysHtml +
         '<div class="desk-panel-summary">' +
         '<div class="sum-section-hdr"><div class="sum-section-line"></div><div class="sum-section-label">Weekly Summary</div><div class="sum-section-line"></div></div>' +
@@ -32669,7 +32659,7 @@
         _djTiptapEditor = new mods.Editor({
           element: _djTiptapWrap,
           extensions: [
-            mods.StarterKit.configure({ history: { depth: 20, newGroupDelay: 300 } }),
+            mods.StarterKit.configure({ history: { depth: 20, newGroupDelay: 300 }, gapcursor: false }),
             mods.Underline,
             mods.TextStyle,
             mods.Color,
@@ -32703,7 +32693,21 @@
             _djUpdateToolbar(_ref.editor);
             requestAnimationFrame(function () { _ttStripDefaultTableWidths(); });
           },
+          editorProps: {
+            handleKeyDown: function (view, event) {
+              return _ttTableKeyDown(_djTiptapEditor, event);
+            },
+            handleDOMEvents: {
+              beforeinput: function (view, event) {
+                if (event.inputType !== 'deleteContentBackward' && event.inputType !== 'deleteContentForward') return false;
+                return _ttTableKeyDown(_djTiptapEditor, event);
+              },
+            },
+          },
         });
+        _djTiptapEditor.view.dom.addEventListener('keydown', function(e) {
+          if (_ttTableKeyDown(_djTiptapEditor, e)) e.preventDefault();
+        }, true);
       }
 
       // Mount the persistent wrapper into the render slot
@@ -45351,7 +45355,7 @@ QUESTION: ${query}`;
       _tiptapEditor = new Editor({
         element: document.getElementById('note-fs-editor'),
         extensions: [
-          StarterKit.configure({ history: { depth: 20, newGroupDelay: 300 } }),
+          StarterKit.configure({ history: { depth: 20, newGroupDelay: 300 }, gapcursor: false }),
           Underline,
           TextStyle,
           Color,
@@ -45377,6 +45381,15 @@ QUESTION: ${query}`;
         ],
         content: '',
         editorProps: {
+          handleKeyDown(view, event) {
+            return _ttTableKeyDown(_tiptapEditor, event);
+          },
+          handleDOMEvents: {
+            beforeinput(view, event) {
+              if (event.inputType !== 'deleteContentBackward' && event.inputType !== 'deleteContentForward') return false;
+              return _ttTableKeyDown(_tiptapEditor, event);
+            },
+          },
           transformPastedHTML(html) {
             // Strip inline padding/width/height from table cells and tables so
             // imported DOCX/HTML tables use our CSS sizing instead of baked-in styles.
@@ -45473,6 +45486,10 @@ QUESTION: ${query}`;
           // onSelectionUpdate (empty selection) or explicitly when AI is triggered.
         },
       });
+      // Direct DOM keydown listener — bypasses editorProps routing issues
+      _tiptapEditor.view.dom.addEventListener('keydown', function(e) {
+        if (_ttTableKeyDown(_tiptapEditor, e)) e.preventDefault();
+      }, true);
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
@@ -46869,6 +46886,75 @@ QUESTION: ${query}`;
     // whose columns haven't been manually resized.  The plugin sets min-width =
     // 100px × N cols even when no colwidths are stored.  Tables where the user
     // has dragged a column (col elements get width) are left alone.
+    // Shared TipTap table keyboard handler — wired into both editors via editorProps.handleKeyDown
+    // Backspace/Delete in an EMPTY table cell deletes the whole row (OneNote-style two-step delete).
+    // When the cell has content the default char-by-char deletion is unchanged.
+    function _ttTableKeyDown(editor, event) {
+      showToast('TKD:' + (event.key || event.inputType || '?'));
+      // Accepts both KeyboardEvent (desktop) and InputEvent (Android beforeinput)
+      var kc = event.keyCode || event.which || 0;
+      var isBackDel = event.key === 'Backspace' || event.key === 'Delete' || kc === 8 || kc === 46
+        || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
+      if (!isBackDel) return false;
+      var state = editor.state;
+      var $from = state.selection.$from;
+      for (var d = $from.depth; d > 0; d--) {
+        var node = $from.node(d);
+        if (node.type.name === 'tableCell' || node.type.name === 'tableHeader') {
+          if (node.textContent.trim() !== '') return false;
+          var isFirstRow = node.type.name === 'tableHeader';
+          if (!isFirstRow) {
+            for (var k = d - 1; k > 0; k--) {
+              if ($from.node(k).type.name === 'table') {
+                isFirstRow = $from.index(k) === 0;
+                break;
+              }
+            }
+          }
+          if (isFirstRow) {
+            editor.chain().focus().deleteColumn().run();
+          } else {
+            editor.chain().focus().deleteRow().run();
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function _ttReflowTableCols(editor) {
+      try {
+        // Clear ProseMirror colwidth attrs so the column-resize plugin won't re-apply widths
+        var sel = editor.state.selection;
+        var $from = sel.$from;
+        var tablePos = null;
+        for (var d = $from.depth; d > 0; d--) {
+          if ($from.node(d).type.name === 'table') { tablePos = $from.before(d); break; }
+        }
+        if (tablePos != null) {
+          var tableNode = editor.state.doc.nodeAt(tablePos);
+          if (tableNode) {
+            var tr = editor.state.tr.setMeta('addToHistory', false);
+            tableNode.descendants(function(node, offset) {
+              if ((node.type.name === 'tableCell' || node.type.name === 'tableHeader') && node.attrs.colwidth) {
+                tr.setNodeMarkup(tablePos + 1 + offset, undefined, Object.assign({}, node.attrs, { colwidth: null }));
+              }
+            });
+            editor.view.dispatch(tr);
+          }
+        }
+        // Also strip DOM <col> widths as fallback
+        var domAt = editor.view.domAtPos(editor.state.selection.from);
+        var domNode = domAt && domAt.node;
+        if (domNode && domNode.nodeType === 3) domNode = domNode.parentElement;
+        while (domNode && domNode.nodeName !== 'TABLE') domNode = domNode.parentElement;
+        if (domNode) {
+          domNode.querySelectorAll('col').forEach(function(col) { col.style.width = ''; });
+          domNode.style.minWidth = '';
+        }
+      } catch(ex) {}
+    }
+
     function _ttStripDefaultTableWidths() {
       var tables = document.querySelectorAll('#note-fs-editor .ProseMirror table, #dj-editor-mount .ProseMirror table');
       for (var i = 0; i < tables.length; i++) {
