@@ -8054,9 +8054,23 @@
     #note-fs-tt-toolbar::-webkit-scrollbar { display: none; }
     @media (min-width: 768px) {
       #note-fs-tt-toolbar {
-        flex-wrap: wrap;
-        overflow-x: visible;
-        row-gap: 2px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        cursor: grab;
+        user-select: none;
+      }
+
+      #note-fs-tt-toolbar:active {
+        cursor: grabbing;
+      }
+
+      #note-fs-tt-toolbar.tt-dragging {
+        cursor: grabbing;
+      }
+
+      #note-fs-tt-toolbar::-webkit-scrollbar {
+        display: none;
       }
     }
 
@@ -18512,20 +18526,49 @@
       .dj-tt-toolbar {
         display: flex;
         align-items: center;
-        gap: 1px;
-        padding: 4px 12px;
+        gap: 2px;
+        padding: 5px 12px;
         border-bottom: 1px solid var(--border);
         background: var(--bg-card);
-        flex-wrap: wrap;
-        overflow: hidden;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: visible;
+        scrollbar-width: none;
+      }
+
+      .dj-tt-toolbar::-webkit-scrollbar {
+        display: none;
       }
 
       .dj-tt-toolbar .tt-sep {
         width: 1px;
-        height: 20px;
+        height: 22px;
         background: var(--border);
-        margin: 0 2px;
+        margin: 0 4px;
         flex-shrink: 0;
+      }
+
+      .dj-tt-toolbar .tt-list-menu {
+        z-index: 6000;
+      }
+
+      .dj-tt-toolbar .tt-list-drop {
+        flex-shrink: 0;
+      }
+
+      .dj-tt-label {
+        display: inline-block;
+        min-width: 48px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .dj-tt-list-label {
+        display: inline-block;
+        min-width: 26px;
+        font-size: 11px;
+        font-weight: 800;
       }
 
       .dj-empty-editor {
@@ -20574,7 +20617,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.87';
+    const VERSION = '6.2.94';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25151,11 +25194,13 @@
     function updateHeaderStatus() {
       const el = document.querySelector('header');
       if (!el) return;
+      const oldTabBar = document.getElementById('main-tab-bar');
       // Preserve focus & selection — replacing outerHTML can blur inputs on some platforms
       const _focused = document.activeElement;
       const _isInput = _focused && (_focused.tagName === 'TEXTAREA' || _focused.tagName === 'INPUT');
       const _selStart = _isInput ? _focused.selectionStart : null;
       const _selEnd = _isInput ? _focused.selectionEnd : null;
+      if (oldTabBar) oldTabBar.remove();
       el.outerHTML = renderHeader();
       // Restore selection if the focused input is still in the DOM and had a non-collapsed selection
       if (_isInput && _selStart !== null && _selStart !== _selEnd && _focused.isConnected) {
@@ -32613,32 +32658,38 @@
     var _djTtToolbarWired = false;
 
     function _djToolbarHtml() {
-      // Match the fullscreen TipTap toolbar exactly
       return '<div class="dj-tt-toolbar">'
         // Undo / Redo
         + '<button class="tt-btn" id="dj-tt-undo" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></button>'
         + '<button class="tt-btn" id="dj-tt-redo" title="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg></button>'
         + '<div class="tt-sep"></div>'
-        // Plain text
-        + '<button class="tt-btn" id="dj-tt-para" title="Plain text" style="font-size:12px;font-weight:700">P</button>'
-        // Text formatting
+        // Style dropdown
+        + '<div class="tt-list-drop" id="dj-tt-style-drop">'
+        + '<button class="tt-btn tt-list-btn" id="dj-tt-style-btn" title="Text style"><span class="dj-tt-label" id="dj-tt-style-label">Body</span><svg class="tt-list-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>'
+        + '<div class="tt-list-menu" id="dj-tt-style-menu">'
+        + '<button class="tt-list-item" id="dj-tt-para"><span style="font-size:12px;font-weight:700;width:18px">P</span>Paragraph</button>'
+        + '<button class="tt-list-item" id="dj-tt-h1"><span style="font-size:13px;font-weight:800;width:18px">H1</span>Heading 1</button>'
+        + '<button class="tt-list-item" id="dj-tt-h2"><span style="font-size:12px;font-weight:800;width:18px">H2</span>Heading 2</button>'
+        + '<button class="tt-list-item" id="dj-tt-h3"><span style="font-size:11px;font-weight:800;width:18px">H3</span>Heading 3</button>'
+        + '</div></div>'
+        + '<div class="tt-sep"></div>'
+        // Inline formatting
         + '<button class="tt-btn" id="dj-tt-bold" title="Bold"><b>B</b></button>'
         + '<button class="tt-btn" id="dj-tt-italic" title="Italic"><i>I</i></button>'
         + '<button class="tt-btn" id="dj-tt-strike" title="Strikethrough"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6c0-1.66-1.79-3-4-3s-4 1.34-4 3 1.79 3 4 3"/><path d="M8 18c0 1.66 1.79 3 4 3s4-1.34 4-3-1.79-3-4-3"/></svg></button>'
+        + '<button class="tt-btn" id="dj-tt-code" title="Inline code" style="font-family:monospace;font-size:12px">&lt;/&gt;</button>'
         + '<div class="tt-sep"></div>'
-        // Headings
-        + '<button class="tt-btn" id="dj-tt-h1" title="Heading 1" style="font-size:11px;font-weight:800;letter-spacing:-0.5px">H1</button>'
-        + '<button class="tt-btn" id="dj-tt-h2" title="Heading 2" style="font-size:11px;font-weight:800;letter-spacing:-0.5px">H2</button>'
-        + '<button class="tt-btn" id="dj-tt-h3" title="Heading 3" style="font-size:11px;font-weight:800;letter-spacing:-0.5px">H3</button>'
-        + '<div class="tt-sep"></div>'
-        // Lists
-        + '<button class="tt-btn" id="dj-tt-ul" title="Bullet List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/></svg></button>'
-        + '<button class="tt-btn" id="dj-tt-ol" title="Numbered List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button>'
-        + '<button class="tt-btn" id="dj-tt-task" title="Task List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></button>'
+        // Lists dropdown
+        + '<div class="tt-list-drop" id="dj-tt-list-drop">'
+        + '<button class="tt-btn tt-list-btn" id="dj-tt-list-btn" title="List type"><span class="dj-tt-list-label" id="dj-tt-list-label">List</span><svg class="tt-list-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>'
+        + '<div class="tt-list-menu" id="dj-tt-list-menu">'
+        + '<button class="tt-list-item" id="dj-tt-ul" title="Bullet List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/></svg>Bullet List</button>'
+        + '<button class="tt-list-item" id="dj-tt-ol" title="Numbered List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>Numbered List</button>'
+        + '<button class="tt-list-item" id="dj-tt-task" title="Task List"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Task List</button>'
+        + '</div></div>'
         + '<div class="tt-sep"></div>'
         // Block elements
         + '<button class="tt-btn" id="dj-tt-quote" title="Blockquote"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1zm12 0c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></button>'
-        + '<button class="tt-btn" id="dj-tt-code" title="Inline code" style="font-family:monospace;font-size:12px">&lt;/&gt;</button>'
         + '<button class="tt-btn" id="dj-tt-codeblock" title="Code block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button>'
         + '<button class="tt-btn" id="dj-tt-hr" title="Horizontal divider">\u2014</button>'
         + '<div class="tt-sep"></div>'
@@ -32682,14 +32733,66 @@
           else el.classList.remove('tt-active');
         }
       }
+      var styleBtn = document.getElementById('dj-tt-style-btn');
+      var styleLabel = document.getElementById('dj-tt-style-label');
+      if (styleBtn) styleBtn.classList.toggle('tt-active', editor.isActive('heading'));
+      if (styleLabel) {
+        if (editor.isActive('heading', { level: 1 })) styleLabel.textContent = 'H1';
+        else if (editor.isActive('heading', { level: 2 })) styleLabel.textContent = 'H2';
+        else if (editor.isActive('heading', { level: 3 })) styleLabel.textContent = 'H3';
+        else styleLabel.textContent = 'Body';
+      }
+      var listBtn = document.getElementById('dj-tt-list-btn');
+      var listLabel = document.getElementById('dj-tt-list-label');
+      var listActive = editor.isActive('bulletList') || editor.isActive('orderedList') || editor.isActive('taskList');
+      if (listBtn) listBtn.classList.toggle('tt-active', listActive);
+      if (listLabel) {
+        if (editor.isActive('orderedList')) listLabel.textContent = '1.';
+        else if (editor.isActive('taskList')) listLabel.textContent = 'Task';
+        else if (editor.isActive('bulletList')) listLabel.textContent = '•';
+        else listLabel.textContent = 'List';
+      }
     }
 
     function _djWireToolbar() {
       if (!_djTiptapEditor) return;
       var ed = _djTiptapEditor;
+      function closeMenus() {
+        var sm = document.getElementById('dj-tt-style-menu');
+        var lm = document.getElementById('dj-tt-list-menu');
+        if (sm) { sm.classList.remove('tt-open'); sm.style.position = ''; sm.style.top = ''; sm.style.left = ''; }
+        if (lm) { lm.classList.remove('tt-open'); lm.style.position = ''; lm.style.top = ''; lm.style.left = ''; }
+      }
+      function toggleMenu(btnId, menuId) {
+        var btn = document.getElementById(btnId);
+        var menu = document.getElementById(menuId);
+        if (!btn || !menu) return;
+        btn.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var wasOpen = menu.classList.contains('tt-open');
+          closeMenus();
+          if (!wasOpen) {
+            var r = btn.getBoundingClientRect();
+            menu.style.position = 'fixed';
+            menu.style.top = (r.bottom + 4) + 'px';
+            menu.style.left = r.left + 'px';
+            menu.classList.add('tt-open');
+          }
+        };
+      }
+      toggleMenu('dj-tt-style-btn', 'dj-tt-style-menu');
+      toggleMenu('dj-tt-list-btn', 'dj-tt-list-menu');
+      if (!_djTtToolbarWired) {
+        document.addEventListener('click', function (ev) {
+          var tb = ev.target && ev.target.closest ? ev.target.closest('.dj-tt-toolbar') : null;
+          if (!tb) closeMenus();
+        });
+        _djTtToolbarWired = true;
+      }
       function on(id, fn) {
         var el = document.getElementById(id);
-        if (el) el.onclick = function (e) { e.preventDefault(); fn(); };
+        if (el) el.onclick = function (e) { e.preventDefault(); e.stopPropagation(); fn(); closeMenus(); };
       }
       on('dj-tt-undo', function () { ed.chain().focus().undo().run(); });
       on('dj-tt-redo', function () { ed.chain().focus().redo().run(); });
@@ -46018,6 +46121,12 @@ QUESTION: ${query}`;
         el.addEventListener('click', fn);
       };
       // Dropdown toggle — positions menu as position:fixed so it escapes overflow-x:auto toolbar clipping on mobile
+      const _closeToolbarDrops = () => {
+        ['tt-hdg-menu', 'tt-list-menu'].forEach(id => {
+          const menu = document.getElementById(id);
+          if (menu) menu.classList.remove('tt-open');
+        });
+      };
       const _openToolbarDrop = (btnId, menuId) => {
         const btn = document.getElementById(btnId);
         const menu = document.getElementById(menuId);
@@ -46026,8 +46135,7 @@ QUESTION: ${query}`;
           ev.stopPropagation();
           const wasOpen = menu.classList.contains('tt-open');
           // Close all toolbar dropdowns first
-          document.getElementById('tt-hdg-menu')?.classList.remove('tt-open');
-          document.getElementById('tt-list-menu')?.classList.remove('tt-open');
+          _closeToolbarDrops();
           if (!wasOpen) {
             const r = btn.getBoundingClientRect();
             menu.style.position = 'fixed';
@@ -46039,6 +46147,60 @@ QUESTION: ${query}`;
       };
       _openToolbarDrop('tt-hdg-btn', 'tt-hdg-menu');
       _openToolbarDrop('tt-list-btn', 'tt-list-menu');
+      const toolbar = document.getElementById('note-fs-tt-toolbar');
+      if (toolbar && !toolbar._ttDesktopScrollBound) {
+        toolbar._ttDesktopScrollBound = true;
+        let dragStartX = 0;
+        let dragStartScroll = 0;
+        let dragPointerId = null;
+        let didDrag = false;
+        let suppressToolbarClick = false;
+        toolbar.addEventListener('wheel', (ev) => {
+          if (toolbar.scrollWidth <= toolbar.clientWidth) return;
+          if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
+          ev.preventDefault();
+          toolbar.scrollLeft += ev.deltaY;
+        }, { passive: false });
+        toolbar.addEventListener('pointerdown', (ev) => {
+          if (ev.button !== undefined && ev.button !== 0) return;
+          if (toolbar.scrollWidth <= toolbar.clientWidth) return;
+          dragPointerId = ev.pointerId;
+          dragStartX = ev.clientX;
+          dragStartScroll = toolbar.scrollLeft;
+          didDrag = false;
+          toolbar.setPointerCapture?.(ev.pointerId);
+        });
+        toolbar.addEventListener('pointermove', (ev) => {
+          if (dragPointerId !== ev.pointerId) return;
+          const dx = ev.clientX - dragStartX;
+          if (Math.abs(dx) > 4) {
+            didDrag = true;
+            suppressToolbarClick = true;
+            toolbar.classList.add('tt-dragging');
+          }
+          if (didDrag) {
+            ev.preventDefault();
+            toolbar.scrollLeft = dragStartScroll - dx;
+          }
+        });
+        const endDrag = (ev) => {
+          if (dragPointerId !== ev.pointerId) return;
+          dragPointerId = null;
+          toolbar.releasePointerCapture?.(ev.pointerId);
+          setTimeout(() => {
+            didDrag = false;
+            toolbar.classList.remove('tt-dragging');
+          }, 0);
+        };
+        toolbar.addEventListener('pointerup', endDrag);
+        toolbar.addEventListener('pointercancel', endDrag);
+        toolbar.addEventListener('click', (ev) => {
+          if (!suppressToolbarClick) return;
+          suppressToolbarClick = false;
+          ev.preventDefault();
+          ev.stopPropagation();
+        }, true);
+      }
       // Always read live editor at call time via getter
       const e = {
         get chain() { return _tiptapEditor?.chain.bind(_tiptapEditor); },
@@ -46080,16 +46242,16 @@ QUESTION: ${query}`;
       on('tt-ol', () => { e.chain().focus().toggleOrderedList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
       on('tt-tasklist', () => { e.chain().focus().toggleTaskList().run(); _closeListMenu(); _ttUpdateToolbar(e); });
       // Block elements
-      on('tt-blockquote', () => { e.chain().focus().toggleBlockquote().run(); _ttUpdateToolbar(e); });
+      on('tt-blockquote', () => { e.chain().focus().toggleBlockquote().run(); _closeToolbarDrops(); _ttUpdateToolbar(e); });
       on('tt-code', () => { e.chain().focus().toggleCode().run(); _ttUpdateToolbar(e); });
-      on('tt-codeblock', () => { e.chain().focus().toggleCodeBlock().run(); _ttUpdateToolbar(e); });
-      on('tt-hr', () => e.chain().focus().setHorizontalRule().run());
+      on('tt-codeblock', () => { e.chain().focus().toggleCodeBlock().run(); _closeToolbarDrops(); _ttUpdateToolbar(e); });
+      on('tt-hr', () => { e.chain().focus().setHorizontalRule().run(); _closeToolbarDrops(); });
       // Alignment
       on('tt-align-left', () => { e.chain().focus().setTextAlign('left').run(); _ttUpdateToolbar(e); });
       on('tt-align-center', () => { e.chain().focus().setTextAlign('center').run(); _ttUpdateToolbar(e); });
       on('tt-align-right', () => { e.chain().focus().setTextAlign('right').run(); _ttUpdateToolbar(e); });
       // Link
-      on('tt-link', () => _ttHandleLink());
+      on('tt-link', () => { _ttHandleLink(); _closeToolbarDrops(); });
       // Link bubble menu buttons
       const applyBubbleUrl = () => {
         const input = document.getElementById('tt-link-bubble-input');
@@ -46141,10 +46303,11 @@ QUESTION: ${query}`;
         _ttUpdateToolbar(e);
       });
       // Table insert
-      on('tt-table', () => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run());
+      on('tt-table', () => { e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); _closeToolbarDrops(); });
       on('tt-collapsible', () => {
         if (!e.state.selection.empty) e.chain().focus().wrapInCollapsible().run();
         else e.chain().focus().insertCollapsible().run();
+        _closeToolbarDrops();
       });
       // Table context buttons
       on('tt-row-before', () => e.chain().focus().addRowBefore().run());
@@ -46212,13 +46375,13 @@ QUESTION: ${query}`;
       on('tt-cell-bg-purple', () => _setCellBg('#ede9fe'));
       on('tt-cell-bg-gray', () => _setCellBg('#f1f5f9'));
       // Image
-      on('tt-image', () => document.getElementById('tt-image-input').click());
+      on('tt-image', () => { _closeToolbarDrops(); document.getElementById('tt-image-input').click(); });
       const imgInput = document.getElementById('tt-image-input');
       if (imgInput) imgInput.addEventListener('change', (ev) => _ttHandleImageUpload(ev));
       // Undo / Redo / Clear
       on('tt-undo', () => _ttRunUndo());
       on('tt-redo', () => _ttRunRedo());
-      on('tt-clear', () => { e.chain().focus().unsetAllMarks().clearNodes().run(); _ttUpdateToolbar(e); });
+      on('tt-clear', () => { e.chain().focus().unsetAllMarks().clearNodes().run(); _closeToolbarDrops(); _ttUpdateToolbar(e); });
       // Helper: close colour palette after picking
       const _closePalette = () => {
         document.getElementById('note-fs-tt-colors')?.classList.remove('tt-colors-open');
