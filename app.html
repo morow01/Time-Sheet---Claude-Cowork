@@ -9145,6 +9145,21 @@
     }
     .tt-coll-btn:hover { background: var(--bg-card-alt); }
     .tt-coll.open .tt-coll-btn { transform: rotate(90deg); }
+    .tt-coll-del {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 18px;
+      line-height: 1;
+      padding: 1px 5px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .tt-coll-hdr:hover .tt-coll-del { opacity: 1; }
+    .tt-coll-del:hover { color: var(--priority-high); background: var(--bg-card-alt); }
     .tt-coll-lbl {
       flex: 1;
       font-weight: 600;
@@ -20542,7 +20557,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.73';
+    const VERSION = '6.2.74';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45015,8 +45030,23 @@ QUESTION: ${query}`;
               e.stopPropagation();
             });
 
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'tt-coll-del';
+            del.contentEditable = 'false';
+            del.title = 'Delete section';
+            del.innerHTML = '&times;';
+            del.addEventListener('mousedown', e => {
+              e.preventDefault();
+              if (typeof getPos !== 'function') return;
+              const pos = getPos();
+              const n = editor.state.doc.nodeAt(pos);
+              if (n) editor.view.dispatch(editor.state.tr.delete(pos, pos + n.nodeSize));
+            });
+
             hdr.appendChild(btn);
             hdr.appendChild(lbl);
+            hdr.appendChild(del);
 
             const body = document.createElement('div');
             body.className = 'tt-coll-body';
@@ -45037,7 +45067,7 @@ QUESTION: ${query}`;
                 if (document.activeElement !== lbl) lbl.value = upd.attrs.summary || 'Details';
                 return true;
               },
-              stopEvent(e) { return e.target === lbl || e.target === btn; },
+              stopEvent(e) { return e.target === lbl || e.target === btn || e.target === del; },
             };
           };
         },
