@@ -9121,7 +9121,6 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       margin: 6px 0;
-      overflow: hidden;
     }
     .tt-coll-hdr {
       display: flex;
@@ -9130,6 +9129,16 @@
       padding: 8px 12px;
       background: var(--bg-input);
       user-select: none;
+      border-radius: 10px 10px 0 0;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .tt-coll-hdr.stuck {
+      border-bottom-color: var(--border);
+      box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.08);
     }
     .tt-coll-btn {
       background: none;
@@ -9188,6 +9197,7 @@
       overflow: hidden;
       padding: 0 14px;
       transition: padding 0.28s ease;
+      border-radius: 0 0 10px 10px;
     }
     .tt-coll.open .tt-coll-body-inner { padding: 10px 14px; }
     .tt-coll-body-inner > *:first-child { margin-top: 0; }
@@ -20557,7 +20567,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.74';
+    const VERSION = '6.2.75';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45057,6 +45067,19 @@ QUESTION: ${query}`;
             wrap.appendChild(hdr);
             wrap.appendChild(body);
 
+            // Add stuck class when header is pinned (so we can show a shadow/border)
+            const sentinel = document.createElement('div');
+            sentinel.style.cssText = 'position:absolute;top:0;height:1px;width:1px;pointer-events:none';
+            wrap.style.position = 'relative';
+            wrap.appendChild(sentinel);
+            let _observer;
+            try {
+              _observer = new IntersectionObserver(([e]) => {
+                hdr.classList.toggle('stuck', e.intersectionRatio < 1);
+              }, { threshold: [1] });
+              _observer.observe(sentinel);
+            } catch(e) {}
+
             return {
               dom: wrap,
               contentDOM: inner,
@@ -45068,6 +45091,7 @@ QUESTION: ${query}`;
                 return true;
               },
               stopEvent(e) { return e.target === lbl || e.target === btn || e.target === del; },
+              destroy() { if (_observer) _observer.disconnect(); },
             };
           };
         },
