@@ -8047,9 +8047,11 @@
       display: flex;
       align-items: center;
       gap: 2px;
-      flex-wrap: wrap;
-      row-gap: 2px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
+    #note-fs-tt-toolbar::-webkit-scrollbar { display: none; }
 
     #note-fs-tt-colors {
       display: none;
@@ -8096,6 +8098,7 @@
     .tt-btn {
       width: 34px;
       height: 34px;
+      flex-shrink: 0;
       border: none;
       background: transparent;
       border-radius: 7px;
@@ -9129,16 +9132,13 @@
       padding: 8px 12px;
       background: var(--bg-input);
       user-select: none;
-      border-radius: 10px 10px 0 0;
-      position: sticky;
-      top: 0;
-      z-index: 5;
+      border-radius: 10px;
       border-bottom: 1px solid transparent;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.28s ease, border-radius 0.28s ease;
     }
-    .tt-coll-hdr.stuck {
+    .tt-coll.open .tt-coll-hdr {
+      border-radius: 10px 10px 0 0;
       border-bottom-color: var(--border);
-      box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.08);
     }
     .tt-coll-btn {
       background: none;
@@ -20567,7 +20567,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.76';
+    const VERSION = '6.2.82';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25110,7 +25110,8 @@
       </div>
       <div class="hdr-top-spacer" aria-hidden="true"></div>
     </div>
-    <div class="flex" style="background:var(--bg-header-tab);">
+  </header>
+  <div id="main-tab-bar" class="flex" style="background:var(--bg-header-tab);">
       <button onclick="setView('week')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="padding-left:14px;padding-right:14px;color:${state.view === 'week' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'week' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Timesheet</span>
       </button>
@@ -25124,8 +25125,7 @@
       <button onclick="setView('exchanges')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase" style="color:${state.view === 'exchanges' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'exchanges' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Finder</span>
       </button>
-    </div>
-  </header>`;
+    </div>`;
     }
 
     function updateHeaderStatus() {
@@ -45067,19 +45067,6 @@ QUESTION: ${query}`;
             wrap.appendChild(hdr);
             wrap.appendChild(body);
 
-            // Add stuck class when header is pinned (so we can show a shadow/border)
-            const sentinel = document.createElement('div');
-            sentinel.style.cssText = 'position:absolute;top:0;height:1px;width:1px;pointer-events:none';
-            wrap.style.position = 'relative';
-            wrap.appendChild(sentinel);
-            let _observer;
-            try {
-              _observer = new IntersectionObserver(([e]) => {
-                hdr.classList.toggle('stuck', e.intersectionRatio < 1);
-              }, { threshold: [1] });
-              _observer.observe(sentinel);
-            } catch(e) {}
-
             return {
               dom: wrap,
               contentDOM: inner,
@@ -45091,7 +45078,7 @@ QUESTION: ${query}`;
                 return true;
               },
               stopEvent(e) { return e.target === lbl || e.target === btn || e.target === del; },
-              destroy() { if (_observer) _observer.disconnect(); },
+              destroy() {},
             };
           };
         },
