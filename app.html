@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.60';
+    const VERSION = '6.2.61';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44802,7 +44802,8 @@ QUESTION: ${query}`;
     async function _loadTipTapModules() {
       if (_tiptapModules) return _tiptapModules;
       const [
-        { Editor, Node: TipTapNode, Extension: TipTapExtension, Plugin: PmPlugin, PluginKey: PmPluginKey, NodeSelection, DOMParser: PmDOMParser },
+        { Editor, Node: TipTapNode, Extension: TipTapExtension, NodeSelection, DOMParser: PmDOMParser },
+        { Plugin: PmPlugin, PluginKey: PmPluginKey },
         { default: StarterKit },
         { default: Underline },
         { TextStyle },
@@ -44822,6 +44823,7 @@ QUESTION: ${query}`;
         { default: Image },
       ] = await Promise.all([
         import('https://esm.sh/@tiptap/core@2.4.0'),
+        import('https://esm.sh/prosemirror-state@1.4.3'),
         import('https://esm.sh/@tiptap/starter-kit@2.4.0'),
         import('https://esm.sh/@tiptap/extension-underline@2.4.0'),
         import('https://esm.sh/@tiptap/extension-text-style@2.4.0'),
@@ -45037,23 +45039,25 @@ QUESTION: ${query}`;
         priority: 1000,
         addProseMirrorPlugins() {
           const editor = this.editor;
-          return [new PmPlugin({
-            key: new PmPluginKey('tableDeleteCol'),
-            props: {
-              handleKeyDown(view, event) {
-                if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
-                const { $from } = view.state.selection;
-                for (let d = $from.depth; d > 0; d--) {
-                  const node = $from.node(d);
-                  if (node.type.name !== 'tableCell' && node.type.name !== 'tableHeader') continue;
-                  if (node.textContent.trim() !== '') return false;
-                  editor.chain().focus().deleteColumn().run();
-                  return true;
-                }
-                return false;
+          try {
+            return [new PmPlugin({
+              key: new PmPluginKey('tableDeleteCol'),
+              props: {
+                handleKeyDown(view, event) {
+                  if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
+                  const { $from } = view.state.selection;
+                  for (let d = $from.depth; d > 0; d--) {
+                    const node = $from.node(d);
+                    if (node.type.name !== 'tableCell' && node.type.name !== 'tableHeader') continue;
+                    if (node.textContent.trim() !== '') return false;
+                    editor.chain().focus().deleteColumn().run();
+                    return true;
+                  }
+                  return false;
+                },
               },
-            },
-          })];
+            })];
+          } catch(e) { return []; }
         },
       });
 
