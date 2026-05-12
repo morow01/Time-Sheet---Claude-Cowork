@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.69';
+    const VERSION = '6.2.70';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45011,6 +45011,7 @@ QUESTION: ${query}`;
               contentDOM: body,
               update(upd) {
                 if (upd.type.name !== 'collapsible') return false;
+                node = upd; // keep node reference current so toggle reads correct open state
                 wrap.className = 'tt-coll' + (upd.attrs.open ? ' open' : '');
                 btn.innerHTML = upd.attrs.open ? arrowDown : arrowRight;
                 if (document.activeElement !== lbl) lbl.textContent = upd.attrs.summary || 'Details';
