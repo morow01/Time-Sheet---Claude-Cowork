@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.62';
+    const VERSION = '6.2.63';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47068,13 +47068,17 @@ QUESTION: ${query}`;
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
       if (!isBackDel) return false;
       // editorProps.handleKeyDown fires before any ProseMirror plugin (including prosemirror-tables).
-      // Handle empty cell here so the table plugin can't intercept first.
-      var st = editor.state, $f = st.selection.$from;
+      // Header cell (TH) + empty → delete column; data cell (TD) + empty → delete row.
+      var $f = editor.state.selection.$from;
       for (var di = $f.depth; di > 0; di--) {
         var nd = $f.node(di);
         if (nd.type.name === 'tableCell' || nd.type.name === 'tableHeader') {
           if (nd.textContent.trim() !== '') return false;
-          editor.chain().focus().deleteColumn().run();
+          if (nd.type.name === 'tableHeader') {
+            editor.chain().focus().deleteColumn().run();
+          } else {
+            editor.chain().focus().deleteRow().run();
+          }
           return true;
         }
       }
