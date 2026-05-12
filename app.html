@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.67';
+    const VERSION = '6.2.68';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45050,15 +45050,8 @@ QUESTION: ${query}`;
                   const isRow = typeof sel.isRowSelection === 'function' && sel.isRowSelection();
                   const isCol = !isRow && typeof sel.isColSelection === 'function' && sel.isColSelection();
                   if (!isRow && !isCol) return false;
-                  try {
-                    if (sel.content().content.textContent.trim() !== '') {
-                      _ttDeletePending = isRow ? 'row' : 'col';
-                      return false;
-                    }
-                  } catch(e) { return false; }
-                  if (isRow) editor.chain().focus().deleteRow().run();
-                  else editor.chain().focus().deleteColumn().run();
-                  return true;
+                  _ttDeletePending = isRow ? 'row' : 'col';
+                  return false; // let default clear content; next press deletes structure
                 },
               },
             })];
@@ -47094,21 +47087,14 @@ QUESTION: ${query}`;
         return false; // cell not empty or not in table — don't delete structure
       }
 
-      // Phase 1: CellSelection — clear content, remember what to delete next press
+      // Phase 1: CellSelection — always set pending and let default clear content.
+      // Never skip to immediate deletion (avoids try/catch fallthrough bugs).
       if (sel.$anchorCell) {
         var isRow = typeof sel.isRowSelection === 'function' && sel.isRowSelection();
         var isCol = !isRow && typeof sel.isColSelection === 'function' && sel.isColSelection();
         if (isRow || isCol) {
-          try {
-            if (sel.content().content.textContent.trim() !== '') {
-              _ttDeletePending = isRow ? 'row' : 'col';
-              return false; // let default clear the content
-            }
-          } catch(e) {}
-          // Already empty — delete immediately
-          if (isRow) editor.chain().focus().deleteRow().run();
-          else editor.chain().focus().deleteColumn().run();
-          return true;
+          _ttDeletePending = isRow ? 'row' : 'col';
+          return false; // default clears the selected cell content; next press deletes structure
         }
       }
 
