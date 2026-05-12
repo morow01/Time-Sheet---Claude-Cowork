@@ -9153,12 +9153,16 @@
       outline: none;
       min-width: 0;
       background: transparent;
+      border: none;
+      border-bottom: 1px solid transparent;
+      border-radius: 0;
+      padding: 0;
+      font-family: inherit;
       cursor: text;
-      user-select: text;
-      border-bottom: 1px dashed transparent;
       transition: border-color 0.15s;
     }
-    .tt-coll-lbl:hover, .tt-coll-lbl:focus { border-bottom-color: var(--border); }
+    .tt-coll-lbl:hover { border-bottom-color: var(--border); }
+    .tt-coll-lbl:focus { border-bottom-color: var(--accent); outline: none; }
     .tt-coll-body {
       display: grid;
       grid-template-rows: 0fr;
@@ -20538,7 +20542,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.71';
+    const VERSION = '6.2.72';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44992,20 +44996,21 @@ QUESTION: ${query}`;
               );
             });
 
-            const lbl = document.createElement('div');
+            const lbl = document.createElement('input');
+            lbl.type = 'text';
             lbl.className = 'tt-coll-lbl';
-            lbl.textContent = node.attrs.summary || 'Details';
-            lbl.contentEditable = 'true';
-            lbl.spellcheck = false;
-            lbl.addEventListener('input', () => {
+            lbl.value = node.attrs.summary || 'Details';
+            const saveTitle = () => {
               if (typeof getPos !== 'function') return;
               editor.view.dispatch(
-                editor.state.tr.setNodeMarkup(getPos(), null, { ...node.attrs, summary: lbl.textContent || 'Details' })
+                editor.state.tr.setNodeMarkup(getPos(), null, { ...node.attrs, summary: lbl.value.trim() || 'Details' })
                   .setMeta('addToHistory', false)
               );
-            });
+            };
+            lbl.addEventListener('blur', saveTitle);
+            lbl.addEventListener('mousedown', e => e.stopPropagation());
             lbl.addEventListener('keydown', e => {
-              if (e.key === 'Enter') { e.preventDefault(); editor.commands.focus(); }
+              if (e.key === 'Enter') { e.preventDefault(); lbl.blur(); editor.commands.focus(); }
               e.stopPropagation();
             });
 
@@ -45028,7 +45033,7 @@ QUESTION: ${query}`;
                 if (upd.type.name !== 'collapsible') return false;
                 node = upd;
                 wrap.className = 'tt-coll' + (upd.attrs.open ? ' open' : '');
-                if (document.activeElement !== lbl) lbl.textContent = upd.attrs.summary || 'Details';
+                if (document.activeElement !== lbl) lbl.value = upd.attrs.summary || 'Details';
                 return true;
               },
               stopEvent(e) { return e.target === lbl || e.target === btn; },
