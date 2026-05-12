@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.58';
+    const VERSION = '6.2.59';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45029,7 +45029,7 @@ QUESTION: ${query}`;
         },
       });
 
-      // Extension: Backspace/Delete in empty cell → header cell = delete column, data cell = delete row
+      // Extension: Backspace/Delete in any empty cell → delete the column
       const TableDeleteHandler = TipTapExtension.create({
         name: 'tableDeleteHandler',
         priority: 1000,
@@ -45040,11 +45040,7 @@ QUESTION: ${query}`;
               const node = $from.node(d);
               if (node.type.name !== 'tableCell' && node.type.name !== 'tableHeader') continue;
               if (node.textContent.trim() !== '') return false;
-              if (node.type.name === 'tableHeader') {
-                this.editor.chain().focus().deleteColumn().run();
-              } else {
-                this.editor.chain().focus().deleteRow().run();
-              }
+              this.editor.chain().focus().deleteColumn().run();
               return true;
             }
             return false;
