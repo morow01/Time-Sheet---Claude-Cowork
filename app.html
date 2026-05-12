@@ -20542,7 +20542,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.72';
+    const VERSION = '6.2.73';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -32752,6 +32752,7 @@
               scheduleJSave();
             }
             requestAnimationFrame(function () { _ttStripDefaultTableWidths(); });
+            _ttEnsureTrailingParagraph(editor);
           },
           onSelectionUpdate: function (_ref) {
             _djUpdateToolbar(_ref.editor);
@@ -45673,11 +45674,8 @@ QUESTION: ${query}`;
         onUpdate({ editor }) {
           if (_tiptapOnUpdate) _tiptapOnUpdate(editor);
           _scheduleTaskSortableInit(); // also calls initImageDrag via shared timer
-          // Strip bloated default min-width from tables without user-set colwidths.
-          // The columnResizing plugin sets inline min-width = 100px × N cols on every
-          // table.  For tables where the user hasn't manually resized (no col width set),
-          // this is wasteful.  We run on rAF after the plugin's decorations are applied.
           requestAnimationFrame(_ttStripDefaultTableWidths);
+          _ttEnsureTrailingParagraph(editor);
         },
         onSelectionUpdate({ editor }) {
           _ttUpdateToolbar(editor);
@@ -47170,6 +47168,25 @@ QUESTION: ${query}`;
           domNode.style.minWidth = '';
         }
       } catch(ex) {}
+    }
+
+    var _ttEnsureTrailingGuard = false;
+    function _ttEnsureTrailingParagraph(editor) {
+      if (_ttEnsureTrailingGuard) return;
+      var doc = editor.state.doc;
+      var last = doc.lastChild;
+      if (!last) return;
+      var blockingTypes = { table: 1, collapsible: 1 };
+      if (!blockingTypes[last.type.name]) return;
+      _ttEnsureTrailingGuard = true;
+      try {
+        editor.view.dispatch(
+          editor.state.tr
+            .insert(doc.content.size, editor.state.schema.nodes.paragraph.create())
+            .setMeta('addToHistory', false)
+        );
+      } catch(e) {}
+      _ttEnsureTrailingGuard = false;
     }
 
     function _ttStripDefaultTableWidths() {
