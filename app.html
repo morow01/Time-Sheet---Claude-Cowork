@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.68';
+    const VERSION = '6.2.69';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45027,6 +45027,21 @@ QUESTION: ${query}`;
               attrs: { open: true, summary: 'Details' },
               content: [{ type: 'paragraph' }],
             }),
+            wrapInCollapsible: () => ({ state, chain }) => {
+              if (state.selection.empty) return false;
+              const json = state.selection.content().content.toJSON();
+              const content = Array.isArray(json) && json.length
+                ? json
+                : [{ type: 'paragraph' }];
+              return chain()
+                .deleteSelection()
+                .insertContent({
+                  type: 'collapsible',
+                  attrs: { open: true, summary: 'Details' },
+                  content,
+                })
+                .run();
+            },
           };
         },
       });
@@ -46045,7 +46060,10 @@ QUESTION: ${query}`;
       });
       // Table insert
       on('tt-table', () => e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run());
-      on('tt-collapsible', () => e.chain().focus().insertCollapsible().run());
+      on('tt-collapsible', () => {
+        if (!e.state.selection.empty) e.chain().focus().wrapInCollapsible().run();
+        else e.chain().focus().insertCollapsible().run();
+      });
       // Table context buttons
       on('tt-row-before', () => e.chain().focus().addRowBefore().run());
       on('tt-row-after', () => e.chain().focus().addRowAfter().run());
@@ -48890,7 +48908,7 @@ The state block is invisible to the user.`;
               <line x1="15" y1="3" x2="15" y2="21" />
             </svg>
           </button>
-          <button class="tt-btn" id="tt-collapsible" title="Insert collapsible section">
+          <button class="tt-btn" id="tt-collapsible" title="Wrap selection in collapsible (or insert new)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="7" rx="2"/>
               <polyline points="8 6.5 12 10 16 6.5"/>
