@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.61';
+    const VERSION = '6.2.62';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47067,26 +47067,14 @@ QUESTION: ${query}`;
       var isBackDel = event.key === 'Backspace' || event.key === 'Delete' || kc === 8 || kc === 46
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
       if (!isBackDel) return false;
-      var state = editor.state;
-      var $from = state.selection.$from;
-      for (var d = $from.depth; d > 0; d--) {
-        var node = $from.node(d);
-        if (node.type.name === 'tableCell' || node.type.name === 'tableHeader') {
-          if (node.textContent.trim() !== '') return false;
-          var isFirstRow = node.type.name === 'tableHeader';
-          if (!isFirstRow) {
-            for (var k = d - 1; k > 0; k--) {
-              if ($from.node(k).type.name === 'table') {
-                isFirstRow = $from.index(k) === 0;
-                break;
-              }
-            }
-          }
-          if (isFirstRow) {
-            editor.chain().focus().deleteColumn().run();
-          } else {
-            editor.chain().focus().deleteRow().run();
-          }
+      // editorProps.handleKeyDown fires before any ProseMirror plugin (including prosemirror-tables).
+      // Handle empty cell here so the table plugin can't intercept first.
+      var st = editor.state, $f = st.selection.$from;
+      for (var di = $f.depth; di > 0; di--) {
+        var nd = $f.node(di);
+        if (nd.type.name === 'tableCell' || nd.type.name === 'tableHeader') {
+          if (nd.textContent.trim() !== '') return false;
+          editor.chain().focus().deleteColumn().run();
           return true;
         }
       }
