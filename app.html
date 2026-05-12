@@ -9141,8 +9141,10 @@
       align-items: center;
       flex-shrink: 0;
       border-radius: 4px;
+      transition: transform 0.25s ease;
     }
     .tt-coll-btn:hover { background: var(--bg-card-alt); }
+    .tt-coll.open .tt-coll-btn { transform: rotate(90deg); }
     .tt-coll-lbl {
       flex: 1;
       font-weight: 600;
@@ -9151,14 +9153,26 @@
       outline: none;
       min-width: 0;
       background: transparent;
+      cursor: text;
+      user-select: text;
+      border-bottom: 1px dashed transparent;
+      transition: border-color 0.15s;
     }
+    .tt-coll-lbl:hover, .tt-coll-lbl:focus { border-bottom-color: var(--border); }
     .tt-coll-body {
-      padding: 10px 14px;
-      display: none;
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.28s ease;
     }
-    .tt-coll.open .tt-coll-body { display: block; }
-    .tt-coll-body > *:first-child { margin-top: 0; }
-    .tt-coll-body > *:last-child  { margin-bottom: 0; }
+    .tt-coll.open .tt-coll-body { grid-template-rows: 1fr; }
+    .tt-coll-body-inner {
+      overflow: hidden;
+      padding: 0 14px;
+      transition: padding 0.28s ease;
+    }
+    .tt-coll.open .tt-coll-body-inner { padding: 10px 14px; }
+    .tt-coll-body-inner > *:first-child { margin-top: 0; }
+    .tt-coll-body-inner > *:last-child  { margin-bottom: 0; }
 
     /* Table context bar */
     #note-fs-tt-table-bar {
@@ -20524,7 +20538,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.70';
+    const VERSION = '6.2.71';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44969,9 +44983,7 @@ QUESTION: ${query}`;
             btn.type = 'button';
             btn.className = 'tt-coll-btn';
             btn.contentEditable = 'false';
-            const arrowDown = '<svg viewBox="0 0 10 6" width="10" height="6" fill="currentColor"><path d="M0 0l5 6 5-6z"/></svg>';
-            const arrowRight = '<svg viewBox="0 0 6 10" width="6" height="10" fill="currentColor"><path d="M0 0l6 5-6 5z"/></svg>';
-            btn.innerHTML = node.attrs.open ? arrowDown : arrowRight;
+            btn.innerHTML = '<svg viewBox="0 0 6 10" width="8" height="8" fill="currentColor"><path d="M0 0l6 5-6 5z"/></svg>';
             btn.addEventListener('mousedown', e => {
               e.preventDefault();
               if (typeof getPos !== 'function') return;
@@ -45002,18 +45014,20 @@ QUESTION: ${query}`;
 
             const body = document.createElement('div');
             body.className = 'tt-coll-body';
+            const inner = document.createElement('div');
+            inner.className = 'tt-coll-body-inner';
+            body.appendChild(inner);
 
             wrap.appendChild(hdr);
             wrap.appendChild(body);
 
             return {
               dom: wrap,
-              contentDOM: body,
+              contentDOM: inner,
               update(upd) {
                 if (upd.type.name !== 'collapsible') return false;
-                node = upd; // keep node reference current so toggle reads correct open state
+                node = upd;
                 wrap.className = 'tt-coll' + (upd.attrs.open ? ' open' : '');
-                btn.innerHTML = upd.attrs.open ? arrowDown : arrowRight;
                 if (document.activeElement !== lbl) lbl.textContent = upd.attrs.summary || 'Details';
                 return true;
               },
