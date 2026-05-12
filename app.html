@@ -20574,7 +20574,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.86';
+    const VERSION = '6.2.87';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47047,6 +47047,7 @@ QUESTION: ${query}`;
       const files = Array.from(ev.target.files || []);
       ev.target.value = '';
       if (!files.length || !_djTiptapEditor) return;
+      const srcs = [];
       for (const file of files) {
         const dataUrl = await new Promise((resolve) => {
           const img = new window.Image();
@@ -47064,14 +47065,19 @@ QUESTION: ${query}`;
           };
           img.src = URL.createObjectURL(file);
         });
-        _djTiptapEditor.chain().focus().setImage({ src: dataUrl }).run();
+        srcs.push(dataUrl);
       }
+      const content = srcs.flatMap(src => [{ type: 'image', attrs: { src } }, { type: 'paragraph' }]);
+      _djTiptapEditor.chain().focus().insertContent(content).run();
     }
 
     async function _ttHandleImageUpload(ev) {
       const files = Array.from(ev.target.files || []);
       ev.target.value = '';
       if (!files.length) return;
+
+      const srcs = [];
+      let _anyUploadedToStorage = false;
 
       for (const file of files) {
         // Compress: max 1400px, JPEG 0.75
@@ -47094,27 +47100,31 @@ QUESTION: ${query}`;
 
         // Upload to Firebase Storage if signed in, else fall back to base64
         let src = dataUrl;
-        let _uploadedToStorage = false;
         if (state.currentUser && storage_fb && _currentTipTapImageKey()) {
           try {
             showToast('⬆️ Uploading…');
             const uploaded = await _uploadTipTapImage(dataUrl);
             src = uploaded.src;
-            _uploadedToStorage = uploaded.uploaded;
+            if (uploaded.uploaded) _anyUploadedToStorage = true;
           } catch (e) {
             console.warn('[Rian] Storage upload failed, using base64:', e);
             showToast('⚠️ Upload failed — image stored locally');
             src = dataUrl;
           }
         }
-        _tiptapEditor.chain().focus().setImage({ src }).run();
-        // Flag the note so other devices bypass HWM guard for this smaller content
-        if (_uploadedToStorage && _fnFsNoteId) {
-          const _ts = Date.now();
-          const _n = state.notes.find(function (x) { return x.id === _fnFsNoteId; });
-          if (_n) { _n._compressedAt = _ts; }
-          _setNoteHWMCat(_fnFsNoteId, _ts);
-        }
+        srcs.push(src);
+      }
+
+      // Insert all images in one transaction so cursor positioning can't interfere
+      const content = srcs.flatMap(src => [{ type: 'image', attrs: { src } }, { type: 'paragraph' }]);
+      _tiptapEditor.chain().focus().insertContent(content).run();
+
+      // Flag the note so other devices bypass HWM guard for this smaller content
+      if (_anyUploadedToStorage && _fnFsNoteId) {
+        const _ts = Date.now();
+        const _n = state.notes.find(function (x) { return x.id === _fnFsNoteId; });
+        if (_n) { _n._compressedAt = _ts; }
+        _setNoteHWMCat(_fnFsNoteId, _ts);
       }
     }
 
