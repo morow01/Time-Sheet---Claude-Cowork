@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.64';
+    const VERSION = '6.2.65';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45045,11 +45045,13 @@ QUESTION: ${query}`;
               props: {
                 handleKeyDown(view, event) {
                   if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
-                  const { $from } = view.state.selection;
-                  for (let d = $from.depth; d > 0; d--) {
-                    const node = $from.node(d);
-                    if (node.type.name !== 'tableCell' && node.type.name !== 'tableHeader') continue;
-                    if (node.textContent.trim() !== '') return false;
+                  const sel = view.state.selection;
+                  if (!sel.$anchorCell) return false;
+                  if (typeof sel.isRowSelection === 'function' && sel.isRowSelection()) {
+                    editor.chain().focus().deleteRow().run();
+                    return true;
+                  }
+                  if (typeof sel.isColSelection === 'function' && sel.isColSelection()) {
                     editor.chain().focus().deleteColumn().run();
                     return true;
                   }
@@ -47067,22 +47069,15 @@ QUESTION: ${query}`;
       var isBackDel = event.key === 'Backspace' || event.key === 'Delete' || kc === 8 || kc === 46
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
       if (!isBackDel) return false;
-      // editorProps.handleKeyDown fires before any ProseMirror plugin (including prosemirror-tables).
-      // Empty cell → ask user to delete row or column.
-      var $f = editor.state.selection.$from;
-      for (var di = $f.depth; di > 0; di--) {
-        var nd = $f.node(di);
-        if (nd.type.name === 'tableCell' || nd.type.name === 'tableHeader') {
-          if (nd.textContent.trim() !== '') return false;
-          showRianDialog({
-            title: 'Delete',
-            message: 'Delete the row or column?',
-            confirmText: 'Column',
-            cancelText: 'Row',
-          }).then(function(col) {
-            if (col) editor.chain().focus().deleteColumn().run();
-            else editor.chain().focus().deleteRow().run();
-          });
+      // CellSelection: if user selected full rows → delete rows; full columns → delete columns.
+      var sel = editor.state.selection;
+      if (sel.$anchorCell) {
+        if (typeof sel.isRowSelection === 'function' && sel.isRowSelection()) {
+          editor.chain().focus().deleteRow().run();
+          return true;
+        }
+        if (typeof sel.isColSelection === 'function' && sel.isColSelection()) {
+          editor.chain().focus().deleteColumn().run();
           return true;
         }
       }
