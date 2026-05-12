@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.59';
+    const VERSION = '6.2.60';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44802,7 +44802,7 @@ QUESTION: ${query}`;
     async function _loadTipTapModules() {
       if (_tiptapModules) return _tiptapModules;
       const [
-        { Editor, Node: TipTapNode, Extension: TipTapExtension, NodeSelection, DOMParser: PmDOMParser },
+        { Editor, Node: TipTapNode, Extension: TipTapExtension, Plugin: PmPlugin, PluginKey: PmPluginKey, NodeSelection, DOMParser: PmDOMParser },
         { default: StarterKit },
         { default: Underline },
         { TextStyle },
@@ -45029,23 +45029,31 @@ QUESTION: ${query}`;
         },
       });
 
-      // Extension: Backspace/Delete in any empty cell → delete the column
+      // Extension: Backspace/Delete in any empty cell → delete the column.
+      // Uses addProseMirrorPlugins so our handleKeyDown fires before prosemirror-tables
+      // which would otherwise consume Backspace in data cells and prevent our handler running.
       const TableDeleteHandler = TipTapExtension.create({
         name: 'tableDeleteHandler',
         priority: 1000,
-        addKeyboardShortcuts() {
-          const handle = () => {
-            const { $from } = this.editor.state.selection;
-            for (let d = $from.depth; d > 0; d--) {
-              const node = $from.node(d);
-              if (node.type.name !== 'tableCell' && node.type.name !== 'tableHeader') continue;
-              if (node.textContent.trim() !== '') return false;
-              this.editor.chain().focus().deleteColumn().run();
-              return true;
-            }
-            return false;
-          };
-          return { 'Backspace': handle, 'Delete': handle };
+        addProseMirrorPlugins() {
+          const editor = this.editor;
+          return [new PmPlugin({
+            key: new PmPluginKey('tableDeleteCol'),
+            props: {
+              handleKeyDown(view, event) {
+                if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
+                const { $from } = view.state.selection;
+                for (let d = $from.depth; d > 0; d--) {
+                  const node = $from.node(d);
+                  if (node.type.name !== 'tableCell' && node.type.name !== 'tableHeader') continue;
+                  if (node.textContent.trim() !== '') return false;
+                  editor.chain().focus().deleteColumn().run();
+                  return true;
+                }
+                return false;
+              },
+            },
+          })];
         },
       });
 
