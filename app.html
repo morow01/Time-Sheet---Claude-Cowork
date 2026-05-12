@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.55';
+    const VERSION = '6.2.56';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -32721,6 +32721,7 @@
             mods.Superscript,
             (_ResizableImage || mods.Image).configure({ inline: false, allowBase64: true }),
             mods.Collapsible,
+            mods.TableDeleteHandler,
           ],
           content: '',
           onUpdate: function (_ref) {
@@ -32750,9 +32751,6 @@
             },
           },
         });
-        _djTiptapEditor.view.dom.addEventListener('keydown', function(e) {
-          if (_ttTableKeyDown(_djTiptapEditor, e)) e.preventDefault();
-        }, true);
       }
 
       // Mount the persistent wrapper into the render slot
@@ -44804,7 +44802,7 @@ QUESTION: ${query}`;
     async function _loadTipTapModules() {
       if (_tiptapModules) return _tiptapModules;
       const [
-        { Editor, Node: TipTapNode, NodeSelection, DOMParser: PmDOMParser },
+        { Editor, Node: TipTapNode, Extension: TipTapExtension, NodeSelection, DOMParser: PmDOMParser },
         { default: StarterKit },
         { default: Underline },
         { TextStyle },
@@ -45031,11 +45029,41 @@ QUESTION: ${query}`;
         },
       });
 
+      // Extension: delete column (first row, empty cell) or row (other rows, empty cell) via Backspace/Delete
+      const TableDeleteHandler = TipTapExtension.create({
+        name: 'tableDeleteHandler',
+        addKeyboardShortcuts() {
+          const handle = () => {
+            const { $from } = this.editor.state.selection;
+            for (let d = $from.depth; d > 0; d--) {
+              const node = $from.node(d);
+              if (node.type.name === 'tableCell' || node.type.name === 'tableHeader') {
+                if (node.textContent.trim() !== '') return false;
+                let isFirstRow = node.type.name === 'tableHeader';
+                if (!isFirstRow) {
+                  for (let k = d - 1; k > 0; k--) {
+                    if ($from.node(k).type.name === 'table') {
+                      isFirstRow = $from.index(k) === 0;
+                      break;
+                    }
+                  }
+                }
+                if (isFirstRow) this.editor.chain().deleteColumn().run();
+                else this.editor.chain().deleteRow().run();
+                return true;
+              }
+            }
+            return false;
+          };
+          return { 'Backspace': handle, 'Delete': handle };
+        },
+      });
+
       _tiptapModules = {
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItem, TaskItemWithHandle, Table, TableRow, TableHeader, TableCell,
         TableCellWithBg, TableHeaderWithBg,
-        Link, Subscript, Superscript, Image, Collapsible,
+        Link, Subscript, Superscript, Image, Collapsible, TableDeleteHandler,
         PmDOMParser,
       };
       return _tiptapModules;
@@ -45047,7 +45075,7 @@ QUESTION: ${query}`;
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItemWithHandle, Table, TableRow,
         TableCellWithBg, TableHeaderWithBg,
-        Link, Subscript, Superscript, Image, Collapsible,
+        Link, Subscript, Superscript, Image, Collapsible, TableDeleteHandler,
       } = await _loadTipTapModules();
 
       // Custom resizable image extension
@@ -45523,6 +45551,7 @@ QUESTION: ${query}`;
           Superscript,
           ResizableImage.configure({ inline: false, allowBase64: true }),
           Collapsible,
+          TableDeleteHandler,
         ],
         content: '',
         editorProps: {
@@ -45631,10 +45660,6 @@ QUESTION: ${query}`;
           // onSelectionUpdate (empty selection) or explicitly when AI is triggered.
         },
       });
-      // Direct DOM keydown listener — bypasses editorProps routing issues
-      _tiptapEditor.view.dom.addEventListener('keydown', function(e) {
-        if (_ttTableKeyDown(_tiptapEditor, e)) e.preventDefault();
-      }, true);
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
@@ -47036,8 +47061,6 @@ QUESTION: ${query}`;
     // Backspace/Delete in an EMPTY table cell deletes the whole row (OneNote-style two-step delete).
     // When the cell has content the default char-by-char deletion is unchanged.
     function _ttTableKeyDown(editor, event) {
-      showToast('TKD:' + (event.key || event.inputType || '?'));
-      // Accepts both KeyboardEvent (desktop) and InputEvent (Android beforeinput)
       var kc = event.keyCode || event.which || 0;
       var isBackDel = event.key === 'Backspace' || event.key === 'Delete' || kc === 8 || kc === 46
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
