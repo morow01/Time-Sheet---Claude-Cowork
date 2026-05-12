@@ -20567,7 +20567,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.83';
+    const VERSION = '6.2.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47037,73 +47037,77 @@ QUESTION: ${query}`;
     }
 
     async function _djHandleImageUpload(ev) {
-      const file = ev.target.files[0];
+      const files = Array.from(ev.target.files || []);
       ev.target.value = '';
-      if (!file || !_djTiptapEditor) return;
-      const dataUrl = await new Promise((resolve) => {
-        const img = new window.Image();
-        img.onload = () => {
-          const MAX = 1400;
-          let w = img.width, h = img.height;
-          if (w > MAX || h > MAX) {
-            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-            else { w = Math.round(w * MAX / h); h = MAX; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', 0.75));
-        };
-        img.src = URL.createObjectURL(file);
-      });
-      _djTiptapEditor.chain().focus().setImage({ src: dataUrl }).run();
+      if (!files.length || !_djTiptapEditor) return;
+      for (const file of files) {
+        const dataUrl = await new Promise((resolve) => {
+          const img = new window.Image();
+          img.onload = () => {
+            const MAX = 1400;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.src = URL.createObjectURL(file);
+        });
+        _djTiptapEditor.chain().focus().setImage({ src: dataUrl }).run();
+      }
     }
 
     async function _ttHandleImageUpload(ev) {
-      const file = ev.target.files[0];
+      const files = Array.from(ev.target.files || []);
       ev.target.value = '';
-      if (!file) return;
+      if (!files.length) return;
 
-      // Compress: max 1400px, JPEG 0.75
-      const dataUrl = await new Promise((resolve) => {
-        const img = new window.Image();
-        img.onload = () => {
-          const MAX = 1400;
-          let w = img.width, h = img.height;
-          if (w > MAX || h > MAX) {
-            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-            else { w = Math.round(w * MAX / h); h = MAX; }
+      for (const file of files) {
+        // Compress: max 1400px, JPEG 0.75
+        const dataUrl = await new Promise((resolve) => {
+          const img = new window.Image();
+          img.onload = () => {
+            const MAX = 1400;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+              else { w = Math.round(w * MAX / h); h = MAX; }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.75));
+          };
+          img.src = URL.createObjectURL(file);
+        });
+
+        // Upload to Firebase Storage if signed in, else fall back to base64
+        let src = dataUrl;
+        let _uploadedToStorage = false;
+        if (state.currentUser && storage_fb && _currentTipTapImageKey()) {
+          try {
+            showToast('⬆️ Uploading…');
+            const uploaded = await _uploadTipTapImage(dataUrl);
+            src = uploaded.src;
+            _uploadedToStorage = uploaded.uploaded;
+          } catch (e) {
+            console.warn('[Rian] Storage upload failed, using base64:', e);
+            showToast('⚠️ Upload failed — image stored locally');
+            src = dataUrl;
           }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', 0.75));
-        };
-        img.src = URL.createObjectURL(file);
-      });
-
-      // Upload to Firebase Storage if signed in, else fall back to base64
-      let src = dataUrl;
-      let _uploadedToStorage = false;
-      if (state.currentUser && storage_fb && _currentTipTapImageKey()) {
-        try {
-          showToast('⬆️ Uploading…');
-          const uploaded = await _uploadTipTapImage(dataUrl);
-          src = uploaded.src;
-          _uploadedToStorage = uploaded.uploaded;
-        } catch (e) {
-          console.warn('[Rian] Storage upload failed, using base64:', e);
-          showToast('⚠️ Upload failed — image stored locally');
-          src = dataUrl;
         }
-      }
-      _tiptapEditor.chain().focus().setImage({ src }).run();
-      // Flag the note so other devices bypass HWM guard for this smaller content
-      if (_uploadedToStorage && _fnFsNoteId) {
-        const _ts = Date.now();
-        const _n = state.notes.find(function (x) { return x.id === _fnFsNoteId; });
-        if (_n) { _n._compressedAt = _ts; }
-        _setNoteHWMCat(_fnFsNoteId, _ts);
+        _tiptapEditor.chain().focus().setImage({ src }).run();
+        // Flag the note so other devices bypass HWM guard for this smaller content
+        if (_uploadedToStorage && _fnFsNoteId) {
+          const _ts = Date.now();
+          const _n = state.notes.find(function (x) { return x.id === _fnFsNoteId; });
+          if (_n) { _n._compressedAt = _ts; }
+          _setNoteHWMCat(_fnFsNoteId, _ts);
+        }
       }
     }
 
@@ -49274,8 +49278,8 @@ The state block is invisible to the user.`;
           </div>
         </div>
         <!-- Hidden image file inputs -->
-        <input type="file" id="tt-image-input" accept="image/*" style="display:none">
-        <input type="file" id="dj-image-input" accept="image/*" style="display:none">
+        <input type="file" id="tt-image-input" accept="image/*" multiple style="display:none">
+        <input type="file" id="dj-image-input" accept="image/*" multiple style="display:none">
         <!-- TipTap colour picker (inside wrapper for absolute positioning) -->
         <div id="note-fs-tt-colors">
           <span class="tt-colors-label">A</span>
