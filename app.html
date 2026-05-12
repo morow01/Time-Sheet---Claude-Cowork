@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.66';
+    const VERSION = '6.2.67';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45050,7 +45050,12 @@ QUESTION: ${query}`;
                   const isRow = typeof sel.isRowSelection === 'function' && sel.isRowSelection();
                   const isCol = !isRow && typeof sel.isColSelection === 'function' && sel.isColSelection();
                   if (!isRow && !isCol) return false;
-                  try { if (sel.content().content.textContent.trim() !== '') return false; } catch(e) { return false; }
+                  try {
+                    if (sel.content().content.textContent.trim() !== '') {
+                      _ttDeletePending = isRow ? 'row' : 'col';
+                      return false;
+                    }
+                  } catch(e) { return false; }
                   if (isRow) editor.chain().focus().deleteRow().run();
                   else editor.chain().focus().deleteColumn().run();
                   return true;
@@ -47060,29 +47065,53 @@ QUESTION: ${query}`;
     // 100px × N cols even when no colwidths are stored.  Tables where the user
     // has dragged a column (col elements get width) are left alone.
     // Shared TipTap table keyboard handler — wired into both editors via editorProps.handleKeyDown
-    // Backspace/Delete in an EMPTY table cell deletes the whole row (OneNote-style two-step delete).
-    // When the cell has content the default char-by-char deletion is unchanged.
+    var _ttDeletePending = null; // 'row' | 'col' — set after Phase 1 clears content
+
     function _ttTableKeyDown(editor, event) {
       var kc = event.keyCode || event.which || 0;
       var isBackDel = event.key === 'Backspace' || event.key === 'Delete' || kc === 8 || kc === 46
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
       if (!isBackDel) return false;
-      // CellSelection two-phase delete:
-      //   Phase 1 – cells have content → return false, let default clear them
-      //   Phase 2 – cells all empty   → delete the row or column structure
+
       var sel = editor.state.selection;
+
+      // Phase 2: pending structural delete — fire when cursor lands in any empty table cell
+      if (_ttDeletePending) {
+        var pending = _ttDeletePending;
+        _ttDeletePending = null;
+        var $f = sel.$from;
+        for (var di = $f.depth; di > 0; di--) {
+          var nd = $f.node(di);
+          if (nd.type.name === 'tableCell' || nd.type.name === 'tableHeader') {
+            if (nd.textContent.trim() === '') {
+              if (pending === 'row') editor.chain().focus().deleteRow().run();
+              else editor.chain().focus().deleteColumn().run();
+              return true;
+            }
+            break;
+          }
+        }
+        return false; // cell not empty or not in table — don't delete structure
+      }
+
+      // Phase 1: CellSelection — clear content, remember what to delete next press
       if (sel.$anchorCell) {
         var isRow = typeof sel.isRowSelection === 'function' && sel.isRowSelection();
         var isCol = !isRow && typeof sel.isColSelection === 'function' && sel.isColSelection();
         if (isRow || isCol) {
           try {
-            if (sel.content().content.textContent.trim() !== '') return false;
-          } catch(e) { return false; }
+            if (sel.content().content.textContent.trim() !== '') {
+              _ttDeletePending = isRow ? 'row' : 'col';
+              return false; // let default clear the content
+            }
+          } catch(e) {}
+          // Already empty — delete immediately
           if (isRow) editor.chain().focus().deleteRow().run();
           else editor.chain().focus().deleteColumn().run();
           return true;
         }
       }
+
       return false;
     }
 
