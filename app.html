@@ -8262,8 +8262,8 @@
       padding: 16px;
       font-size: 14px;
       line-height: 1.7;
-      overflow: hidden;
-      /* clearfix: contains floated images */
+      overflow: clip;
+      /* clearfix (contains floats) without creating a scroll container — allows sticky children */
       color: var(--text-warm);
       min-height: 200px;
       touch-action: pan-y;
@@ -20567,7 +20567,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.75';
+    const VERSION = '6.2.76';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
