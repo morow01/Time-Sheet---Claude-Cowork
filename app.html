@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.63';
+    const VERSION = '6.2.64';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47068,17 +47068,21 @@ QUESTION: ${query}`;
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
       if (!isBackDel) return false;
       // editorProps.handleKeyDown fires before any ProseMirror plugin (including prosemirror-tables).
-      // Header cell (TH) + empty → delete column; data cell (TD) + empty → delete row.
+      // Empty cell → ask user to delete row or column.
       var $f = editor.state.selection.$from;
       for (var di = $f.depth; di > 0; di--) {
         var nd = $f.node(di);
         if (nd.type.name === 'tableCell' || nd.type.name === 'tableHeader') {
           if (nd.textContent.trim() !== '') return false;
-          if (nd.type.name === 'tableHeader') {
-            editor.chain().focus().deleteColumn().run();
-          } else {
-            editor.chain().focus().deleteRow().run();
-          }
+          showRianDialog({
+            title: 'Delete',
+            message: 'Delete the row or column?',
+            confirmText: 'Column',
+            cancelText: 'Row',
+          }).then(function(col) {
+            if (col) editor.chain().focus().deleteColumn().run();
+            else editor.chain().focus().deleteRow().run();
+          });
           return true;
         }
       }
