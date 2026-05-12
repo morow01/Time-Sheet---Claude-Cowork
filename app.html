@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.65';
+    const VERSION = '6.2.66';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45047,15 +45047,13 @@ QUESTION: ${query}`;
                   if (event.key !== 'Backspace' && event.key !== 'Delete') return false;
                   const sel = view.state.selection;
                   if (!sel.$anchorCell) return false;
-                  if (typeof sel.isRowSelection === 'function' && sel.isRowSelection()) {
-                    editor.chain().focus().deleteRow().run();
-                    return true;
-                  }
-                  if (typeof sel.isColSelection === 'function' && sel.isColSelection()) {
-                    editor.chain().focus().deleteColumn().run();
-                    return true;
-                  }
-                  return false;
+                  const isRow = typeof sel.isRowSelection === 'function' && sel.isRowSelection();
+                  const isCol = !isRow && typeof sel.isColSelection === 'function' && sel.isColSelection();
+                  if (!isRow && !isCol) return false;
+                  try { if (sel.content().content.textContent.trim() !== '') return false; } catch(e) { return false; }
+                  if (isRow) editor.chain().focus().deleteRow().run();
+                  else editor.chain().focus().deleteColumn().run();
+                  return true;
                 },
               },
             })];
@@ -47069,15 +47067,19 @@ QUESTION: ${query}`;
       var isBackDel = event.key === 'Backspace' || event.key === 'Delete' || kc === 8 || kc === 46
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
       if (!isBackDel) return false;
-      // CellSelection: if user selected full rows → delete rows; full columns → delete columns.
+      // CellSelection two-phase delete:
+      //   Phase 1 – cells have content → return false, let default clear them
+      //   Phase 2 – cells all empty   → delete the row or column structure
       var sel = editor.state.selection;
       if (sel.$anchorCell) {
-        if (typeof sel.isRowSelection === 'function' && sel.isRowSelection()) {
-          editor.chain().focus().deleteRow().run();
-          return true;
-        }
-        if (typeof sel.isColSelection === 'function' && sel.isColSelection()) {
-          editor.chain().focus().deleteColumn().run();
+        var isRow = typeof sel.isRowSelection === 'function' && sel.isRowSelection();
+        var isCol = !isRow && typeof sel.isColSelection === 'function' && sel.isColSelection();
+        if (isRow || isCol) {
+          try {
+            if (sel.content().content.textContent.trim() !== '') return false;
+          } catch(e) { return false; }
+          if (isRow) editor.chain().focus().deleteRow().run();
+          else editor.chain().focus().deleteColumn().run();
           return true;
         }
       }
