@@ -20524,7 +20524,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.56';
+    const VERSION = '6.2.57';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45029,33 +45029,33 @@ QUESTION: ${query}`;
         },
       });
 
-      // Extension: delete column (first row, empty cell) or row (other rows, empty cell) via Backspace/Delete
+      // Extension: Backspace in empty cell → delete row; Delete in empty cell → delete column
       const TableDeleteHandler = TipTapExtension.create({
         name: 'tableDeleteHandler',
+        priority: 1000,
         addKeyboardShortcuts() {
-          const handle = () => {
+          const inEmptyCell = () => {
             const { $from } = this.editor.state.selection;
             for (let d = $from.depth; d > 0; d--) {
               const node = $from.node(d);
               if (node.type.name === 'tableCell' || node.type.name === 'tableHeader') {
-                if (node.textContent.trim() !== '') return false;
-                let isFirstRow = node.type.name === 'tableHeader';
-                if (!isFirstRow) {
-                  for (let k = d - 1; k > 0; k--) {
-                    if ($from.node(k).type.name === 'table') {
-                      isFirstRow = $from.index(k) === 0;
-                      break;
-                    }
-                  }
-                }
-                if (isFirstRow) this.editor.chain().deleteColumn().run();
-                else this.editor.chain().deleteRow().run();
-                return true;
+                return node.textContent.trim() === '';
               }
             }
             return false;
           };
-          return { 'Backspace': handle, 'Delete': handle };
+          return {
+            'Backspace': () => {
+              if (!inEmptyCell()) return false;
+              this.editor.chain().deleteRow().run();
+              return true;
+            },
+            'Delete': () => {
+              if (!inEmptyCell()) return false;
+              this.editor.chain().deleteColumn().run();
+              return true;
+            },
+          };
         },
       });
 
