@@ -614,6 +614,7 @@
       cursor: pointer;
       flex-shrink: 0;
       -webkit-tap-highlight-color: transparent;
+      text-decoration: none;
       transition: background 0.15s;
     }
 
@@ -20662,7 +20663,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.05';
+    const VERSION = '6.3.06';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21006,6 +21007,7 @@
           btn.hidden = !val;
           btn.setAttribute('aria-hidden', val ? 'false' : 'true');
           btn.dataset.location = val || '';
+          btn.setAttribute('href', val ? _activityLocationMapUrl(val) : '#');
         });
         // Table view location button
         const tblLocEl = document.querySelector(`[data-loc-btn="${actId}"]`);
@@ -21052,25 +21054,21 @@
       return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : '';
     }
 
-    function openActivityLocationMap(loc) {
-      const url = _activityLocationMapUrl(loc);
-      if (url) _openUrl(url);
-    }
-
     function _renderActLocationControl(act, di, actIdJs) {
       const loc = act.location || '';
       const idJs = actIdJs || _jsStr(act.id);
+      const mapUrl = _activityLocationMapUrl(loc);
       return '<div class="act-location-row">' +
         '<div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;' + (loc ? '' : 'color:var(--text-muted)') + '" ' +
         'data-field="location" data-act="' + esc(act.id) + '" data-day="' + di + '" ' +
         'onclick="openLocationModal(' + di + ',\'' + idJs + '\')">' +
         (loc ? esc(loc) : 'Town name or code\u2026') +
         '</div>' +
-        '<button type="button" class="act-map-btn" data-map-btn="' + esc(act.id) + '" data-location="' + esc(loc) + '" ' + (loc ? '' : 'hidden aria-hidden="true" ') +
+        '<a class="act-map-btn" data-map-btn="' + esc(act.id) + '" data-location="' + esc(loc) + '" href="' + esc(mapUrl || '#') + '" ' + (loc ? '' : 'hidden aria-hidden="true" ') +
         'title="Open location in Google Maps" aria-label="Open location in Google Maps" ' +
-        'onclick="event.stopPropagation();openActivityLocationMap(this.dataset.location)">' +
+        'target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">' +
         '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>' +
-        '</button>' +
+        '</a>' +
         '</div>';
     }
 
