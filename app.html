@@ -20662,7 +20662,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.04';
+    const VERSION = '6.3.05';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21046,6 +21046,9 @@
     function _activityLocationMapUrl(loc) {
       const ex = _findExchangeForLocation(loc);
       const q = ex && ex.link ? ex.link : String(loc || '').trim();
+      if (IS_NATIVE) {
+        return q ? 'geo:0,0?q=' + encodeURIComponent(q) : '';
+      }
       return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : '';
     }
 
@@ -47296,9 +47299,14 @@ QUESTION: ${query}`;
     // navigating Rian itself.
     function _openUrl(url) {
       if (!url) return;
+      const rawUrl = String(url).trim();
+      if (IS_NATIVE && /^(geo:|google\.navigation:|intent:)/i.test(rawUrl)) {
+        window.location.href = rawUrl;
+        return;
+      }
       if (/android/i.test(navigator.userAgent)) {
         try {
-          const u = new URL(url.startsWith('http') ? url : 'https://' + url);
+          const u = new URL(rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl);
           const scheme = u.protocol.replace(':', '');
           const intentUrl = `intent://${u.host}${u.pathname}${u.search}${u.hash}`
             + `#Intent;scheme=${scheme};action=android.intent.action.VIEW;end`;
@@ -47306,7 +47314,7 @@ QUESTION: ${query}`;
           return;
         } catch (_) { /* malformed URL — fall through */ }
       }
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.open(rawUrl, '_blank', 'noopener,noreferrer');
     }
 
     // ── Rian custom dialog ──────────────────────────────────────────────────
