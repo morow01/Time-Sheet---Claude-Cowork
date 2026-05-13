@@ -7662,6 +7662,41 @@
       position: relative;
     }
 
+    .act-location-row {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .act-location-row .act-input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .act-map-btn {
+      width: 44px;
+      min-height: 42px;
+      flex: 0 0 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border-input);
+      background: var(--bg-input);
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .act-map-btn:active {
+      transform: scale(0.96);
+      background: var(--accent-chip-bg);
+    }
+
+    .act-map-btn[hidden] {
+      display: none;
+    }
+
     .town-dropdown {
       display: none;
       position: absolute;
@@ -8142,6 +8177,16 @@
     .tt-btn.tt-active {
       background: var(--tt-btn-active-bg);
       color: var(--tt-btn-active-color);
+    }
+
+    .tt-btn.tt-disabled {
+      color: var(--text-muted);
+      opacity: 0.38;
+      cursor: default;
+    }
+
+    .tt-btn.tt-disabled:active {
+      background: transparent;
     }
 
     .tt-btn svg {
@@ -20617,7 +20662,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.2.94';
+    const VERSION = '6.3.04';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -20957,6 +21002,11 @@
           cardLocEl.textContent = val || 'Town name or code…';
           cardLocEl.style.color = val ? '' : 'var(--text-muted)';
         }
+        document.querySelectorAll(`[data-map-btn="${actId}"]`).forEach(function (btn) {
+          btn.hidden = !val;
+          btn.setAttribute('aria-hidden', val ? 'false' : 'true');
+          btn.dataset.location = val || '';
+        });
         // Table view location button
         const tblLocEl = document.querySelector(`[data-loc-btn="${actId}"]`);
         if (tblLocEl) {
@@ -20973,6 +21023,52 @@
       if (searchEl) searchEl.value = '';
       document.getElementById('location-modal').classList.add('hidden');
       locationModalCtx = { actId: null, dayIndex: null, noteId: null, _results: [] };
+    }
+
+    function _jsStr(s) {
+      return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+
+    function _findExchangeForLocation(loc) {
+      const raw = String(loc || '').trim();
+      if (!raw) return null;
+      const towns = (state.exchanges && state.exchanges.length ? state.exchanges : TOWNS) || [];
+      const codeMatch = raw.match(/\(([A-Za-z0-9]{2,6})\)\s*$/);
+      if (codeMatch) {
+        const code = codeMatch[1].toUpperCase();
+        const byCode = towns.find(function (t) { return String(t.code || '').toUpperCase() === code; });
+        if (byCode) return byCode;
+      }
+      const name = raw.replace(/\s*\([^)]+\)\s*$/, '').trim().toLowerCase();
+      return towns.find(function (t) { return String(t.name || '').trim().toLowerCase() === name; }) || null;
+    }
+
+    function _activityLocationMapUrl(loc) {
+      const ex = _findExchangeForLocation(loc);
+      const q = ex && ex.link ? ex.link : String(loc || '').trim();
+      return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : '';
+    }
+
+    function openActivityLocationMap(loc) {
+      const url = _activityLocationMapUrl(loc);
+      if (url) _openUrl(url);
+    }
+
+    function _renderActLocationControl(act, di, actIdJs) {
+      const loc = act.location || '';
+      const idJs = actIdJs || _jsStr(act.id);
+      return '<div class="act-location-row">' +
+        '<div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;' + (loc ? '' : 'color:var(--text-muted)') + '" ' +
+        'data-field="location" data-act="' + esc(act.id) + '" data-day="' + di + '" ' +
+        'onclick="openLocationModal(' + di + ',\'' + idJs + '\')">' +
+        (loc ? esc(loc) : 'Town name or code\u2026') +
+        '</div>' +
+        '<button type="button" class="act-map-btn" data-map-btn="' + esc(act.id) + '" data-location="' + esc(loc) + '" ' + (loc ? '' : 'hidden aria-hidden="true" ') +
+        'title="Open location in Google Maps" aria-label="Open location in Google Maps" ' +
+        'onclick="event.stopPropagation();openActivityLocationMap(this.dataset.location)">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>' +
+        '</button>' +
+        '</div>';
     }
 
     // ── Finder (Exchanges / Cabinets) full-screen modal ──────────
@@ -24149,6 +24245,7 @@
                   const oldHandler = _tiptapOnUpdate;
                   _tiptapOnUpdate = null;
                   _ttSetContent(remoteNoteHtml);
+                  _ttResetHistory(_ttGetHTML());
                   _tiptapOnUpdate = oldHandler;
                   activityNoteHtml = remoteNoteHtml;
                   window._actNoteOpenContent = remoteNoteHtml;
@@ -26460,11 +26557,7 @@
 
         '<div class="desk-field-group">' +
         '<span class="act-field-label">Location</span>' +
-        '<div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;' + (act.location ? '' : 'color:var(--text-muted)') + '" ' +
-        'data-field="location" data-act="' + act.id + '" data-day="' + di + '" ' +
-        'onclick="openLocationModal(' + di + ',\'' + escId + '\')">' +
-        (act.location ? esc(act.location) : 'Town name or code\u2026') +
-        '</div>' +
+        _renderActLocationControl(act, di, escId) +
         '</div>' +
 
         '<div class="desk-field-group">' +
@@ -27207,9 +27300,7 @@
             <textarea class="act-notes-area" style="display:none" data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes || '')}</textarea>
             <div class="flex flex-col gap-1.5">
               <span class="act-field-label">Location</span>
-              <div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;${act.location ? '' : 'color:var(--text-muted)'}"
-                data-field="location" data-act="${act.id}" data-day="${di}"
-                onclick="openLocationModal(${di},'${escId}')">${act.location ? esc(act.location) : 'Town name or code…'}</div>
+              ${_renderActLocationControl(act, di, escId)}
             </div>
             <div class="flex flex-col gap-1.5">
               <div style="display:flex;align-items:center;justify-content:space-between">
@@ -27544,10 +27635,7 @@
             <div class="flex flex-col gap-1.5">
               <span class="act-field-label">Location</span>
               <div class="location-wrap">
-                <div class="act-input" role="button" tabindex="0"
-                  style="cursor:pointer;user-select:none;min-height:1.6em;${act.location ? '' : 'color:var(--text-muted)'}"
-                  data-field="location" data-act="${act.id}" data-day="${di}"
-                  onclick="openLocationModal(${di}, '${act.id}')">${act.location ? esc(act.location) : 'Town name or code…'}</div>
+                ${_renderActLocationControl(act, di, _jsStr(act.id))}
               </div>
             </div>
 
@@ -33685,6 +33773,7 @@
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
         _ttSetContent(note.noteContent || '');
+        _ttResetHistory(_ttGetHTML());
         // Blur so cursor isn't visible at top — user taps to edit
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
@@ -41968,6 +42057,7 @@
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
         _ttSetContent(currentValue);
+        _ttResetHistory(_ttGetHTML());
         // Blur so cursor isn't visible at top — user taps to edit
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapOnUpdate = (editor) => {
@@ -44968,12 +45058,21 @@ QUESTION: ${query}`;
     let _tiptapModules = null;     // cached ES module imports
     let _tiptapLastSaveAt = 0;     // timestamp of last TipTap-triggered save (for conflict detection)
     let _tiptapLastSavedNoteId = null; // noteId of last TipTap save (protects note post-close)
+    const _ttHist = {
+      undo: [],
+      redo: [],
+      last: '',
+      timer: null,
+      applying: false,
+      max: 80
+    };
 
     async function _loadTipTapModules() {
       if (_tiptapModules) return _tiptapModules;
       const [
         { Editor, Node: TipTapNode, Extension: TipTapExtension, NodeSelection, DOMParser: PmDOMParser },
         { Plugin: PmPlugin, PluginKey: PmPluginKey },
+        { undo: PmUndo, redo: PmRedo, undoDepth: PmUndoDepth, redoDepth: PmRedoDepth },
         { default: StarterKit },
         { default: Underline },
         { TextStyle },
@@ -44994,6 +45093,7 @@ QUESTION: ${query}`;
       ] = await Promise.all([
         import('https://esm.sh/@tiptap/core@2.4.0'),
         import('https://esm.sh/prosemirror-state@1.4.3'),
+        import('https://esm.sh/prosemirror-history@1.4.1'),
         import('https://esm.sh/@tiptap/starter-kit@2.4.0'),
         import('https://esm.sh/@tiptap/extension-underline@2.4.0'),
         import('https://esm.sh/@tiptap/extension-text-style@2.4.0'),
@@ -45267,7 +45367,7 @@ QUESTION: ${query}`;
         TextAlign, TaskList, TaskItem, TaskItemWithHandle, Table, TableRow, TableHeader, TableCell,
         TableCellWithBg, TableHeaderWithBg,
         Link, Subscript, Superscript, Image, Collapsible, TableDeleteHandler,
-        PmDOMParser,
+        PmDOMParser, PmUndo, PmRedo, PmUndoDepth, PmRedoDepth,
       };
       return _tiptapModules;
     }
@@ -45763,6 +45863,7 @@ QUESTION: ${query}`;
           },
           handleDOMEvents: {
             beforeinput(view, event) {
+              setTimeout(_ttRecordHistoryNow, 0);
               if (event.inputType !== 'deleteContentBackward' && event.inputType !== 'deleteContentForward') return false;
               return _ttTableKeyDown(_tiptapEditor, event);
             },
@@ -45840,6 +45941,8 @@ QUESTION: ${query}`;
         },
         onUpdate({ editor }) {
           if (_tiptapOnUpdate) _tiptapOnUpdate(editor);
+          _ttRecordHistoryNow();
+          _ttUpdateToolbar(editor);
           _scheduleTaskSortableInit(); // also calls initImageDrag via shared timer
           requestAnimationFrame(_ttStripDefaultTableWidths);
           _ttEnsureTrailingParagraph(editor);
@@ -45860,6 +45963,26 @@ QUESTION: ${query}`;
           // onSelectionUpdate (empty selection) or explicitly when AI is triggered.
         },
       });
+      const _ttDom = _tiptapEditor.view?.dom;
+      if (_ttDom && !_ttDom._rianHistBound) {
+        _ttDom._rianHistBound = true;
+        ['input', 'keyup', 'paste', 'cut', 'compositionend'].forEach(function (evtName) {
+          _ttDom.addEventListener(evtName, function () {
+            setTimeout(_ttRecordHistoryNow, 0);
+          }, true);
+        });
+      }
+      const _ttScrollHost = document.getElementById('note-fs-editor');
+      if (_ttScrollHost && !_ttScrollHost._rianCellTriggerScrollBound) {
+        _ttScrollHost._rianCellTriggerScrollBound = true;
+        const repositionCellTrigger = function () {
+          if (!_tiptapEditor) return;
+          _ttUpdateCellTrigger(_tiptapEditor);
+        };
+        _ttScrollHost.addEventListener('scroll', repositionCellTrigger, { passive: true });
+        window.addEventListener('scroll', repositionCellTrigger, { passive: true });
+        window.addEventListener('resize', repositionCellTrigger, { passive: true });
+      }
       _ttBindToolbar();
       initTaskSortable();
       initImageDrag();
@@ -46081,18 +46204,36 @@ QUESTION: ${query}`;
     function _ttRunUndo() {
       const ed = _tiptapEditor;
       if (!ed) return false;
-      const ok = ed.commands.undo();
+      if (_ttCanUndo()) {
+        const current = _ttHist.undo.pop();
+        const previous = _ttHist.undo[_ttHist.undo.length - 1] || '';
+        _ttHist.redo.push(current);
+        _ttApplyHistorySnapshot(previous);
+        _ttUpdateToolbar(ed);
+        return true;
+      }
+      showToast('Nothing to undo');
       _ttUpdateToolbar(ed);
-      return ok;
+      return false;
     }
 
     function _ttRunRedo() {
       const ed = _tiptapEditor;
       if (!ed) return false;
-      const ok = ed.commands.redo();
+      if (_ttCanRedo()) {
+        const next = _ttHist.redo.pop();
+        _ttHist.undo.push(next);
+        if (_ttHist.undo.length > _ttHist.max) _ttHist.undo.shift();
+        _ttApplyHistorySnapshot(next);
+        _ttUpdateToolbar(ed);
+        return true;
+      }
+      showToast('Nothing to redo');
       _ttUpdateToolbar(ed);
-      return ok;
+      return false;
     }
+    window._ttRunUndo = _ttRunUndo;
+    window._ttRunRedo = _ttRunRedo;
 
     document.addEventListener('keydown', function (ev) {
       const modal = document.getElementById('note-fs-modal');
@@ -46114,6 +46255,20 @@ QUESTION: ${query}`;
     function _ttBindToolbar() {
       if (_ttToolbarBound) return; // prevent duplicate bindings on editor recreate
       _ttToolbarBound = true;
+      document.addEventListener('click', function (ev) {
+        const undo = ev.target?.closest?.('#tt-undo');
+        const redo = ev.target?.closest?.('#tt-redo');
+        if (undo || redo) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (undo) _ttRunUndo();
+          else _ttRunRedo();
+          return;
+        }
+        if (ev.target?.closest?.('#note-fs-tt-toolbar button, #note-fs-tt-colors button, #note-fs-tt-table-bar button')) {
+          setTimeout(_ttRecordHistoryNow, 0);
+        }
+      }, true);
       const on = (id, fn) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -46635,57 +46790,107 @@ QUESTION: ${query}`;
           _listIcon.innerHTML = '<line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor"/><circle cx="4" cy="12" r="1.2" fill="currentColor"/><circle cx="4" cy="18" r="1.2" fill="currentColor"/>';
         }
       }
+      const undoBtn = document.getElementById('tt-undo');
+      const redoBtn = document.getElementById('tt-redo');
+      if (undoBtn) {
+        const canUndo = _ttCanUndoSoft();
+        undoBtn.disabled = false;
+        undoBtn.removeAttribute('disabled');
+        undoBtn.setAttribute('aria-disabled', canUndo ? 'false' : 'true');
+        undoBtn.classList.toggle('tt-disabled', !canUndo);
+      }
+      if (redoBtn) {
+        const canRedo = _ttCanRedo();
+        redoBtn.disabled = false;
+        redoBtn.removeAttribute('disabled');
+        redoBtn.setAttribute('aria-disabled', canRedo ? 'false' : 'true');
+        redoBtn.classList.toggle('tt-disabled', !canRedo);
+      }
       // Show/hide table context bar + floating cell trigger
       const tableBar = document.getElementById('note-fs-tt-table-bar');
-      const cellTrigger = document.getElementById('tt-cell-trigger');
-      const cellPopup = document.getElementById('tt-cell-popup');
       if (editor.isActive('table')) {
         if (tableBar) tableBar.style.display = 'flex';
         // Mark TH button active when cursor is in a header row
         const thrBtn = document.getElementById('tcp-thr-btn');
         if (thrBtn) thrBtn.classList.toggle('tt-active', editor.isActive('tableHeader'));
-        if (cellTrigger) {
-          const { view } = editor;
-          const { from } = view.state.selection;
-          // Find the cell DOM node to position trigger at its top-right corner
-          let cellDom = null;
-          try {
-            const domInfo = view.domAtPos(from);
-            let node = domInfo.node;
-            if (node.nodeType === 3) node = node.parentElement;
-            while (node && node !== view.dom) {
-              if (node.tagName === 'TD' || node.tagName === 'TH') { cellDom = node; break; }
-              node = node.parentElement;
-            }
-          } catch (_) { }
-          if (cellDom) {
-            const r = cellDom.getBoundingClientRect();
-            cellTrigger.style.top = (r.top + 2) + 'px';
-            cellTrigger.style.left = (r.right + 4) + 'px';
-          } else {
-            const coords = view.coordsAtPos(from);
-            cellTrigger.style.top = (coords.top - 28) + 'px';
-            cellTrigger.style.left = coords.left + 'px';
-          }
-          cellTrigger.style.display = 'flex';
-          // Save cell position + CellSelection state so popup can use them after mobile blur
-          window._ttSavedCellFrom = editor.view.state.selection.from;
-          window._ttSavedCellSelCnt = (() => {
-            const sel = editor.view.state.selection;
-            if (!sel.$anchorCell) return 0;
-            // Count selected cells
-            let n = 0;
-            sel.forEachCell(() => n++);
-            return n;
-          })();
-        }
+        _ttUpdateCellTrigger(editor);
       } else {
+        const cellTrigger = document.getElementById('tt-cell-trigger');
+        const cellPopup = document.getElementById('tt-cell-popup');
         if (tableBar) tableBar.style.display = 'none';
         if (cellTrigger) cellTrigger.style.display = 'none';
         if (cellPopup) cellPopup.style.display = 'none';
       }
       // Show/hide link bubble
       _ttUpdateLinkBubble(editor);
+    }
+
+    function _ttUpdateCellTrigger(editor) {
+      const cellTrigger = document.getElementById('tt-cell-trigger');
+      const cellPopup = document.getElementById('tt-cell-popup');
+      if (!cellTrigger || !editor || !editor.isActive('table')) {
+        if (cellTrigger) cellTrigger.style.display = 'none';
+        if (cellPopup) cellPopup.style.display = 'none';
+        return;
+      }
+      const { view } = editor;
+      const { from } = view.state.selection;
+      let cellDom = null;
+      try {
+        const domInfo = view.domAtPos(from);
+        let node = domInfo.node;
+        if (node.nodeType === 3) node = node.parentElement;
+        while (node && node !== view.dom) {
+          if (node.tagName === 'TD' || node.tagName === 'TH') { cellDom = node; break; }
+          node = node.parentElement;
+        }
+      } catch (_) { }
+      if (cellDom) {
+        const r = cellDom.getBoundingClientRect();
+        const editorRect = document.getElementById('note-fs-editor')?.getBoundingClientRect();
+        const visible = !editorRect || (r.bottom > editorRect.top && r.top < editorRect.bottom);
+        if (!visible) {
+          cellTrigger.style.display = 'none';
+          if (cellPopup) cellPopup.style.display = 'none';
+          return;
+        }
+        cellTrigger.style.top = (r.top + 2) + 'px';
+        cellTrigger.style.left = (r.right + 4) + 'px';
+      } else {
+        const coords = view.coordsAtPos(from);
+        cellTrigger.style.top = (coords.top - 28) + 'px';
+        cellTrigger.style.left = coords.left + 'px';
+      }
+      cellTrigger.style.display = 'flex';
+      window._ttSavedCellFrom = editor.view.state.selection.from;
+      window._ttSavedCellSelCnt = (() => {
+        const sel = editor.view.state.selection;
+        if (!sel.$anchorCell) return 0;
+        let n = 0;
+        sel.forEachCell(() => n++);
+        return n;
+      })();
+      if (cellPopup && cellPopup.style.display === 'block') {
+        _ttPositionCellPopup();
+      }
+    }
+
+    function _ttPositionCellPopup() {
+      const popup = document.getElementById('tt-cell-popup');
+      const trigger = document.getElementById('tt-cell-trigger');
+      if (!popup || !trigger || trigger.style.display === 'none') return;
+      const tr = trigger.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const pw = 218;
+      const headerEl = document.querySelector('#note-fs-modal > div > div');
+      const headerBottom = headerEl ? Math.ceil(headerEl.getBoundingClientRect().bottom) + 4 : 64;
+      let left = tr.right + 6;
+      if (left + pw > vw - 8) left = tr.left - pw - 6;
+      let top = Math.max(headerBottom, tr.top);
+      if (top + 390 > vh) top = Math.max(headerBottom, vh - 396);
+      popup.style.left = Math.max(8, left) + 'px';
+      popup.style.top = Math.max(headerBottom, top) + 'px';
     }
 
     function _ttToggleCellPopup(ev) {
@@ -46710,20 +46915,7 @@ QUESTION: ${query}`;
         if (selStartBtn) selStartBtn.style.display = hasAnchor ? 'none' : 'flex';
         if (selExtendBtn) selExtendBtn.style.display = hasAnchor ? 'flex' : 'none';
         if (selClearBtn) selClearBtn.style.display = hasAnchor ? 'flex' : 'none';
-        const trigger = document.getElementById('tt-cell-trigger');
-        const tr = trigger.getBoundingClientRect();
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const pw = 218;
-        // Keep popup physically BELOW the modal header so it never covers Done/X buttons
-        const headerEl = document.querySelector('#note-fs-modal > div > div');
-        const headerBottom = headerEl ? Math.ceil(headerEl.getBoundingClientRect().bottom) + 4 : 64;
-        let left = tr.right + 6;
-        if (left + pw > vw - 8) left = tr.left - pw - 6;
-        let top = Math.max(headerBottom, tr.top);
-        if (top + 390 > vh) top = Math.max(headerBottom, vh - 396);
-        popup.style.left = Math.max(8, left) + 'px';
-        popup.style.top = Math.max(headerBottom, top) + 'px';
+        _ttPositionCellPopup();
       }
     }
 
@@ -47461,6 +47653,7 @@ QUESTION: ${query}`;
           tr.replaceWith(0, _tiptapEditor.state.doc.content.size, parsedDoc.content);
           tr.setMeta('addToHistory', false);
           _tiptapEditor.view.dispatch(tr);
+          _tiptapEditor.commands.clearHistory?.();
           requestAnimationFrame(_ttStripDefaultTableWidths);
           return;
         }
@@ -47471,6 +47664,89 @@ QUESTION: ${query}`;
       _tiptapEditor.commands.setContent(cleaned || '', false);
       _tiptapEditor.commands.clearHistory?.();
       requestAnimationFrame(_ttStripDefaultTableWidths);
+    }
+
+    function _ttNormHistHtml(html) {
+      if (html == null) return '';
+      const h = String(html)
+        .replace(/(?:<p>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>\s*)+$/gi, '')
+        .trim();
+      return (h === '<p></p>') ? '' : h;
+    }
+
+    function _ttGetDocSnapshot() {
+      if (!_tiptapEditor) return '';
+      try {
+        return JSON.stringify(_tiptapEditor.getJSON());
+      } catch (e) {
+        return _ttNormHistHtml(_ttGetHTML());
+      }
+    }
+
+    function _ttResetHistory(html) {
+      if (_ttHist.timer) { clearTimeout(_ttHist.timer); _ttHist.timer = null; }
+      const h = _ttGetDocSnapshot() || _ttNormHistHtml(html);
+      _ttHist.undo = [h];
+      _ttHist.redo = [];
+      _ttHist.last = h;
+      _ttHist.applying = false;
+      _ttUpdateToolbar(_tiptapEditor);
+    }
+
+    function _ttRecordHistoryNow() {
+      if (_ttHist.timer) { clearTimeout(_ttHist.timer); _ttHist.timer = null; }
+      if (!_tiptapEditor || _ttHist.applying) return;
+      const h = _ttGetDocSnapshot();
+      if (h === _ttHist.last) return;
+      _ttHist.undo.push(h);
+      if (_ttHist.undo.length > _ttHist.max) _ttHist.undo.shift();
+      _ttHist.redo = [];
+      _ttHist.last = h;
+      _ttUpdateToolbar(_tiptapEditor);
+    }
+
+    function _ttScheduleHistoryRecord() {
+      if (!_tiptapEditor || _ttHist.applying) return;
+      if (_ttHist.timer) clearTimeout(_ttHist.timer);
+      _ttHist.timer = setTimeout(_ttRecordHistoryNow, 450);
+    }
+
+    function _ttApplyHistorySnapshot(snapshot) {
+      if (!_tiptapEditor) return;
+      const h = String(snapshot || '');
+      _ttHist.applying = true;
+      try {
+        try {
+          const json = JSON.parse(h);
+          const doc = _tiptapEditor.schema.nodeFromJSON(json);
+          const tr = _tiptapEditor.state.tr.replaceWith(0, _tiptapEditor.state.doc.content.size, doc.content);
+          tr.setMeta('addToHistory', false);
+          _tiptapEditor.view.dispatch(tr);
+          _tiptapEditor.commands.clearHistory?.();
+          requestAnimationFrame(_ttStripDefaultTableWidths);
+        } catch (e) {
+          _ttSetContent(h);
+        }
+        _ttHist.last = h;
+        if (_tiptapOnUpdate) _tiptapOnUpdate(_tiptapEditor);
+        else _ttMarkDraftDirty();
+      } finally {
+        _ttHist.applying = false;
+      }
+      _ttUpdateToolbar(_tiptapEditor);
+    }
+
+    function _ttCanUndo() {
+      if (_ttHist.timer) _ttRecordHistoryNow();
+      return _ttHist.undo.length > 1;
+    }
+
+    function _ttCanRedo() {
+      return _ttHist.redo.length > 0;
+    }
+
+    function _ttCanUndoSoft() {
+      return _ttHist.undo.length > 1 || !!_ttHist.timer;
     }
 
     function _ttGetHTML() {
@@ -47531,6 +47807,7 @@ QUESTION: ${query}`;
         await _ensureTipTap();
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
         _ttSetContent(currentValue);
+        _ttResetHistory(_ttGetHTML());
         // Blur so cursor isn't visible at top — user taps to edit
         if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
         _tiptapOnUpdate = (editor) => {
@@ -47562,6 +47839,7 @@ QUESTION: ${query}`;
       if (micBtn) micBtn.classList.remove('fs-mic-listening');
       // Clear TipTap selection so image outlines don't persist after closing
       if (_tiptapEditor) { try { _tiptapEditor.commands.blur(); } catch (e) { } }
+      if (_ttHist.timer) { clearTimeout(_ttHist.timer); _ttHist.timer = null; }
       _tiptapOnUpdate = null;
       // Dismiss any pending AI preview + floating bubble
       _ttHideAiFab();
@@ -49020,14 +49298,18 @@ The state block is invisible to the user.`;
       <div class="tt-toolbar-wrap">
         <div id="note-fs-tt-toolbar">
           <!-- Undo / Redo -->
-          <button class="tt-btn" id="tt-undo" title="Undo">
+          <button class="tt-btn" id="tt-undo" title="Undo"
+            onpointerdown="window._ttRunUndo&&window._ttRunUndo();event.preventDefault();event.stopPropagation();"
+            onclick="event.preventDefault();event.stopPropagation();">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
               stroke-linejoin="round">
               <polyline points="9 14 4 9 9 4" />
               <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
             </svg>
           </button>
-          <button class="tt-btn" id="tt-redo" title="Redo">
+          <button class="tt-btn" id="tt-redo" title="Redo"
+            onpointerdown="window._ttRunRedo&&window._ttRunRedo();event.preventDefault();event.stopPropagation();"
+            onclick="event.preventDefault();event.stopPropagation();">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
               stroke-linejoin="round">
               <polyline points="15 14 20 9 15 4" />
