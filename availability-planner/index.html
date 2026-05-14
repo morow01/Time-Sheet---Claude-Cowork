@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resource Availability Planner - Project Plan</title>
+  <style>
+    :root {
+      --bg-page: #eef4fb;
+      --bg-card: #ffffff;
+      --bg-soft: #f6f9fd;
+      --bg-ink: #0f1b2d;
+      --accent: #2d6be4;
+      --accent-soft: #e8f0ff;
+      --accent-2: #7c3aed;
+      --amber: #f59e0b;
+      --green: #15803d;
+      --red: #dc2626;
+      --border: #d5e1ef;
+      --text-primary: #10203a;
+      --text-secondary: #48617f;
+      --text-muted: #89a0ba;
+      --shadow: 0 18px 45px rgba(31, 48, 73, 0.13);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: var(--sans);
+      line-height: 1.55;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 28px 22px;
+      overflow: auto;
+      background: var(--bg-ink);
+      color: #fff;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-weight: 900;
+      box-shadow: 0 12px 24px rgba(45, 107, 228, 0.35);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 13px;
+    }
+
+    nav {
+      display: grid;
+      gap: 6px;
+    }
+
+    nav a {
+      color: rgba(255, 255, 255, 0.72);
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    nav a:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    main {
+      padding: 42px;
+      max-width: 1220px;
+      width: 100%;
+    }
+
+    .hero {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 36px;
+      margin-bottom: 26px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .hero h2 {
+      margin: 0;
+      max-width: 880px;
+      font-size: clamp(32px, 4vw, 56px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .hero .summary {
+      max-width: 820px;
+      margin: 20px 0 0;
+      color: var(--text-secondary);
+      font-size: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .metric {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-soft);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 4px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 26px rgba(31, 48, 73, 0.07);
+    }
+
+    section h2 {
+      margin: 0 0 14px;
+      font-size: 25px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    section h3 {
+      margin: 24px 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--text-secondary);
+    }
+
+    ul, ol {
+      margin: 10px 0 0;
+      padding-left: 22px;
+      color: var(--text-secondary);
+    }
+
+    li {
+      margin: 7px 0;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .info-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      background: var(--bg-soft);
+    }
+
+    .info-card h3 {
+      margin-top: 0;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .pill.green {
+      background: #e8f7ee;
+      color: var(--green);
+    }
+
+    .pill.amber {
+      background: #fff5df;
+      color: #b77900;
+    }
+
+    .pill.red {
+      background: #feeceb;
+      color: var(--red);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-top: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: #fff;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: var(--bg-soft);
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code, pre {
+      font-family: var(--mono);
+    }
+
+    pre {
+      overflow: auto;
+      margin: 14px 0 0;
+      padding: 16px;
+      border-radius: 14px;
+      background: #0f1b2d;
+      color: #e8f0ff;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .flow {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-soft);
+    }
+
+    .flow-step b {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .flow-step h3 {
+      margin: 0 0 4px;
+    }
+
+    .callout {
+      margin-top: 16px;
+      padding: 16px;
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      background: var(--accent-soft);
+    }
+
+    .callout p {
+      margin: 0;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .warning {
+      border-left-color: var(--amber);
+      background: #fff8e9;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .screen {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-soft);
+    }
+
+    .screen h3 {
+      margin: 0 0 8px;
+    }
+
+    .result-card {
+      margin-top: 14px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .result-card h3 {
+      margin: 0;
+    }
+
+    .result-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 16px;
+      margin-top: 14px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .result-meta strong {
+      color: var(--text-primary);
+    }
+
+    .footer {
+      padding: 18px 0 36px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: relative;
+        height: auto;
+      }
+
+      nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      main {
+        padding: 20px;
+      }
+
+      .hero-grid,
+      .cards,
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">RA</div>
+        <div>
+          <h1>Resource Availability Planner</h1>
+          <p>Project plan</p>
+        </div>
+      </div>
+      <nav>
+        <a href="#purpose">Purpose</a>
+        <a href="#data">Information We Have</a>
+        <a href="#imports">Import Strategy</a>
+        <a href="#extraction">Extraction Logic</a>
+        <a href="#workflow">Search Workflow</a>
+        <a href="#matching">Matching Strategy</a>
+        <a href="#map">Map Plan</a>
+        <a href="#screens">Screens</a>
+        <a href="#risks">Known Data Issues</a>
+        <a href="#mvp">Recommended First Version</a>
+      </nav>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <p class="eyebrow">Separate Project</p>
+        <h2>Fault response planning using exchanges, contacts, and live availability.</h2>
+        <p class="summary">
+          This app will help search for an exchange or cabinet fault location and identify suitable technicians based on their work area, start location, and availability from the yearly tracker.
+        </p>
+        <div class="pill-row">
+          <a class="pill" href="app.html" style="text-decoration:none">Open First App Slice</a>
+        </div>
+        <div class="hero-grid">
+          <div class="metric">
+            <strong>3</strong>
+            <span>Core data sources</span>
+          </div>
+          <div class="metric">
+            <strong>2</strong>
+            <span>Separate imports</span>
+          </div>
+          <div class="metric">
+            <strong>61</strong>
+            <span>Contacts in current file</span>
+          </div>
+          <div class="metric">
+            <strong>397</strong>
+            <span>Date columns detected</span>
+          </div>
+        </div>
+      </header>
+
+      <section id="purpose">
+        <h2>App Purpose</h2>
+        <p>
+          The Resource Availability Planner is intended to answer one practical question:
+        </p>
+        <div class="callout">
+          <p>Who is the right technician/contact for this exchange or cabinet fault, and are they available on the selected date?</p>
+        </div>
+        <p>
+          The app should not simply return the nearest person in Ireland. It should consider where the fault is, where each technician normally works, where they start from, and whether they are available according to the tracker.
+        </p>
+        <div class="pill-row">
+          <span class="pill">Exchange search</span>
+          <span class="pill">Cabinet search</span>
+          <span class="pill">Technician contacts</span>
+          <span class="pill">Availability status</span>
+          <span class="pill">Area matching</span>
+          <span class="pill">Map view</span>
+        </div>
+      </section>
+
+      <section id="data">
+        <h2>Information We Have</h2>
+        <div class="cards">
+          <article class="info-card">
+            <h3>Exchange / Cabinet Database</h3>
+            <p>
+              This already exists in the main Rian app and provides searchable exchange and cabinet location data.
+            </p>
+            <ul>
+              <li>Exchange and cabinet names</li>
+              <li>Codes and parent exchange relationships</li>
+              <li>Address/location fields</li>
+              <li>Map coordinates where available</li>
+            </ul>
+          </article>
+
+          <article class="info-card">
+            <h3>CFE Contacts</h3>
+            <p>
+              This sheet is the staff/contact source. The newer workbook has clearer location columns.
+            </p>
+            <ul>
+              <li>Manager/SOM</li>
+              <li>Technician name</li>
+              <li>Staff number and mobile</li>
+              <li>Role</li>
+              <li>Home / Start Location</li>
+              <li>Work Locations</li>
+            </ul>
+          </article>
+
+          <article class="info-card">
+            <h3>2026 Tracker</h3>
+            <p>
+              This sheet is the availability grid. Technicians are rows, dates are columns, and status codes are cell values.
+            </p>
+            <ul>
+              <li>Technician row</li>
+              <li>SOM group</li>
+              <li>Area/comment</li>
+              <li>Daily availability status</li>
+              <li>Annual date range</li>
+            </ul>
+          </article>
+        </div>
+
+        <h3>CFE Contacts Columns</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Excel Column</th>
+                <th>Meaning</th>
+                <th>Use In App</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>e</code></td>
+                <td>Manager / SOM</td>
+                <td>Grouping, filtering, and eligibility context</td>
+              </tr>
+              <tr>
+                <td><code>Name</code></td>
+                <td>Technician/contact name</td>
+                <td>Primary identity and join key to tracker</td>
+              </tr>
+              <tr>
+                <td><code>StaffNo</code></td>
+                <td>Staff number</td>
+                <td>Secondary identity/reference</td>
+              </tr>
+              <tr>
+                <td><code>Mobile</code></td>
+                <td>Contact number</td>
+                <td>Displayed in search result/contact card</td>
+              </tr>
+              <tr>
+                <td><code>eMailAddr</code></td>
+                <td>Mostly name text, occasionally a real email</td>
+                <td>Keep raw value; only treat as email if it contains <code>@</code></td>
+              </tr>
+              <tr>
+                <td><code>Role</code></td>
+                <td>Job role</td>
+                <td>Filtering and suitability display</td>
+              </tr>
+              <tr>
+                <td><code>Home / Start Location</code></td>
+                <td>Technician start/base location</td>
+                <td>Staff map pin and approximate travel distance</td>
+              </tr>
+              <tr>
+                <td><code>Work Locations</code></td>
+                <td>Area where the technician operates</td>
+                <td>Eligibility and area match logic</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Example Contact Model</h3>
+        <pre>{
+  "id": "staff-derek-keating",
+  "manager": "Conor Nolan",
+  "name": "Derek Keating",
+  "staffNo": "S12762",
+  "mobile": "0851743324",
+  "email": null,
+  "rawEmailField": "Derek Keating",
+  "role": "Service Assurance",
+  "homeStartLocation": "Ballyboden",
+  "workLocations": "Ballyboden, Dublin 16"
+}</pre>
+
+        <h3>Tracker Status Codes</h3>
+        <div class="pill-row">
+          <span class="pill green">SA: Service Assurance</span>
+          <span class="pill green">SD: Service Delivery</span>
+          <span class="pill amber">OC: On Call</span>
+          <span class="pill amber">50: On Call 50/50</span>
+          <span class="pill red">A/L: Annual Leave</span>
+          <span class="pill red">S/L: Sick Leave</span>
+          <span class="pill red">off: Off Duty</span>
+          <span class="pill">BH: Bank Holiday</span>
+          <span class="pill">WTT: Training</span>
+        </div>
+      </section>
+
+      <section id="imports">
+        <h2>Import Strategy</h2>
+        <p>
+          The Excel file will change throughout the year, so the app should allow contacts and tracker availability to be imported separately.
+        </p>
+
+        <div class="two-col">
+          <div class="screen">
+            <h3>Import Contacts</h3>
+            <p>Reads only the <code>CFE Contacts</code> sheet from the selected workbook.</p>
+            <ul>
+              <li>Replace or update contact database</li>
+              <li>Show number of contacts imported</li>
+              <li>Show missing staff numbers</li>
+              <li>Show missing work locations</li>
+              <li>Show real emails detected</li>
+              <li>Show contacts changed since previous import</li>
+            </ul>
+          </div>
+
+          <div class="screen">
+            <h3>Import 2026 Tracker</h3>
+            <p>Reads only the <code>2026 Tracker</code> sheet from the selected workbook.</p>
+            <ul>
+              <li>Replace or update availability data</li>
+              <li>Show detected date range</li>
+              <li>Show number of technicians imported</li>
+              <li>Show unmatched technician names</li>
+              <li>Show status code counts</li>
+              <li>Show unknown status codes</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout warning">
+          <p>Separate imports are important because contact details may change less often than the daily availability tracker.</p>
+        </div>
+      </section>
+
+      <section id="extraction">
+        <h2>Extraction Logic</h2>
+
+        <h3>Extracting CFE Contacts</h3>
+        <ol>
+          <li>Find the sheet named <code>CFE Contacts</code>.</li>
+          <li>Read row 1 as headers.</li>
+          <li>Map columns by header name, not by fixed column letter.</li>
+          <li>For each non-empty row, read manager, name, staff number, mobile, raw email field, role, home/start location, and work locations.</li>
+          <li>Clean mobile number spacing.</li>
+          <li>Only treat <code>eMailAddr</code> as a real email if it contains <code>@</code>.</li>
+          <li>Store the raw email field separately.</li>
+          <li>Save normalized contacts.</li>
+        </ol>
+
+        <h3>Extracting 2026 Tracker</h3>
+        <ol>
+          <li>Find the sheet named <code>2026 Tracker</code>.</li>
+          <li>Read date columns from row 6, starting at column D.</li>
+          <li>Stop when there are no more valid date cells.</li>
+          <li>For each technician row, read SOM from column A, tracker area/comment from column B, and technician name from column C.</li>
+          <li>If SOM is blank, inherit the previous SOM above it.</li>
+          <li>Skip empty/non-technician rows.</li>
+          <li>Read each date cell as the technician's status for that date.</li>
+          <li>Normalize inconsistent status casing.</li>
+          <li>Join tracker rows to contacts by technician name.</li>
+          <li>Report fuzzy-name mismatches for manual review.</li>
+        </ol>
+
+        <h3>Example Tracker Model</h3>
+        <pre>{
+  "techName": "Robert Kamenicky",
+  "manager": "James Tyrrell",
+  "trackerArea": "Kildare",
+  "availability": {
+    "2026-05-14": "SA",
+    "2026-05-15": "OC",
+    "2026-05-16": "off"
+  }
+}</pre>
+      </section>
+
+      <section id="workflow">
+        <h2>Search Workflow</h2>
+        <div class="flow">
+          <div class="flow-step">
+            <b>1</b>
+            <div>
+              <h3>Search Fault Location</h3>
+              <p>User searches for an exchange or cabinet from the existing database.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>2</b>
+            <div>
+              <h3>Select Date</h3>
+              <p>Date defaults to today, but the user can search availability for any date in the imported tracker range.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>3</b>
+            <div>
+              <h3>Find Candidate Technicians</h3>
+              <p>The app compares the exchange/cabinet area against each technician's work locations.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>4</b>
+            <div>
+              <h3>Apply Availability</h3>
+              <p>The app joins each candidate to their tracker status for the selected date.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>5</b>
+            <div>
+              <h3>Rank and Display</h3>
+              <p>Results are ranked by area match first, then distance from the technician's start location.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3>Example Result Card</h3>
+        <div class="result-card">
+          <div class="result-top">
+            <div>
+              <h3>Robert Kamenicky</h3>
+              <p>National Core Field Force Technician</p>
+            </div>
+            <span class="pill green">SA Today</span>
+          </div>
+          <div class="result-meta">
+            <div><strong>Manager:</strong> James Tyrrell</div>
+            <div><strong>Mobile:</strong> 085...</div>
+            <div><strong>Work Area:</strong> Naas, Kildare, Portlaoise, Carlow, Birr, Thurles</div>
+            <div><strong>Distance:</strong> Approx. 18 km</div>
+            <div><strong>Match:</strong> Strong area match</div>
+            <div><strong>Start:</strong> Kildare</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="matching">
+        <h2>Matching Strategy</h2>
+        <p>
+          Matching should be careful because the closest technician is not always the correct technician. The app should separate eligibility from distance.
+        </p>
+
+        <div class="cards">
+          <article class="info-card">
+            <h3>Strong Match</h3>
+            <p>
+              The exchange/cabinet town, county, area, or mapped exchange group matches the technician's work locations.
+            </p>
+            <span class="pill green">Best candidate</span>
+          </article>
+
+          <article class="info-card">
+            <h3>Possible Match</h3>
+            <p>
+              The technician is nearby, in the same broad region, or under the same SOM group, but the area match is not exact.
+            </p>
+            <span class="pill amber">Review needed</span>
+          </article>
+
+          <article class="info-card">
+            <h3>Nearby But Outside Area</h3>
+            <p>
+              The technician may be geographically close but their work locations do not indicate responsibility for that area.
+            </p>
+            <span class="pill red">Do not auto-recommend</span>
+          </article>
+        </div>
+
+        <h3>Candidate Logic</h3>
+        <pre>1. Find selected exchange/cabinet coordinates and area details.
+2. Compare fault area against each technician's Work Locations.
+3. Join technician to tracker status for selected date.
+4. Keep everyone visible at first, but badge their status and match quality.
+5. Rank strong area matches above distance-only matches.
+6. Use distance as a ranking helper, not the main rule.</pre>
+      </section>
+
+      <section id="map">
+        <h2>Map Plan</h2>
+        <p>
+          The map should show Ireland with pins for exchanges, cabinets, selected fault location, and staff start locations.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pin Type</th>
+                <th>Source</th>
+                <th>Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Exchange pin</td>
+                <td>Main Rian exchange database</td>
+                <td>Search target and fault location</td>
+              </tr>
+              <tr>
+                <td>Cabinet pin</td>
+                <td>Main Rian cabinet database</td>
+                <td>More precise fault location where available</td>
+              </tr>
+              <tr>
+                <td>Staff pin</td>
+                <td>CFE Contacts: <code>Home / Start Location</code></td>
+                <td>Approximate start point for travel/distance</td>
+              </tr>
+              <tr>
+                <td>Highlighted candidate pin</td>
+                <td>Search result ranking</td>
+                <td>Show recommended or relevant technicians</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warning">
+          <p>Staff pins should be treated as approximate unless the start location can be mapped to a precise exchange, building, or coordinate.</p>
+        </div>
+      </section>
+
+      <section id="screens">
+        <h2>Recommended Screens</h2>
+        <div class="two-col">
+          <div class="screen">
+            <h3>Search</h3>
+            <p>Exchange/cabinet search, date selector, map, and ranked results.</p>
+          </div>
+          <div class="screen">
+            <h3>Contacts</h3>
+            <p>Imported contacts with filters for manager, role, work location, and import issues.</p>
+          </div>
+          <div class="screen">
+            <h3>Availability</h3>
+            <p>Technician/date status lookup with filters for date, status, manager, and role.</p>
+          </div>
+          <div class="screen">
+            <h3>Import</h3>
+            <p>Separate import buttons for contacts and tracker, plus summary and validation results.</p>
+          </div>
+          <div class="screen">
+            <h3>Mappings</h3>
+            <p>Manual aliases for technician names, work area mappings, and cached staff coordinates.</p>
+          </div>
+          <div class="screen">
+            <h3>Settings</h3>
+            <p>Availability filters, map options, and data reset/export controls.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="risks">
+        <h2>Known Data Issues</h2>
+        <ul>
+          <li><code>eMailAddr</code> is not reliably an email field. It usually contains a name, but a few real emails exist.</li>
+          <li>Some contact names differ from tracker names, so the join needs alias/fuzzy matching.</li>
+          <li><code>Work Locations</code> can be a broad region or multiple places, not one exact coordinate.</li>
+          <li><code>Home / Start Location</code> may be blank for some people.</li>
+          <li>Some staff are in contacts but not tracker, and some tracker names are not in contacts.</li>
+          <li>Status codes have inconsistent casing, such as <code>oc</code>, <code>OFF</code>, <code>WTt</code>, and <code>wtt</code>.</li>
+        </ul>
+
+        <h3>Name Mismatch Examples</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tracker Name</th>
+                <th>Contact Name</th>
+                <th>Handling</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Gerry O'Brien</td>
+                <td>Gerard O'Brien</td>
+                <td>Manual alias or fuzzy match</td>
+              </tr>
+              <tr>
+                <td>Aidan Kearney</td>
+                <td>Aidan Kearney Farnham</td>
+                <td>Manual alias or fuzzy match</td>
+              </tr>
+              <tr>
+                <td>Naveen Thomas</td>
+                <td>Naveen Joseph Thomas</td>
+                <td>Manual alias or fuzzy match</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="mvp">
+        <h2>Recommended First Version</h2>
+        <p>
+          The first useful version should focus on importing data, searching a fault location, and showing ranked candidates with clear match/status badges.
+        </p>
+
+        <div class="flow">
+          <div class="flow-step">
+            <b>1</b>
+            <div>
+              <h3>Build Data Import</h3>
+              <p>Import <code>CFE Contacts</code> and <code>2026 Tracker</code> separately from the latest Excel file.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>2</b>
+            <div>
+              <h3>Build Search</h3>
+              <p>Search exchange/cabinet database and select the fault location.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>3</b>
+            <div>
+              <h3>Show Everyone First</h3>
+              <p>Display all contacts initially, with status and match badges, before hiding anyone behind strict filters.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>4</b>
+            <div>
+              <h3>Add Filters</h3>
+              <p>Add filters for All, Available only, SA only, SA/OC/50, On Call only, and Unavailable hidden.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <b>5</b>
+            <div>
+              <h3>Add Manual Mapping</h3>
+              <p>Allow corrections for name aliases, area mappings, and staff start-location coordinates.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <p>The key design rule: Home / Start Location is for travel distance, Work Locations is for eligibility, and tracker status is for availability.</p>
+        </div>
+      </section>
+
+      <div class="footer">
+        Draft plan for the separate Resource Availability Planner project. This document is independent from the main Rian app.
+      </div>
+    </main>
+  </div>
+</body>
+</html>

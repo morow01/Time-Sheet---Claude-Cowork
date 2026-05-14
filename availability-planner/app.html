@@ -1,0 +1,2780 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resource Availability Planner</title>
+  <style>
+    :root {
+      --bg-page: #eef4fb;
+      --bg-card: #ffffff;
+      --bg-soft: #f6f9fd;
+      --bg-ink: #0f1b2d;
+      --bg-input: #f4f7fa;
+      --accent: #2d6be4;
+      --accent-rgb: 45, 107, 228;
+      --accent-soft: #e8f0ff;
+      --purple: #7c3aed;
+      --green: #15803d;
+      --green-soft: #e8f7ee;
+      --amber: #f59e0b;
+      --amber-soft: #fff5df;
+      --red: #dc2626;
+      --red-soft: #feeceb;
+      --border: #d5e1ef;
+      --text-primary: #10203a;
+      --text-secondary: #48617f;
+      --text-muted: #89a0ba;
+      --shadow: 0 18px 45px rgba(31, 48, 73, 0.13);
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: var(--sans);
+      line-height: 1.45;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      background: var(--bg-ink);
+      color: #fff;
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      font-weight: 900;
+      letter-spacing: 0;
+      box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.32);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.1;
+      letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .version-chip {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 12px;
+      font-weight: 300;
+      vertical-align: middle;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 15px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.68);
+      font-weight: 900;
+      font-size: 13px;
+    }
+
+    .nav button.active {
+      background: #fff;
+      color: var(--bg-ink);
+    }
+
+    main {
+      width: min(1420px, 100%);
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .page-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .page-head h2 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .page-head p {
+      margin: 6px 0 0;
+      color: var(--text-secondary);
+      max-width: 760px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      min-height: 42px;
+      padding: 10px 14px;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn.danger {
+      border-color: rgba(220, 38, 38, 0.28);
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 26px rgba(31, 48, 73, 0.07);
+      overflow: hidden;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .card-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-head h3 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+
+    .small {
+      font-size: 12px;
+    }
+
+    .metric {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-card);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 5px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .drop {
+      border: 1px dashed #aac0db;
+      border-radius: 16px;
+      background: var(--bg-soft);
+      padding: 24px;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .drop h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .drop p {
+      margin: 0;
+      color: var(--text-secondary);
+    }
+
+    .drop input {
+      display: none;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--bg-soft);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .status.ok {
+      background: var(--green-soft);
+      color: var(--green);
+      border-color: rgba(21, 128, 61, 0.24);
+    }
+
+    .status.bad {
+      background: var(--red-soft);
+      color: var(--red);
+      border-color: rgba(220, 38, 38, 0.24);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 190px 190px 170px;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-height: 42px;
+      padding: 9px 12px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(var(--accent-rgb), 0.72);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .table-wrap.compact table {
+      min-width: 0;
+    }
+
+    .table-wrap.compact th,
+    .table-wrap.compact td {
+      padding: 10px 12px;
+    }
+
+    .click-row {
+      cursor: pointer;
+    }
+
+    .click-row:hover {
+      background: var(--bg-soft);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--bg-soft);
+      color: var(--text-primary);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .name-cell strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .name-cell span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .pill.green {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .pill.amber {
+      background: var(--amber-soft);
+      color: #b77900;
+    }
+
+    .pill.red {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .pill.gray {
+      background: #eef2f7;
+      color: #60738d;
+    }
+
+    .pill.purple {
+      background: #f0eaff;
+      color: var(--purple);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .issues {
+      display: grid;
+      gap: 8px;
+      max-height: calc(100vh - 260px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
+      align-content: start;
+    }
+
+    .issue-grid {
+      align-items: start;
+    }
+
+    .issue-grid .issues {
+      max-height: calc(100vh - 260px);
+    }
+
+    .issue-suggestion {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .issue-suggestion strong {
+      color: var(--text-secondary);
+    }
+
+    #fault-loc-card {
+      overflow: visible;
+    }
+    #fault-location-results {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 4px);
+      z-index: 200;
+    }
+    .fault-results {
+      display: flex;
+      flex-direction: column;
+      max-height: 70vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-card);
+      box-shadow: 0 12px 40px rgba(31, 48, 73, 0.18);
+    }
+
+    .fault-result {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      border-radius: 0;
+      background: transparent;
+      color: var(--text-primary);
+      padding: 11px 14px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .fault-result:last-child {
+      border-bottom: none;
+    }
+
+    .fault-result:first-child {
+      border-radius: 14px 14px 0 0;
+    }
+
+    .fault-result:last-child {
+      border-radius: 0 0 14px 14px;
+    }
+
+    .fault-result:only-child {
+      border-radius: 14px;
+    }
+
+    .fault-result:hover {
+      background: var(--bg-soft);
+    }
+
+    .fault-result.active {
+      background: var(--accent-soft);
+    }
+
+    .fault-result-name {
+      font-weight: 900;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .fault-result-meta {
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 4px;
+      display: block;
+      line-height: 1.25;
+    }
+
+    .issue {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg-soft);
+      color: var(--text-secondary);
+      font-size: 13px;
+      min-height: 0;
+    }
+
+    .issue strong {
+      color: var(--text-primary);
+    }
+
+    .empty {
+      padding: 32px;
+      text-align: center;
+      color: var(--text-muted);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      background: var(--bg-soft);
+      font-weight: 800;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .pagination-info {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .page-btn {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      height: 36px;
+      min-width: 36px;
+      padding: 0 10px;
+      font-weight: 900;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+    .page-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .mapping-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mapping-row:last-child { border-bottom: none; }
+    .mapping-name { font-weight: 900; font-size: 14px; }
+    .mapping-suggestion { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .mapping-select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-height: 38px;
+      padding: 6px 10px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font: inherit;
+      font-size: 13px;
+    }
+    .mapping-select:focus {
+      outline: none;
+      border-color: rgba(var(--accent-rgb), 0.72);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+    }
+    .clear-btn {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-soft);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .clear-btn:hover { color: var(--red); border-color: rgba(220,38,38,0.3); background: var(--red-soft); }
+
+    @media (max-width: 980px) {
+
+      .topbar,
+      .page-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .nav {
+        overflow: auto;
+      }
+
+      .nav button {
+        white-space: nowrap;
+      }
+
+      main {
+        padding: 18px;
+      }
+
+      .grid.cols-2,
+      .grid.cols-3,
+      .grid.cols-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RA</div>
+        <div>
+          <h1>Resource Availability Planner <span class="version-chip">v1.0.44</span></h1>
+          <p>Contacts, tracker status, and exchange matching foundation</p>
+        </div>
+      </div>
+      <div class="nav" role="tablist" aria-label="Planner sections">
+        <button id="tab-import" class="active" onclick="setView('import')">Import</button>
+        <button id="tab-people" onclick="setView('people')">People</button>
+        <button id="tab-locations" onclick="setView('locations')">Locations</button>
+        <button id="tab-fault" onclick="setView('fault')">Fault Search</button>
+        <button id="tab-availability" onclick="setView('availability')">Availability</button>
+        <button id="tab-issues" onclick="setView('issues')">Issues</button>
+        <button id="tab-mappings" onclick="setView('mappings')">Mappings</button>
+        <button id="tab-grid" onclick="location.href='tracker-grid.html'">Grid</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="view-import">
+        <div class="page-head">
+          <div>
+            <h2>Import Data</h2>
+            <p>Import contacts and the 2026 tracker separately from the latest Excel workbook. Data is stored locally in
+              this browser for now.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="index.html">Open Plan</a>
+            <button class="btn danger" onclick="clearPlannerData()">Clear Local Data</button>
+          </div>
+        </div>
+
+        <div class="grid cols-2">
+          <div class="drop">
+            <div>
+              <h3>CFE Contacts</h3>
+              <p>Reads manager, technician, role, mobile, home/start location, and work locations.</p>
+            </div>
+            <div>
+              <input id="contacts-file" type="file" accept=".xlsx,.xls" onchange="handleImport(this, 'contacts')">
+              <button class="btn primary" onclick="document.getElementById('contacts-file').click()">Import
+                Contacts</button>
+              <div id="contacts-status" class="status">No contacts imported yet.</div>
+            </div>
+          </div>
+
+          <div class="drop">
+            <div>
+              <h3>2026 Tracker</h3>
+              <p>Reads technician rows, date columns, and daily status codes from the tracker grid.</p>
+            </div>
+            <div>
+              <input id="tracker-file" type="file" accept=".xlsx,.xls" onchange="handleImport(this, 'tracker')">
+              <button class="btn primary" onclick="document.getElementById('tracker-file').click()">Import 2026
+                Tracker</button>
+              <div id="tracker-status" class="status">No tracker imported yet.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid cols-4" style="margin-top:16px">
+          <div class="metric">
+            <strong id="m-contacts">0</strong>
+            <span>Contacts</span>
+          </div>
+          <div class="metric">
+            <strong id="m-tracker">0</strong>
+            <span>Tracker Rows</span>
+          </div>
+          <div class="metric">
+            <strong id="m-matched">0</strong>
+            <span>Matched People</span>
+          </div>
+          <div class="metric">
+            <strong id="m-range">-</strong>
+            <span>Date Range</span>
+          </div>
+        </div>
+
+        <div class="grid cols-2" style="margin-top:16px">
+          <div class="card">
+            <div class="card-head">
+              <h3>Exchange / Cabinet Data</h3>
+              <div class="actions">
+                <input id="exchanges-file" type="file" accept=".json" style="display:none"
+                  onchange="handleLocationJsonImport(this, 'exchanges')">
+                <input id="cabinets-file" type="file" accept=".json" style="display:none"
+                  onchange="handleLocationJsonImport(this, 'cabinets')">
+                <button class="btn" onclick="document.getElementById('exchanges-file').click()">Import
+                  Exchanges</button>
+                <button class="btn" onclick="document.getElementById('cabinets-file').click()">Import Cabinets</button>
+                <button class="btn" onclick="loadLocationData()">Reload JSON</button>
+              </div>
+            </div>
+            <div id="locations-summary" class="card-body">
+              <div class="empty">Loading exchanges and cabinets...</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Next Data Step</h3>
+            </div>
+            <div class="card-body">
+              <p class="muted" style="margin:0">Use exchange/cabinet search as the fault location source, then compare
+                it to each contact's Work Locations and selected-day tracker status.</p>
+              <div class="pill-row" style="margin-top:14px">
+                <span class="pill">Fault location</span>
+                <span class="pill green">Availability</span>
+                <span class="pill amber">Work area</span>
+                <span class="pill purple">Distance later</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid cols-2" style="margin-top:16px">
+          <div class="card">
+            <div class="card-head">
+              <h3>Contact Import Summary</h3>
+            </div>
+            <div id="contacts-summary" class="card-body">
+              <div class="empty">Import CFE Contacts to see the summary.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Tracker Import Summary</h3>
+            </div>
+            <div id="tracker-summary" class="card-body">
+              <div class="empty">Import 2026 Tracker to see the summary.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-people" class="hidden">
+        <div class="page-head">
+          <div>
+            <h2>People</h2>
+            <p>Browse imported contacts. Work Locations is the operating area; Home / Start Location is the approximate
+              start point.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="toolbar">
+              <div class="field">
+                <label>Search</label>
+                <input id="people-search" placeholder="Name, manager, role, location..." oninput="renderPeople()">
+              </div>
+              <div class="field">
+                <label>Manager</label>
+                <select id="people-manager" onchange="renderPeople()"></select>
+              </div>
+              <div class="field">
+                <label>Role</label>
+                <select id="people-role" onchange="renderPeople()"></select>
+              </div>
+              <div class="field">
+                <label>Location</label>
+                <select id="people-location" onchange="renderPeople()"></select>
+              </div>
+            </div>
+            <div id="coverage-summary" style="margin-bottom:14px"></div>
+            <div id="coverage-unresolved" style="margin-bottom:14px"></div>
+            <div id="people-table"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-locations" class="hidden">
+        <div class="page-head">
+          <div>
+            <h2>Locations</h2>
+            <p>Browse the copied exchange and cabinet JSON files. This is the fault-location source for the next
+              matching step.</p>
+          </div>
+          <div class="actions">
+            <input id="loc-exchanges-file" type="file" accept=".json" style="display:none"
+              onchange="handleLocationJsonImport(this, 'exchanges')">
+            <input id="loc-cabinets-file" type="file" accept=".json" style="display:none"
+              onchange="handleLocationJsonImport(this, 'cabinets')">
+            <button class="btn" onclick="document.getElementById('loc-exchanges-file').click()">Import
+              Exchanges</button>
+            <button class="btn" onclick="document.getElementById('loc-cabinets-file').click()">Import Cabinets</button>
+            <button class="btn" onclick="loadLocationData()">Reload JSON</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="toolbar">
+              <div class="field">
+                <label>Search</label>
+                <input id="loc-search" placeholder="Exchange name, code, cabinet IPID, MDF..."
+                  oninput="_locPage=1;renderLocations()">
+              </div>
+              <div class="field">
+                <label>Type</label>
+                <select id="loc-type" onchange="_locPage=1;renderLocations()">
+                  <option value="all">All</option>
+                  <option value="exchange">Exchanges</option>
+                  <option value="cabinet">Cabinets</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Per Page</label>
+                <select id="loc-limit" onchange="_locPage=1;renderLocations()">
+                  <option value="25">25</option>
+                  <option value="50" selected>50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Data Status</label>
+                <input id="loc-status" readonly value="Loading...">
+              </div>
+            </div>
+            <div id="locations-table"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-fault" class="hidden">
+        <div class="page-head">
+          <div>
+            <h2>Fault Search</h2>
+            <p>Search an exchange or cabinet, choose the fault date, then review contacts with their work area and
+              tracker status.</p>
+          </div>
+        </div>
+        <div class="grid cols-2">
+          <div class="card" id="fault-loc-card">
+            <div class="card-head">
+              <h3>Fault Location</h3>
+            </div>
+            <div class="card-body">
+              <div class="field">
+                <label>Exchange / Cabinet Search</label>
+                <div style="position:relative">
+                  <input id="fault-search" autocomplete="off" placeholder="Try Naas, SAN, cabinet IPID, MDF..."
+                    oninput="renderFaultSearch();renderFaultCandidates()"
+                    onkeydown="if(event.key==='Escape'){this.value='';renderFaultSearch();renderFaultCandidates();}">
+                  <div id="fault-location-results"></div>
+                </div>
+              </div>
+              <div class="grid cols-2" style="margin-top:12px">
+                <div class="field">
+                  <label>Type</label>
+                  <select id="fault-type" onchange="renderFaultSearch();renderFaultCandidates()">
+                    <option value="all">All</option>
+                    <option value="exchange">Exchanges</option>
+                    <option value="cabinet">Cabinets</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Date</label>
+                  <input id="fault-date" type="date" onchange="renderFaultCandidates()">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Selected Fault</h3>
+            </div>
+            <div id="fault-selected" class="card-body">
+              <div class="empty">Select an exchange or cabinet to see candidate staff.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="card-head">
+            <h3>Candidate Staff</h3>
+            <div class="actions">
+              <select id="fault-status-filter" onchange="renderFaultCandidates()" style="min-width:190px">
+                <option value="best">Best matches</option>
+                <option value="available">Useful statuses</option>
+                <option value="all">All Statuses</option>
+                <option value="SA">SA only</option>
+                <option value="OC50">OC / 50</option>
+                <option value="unavailable">Unavailable only</option>
+              </select>
+            </div>
+          </div>
+          <div id="fault-candidates" class="card-body">
+            <div class="empty">No fault location selected yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-availability" class="hidden">
+        <div class="page-head">
+          <div>
+            <h2>Availability</h2>
+            <p>Join contacts to tracker rows by technician name and show each person's status for the selected date.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <div class="toolbar">
+              <div class="field">
+                <label>Search</label>
+                <input id="avail-search" placeholder="Name, manager, area, status..." oninput="renderAvailability()">
+              </div>
+              <div class="field">
+                <label>Date</label>
+                <input id="avail-date" type="date" onchange="renderAvailability()">
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <select id="avail-status" onchange="renderAvailability()"></select>
+              </div>
+              <div class="field">
+                <label>Match</label>
+                <select id="avail-match" onchange="renderAvailability()">
+                  <option value="all">All</option>
+                  <option value="matched">Matched only</option>
+                  <option value="unmatched">Unmatched only</option>
+                </select>
+              </div>
+            </div>
+            <div id="availability-table"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-issues" class="hidden">
+        <div class="page-head">
+          <div>
+            <h2>Import Issues</h2>
+            <p>These are the data quality checks that will matter before we add maps and exchange matching.</p>
+          </div>
+        </div>
+        <div class="grid cols-2 issue-grid">
+          <div class="card">
+            <div class="card-head">
+              <h3>Contacts</h3>
+            </div>
+            <div id="contact-issues" class="card-body"></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <h3>Tracker Matching</h3>
+            </div>
+            <div id="tracker-issues" class="card-body"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-mappings" class="hidden">
+        <div class="page-head">
+          <div>
+            <h2>Name Mappings</h2>
+            <p>Link tracker names to the correct contact when automatic matching fails. Saved locally and applied every time data is joined.</p>
+          </div>
+          <div class="actions">
+            <button class="btn danger" onclick="clearAllAliases()">Clear All Mappings</button>
+          </div>
+        </div>
+        <div id="mappings-content"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const APP_VERSION = '1.0.44';
+    const STORAGE_KEY = 'ra_planner_v1';
+    var _locPage = 1;
+    const PLACE_ALIASES = {
+      'ballydowd': 'Lucan Ballydowd'
+    };
+    const CODE_LABELS = {
+      'SA': 'Service Assurance',
+      'SD': 'Service Delivery',
+      'OC': 'On Call',
+      '50': 'On Call 50/50',
+      'A/L': 'Annual Leave',
+      'BH': 'Bank Holiday',
+      'S/L': 'Sick Leave',
+      'SP/L': 'Special Leave',
+      'WTT': 'Training',
+      'UWU': 'Union Business',
+      'OFF': 'Off Duty',
+      'off': 'Off Duty',
+      'R': 'Rota',
+      'D': 'Dublin Rota',
+      'D1': 'Dublin Rota',
+      'D2': 'Dublin Rota',
+      'L': 'Leave',
+      'L1': 'Leave',
+      'L2': 'Leave'
+    };
+    const KNOWN_CODES = new Set(Object.keys(CODE_LABELS));
+
+    const state = {
+      view: 'import',
+      contacts: [],
+      tracker: [],
+      trackerMeta: null,
+      imports: {
+        contacts: null,
+        tracker: null,
+        exchanges: null,
+        cabinets: null
+      },
+      exchanges: [],
+      cabinets: [],
+      locationsLoaded: false,
+      locationsError: '',
+      selectedFault: null,
+      aliases: {},   // normTrackerName → contactId
+      ignored: {}    // normTrackerName → true (not a technician, skip)
+    };
+
+    function esc(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function norm(value) {
+      return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, ' ');
+    }
+
+    function slug(value) {
+      return norm(value).replace(/\s+/g, '-');
+    }
+
+    function todayStr() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function dateStr(value) {
+      if (!value) return null;
+      let d = value;
+      if (typeof value === 'number') {
+        const parsed = XLSX.SSF.parse_date_code(value);
+        if (!parsed) return null;
+        if (parsed.y < 2000 || parsed.y > 2100) return null;
+        d = new Date(parsed.y, parsed.m - 1, parsed.d);
+      } else if (!(value instanceof Date)) {
+        d = new Date(value);
+      }
+      if (!d || isNaN(d.getTime())) return null;
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function formatShortDate(value) {
+      if (!value || value === '-') return '-';
+      const parts = value.split('-').map(Number);
+      if (parts.length !== 3) return value;
+      return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('en-IE', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        state.contacts = Array.isArray(data.contacts) ? data.contacts : [];
+        state.tracker = Array.isArray(data.tracker) ? data.tracker : [];
+        state.exchanges = Array.isArray(data.exchanges) ? data.exchanges : [];
+        state.cabinets = Array.isArray(data.cabinets) ? data.cabinets : [];
+        state.locationsLoaded = !!(state.exchanges.length || state.cabinets.length);
+        state.trackerMeta = data.trackerMeta || null;
+        state.imports = data.imports || state.imports;
+        state.aliases = data.aliases || {};
+        state.ignored = data.ignored || {};
+      } catch (err) {
+        console.warn('Could not load planner data', err);
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        contacts: state.contacts,
+        tracker: state.tracker,
+        exchanges: state.exchanges,
+        cabinets: state.cabinets,
+        trackerMeta: state.trackerMeta,
+        imports: state.imports,
+        aliases: state.aliases,
+        ignored: state.ignored
+      }));
+    }
+
+    function setView(view) {
+      state.view = view;
+      ['import', 'people', 'locations', 'fault', 'availability', 'issues', 'mappings'].forEach(function (name) {
+        document.getElementById('view-' + name).classList.toggle('hidden', name !== view);
+        document.getElementById('tab-' + name).classList.toggle('active', name === view);
+      });
+      render();
+    }
+
+    async function loadLocationData() {
+      const locStatus = document.getElementById('loc-status');
+      if (locStatus) locStatus.value = 'Loading...';
+      try {
+        const responses = await Promise.all([
+          fetch('exchanges.json', { cache: 'no-store' }),
+          fetch('cabinets.json', { cache: 'no-store' })
+        ]);
+        if (!responses[0].ok) throw new Error('Could not load exchanges.json');
+        if (!responses[1].ok) throw new Error('Could not load cabinets.json');
+        state.exchanges = await responses[0].json();
+        state.cabinets = await responses[1].json();
+        state.locationsLoaded = true;
+        state.locationsError = '';
+      } catch (err) {
+        if (!state.exchanges.length && !state.cabinets.length) state.locationsLoaded = false;
+        state.locationsError = (location.protocol === 'file:')
+          ? 'Browser blocked direct JSON loading from a local file. Use Import Exchanges and Import Cabinets, or open the app through a local server.'
+          : (err.message || 'Could not load location JSON files.');
+      }
+      renderLocationsSummary();
+      renderLocations();
+    }
+
+    async function handleLocationJsonImport(input, kind) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!Array.isArray(data)) throw new Error('JSON file must contain an array.');
+        if (kind === 'exchanges') {
+          state.exchanges = data;
+          state.imports.exchanges = {
+            fileName: file.name,
+            importedAt: new Date().toISOString(),
+            count: data.length
+          };
+        } else {
+          state.cabinets = data;
+          state.imports.cabinets = {
+            fileName: file.name,
+            importedAt: new Date().toISOString(),
+            count: data.length
+          };
+        }
+        state.locationsLoaded = !!(state.exchanges.length || state.cabinets.length);
+        state.locationsError = '';
+        saveData();
+        renderLocationsSummary();
+        renderLocations();
+      } catch (err) {
+        state.locationsError = 'Could not import ' + kind + ': ' + (err.message || 'unknown error');
+        renderLocationsSummary();
+      } finally {
+        input.value = '';
+      }
+    }
+
+    function ensureXlsx() {
+      return new Promise(function (resolve, reject) {
+        if (window.XLSX) {
+          resolve();
+          return;
+        }
+        const existing = document.querySelector('script[data-xlsx-loader]');
+        if (existing) {
+          existing.addEventListener('load', resolve, { once: true });
+          existing.addEventListener('error', reject, { once: true });
+          return;
+        }
+        const script = document.createElement('script');
+        script.dataset.xlsxLoader = 'true';
+        script.src = 'https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';
+        script.onload = resolve;
+        script.onerror = function () {
+          reject(new Error('Could not load Excel parser. Check your connection.'));
+        };
+        document.head.appendChild(script);
+      });
+    }
+
+    function setStatus(kind, msg, type) {
+      const el = document.getElementById(kind + '-status');
+      if (!el) return;
+      el.className = 'status' + (type ? ' ' + type : '');
+      el.textContent = msg;
+    }
+
+    async function handleImport(input, kind) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      setStatus(kind, 'Loading Excel parser...', '');
+      try {
+        await ensureXlsx();
+        setStatus(kind, 'Reading ' + file.name + '...', '');
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+        if (kind === 'contacts') {
+          importContacts(workbook, file.name);
+        } else {
+          importTracker(workbook, file.name);
+        }
+        saveData();
+        renderAll();
+      } catch (err) {
+        setStatus(kind, err.message || 'Import failed.', 'bad');
+      } finally {
+        input.value = '';
+      }
+    }
+
+    function findSheet(workbook, wanted) {
+      const exact = workbook.SheetNames.find(function (name) {
+        return norm(name) === norm(wanted);
+      });
+      if (exact) return exact;
+      return workbook.SheetNames.find(function (name) {
+        return norm(name).includes(norm(wanted));
+      });
+    }
+
+    function sheetRows(workbook, sheetName) {
+      return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+        header: 1,
+        defval: null,
+        raw: true
+      });
+    }
+
+    function headerIndex(headers, labels) {
+      const wanted = labels.map(norm);
+      for (let i = 0; i < headers.length; i++) {
+        if (wanted.includes(norm(headers[i]))) return i;
+      }
+      return -1;
+    }
+
+    function cleanPhone(value) {
+      return String(value || '').replace(/\s+/g, '');
+    }
+
+    function importContacts(workbook, fileName) {
+      const sheetName = findSheet(workbook, 'CFE Contacts');
+      if (!sheetName) throw new Error('Could not find CFE Contacts sheet.');
+      const rows = sheetRows(workbook, sheetName);
+      if (!rows.length) throw new Error('CFE Contacts sheet is empty.');
+
+      const headers = rows[0].map(function (h) { return String(h || '').trim(); });
+      const idx = {
+        manager: headerIndex(headers, ['e', 'manager', 'som']),
+        name: headerIndex(headers, ['Name']),
+        staffNo: headerIndex(headers, ['StaffNo', 'Staff No', 'Staff Number']),
+        mobile: headerIndex(headers, ['Mobile', 'Phone']),
+        emailRaw: headerIndex(headers, ['eMailAddr', 'Email', 'Email Address']),
+        role: headerIndex(headers, ['Role']),
+        homeStartLocation: headerIndex(headers, ['Home / Start Location', 'Home Start Location', 'Building']),
+        workLocations: headerIndex(headers, ['Work Locations', 'Location'])
+      };
+
+      if (idx.name < 0) throw new Error('Contacts import needs a Name column.');
+      if (idx.workLocations < 0) throw new Error('Contacts import needs Work Locations or Location column.');
+
+      const contacts = [];
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r] || [];
+        const name = String(row[idx.name] || '').trim();
+        if (!name) continue;
+        const rawEmail = idx.emailRaw >= 0 ? String(row[idx.emailRaw] || '').trim() : '';
+        contacts.push({
+          id: 'staff-' + slug(name || r),
+          row: r + 1,
+          manager: idx.manager >= 0 ? String(row[idx.manager] || '').trim() : '',
+          name: name,
+          staffNo: idx.staffNo >= 0 ? String(row[idx.staffNo] || '').trim() : '',
+          mobile: idx.mobile >= 0 ? cleanPhone(row[idx.mobile]) : '',
+          rawEmailField: rawEmail,
+          email: rawEmail.includes('@') ? rawEmail : '',
+          role: idx.role >= 0 ? String(row[idx.role] || '').trim() : '',
+          homeStartLocation: idx.homeStartLocation >= 0 ? String(row[idx.homeStartLocation] || '').trim() : '',
+          workLocations: idx.workLocations >= 0 ? String(row[idx.workLocations] || '').trim() : ''
+        });
+      }
+
+      state.contacts = contacts;
+      state.imports.contacts = {
+        fileName: fileName,
+        sheetName: sheetName,
+        importedAt: new Date().toISOString(),
+        count: contacts.length
+      };
+      setStatus('contacts', 'Imported ' + contacts.length + ' contacts from "' + sheetName + '".', 'ok');
+    }
+
+    function normalizeCode(value) {
+      let code = String(value == null ? '' : value).trim();
+      if (!code) return '';
+      const upper = code.toUpperCase();
+      if (upper === 'OC') return 'OC';
+      if (upper === 'OFF') return 'off';
+      if (upper === 'WTT') return 'WTT';
+      if (upper === 'SP/L') return 'SP/L';
+      if (upper === 'S/L') return 'S/L';
+      if (upper === 'A/L') return 'A/L';
+      if (upper === 'BH') return 'BH';
+      if (upper === 'SA') return 'SA';
+      if (upper === 'SD') return 'SD';
+      if (upper === 'UWU') return 'UWU';
+      if (upper === 'R') return 'R';
+      if (upper === 'D') return 'D';
+      if (upper === 'D1') return 'D1';
+      if (upper === 'D2') return 'D2';
+      if (upper === 'L') return 'L';
+      if (upper === 'L1') return 'L1';
+      if (upper === 'L2') return 'L2';
+      if (code === '50' || Number(code) === 50) return '50';
+      return code;
+    }
+
+    function importTracker(workbook, fileName) {
+      const sheetName = findSheet(workbook, '2026 Tracker') || findSheet(workbook, 'Tracker');
+      if (!sheetName) throw new Error('Could not find 2026 Tracker sheet.');
+      const sheet = workbook.Sheets[sheetName];
+      const rows = sheetRows(workbook, sheetName);
+      if (!rows.length) throw new Error('2026 Tracker sheet is empty.');
+
+      let dateRowIdx = -1;
+      for (let r = 0; r < Math.min(rows.length, 12); r++) {
+        const row = rows[r] || [];
+        const techCell = norm(row[2]);
+        const dateHits = row.slice(3).filter(function (cell) { return !!dateStr(cell); }).length;
+        if (techCell === 'tech' || dateHits > 20) {
+          dateRowIdx = r;
+          break;
+        }
+      }
+      if (dateRowIdx < 0) throw new Error('Could not detect tracker date row.');
+
+      const dateRow = rows[dateRowIdx] || [];
+      const dateCols = [];
+      for (let c = 3; c < dateRow.length; c++) {
+        const ds = dateStr(dateRow[c]);
+        if (ds) dateCols.push({ index: c, date: ds });
+      }
+      if (!dateCols.length) throw new Error('No date columns found in tracker.');
+
+      const rowMeta = sheet['!rows'] || [];
+      const tracker = [];
+      const statusCounts = {};
+      const unknownCodes = {};
+      let currentManager = '';
+      const skipNames = new Set(['tech', 'soms', 'som', 'comment', 'week day:', 'week no:']);
+
+      for (let r = dateRowIdx + 1; r < rows.length; r++) {
+        const row = rows[r] || [];
+        const managerCell = String(row[0] || '').trim();
+        const name = String(row[2] || '').trim();
+        if (managerCell) currentManager = managerCell;
+        if (!name || skipNames.has(norm(name))) continue;
+
+        const availability = {};
+        dateCols.forEach(function (col) {
+          const code = normalizeCode(row[col.index]);
+          if (!code) return;
+          availability[col.date] = code;
+          statusCounts[code] = (statusCounts[code] || 0) + 1;
+          if (!KNOWN_CODES.has(code)) unknownCodes[code] = (unknownCodes[code] || 0) + 1;
+        });
+        if (!Object.keys(availability).length) continue;
+
+        tracker.push({
+          id: 'tracker-' + slug(name || r),
+          row: r + 1,
+          manager: currentManager,
+          trackerArea: String(row[1] || '').trim(),
+          techName: name,
+          hidden: !!(rowMeta[r] && rowMeta[r].hidden),
+          availability: availability
+        });
+      }
+
+      state.tracker = tracker;
+      state.trackerMeta = {
+        fileName: fileName,
+        sheetName: sheetName,
+        importedAt: new Date().toISOString(),
+        dateStart: dateCols[0].date,
+        dateEnd: dateCols[dateCols.length - 1].date,
+        dateCount: dateCols.length,
+        statusCounts: statusCounts,
+        unknownCodes: unknownCodes
+      };
+      state.imports.tracker = {
+        fileName: fileName,
+        sheetName: sheetName,
+        importedAt: new Date().toISOString(),
+        count: tracker.length
+      };
+      const dateInput = document.getElementById('avail-date');
+      if (dateInput && !dateInput.value) dateInput.value = todayStr();
+      setStatus('tracker', 'Imported ' + tracker.length + ' tracker rows from "' + sheetName + '".', 'ok');
+    }
+
+    function contactByNorm() {
+      const map = {};
+      state.contacts.forEach(function (contact) {
+        map[norm(contact.name)] = contact;
+      });
+      return map;
+    }
+
+    function trackerByNorm() {
+      const map = {};
+      state.tracker.forEach(function (row) {
+        map[norm(row.techName)] = row;
+      });
+      return map;
+    }
+
+    function findContactForTracker(row, contactsMap) {
+      const exact = contactsMap[norm(row.techName)];
+      if (exact) return exact;
+      const rowParts = new Set(norm(row.techName).split(' ').filter(Boolean));
+      let best = null;
+      let bestScore = 0;
+      state.contacts.forEach(function (contact) {
+        const parts = norm(contact.name).split(' ').filter(Boolean);
+        let score = 0;
+        parts.forEach(function (part) {
+          if (rowParts.has(part)) score++;
+        });
+        if (score > bestScore && score >= 2) {
+          best = contact;
+          bestScore = score;
+        }
+      });
+      return best;
+    }
+
+    function joinedRows() {
+      const contactsMap = contactByNorm();
+      const trackerMap = trackerByNorm();
+      const aliases = state.aliases || {};
+
+      // Build reverse alias: contactId → normTrackerName
+      const aliasReverse = {};
+      Object.keys(aliases).forEach(function (normTracker) {
+        aliasReverse[aliases[normTracker]] = normTracker;
+      });
+      // Build contactId lookup
+      const contactById = {};
+      state.contacts.forEach(function (c) { contactById[c.id] = c; });
+
+      const usedTrackerNorms = new Set();
+      const rows = [];
+
+      state.contacts.forEach(function (contact) {
+        var tracker = trackerMap[norm(contact.name)];
+        if (tracker) {
+          usedTrackerNorms.add(norm(contact.name));
+        } else {
+          var aliasNorm = aliasReverse[contact.id];
+          if (aliasNorm && trackerMap[aliasNorm]) {
+            tracker = trackerMap[aliasNorm];
+            usedTrackerNorms.add(aliasNorm);
+          }
+        }
+        rows.push({ contact: contact, tracker: tracker || null, source: 'contact' });
+      });
+
+      state.tracker.forEach(function (trackerRow) {
+        var n = norm(trackerRow.techName);
+        if (usedTrackerNorms.has(n)) return;
+        if (contactsMap[n]) return;
+        // Check alias
+        var contactId = aliases[n];
+        var contact = contactId ? (contactById[contactId] || null) : findContactForTracker(trackerRow, contactsMap);
+        rows.push({ contact: contact, tracker: trackerRow, source: 'tracker' });
+      });
+
+      return rows;
+    }
+
+    function statusClass(code) {
+      if (!code) return 'gray';
+      if (['SA', 'SD', 'OC', '50', 'R', 'D', 'D1', 'D2'].includes(code)) return 'green';
+      if (['WTT', 'BH'].includes(code)) return 'amber';
+      if (['A/L', 'S/L', 'SP/L', 'off'].includes(code)) return 'red';
+      return 'purple';
+    }
+
+    function statusPill(code) {
+      if (!code) return '<span class="pill gray">No status</span>';
+      return '<span class="pill ' + statusClass(code) + '">' + esc(code) + '</span>';
+    }
+
+    function codeLabel(code) {
+      return CODE_LABELS[code] || code || 'No tracker status';
+    }
+
+    function parseCoords(value) {
+      const match = String(value || '').match(/(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+      if (!match) return null;
+      return {
+        lat: Number(match[1]),
+        lng: Number(match[2])
+      };
+    }
+
+    function locationRows() {
+      const exchanges = state.exchanges.map(function (item) {
+        const coords = parseCoords(item.link);
+        return {
+          type: 'exchange',
+          id: item.code || item.name,
+          code: item.code || '',
+          name: item.name || '',
+          mdf: item.code ? item.code + '1' : '',
+          cabinet: '',
+          coords: coords,
+          raw: item
+        };
+      });
+      const cabinets = state.cabinets.map(function (item) {
+        const coords = parseCoords(item.link);
+        const mdf = String(item.mdf || '');
+        return {
+          type: 'cabinet',
+          id: item.ipid || (mdf + '-' + item.ccp),
+          code: mdf.replace(/\d+$/, ''),
+          name: mdf + (item.ccp ? ' / ' + item.ccp : ''),
+          mdf: mdf,
+          cabinet: item.ccp || '',
+          coords: coords,
+          raw: item
+        };
+      });
+      return exchanges.concat(cabinets);
+    }
+
+    function findExchangeByCode(code) {
+      const clean = String(code || '').replace(/\d+$/, '').toUpperCase();
+      if (!clean) return null;
+      return state.exchanges.find(function (item) {
+        return String(item.code || '').toUpperCase() === clean;
+      }) || null;
+    }
+
+    function enrichFaultLocation(row) {
+      if (!row) return null;
+      const parentExchange = row.type === 'cabinet' ? findExchangeByCode(row.code || row.mdf) : null;
+      const parentName = parentExchange ? parentExchange.name || '' : '';
+      const parentCode = parentExchange ? parentExchange.code || '' : '';
+      return Object.assign({}, row, {
+        parentExchange: parentExchange,
+        parentName: parentName,
+        parentCode: parentCode
+      });
+    }
+
+    function isSameFault(a, b) {
+      return !!(a && b && a.type === b.type && String(a.id) === String(b.id));
+    }
+
+    function selectFault(type, id) {
+      const rows = locationRows();
+      const found = rows.find(function (row) {
+        return row.type === type && String(row.id) === String(id);
+      });
+      state.selectedFault = enrichFaultLocation(found);
+      const inp = document.getElementById('fault-search');
+      if (inp) inp.value = '';
+      renderFaultSearch();
+      renderFaultCandidates();
+    }
+
+    function selectFaultFromElement(el) {
+      if (!el) return;
+      selectFault(el.dataset.type || '', el.dataset.id || '');
+    }
+
+    function importantTokens(value) {
+      const stop = new Set(['the', 'and', 'eir', 'eircom', 'exchange', 'county', 'co', 'ireland', 'north', 'south', 'east', 'west', 'central', 'cen', 'dub', 'dublin']);
+      return norm(value).split(' ').filter(function (token) {
+        return token.length >= 3 && !stop.has(token) && !/^\d+$/.test(token);
+      });
+    }
+
+    function faultTokens(fault) {
+      if (!fault) return [];
+      const pieces = [
+        fault.name,
+        fault.code,
+        fault.mdf,
+        fault.parentName,
+        fault.parentCode
+      ];
+      return Array.from(new Set(importantTokens(pieces.join(' '))));
+    }
+
+    function haversineKm(a, b) {
+      if (!a || !b) return null;
+      const toRad = function (v) { return v * Math.PI / 180; };
+      const r = 6371;
+      const dLat = toRad(b.lat - a.lat);
+      const dLng = toRad(b.lng - a.lng);
+      const lat1 = toRad(a.lat);
+      const lat2 = toRad(b.lat);
+      const h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return 2 * r * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+    }
+
+    function splitWorkPlaces(value) {
+      return String(value || '')
+        .split(/[,;/]+/)
+        .map(function (part) { return part.trim(); })
+        .filter(Boolean);
+    }
+
+    function exchangeForPlace(place) {
+      const alias = PLACE_ALIASES[norm(place)];
+      const lookup = alias || place;
+      const p = norm(lookup);
+      if (!p) return null;
+      let found = state.exchanges.find(function (ex) {
+        return norm(ex.name) === p || norm(ex.code) === p;
+      });
+      if (found) return found;
+      found = state.exchanges.find(function (ex) {
+        const n = norm(ex.name);
+        return n.startsWith(p) || p.startsWith(n);
+      });
+      return found || null;
+    }
+
+    function coverageForContact(contact) {
+      const terms = splitWorkPlaces(contact && contact.workLocations);
+      const resolved = [];
+      const unresolved = [];
+      terms.forEach(function (term) {
+        const ex = exchangeForPlace(term);
+        const coords = ex ? parseCoords(ex.link) : null;
+        if (ex && coords) {
+          resolved.push({
+            term: term,
+            code: ex.code || '',
+            name: ex.name || '',
+            coords: coords
+          });
+        } else {
+          unresolved.push(term);
+        }
+      });
+      return {
+        terms: terms,
+        resolved: resolved,
+        unresolved: unresolved
+      };
+    }
+
+    function coverageSummary() {
+      const allTerms = [];
+      const uniqueTerms = {};
+      state.contacts.forEach(function (contact) {
+        splitWorkPlaces(contact.workLocations).forEach(function (term) {
+          const key = norm(term);
+          if (!key) return;
+          if (!uniqueTerms[key]) uniqueTerms[key] = { term: term, count: 0, resolved: false };
+          uniqueTerms[key].count++;
+          allTerms.push(term);
+        });
+      });
+      Object.keys(uniqueTerms).forEach(function (key) {
+        uniqueTerms[key].resolved = !!exchangeForPlace(uniqueTerms[key].term);
+      });
+      const unique = Object.values(uniqueTerms);
+      return {
+        totalTerms: allTerms.length,
+        uniqueTerms: unique.length,
+        resolvedTerms: unique.filter(function (item) { return item.resolved; }).length,
+        unresolvedTerms: unique.filter(function (item) { return !item.resolved; }).sort(function (a, b) { return b.count - a.count; })
+      };
+    }
+
+    function unresolvedCoverageGroups() {
+      const byPlace = {};
+      const byTech = [];
+      state.contacts.forEach(function (contact) {
+        const coverage = coverageForContact(contact);
+        if (coverage.unresolved.length) {
+          byTech.push({
+            contact: contact,
+            terms: coverage.unresolved
+          });
+        }
+        coverage.unresolved.forEach(function (term) {
+          const key = norm(term);
+          if (!key) return;
+          if (!byPlace[key]) byPlace[key] = { term: term, technicians: [] };
+          byPlace[key].technicians.push(contact);
+        });
+      });
+      return {
+        byPlace: Object.values(byPlace).sort(function (a, b) {
+          if (b.technicians.length !== a.technicians.length) return b.technicians.length - a.technicians.length;
+          return a.term.localeCompare(b.term);
+        }),
+        byTech: byTech.sort(function (a, b) {
+          return a.contact.name.localeCompare(b.contact.name);
+        })
+      };
+    }
+
+    function renderUnresolvedCoverage() {
+      const target = document.getElementById('coverage-unresolved');
+      if (!target) return;
+      const groups = unresolvedCoverageGroups();
+      if (!groups.byPlace.length) {
+        target.innerHTML = '<div class="status ok">All work-location terms resolve to exchange points.</div>';
+        return;
+      }
+      const placeRows = groups.byPlace.map(function (group) {
+        const techs = group.technicians.map(function (c) { return c.name; }).join(', ');
+        return '<tr>' +
+          '<td><strong>' + esc(group.term) + '</strong></td>' +
+          '<td><span class="pill amber">' + esc(group.technicians.length) + '</span></td>' +
+          '<td>' + esc(techs) + '</td>' +
+          '</tr>';
+      }).join('');
+      const techRows = groups.byTech.map(function (item) {
+        return '<tr>' +
+          '<td><strong>' + esc(item.contact.name) + '</strong><div class="small muted">' + esc(item.contact.manager || '-') + '</div></td>' +
+          '<td>' + coveragePills(item.terms, 'amber') + '</td>' +
+          '<td>' + esc(item.contact.workLocations || '-') + '</td>' +
+          '</tr>';
+      }).join('');
+
+      target.innerHTML =
+        '<div class="grid cols-2">' +
+        '<div class="card" style="box-shadow:none">' +
+        '<div class="card-head"><h3>Unresolved Places</h3></div>' +
+        '<div class="card-body"><div class="table-wrap compact"><table><thead><tr><th>Place</th><th>Techs</th><th>Technicians</th></tr></thead><tbody>' + placeRows + '</tbody></table></div></div>' +
+        '</div>' +
+        '<div class="card" style="box-shadow:none">' +
+        '<div class="card-head"><h3>Technicians With Unresolved Terms</h3></div>' +
+        '<div class="card-body"><div class="table-wrap compact"><table><thead><tr><th>Technician</th><th>Unresolved</th><th>Original Work Locations</th></tr></thead><tbody>' + techRows + '</tbody></table></div></div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    function coveragePills(items, cls) {
+      if (!items.length) return '<span class="muted">-</span>';
+      return '<div class="pill-row">' + items.slice(0, 8).map(function (item) {
+        const label = typeof item === 'string' ? item : item.term + ' (' + item.code + ')';
+        return '<span class="pill ' + (cls || 'gray') + '">' + esc(label) + '</span>';
+      }).join('') + (items.length > 8 ? '<span class="pill gray">+' + esc(items.length - 8) + '</span>' : '') + '</div>';
+    }
+
+    function nearestWorkPlace(fault, workLocations) {
+      if (!fault || !fault.coords || !workLocations) return null;
+      let best = null;
+      splitWorkPlaces(workLocations).forEach(function (place) {
+        const ex = exchangeForPlace(place);
+        const coords = ex ? parseCoords(ex.link) : null;
+        const km = haversineKm(fault.coords, coords);
+        if (km == null) return;
+        if (!best || km < best.km) {
+          best = {
+            place: place,
+            exchange: ex,
+            km: km
+          };
+        }
+      });
+      return best;
+    }
+
+    function scoreAreaMatch(fault, contact, tracker) {
+      const tokens = faultTokens(fault);
+      const workText = norm(contact && contact.workLocations);
+      const startText = norm(contact && contact.homeStartLocation);
+      const trackerText = norm(tracker && tracker.trackerArea);
+      const managerText = norm((contact && contact.manager) || (tracker && tracker.manager));
+      const hits = [];
+      const softHits = [];
+      tokens.forEach(function (token) {
+        if (workText.includes(token)) hits.push(token);
+        else if (trackerText.includes(token) || startText.includes(token)) softHits.push(token);
+      });
+      if (hits.length) {
+        return { score: 100 + hits.length * 10, label: 'Work area match', cls: 'green', detail: hits.join(', ') };
+      }
+      if (softHits.length) {
+        return { score: 55 + softHits.length * 8, label: 'Possible area match', cls: 'amber', detail: softHits.join(', ') };
+      }
+      const nearest = nearestWorkPlace(fault, contact && contact.workLocations);
+      if (nearest && nearest.km <= 45) {
+        return { score: 85 - Math.round(nearest.km / 5), label: 'Nearby work area', cls: 'green', detail: nearest.place + ' · ' + Math.round(nearest.km) + ' km' };
+      }
+      if (nearest && nearest.km <= 80) {
+        return { score: 48 - Math.round(nearest.km / 10), label: 'Possible nearby area', cls: 'amber', detail: nearest.place + ' · ' + Math.round(nearest.km) + ' km' };
+      }
+      if (managerText && tokens.some(function (t) { return managerText.includes(t); })) {
+        return { score: 35, label: 'Manager text match', cls: 'amber', detail: '' };
+      }
+      return { score: 0, label: 'No area match', cls: 'gray', detail: '' };
+    }
+
+    function statusScore(code) {
+      if (code === 'SA') return 45;
+      if (code === 'OC' || code === '50') return 40;
+      if (['SD', 'D', 'D1', 'D2', 'R'].includes(code)) return 30;
+      if (['WTT', 'BH'].includes(code)) return -10;
+      if (['A/L', 'S/L', 'SP/L', 'off'].includes(code)) return -30;
+      if (!code) return -5;
+      return 0;
+    }
+
+    function statusFilterPass(code, filter) {
+      if (filter === 'all' || filter === 'best') return true;
+      if (filter === 'available') return ['SA', 'SD', 'OC', '50', 'D', 'D1', 'D2', 'R'].includes(code);
+      if (filter === 'SA') return code === 'SA';
+      if (filter === 'OC50') return code === 'OC' || code === '50';
+      if (filter === 'unavailable') return ['A/L', 'S/L', 'SP/L', 'off'].includes(code);
+      return true;
+    }
+
+    function faultSearchScore(row, q) {
+      if (!q) return row.type === 'exchange' ? 10 : 0;
+      const parent = row.type === 'cabinet' ? findExchangeByCode(row.code || row.mdf) : null;
+      const values = [
+        row.name,
+        row.code,
+        row.id,
+        row.mdf,
+        row.cabinet,
+        parent && parent.name,
+        parent && parent.code
+      ].map(norm).filter(Boolean);
+      if (values.some(function (v) { return v === q; })) return 100;
+      if (values.some(function (v) { return v.startsWith(q); })) return 80;
+      if (values.some(function (v) { return v.split(' ').some(function (part) { return part.startsWith(q); }); })) return 65;
+      if (values.some(function (v) { return v.includes(q); })) return 35;
+      return 0;
+    }
+
+    function isUsefulStatus(code) {
+      return ['SA', 'SD', 'OC', '50', 'D', 'D1', 'D2', 'R'].includes(code);
+    }
+
+    function isUnavailableStatus(code) {
+      return ['A/L', 'S/L', 'SP/L', 'off', 'WTT'].includes(code);
+    }
+
+    function isAreaMatch(match) {
+      return !!(match && [
+        'Work area match',
+        'Nearby work area',
+        'Possible area match',
+        'Possible nearby area'
+      ].includes(match.label));
+    }
+
+    function candidateSummaryHtml(summary, filter, shown) {
+      return '<div class="grid cols-4" style="margin-bottom:14px">' +
+        '<div class="metric"><strong>' + esc(summary.workArea) + '</strong><span>Work-Area Matches</span></div>' +
+        '<div class="metric"><strong>' + esc(summary.useful) + '</strong><span>Useful Today</span></div>' +
+        '<div class="metric"><strong>' + esc(summary.unavailable) + '</strong><span>Unavailable / Training</span></div>' +
+        '<div class="metric"><strong>' + esc(shown) + '</strong><span>Shown: ' + esc(filterLabel(filter)) + '</span></div>' +
+        '</div>';
+    }
+
+    function filterLabel(filter) {
+      if (filter === 'best') return 'Best';
+      if (filter === 'available') return 'Useful';
+      if (filter === 'SA') return 'SA';
+      if (filter === 'OC50') return 'OC / 50';
+      if (filter === 'unavailable') return 'Unavailable';
+      return 'All';
+    }
+
+    function renderFaultSearch() {
+      const target = document.getElementById('fault-location-results');
+      const selectedTarget = document.getElementById('fault-selected');
+      if (!target || !selectedTarget) return;
+      const dateInput = document.getElementById('fault-date');
+      if (dateInput && !dateInput.value) dateInput.value = todayStr();
+
+      if (!state.locationsLoaded) {
+        target.innerHTML = '<div class="empty">' + esc(state.locationsError || 'Import exchanges and cabinets first.') + '</div>';
+      } else {
+        const q = norm(document.getElementById('fault-search').value);
+        const type = document.getElementById('fault-type').value || 'all';
+
+        if (!q) {
+          target.innerHTML = '';
+        } else {
+          let rows = locationRows().map(function (row) {
+            return Object.assign({}, row, { searchScore: faultSearchScore(row, q) });
+          }).filter(function (row) {
+            if (type !== 'all' && row.type !== type) return false;
+            return row.searchScore > 0;
+          });
+
+          const bestScore = rows.reduce(function (max, row) { return Math.max(max, row.searchScore || 0); }, 0);
+          if (bestScore >= 80) rows = rows.filter(function (row) { return row.searchScore >= 80; });
+          rows.sort(function (a, b) {
+            if (b.searchScore !== a.searchScore) return b.searchScore - a.searchScore;
+            if (a.type !== b.type) return a.type === 'exchange' ? -1 : 1;
+            return String(a.name || a.id || '').localeCompare(String(b.name || b.id || ''));
+          });
+
+          const exactRows = rows.filter(function (row) {
+            return norm(row.name) === q || norm(row.code) === q || norm(row.id) === q || norm(row.mdf) === q;
+          });
+          if (exactRows.length === 1 && !isSameFault(state.selectedFault, exactRows[0])) {
+            state.selectedFault = enrichFaultLocation(exactRows[0]);
+          }
+
+          rows = rows.slice(0, 30);
+
+          if (!rows.length) {
+            target.innerHTML = '<div class="empty">No locations match "' + esc(document.getElementById('fault-search').value) + '".</div>';
+          } else {
+            target.innerHTML = '<div class="fault-results">' + rows.map(function (row) {
+              const parent = row.type === 'cabinet' ? findExchangeByCode(row.code || row.mdf) : null;
+              const isSel = state.selectedFault && state.selectedFault.type === row.type && String(state.selectedFault.id) === String(row.id);
+              const safeType = esc(row.type);
+              const safeId = esc(String(row.id).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+              const meta = row.type === 'cabinet'
+                ? (parent ? parent.name + ' (' + parent.code + ') · ' : '') + (row.id || '')
+                : (row.code || row.id || '');
+              const displayName = row.type === 'cabinet'
+                ? row.name
+                : (row.name + (row.code ? ' (' + row.code + ')' : ''));
+              return '<button class="fault-result" onclick="selectFault(\'' + safeType + '\',\'' + safeId + '\')">' +
+                '<span class="pill ' + (row.type === 'exchange' ? 'green' : 'purple') + '">' + esc(row.type) + '</span>' +
+                '<span><span class="fault-result-name">' + esc(displayName || row.id || '-') + '</span><span class="fault-result-meta">' + esc(meta || '-') + '</span></span>' +
+                '</button>';
+            }).join('') + '</div>';
+          }
+        }
+      }
+
+      const fault = state.selectedFault;
+      if (!fault) {
+        selectedTarget.innerHTML = '<div class="empty">Select an exchange or cabinet to see candidate staff.</div>';
+        return;
+      }
+      const mapUrl = fault.coords ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(fault.coords.lat + ',' + fault.coords.lng) : '';
+      selectedTarget.innerHTML =
+        '<div class="name-cell"><strong style="font-size:20px">' + esc(fault.name || fault.id) + '</strong><span>' + esc(fault.type + ' · ' + (fault.id || '-')) + '</span></div>' +
+        '<div class="pill-row" style="margin-top:14px">' +
+        '<span class="pill ' + (fault.type === 'exchange' ? 'green' : 'purple') + '">' + esc(fault.type) + '</span>' +
+        (fault.parentName ? '<span class="pill">Parent: ' + esc(fault.parentName + ' (' + fault.parentCode + ')') + '</span>' : '') +
+        (fault.coords ? '<span class="pill gray">' + esc(fault.coords.lat + ', ' + fault.coords.lng) + '</span>' : '') +
+        '</div>' +
+        (mapUrl ? '<a class="btn" style="margin-top:16px;text-decoration:none" href="' + esc(mapUrl) + '" target="_blank" rel="noopener">Open Map</a>' : '');
+    }
+
+    function renderFaultCandidates() {
+      const target = document.getElementById('fault-candidates');
+      if (!target) return;
+      const fault = state.selectedFault;
+      if (!fault) {
+        target.innerHTML = '<div class="empty">No fault location selected yet.</div>';
+        return;
+      }
+      const dateInput = document.getElementById('fault-date');
+      if (dateInput && !dateInput.value) dateInput.value = todayStr();
+      const date = dateInput ? dateInput.value : todayStr();
+      const filter = document.getElementById('fault-status-filter').value || 'all';
+      const title = fault.name || fault.id || 'selected fault';
+      let allRows = joinedRows().map(function (row) {
+        const contact = row.contact || {};
+        const tracker = row.tracker || {};
+        const code = tracker.availability ? tracker.availability[date] || '' : '';
+        const match = scoreAreaMatch(fault, contact, tracker);
+        return {
+          contact: contact,
+          tracker: tracker,
+          code: code,
+          match: match,
+          totalScore: match.score + statusScore(code)
+        };
+      }).filter(function (row) {
+        return row.contact;
+      });
+
+      const summary = {
+        total: allRows.length,
+        workArea: allRows.filter(function (row) { return isAreaMatch(row.match); }).length,
+        useful: allRows.filter(function (row) { return isAreaMatch(row.match) && isUsefulStatus(row.code); }).length,
+        unavailable: allRows.filter(function (row) { return isAreaMatch(row.match) && isUnavailableStatus(row.code); }).length
+      };
+
+      let rows = allRows.filter(function (row) {
+        if (!statusFilterPass(row.code, filter)) return false;
+        if (filter === 'best') return isAreaMatch(row.match);
+        return true;
+      }).sort(function (a, b) {
+        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+        if (statusScore(b.code) !== statusScore(a.code)) return statusScore(b.code) - statusScore(a.code);
+        return String(a.contact.name || '').localeCompare(String(b.contact.name || ''));
+      });
+
+      if (!rows.length) {
+        target.innerHTML = '<div class="status" style="margin-bottom:14px">Ranking candidates for ' + esc(title) + ' on ' + esc(formatShortDate(date)) + '.</div>' +
+          candidateSummaryHtml(summary, filter, 0) + '<div class="empty">No candidate staff match this filter.</div>';
+        return;
+      }
+
+      target.innerHTML = '<div class="status" style="margin-bottom:14px">Ranking candidates for ' + esc(title) + ' on ' + esc(formatShortDate(date)) + '.</div>' +
+        candidateSummaryHtml(summary, filter, rows.length) + '<div class="table-wrap"><table><thead><tr>' +
+        '<th>Candidate</th><th>Status</th><th>Area Match</th><th>Manager</th><th>Role</th><th>Work Locations</th><th>Start</th><th>Mobile</th>' +
+        '</tr></thead><tbody>' + rows.map(function (row) {
+          const contact = row.contact;
+          const tracker = row.tracker || {};
+          return '<tr>' +
+            '<td class="name-cell"><strong>' + esc(contact.name || tracker.techName || '-') + '</strong><span>' + esc(contact.staffNo || '-') + '</span></td>' +
+            '<td>' + statusPill(row.code) + '<div class="small muted" style="margin-top:4px">' + esc(codeLabel(row.code)) + '</div></td>' +
+            '<td><span class="pill ' + esc(row.match.cls) + '">' + esc(row.match.label) + '</span>' + (row.match.detail ? '<div class="small muted" style="margin-top:4px">Matched: ' + esc(row.match.detail) + '</div>' : '') + '</td>' +
+            '<td>' + esc(contact.manager || tracker.manager || '-') + '</td>' +
+            '<td>' + esc(contact.role || '-') + '</td>' +
+            '<td>' + esc(contact.workLocations || '-') + '</td>' +
+            '<td>' + esc(contact.homeStartLocation || '-') + '</td>' +
+            '<td>' + esc(contact.mobile || '-') + '</td>' +
+            '</tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    function locGoPage(p) { _locPage = p; renderLocations(); }
+
+    function renderLocations() {
+      const target = document.getElementById('locations-table');
+      if (!target) return;
+      if (!state.locationsLoaded) {
+        target.innerHTML = '<div class="empty">' + esc(state.locationsError || 'Location JSON files are loading.') + '</div>';
+        return;
+      }
+
+      const q = norm(document.getElementById('loc-search').value);
+      const type = document.getElementById('loc-type').value || 'all';
+      const pageSize = Number(document.getElementById('loc-limit').value || 50);
+      const allRows = locationRows().filter(function (row) {
+        if (type !== 'all' && row.type !== type) return false;
+        const hay = norm([row.type, row.id, row.code, row.name, row.mdf, row.cabinet, row.coords && row.coords.lat, row.coords && row.coords.lng].join(' '));
+        return !q || hay.includes(q);
+      });
+
+      if (!allRows.length) {
+        target.innerHTML = '<div class="empty">No locations match the current search.</div>';
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(allRows.length / pageSize));
+      if (_locPage > totalPages) _locPage = totalPages;
+      if (_locPage < 1) _locPage = 1;
+      const start = (_locPage - 1) * pageSize;
+      const rows = allRows.slice(start, start + pageSize);
+
+      // Build page number buttons (show up to 7 around current page)
+      function pageButtons() {
+        if (totalPages <= 1) return '';
+        const btn = function (p, label, active) {
+          return '<button class="page-btn' + (active ? ' active' : '') + '" ' +
+            (active ? 'disabled' : 'onclick="locGoPage(' + p + ')"') + '>' + (label || p) + '</button>';
+        };
+        var btns = '';
+        btns += '<button class="page-btn" ' + (_locPage <= 1 ? 'disabled' : 'onclick="locGoPage(' + (_locPage - 1) + ')"') + '>‹</button>';
+        var lo = Math.max(1, _locPage - 3);
+        var hi = Math.min(totalPages, _locPage + 3);
+        if (lo > 1) { btns += btn(1, '1', false); if (lo > 2) btns += '<span class="page-btn" style="border:none;background:none;cursor:default">…</span>'; }
+        for (var p = lo; p <= hi; p++) btns += btn(p, p, p === _locPage);
+        if (hi < totalPages) { if (hi < totalPages - 1) btns += '<span class="page-btn" style="border:none;background:none;cursor:default">…</span>'; btns += btn(totalPages, totalPages, false); }
+        btns += '<button class="page-btn" ' + (_locPage >= totalPages ? 'disabled' : 'onclick="locGoPage(' + (_locPage + 1) + ')"') + '>›</button>';
+        return btns;
+      }
+
+      const tableHtml = '<div class="table-wrap"><table><thead><tr>' +
+        '<th>Type</th><th>Name / ID</th><th>Code</th><th>MDF</th><th>Cabinet</th><th>Coordinates</th><th>Map</th>' +
+        '</tr></thead><tbody>' + rows.map(function (row) {
+          const coords = row.coords ? row.coords.lat + ', ' + row.coords.lng : '-';
+          const mapUrl = row.coords ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(row.coords.lat + ',' + row.coords.lng) : '';
+          return '<tr>' +
+            '<td><span class="pill ' + (row.type === 'exchange' ? 'green' : 'purple') + '">' + esc(row.type) + '</span></td>' +
+            '<td class="name-cell"><strong>' + esc(row.name || row.id || '-') + '</strong><span>' + esc(row.id || '-') + '</span></td>' +
+            '<td>' + esc(row.code || '-') + '</td>' +
+            '<td>' + esc(row.mdf || '-') + '</td>' +
+            '<td>' + esc(row.cabinet || '-') + '</td>' +
+            '<td>' + esc(coords) + '</td>' +
+            '<td>' + (mapUrl ? '<a class="pill" href="' + esc(mapUrl) + '" target="_blank" rel="noopener">Open Map</a>' : '<span class="muted">-</span>') + '</td>' +
+            '</tr>';
+        }).join('') + '</tbody></table></div>';
+
+      const paginationHtml = '<div class="pagination">' +
+        '<span class="pagination-info">Showing ' + (start + 1) + '–' + (start + rows.length) + ' of ' + allRows.length + '</span>' +
+        '<div class="pagination-controls">' + pageButtons() + '</div>' +
+        '</div>';
+
+      target.innerHTML = tableHtml + paginationHtml;
+    }
+
+    function renderAll() {
+      renderHeader();
+      renderImportSummaries();
+      renderLocationsSummary();
+      renderFilterOptions();
+      renderPeople();
+      renderLocations();
+      renderFaultSearch();
+      renderFaultCandidates();
+      renderAvailability();
+      renderIssues();
+      renderMappings();
+    }
+
+    function render() {
+      renderHeader();
+      if (state.view === 'import') renderImportSummaries();
+      if (state.view === 'people') renderPeople();
+      if (state.view === 'locations') renderLocations();
+      if (state.view === 'fault') {
+        renderFaultSearch();
+        renderFaultCandidates();
+      }
+      if (state.view === 'availability') renderAvailability();
+      if (state.view === 'issues') renderIssues();
+      if (state.view === 'mappings') renderMappings();
+    }
+
+    function renderHeader() {
+      const joined = joinedRows();
+      const matched = joined.filter(function (row) { return row.contact && row.tracker; }).length;
+      document.getElementById('m-contacts').textContent = state.contacts.length;
+      document.getElementById('m-tracker').textContent = state.tracker.length;
+      document.getElementById('m-matched').textContent = matched;
+      document.getElementById('m-range').textContent = state.trackerMeta ? formatShortDate(state.trackerMeta.dateStart) + ' - ' + formatShortDate(state.trackerMeta.dateEnd) : '-';
+      if (state.imports.contacts) {
+        setStatus('contacts', 'Last import: ' + state.imports.contacts.fileName + ' (' + state.imports.contacts.count + ' contacts)', 'ok');
+      }
+      if (state.imports.tracker) {
+        setStatus('tracker', 'Last import: ' + state.imports.tracker.fileName + ' (' + state.imports.tracker.count + ' rows)', 'ok');
+      }
+    }
+
+    function renderLocationsSummary() {
+      const target = document.getElementById('locations-summary');
+      const locStatus = document.getElementById('loc-status');
+      if (locStatus) {
+        locStatus.value = state.locationsLoaded
+          ? (state.exchanges.length + ' exchanges, ' + state.cabinets.length + ' cabinets')
+          : (state.locationsError || 'Not loaded');
+      }
+      if (!target) return;
+      if (state.locationsError) {
+        target.innerHTML = '<div class="status bad">' + esc(state.locationsError) + '</div>';
+        return;
+      }
+      if (!state.locationsLoaded) {
+        target.innerHTML = '<div class="empty">Loading exchanges and cabinets...</div>';
+        return;
+      }
+      const exchangeCoords = state.exchanges.filter(function (item) { return parseCoords(item.link); }).length;
+      const cabinetCoords = state.cabinets.filter(function (item) { return parseCoords(item.link); }).length;
+      const source = '<div class="status ok" style="margin-bottom:14px">' +
+        'Loaded ' + esc(state.exchanges.length) + ' exchanges and ' + esc(state.cabinets.length) + ' cabinets' +
+        ((state.imports.exchanges || state.imports.cabinets) ? ' from imported JSON.' : ' from local JSON files.') +
+        '</div>';
+      target.innerHTML = source + summaryList([
+        { label: 'Exchanges', value: state.exchanges.length },
+        { label: 'Cabinets', value: state.cabinets.length },
+        { label: 'Exchange Coordinates', value: exchangeCoords },
+        { label: 'Cabinet Coordinates', value: cabinetCoords }
+      ]);
+    }
+
+    function summaryList(items) {
+      return '<div class="grid cols-2">' + items.map(function (item) {
+        return '<div class="metric"><strong>' + esc(item.value) + '</strong><span>' + esc(item.label) + '</span></div>';
+      }).join('') + '</div>';
+    }
+
+    function renderImportSummaries() {
+      const contacts = state.contacts;
+      const tracker = state.tracker;
+      const realEmails = contacts.filter(function (c) { return c.email; }).length;
+      const missingStart = contacts.filter(function (c) { return !c.homeStartLocation; }).length;
+      const missingWork = contacts.filter(function (c) { return !c.workLocations; }).length;
+      const missingStaffNo = contacts.filter(function (c) { return !c.staffNo; }).length;
+      const managers = new Set(contacts.map(function (c) { return c.manager; }).filter(Boolean)).size;
+      const roles = new Set(contacts.map(function (c) { return c.role; }).filter(Boolean)).size;
+
+      document.getElementById('contacts-summary').innerHTML = contacts.length ? summaryList([
+        { label: 'Contacts', value: contacts.length },
+        { label: 'Managers', value: managers },
+        { label: 'Roles', value: roles },
+        { label: 'Real Emails', value: realEmails },
+        { label: 'Missing Start', value: missingStart },
+        { label: 'Missing Work Area', value: missingWork },
+        { label: 'Missing Staff No', value: missingStaffNo },
+        { label: 'Source Sheet', value: state.imports.contacts ? state.imports.contacts.sheetName : '-' }
+      ]) : '<div class="empty">Import CFE Contacts to see the summary.</div>';
+
+      const statusCounts = state.trackerMeta ? state.trackerMeta.statusCounts || {} : {};
+      const codeHtml = Object.keys(statusCounts).sort(function (a, b) {
+        return statusCounts[b] - statusCounts[a];
+      }).slice(0, 14).map(function (code) {
+        return '<span class="pill ' + statusClass(code) + '">' + esc(code) + ': ' + esc(statusCounts[code]) + '</span>';
+      }).join('');
+
+      document.getElementById('tracker-summary').innerHTML = tracker.length ? (
+        summaryList([
+          { label: 'Tracker Rows', value: tracker.length },
+          { label: 'Date Columns', value: state.trackerMeta.dateCount },
+          { label: 'Start Date', value: formatShortDate(state.trackerMeta.dateStart) },
+          { label: 'End Date', value: formatShortDate(state.trackerMeta.dateEnd) }
+        ]) +
+        '<h3 style="margin:18px 0 10px">Status Counts</h3><div class="pill-row">' + codeHtml + '</div>'
+      ) : '<div class="empty">Import 2026 Tracker to see the summary.</div>';
+    }
+
+    function optionHtml(values, label) {
+      return '<option value="all">' + esc(label) + '</option>' + values.map(function (value) {
+        return '<option value="' + esc(value) + '">' + esc(value) + '</option>';
+      }).join('');
+    }
+
+    function renderFilterOptions() {
+      const managerSel = document.getElementById('people-manager');
+      const roleSel = document.getElementById('people-role');
+      const locSel = document.getElementById('people-location');
+      const statusSel = document.getElementById('avail-status');
+      if (!managerSel || !roleSel || !locSel || !statusSel) return;
+
+      const keep = {
+        manager: managerSel.value || 'all',
+        role: roleSel.value || 'all',
+        loc: locSel.value || 'all',
+        status: statusSel.value || 'all'
+      };
+
+      const managers = Array.from(new Set(state.contacts.map(function (c) { return c.manager; }).filter(Boolean))).sort();
+      const roles = Array.from(new Set(state.contacts.map(function (c) { return c.role; }).filter(Boolean))).sort();
+      const locations = Array.from(new Set(state.contacts.map(function (c) { return c.workLocations; }).filter(Boolean))).sort();
+      const statuses = Array.from(new Set(state.tracker.flatMap(function (row) {
+        return Object.values(row.availability || {});
+      }).filter(Boolean))).sort();
+
+      managerSel.innerHTML = optionHtml(managers, 'All Managers');
+      roleSel.innerHTML = optionHtml(roles, 'All Roles');
+      locSel.innerHTML = optionHtml(locations, 'All Work Areas');
+      statusSel.innerHTML = optionHtml(statuses, 'All Statuses');
+
+      managerSel.value = managers.includes(keep.manager) ? keep.manager : 'all';
+      roleSel.value = roles.includes(keep.role) ? keep.role : 'all';
+      locSel.value = locations.includes(keep.loc) ? keep.loc : 'all';
+      statusSel.value = statuses.includes(keep.status) ? keep.status : 'all';
+    }
+
+    function renderPeople() {
+      const target = document.getElementById('people-table');
+      const summaryTarget = document.getElementById('coverage-summary');
+      if (!target) return;
+      if (!state.contacts.length) {
+        if (summaryTarget) summaryTarget.innerHTML = '';
+        const unresolvedTarget = document.getElementById('coverage-unresolved');
+        if (unresolvedTarget) unresolvedTarget.innerHTML = '';
+        target.innerHTML = '<div class="empty">No contacts imported yet.</div>';
+        return;
+      }
+
+      if (summaryTarget) {
+        const summary = coverageSummary();
+        const unresolvedAll = summary.unresolvedTerms.map(function (item) {
+          return '<span class="pill amber">' + esc(item.term) + ' · ' + esc(item.count) + '</span>';
+        }).join('');
+        summaryTarget.innerHTML =
+          '<div class="grid cols-4" style="margin-bottom:14px">' +
+          '<div class="metric"><strong>' + esc(summary.uniqueTerms) + '</strong><span>Unique Work Terms</span></div>' +
+          '<div class="metric"><strong>' + esc(summary.resolvedTerms) + '</strong><span>Resolved To Exchanges</span></div>' +
+          '<div class="metric"><strong>' + esc(summary.uniqueTerms - summary.resolvedTerms) + '</strong><span>Unresolved Terms</span></div>' +
+          '<div class="metric"><strong>' + esc(state.contacts.length) + '</strong><span>Technicians</span></div>' +
+          '</div>' +
+          '<div class="status" style="margin-bottom:14px">All unresolved work-location terms: <span class="pill-row" style="display:inline-flex;margin-left:8px">' + (unresolvedAll || '<span class="muted">none</span>') + '</span></div>';
+      }
+      renderUnresolvedCoverage();
+
+      const q = norm(document.getElementById('people-search').value);
+      const manager = document.getElementById('people-manager').value || 'all';
+      const role = document.getElementById('people-role').value || 'all';
+      const location = document.getElementById('people-location').value || 'all';
+      const rows = state.contacts.filter(function (c) {
+        const hay = norm([c.name, c.manager, c.role, c.homeStartLocation, c.workLocations, c.mobile, c.staffNo].join(' '));
+        if (q && !hay.includes(q)) return false;
+        if (manager !== 'all' && c.manager !== manager) return false;
+        if (role !== 'all' && c.role !== role) return false;
+        if (location !== 'all' && c.workLocations !== location) return false;
+        return true;
+      });
+
+      if (!rows.length) {
+        target.innerHTML = '<div class="empty">No contacts match the current filters.</div>';
+        return;
+      }
+
+      target.innerHTML = '<div class="table-wrap"><table><thead><tr>' +
+        '<th>Name</th><th>Manager</th><th>Role</th><th>Mobile</th><th>Home / Start</th><th>Work Locations</th><th>Resolved Coverage</th><th>Unresolved</th>' +
+        '</tr></thead><tbody>' + rows.map(function (c) {
+          const coverage = coverageForContact(c);
+          return '<tr>' +
+            '<td class="name-cell"><strong>' + esc(c.name) + '</strong><span>' + esc(c.staffNo || 'No staff number') + '</span></td>' +
+            '<td>' + esc(c.manager) + '</td>' +
+            '<td>' + esc(c.role || '-') + '</td>' +
+            '<td>' + esc(c.mobile || '-') + '</td>' +
+            '<td>' + esc(c.homeStartLocation || '-') + '</td>' +
+            '<td>' + esc(c.workLocations || '-') + '</td>' +
+            '<td>' + coveragePills(coverage.resolved, 'green') + '</td>' +
+            '<td>' + coveragePills(coverage.unresolved, 'amber') + '</td>' +
+            '</tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    function renderAvailability() {
+      const target = document.getElementById('availability-table');
+      if (!target) return;
+      const dateInput = document.getElementById('avail-date');
+      if (dateInput && !dateInput.value) dateInput.value = todayStr();
+      if (!state.contacts.length && !state.tracker.length) {
+        target.innerHTML = '<div class="empty">Import contacts and tracker data to see joined availability.</div>';
+        return;
+      }
+
+      const q = norm(document.getElementById('avail-search').value);
+      const date = document.getElementById('avail-date').value || todayStr();
+      const status = document.getElementById('avail-status').value || 'all';
+      const matchFilter = document.getElementById('avail-match').value || 'all';
+
+      let rows = joinedRows().map(function (row) {
+        const code = row.tracker ? row.tracker.availability[date] || '' : '';
+        return Object.assign({}, row, { code: code });
+      }).filter(function (row) {
+        const contact = row.contact || {};
+        const tracker = row.tracker || {};
+        const hay = norm([
+          contact.name,
+          tracker.techName,
+          contact.manager,
+          tracker.manager,
+          contact.role,
+          contact.homeStartLocation,
+          contact.workLocations,
+          tracker.trackerArea,
+          row.code,
+          codeLabel(row.code)
+        ].join(' '));
+        if (q && !hay.includes(q)) return false;
+        if (status !== 'all' && row.code !== status) return false;
+        if (matchFilter === 'matched' && !(row.contact && row.tracker)) return false;
+        if (matchFilter === 'unmatched' && row.contact && row.tracker) return false;
+        return true;
+      });
+
+      rows.sort(function (a, b) {
+        const am = a.contact && a.tracker ? 0 : 1;
+        const bm = b.contact && b.tracker ? 0 : 1;
+        if (am !== bm) return am - bm;
+        return String((a.contact && a.contact.name) || (a.tracker && a.tracker.techName) || '').localeCompare(String((b.contact && b.contact.name) || (b.tracker && b.tracker.techName) || ''));
+      });
+
+      if (!rows.length) {
+        target.innerHTML = '<div class="empty">No availability rows match the current filters.</div>';
+        return;
+      }
+
+      target.innerHTML = '<div class="table-wrap"><table><thead><tr>' +
+        '<th>Name</th><th>Status</th><th>Manager</th><th>Role</th><th>Tracker Area</th><th>Work Locations</th><th>Start Location</th><th>Match</th>' +
+        '</tr></thead><tbody>' + rows.map(function (row) {
+          const contact = row.contact || {};
+          const tracker = row.tracker || {};
+          const displayName = contact.name || tracker.techName || '-';
+          const manager = contact.manager || tracker.manager || '-';
+          const match = row.contact && row.tracker ? '<span class="pill green">Matched</span>' : row.contact ? '<span class="pill amber">No tracker row</span>' : '<span class="pill red">No contact</span>';
+          return '<tr>' +
+            '<td class="name-cell"><strong>' + esc(displayName) + '</strong><span>' + esc(contact.staffNo || ('Tracker row ' + (tracker.row || '-'))) + '</span></td>' +
+            '<td>' + statusPill(row.code) + '<div class="small muted" style="margin-top:4px">' + esc(codeLabel(row.code)) + '</div></td>' +
+            '<td>' + esc(manager) + '</td>' +
+            '<td>' + esc(contact.role || '-') + '</td>' +
+            '<td>' + esc(tracker.trackerArea || '-') + '</td>' +
+            '<td>' + esc(contact.workLocations || '-') + '</td>' +
+            '<td>' + esc(contact.homeStartLocation || '-') + '</td>' +
+            '<td>' + match + '</td>' +
+            '</tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+
+    function renderIssues() {
+      const contactTarget = document.getElementById('contact-issues');
+      const trackerTarget = document.getElementById('tracker-issues');
+      if (!contactTarget || !trackerTarget) return;
+
+      const contactIssues = [];
+      state.contacts.forEach(function (c) {
+        if (!c.staffNo) contactIssues.push('<div class="issue"><strong>' + esc(c.name) + '</strong> has no staff number.</div>');
+        if (!c.homeStartLocation) contactIssues.push('<div class="issue"><strong>' + esc(c.name) + '</strong> has no Home / Start Location.</div>');
+        if (!c.workLocations) contactIssues.push('<div class="issue"><strong>' + esc(c.name) + '</strong> has no Work Locations.</div>');
+        if (c.rawEmailField && !c.email && norm(c.rawEmailField) !== norm(c.name)) {
+          contactIssues.push('<div class="issue"><strong>' + esc(c.name) + '</strong> has a non-email value in eMailAddr: ' + esc(c.rawEmailField) + '</div>');
+        }
+      });
+
+      contactTarget.innerHTML = contactIssues.length ? '<div class="issues">' + contactIssues.join('') + '</div>' : '<div class="empty">No contact issues found yet.</div>';
+
+      const contactsMap = contactByNorm();
+      const trackerMap = trackerByNorm();
+      const aliases = state.aliases || {};
+      const ignored = state.ignored || {};
+      const managerNames = new Set(state.contacts.map(function (c) { return norm(c.manager); }).filter(Boolean));
+      const trackerIssues = [];
+      state.tracker.forEach(function (row) {
+        const n = norm(row.techName);
+        if (contactsMap[n] || aliases[n] || managerNames.has(n) || ignored[n]) return;
+          const suggestion = findContactForTracker(row, contactsMap);
+          trackerIssues.push('<div class="issue"><strong>' + esc(row.techName) + '</strong> is in tracker but not exact-matched to contacts.' +
+            (suggestion ? '<span class="issue-suggestion">Possible match: <strong>' + esc(suggestion.name) + '</strong></span>' : '') +
+            '</div>');
+      });
+      state.contacts.forEach(function (contact) {
+        if (!trackerMap[norm(contact.name)]) {
+          trackerIssues.push('<div class="issue"><strong>' + esc(contact.name) + '</strong> is in contacts but has no exact tracker row.</div>');
+        }
+      });
+      if (state.trackerMeta && state.trackerMeta.unknownCodes) {
+        Object.keys(state.trackerMeta.unknownCodes).forEach(function (code) {
+          trackerIssues.push('<div class="issue">Unknown tracker status code <strong>' + esc(code) + '</strong> appears ' + esc(state.trackerMeta.unknownCodes[code]) + ' time(s).</div>');
+        });
+      }
+
+      trackerTarget.innerHTML = trackerIssues.length ? '<div class="issues">' + trackerIssues.join('') + '</div>' : '<div class="empty">No tracker matching issues found yet.</div>';
+    }
+
+    function ignoreTracker(normTracker) {
+      state.ignored[normTracker] = true;
+      saveData();
+      renderMappings();
+      renderIssues();
+    }
+
+    function unignoreTracker(normTracker) {
+      delete state.ignored[normTracker];
+      saveData();
+      renderMappings();
+      renderIssues();
+    }
+
+    function setAlias(normTracker, contactId) {
+      if (!contactId) { delete state.aliases[normTracker]; }
+      else { state.aliases[normTracker] = contactId; }
+      saveData();
+      renderMappings();
+      renderIssues();
+    }
+
+    function clearAlias(normTracker) {
+      delete state.aliases[normTracker];
+      saveData();
+      renderMappings();
+      renderIssues();
+    }
+
+    function clearAllAliases() {
+      if (!Object.keys(state.aliases).length) return;
+      if (!confirm('Remove all ' + Object.keys(state.aliases).length + ' name mappings?')) return;
+      state.aliases = {};
+      saveData();
+      renderMappings();
+      renderIssues();
+    }
+
+    function renderMappings() {
+      const target = document.getElementById('mappings-content');
+      if (!target) return;
+
+      if (!state.contacts.length && !state.tracker.length) {
+        target.innerHTML = '<div class="empty">Import contacts and tracker data first.</div>';
+        return;
+      }
+
+      const contactsMap = contactByNorm();
+      const aliases = state.aliases || {};
+      const contactById = {};
+      state.contacts.forEach(function (c) { contactById[c.id] = c; });
+      const managerNames = new Set(state.contacts.map(function (c) { return norm(c.manager); }).filter(Boolean));
+
+      // Contacts sorted for dropdown
+      const contactOptions = state.contacts.slice().sort(function (a, b) {
+        return a.name.localeCompare(b.name);
+      }).map(function (c) {
+        return '<option value="' + esc(c.id) + '">' + esc(c.name) + (c.manager ? ' · ' + esc(c.manager) : '') + '</option>';
+      }).join('');
+
+      const ignored = state.ignored || {};
+
+      // Unmatched tracker rows (no exact match, no alias, not a SOM/manager, not ignored)
+      const unmatched = state.tracker.filter(function (row) {
+        var n = norm(row.techName);
+        return !contactsMap[n] && !aliases[n] && !managerNames.has(n) && !ignored[n];
+      });
+
+      // Ignored rows
+      const ignoredRows = state.tracker.filter(function (row) {
+        return ignored[norm(row.techName)];
+      });
+
+      // Active aliases
+      const activeAliases = Object.keys(aliases).map(function (normTracker) {
+        const trackerRow = state.tracker.find(function (r) { return norm(r.techName) === normTracker; });
+        const contact = contactById[aliases[normTracker]];
+        return { normTracker: normTracker, trackerName: trackerRow ? trackerRow.techName : normTracker, contact: contact };
+      }).filter(function (a) { return a.contact; });
+
+      var html = '';
+
+      // Unmatched card
+      html += '<div class="card" style="margin-bottom:16px">';
+      html += '<div class="card-head"><h3>Unmatched Tracker Names <span class="pill" style="margin-left:8px">' + unmatched.length + '</span></h3></div>';
+      if (!unmatched.length) {
+        html += '<div class="card-body"><div class="status ok">All tracker names are matched.</div></div>';
+      } else {
+        html += '<div>';
+        unmatched.forEach(function (row) {
+          const n = norm(row.techName);
+          const suggestion = findContactForTracker(row, contactsMap);
+          const safeN = esc(n).replace(/'/g, '&#39;');
+          html += '<div class="mapping-row">' +
+            '<div><div class="mapping-name">' + esc(row.techName) + '</div>' +
+            (row.manager ? '<div class="mapping-suggestion">' + esc(row.manager) + ' · ' + esc(row.trackerArea || '') + '</div>' : '') +
+            '</div>' +
+            '<select class="mapping-select" onchange="setAlias(\'' + safeN + '\', this.value)">' +
+            '<option value="">— select contact —</option>' +
+            (suggestion ? '<optgroup label="Suggested">' +
+              '<option value="' + esc(suggestion.id) + '">' + esc(suggestion.name) + (suggestion.manager ? ' · ' + esc(suggestion.manager) : '') + '</option>' +
+              '</optgroup><optgroup label="All Contacts">' : '') +
+            contactOptions +
+            (suggestion ? '</optgroup>' : '') +
+            '</select>' +
+            '<button class="clear-btn" onclick="ignoreTracker(\'' + safeN + '\')" title="Not a technician — hide from list">Ignore</button>' +
+            '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Active mappings card
+      html += '<div class="card" style="margin-bottom:16px">';
+      html += '<div class="card-head"><h3>Active Mappings <span class="pill" style="margin-left:8px">' + activeAliases.length + '</span></h3></div>';
+      if (!activeAliases.length) {
+        html += '<div class="card-body"><div class="empty">No mappings set yet.</div></div>';
+      } else {
+        html += '<div style="overflow:auto"><table style="min-width:0"><thead><tr><th>Tracker Name</th><th>Linked Contact</th><th></th></tr></thead><tbody>';
+        activeAliases.forEach(function (a) {
+          html += '<tr>' +
+            '<td><strong>' + esc(a.trackerName) + '</strong></td>' +
+            '<td>' + esc(a.contact.name) + (a.contact.manager ? '<div class="small muted">' + esc(a.contact.manager) + '</div>' : '') + '</td>' +
+            '<td><button class="clear-btn" onclick="clearAlias(' + "'" + esc(a.normTracker) + "'" + ')">Remove</button></td>' +
+            '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div>';
+
+      // Ignored rows section
+      if (ignoredRows.length) {
+        html += '<div class="card" style="margin-top:16px">';
+        html += '<div class="card-head"><h3>Ignored <span class="pill gray" style="margin-left:8px">' + ignoredRows.length + '</span></h3></div>';
+        html += '<div>';
+        ignoredRows.forEach(function (row) {
+          var n = norm(row.techName);
+          var safeN = esc(n).replace(/'/g, '&#39;');
+          html += '<div class="mapping-row">' +
+            '<div><div class="mapping-name" style="color:var(--text-muted)">' + esc(row.techName) + '</div>' +
+            (row.manager ? '<div class="mapping-suggestion">' + esc(row.manager) + ' · ' + esc(row.trackerArea || '') + '</div>' : '') +
+            '</div><div></div>' +
+            '<button class="clear-btn" onclick="unignoreTracker(\'' + safeN + '\')">Restore</button>' +
+            '</div>';
+        });
+        html += '</div></div>';
+      }
+
+      target.innerHTML = html;
+    }
+
+    function clearPlannerData() {
+      if (!confirm('Clear imported planner data from this browser?')) return;
+      state.contacts = [];
+      state.tracker = [];
+      state.trackerMeta = null;
+      state.exchanges = [];
+      state.cabinets = [];
+      state.locationsLoaded = false;
+      state.locationsError = '';
+      state.selectedFault = null;
+      state.imports = { contacts: null, tracker: null, exchanges: null, cabinets: null };
+      state.aliases = {};
+      state.ignored = {};
+      localStorage.removeItem(STORAGE_KEY);
+      setStatus('contacts', 'No contacts imported yet.', '');
+      setStatus('tracker', 'No tracker imported yet.', '');
+      renderFilterOptions();
+      renderAll();
+    }
+
+    function resetFaultSelectionOnLoad() {
+      state.selectedFault = null;
+      const search = document.getElementById('fault-search');
+      const type = document.getElementById('fault-type');
+      const filter = document.getElementById('fault-status-filter');
+      if (search) search.value = '';
+      if (type) type.value = 'all';
+      if (filter) filter.value = 'best';
+    }
+
+    function applyInitialViewFromUrl() {
+      const view = new URLSearchParams(window.location.search).get('view');
+      if (!view || !['import', 'people', 'locations', 'fault', 'availability', 'issues', 'mappings'].includes(view)) return;
+      state.view = view;
+    }
+
+    loadData();
+    applyInitialViewFromUrl();
+    resetFaultSelectionOnLoad();
+    document.getElementById('avail-date').value = todayStr();
+    document.getElementById('fault-date').value = todayStr();
+    renderFilterOptions();
+    renderAll();
+    loadLocationData();
+  </script>
+</body>
+
+</html>
