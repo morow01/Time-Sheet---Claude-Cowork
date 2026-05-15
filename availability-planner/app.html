@@ -59,6 +59,11 @@
       grid-template-rows: auto 1fr;
     }
 
+    body.grid-active .app-shell {
+      height: 100vh;
+      overflow: hidden;
+    }
+
     .topbar {
       background: var(--bg-ink);
       color: #fff;
@@ -67,6 +72,9 @@
       align-items: center;
       justify-content: space-between;
       gap: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 500;
     }
 
     .brand {
@@ -146,6 +154,13 @@
       width: min(1420px, 100%);
       margin: 0 auto;
       padding: 28px;
+    }
+
+    body.grid-active main {
+      width: 100%;
+      padding: 0;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .page-head {
@@ -578,6 +593,31 @@
       display: block;
       line-height: 1.25;
     }
+    .fault-result-body {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+      justify-content: space-between;
+    }
+    .fault-result-techs {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .fault-result-tech {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .fault-result-tech-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
 
     .issue {
       padding: 12px;
@@ -688,6 +728,859 @@
     }
     .clear-btn:hover { color: var(--red); border-color: rgba(220,38,38,0.3); background: var(--red-soft); }
 
+    #view-grid {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    .grid-view-shell {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+    }
+    .grid-legend-bar {
+      overflow: hidden;
+      background: var(--bg-soft);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .grid-legend-inner {
+      padding: 10px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 14px;
+    }
+    .grid-l-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+    .grid-l-sw {
+      width: 28px;
+      height: 16px;
+      border-radius: 3px;
+      font-size: 8px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .grid-stats-bar {
+      display: flex;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .grid-stat {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 16px;
+      border-right: 1px solid var(--border);
+      position: relative;
+      cursor: pointer;
+      transition: background .15s ease, box-shadow .15s ease;
+    }
+    .grid-stat:hover {
+      background: var(--bg-soft);
+    }
+    .grid-stat.active {
+      box-shadow: inset 0 -3px 0 var(--accent);
+      background: #f4f8ff;
+    }
+    .grid-stat:last-child { border-right: none; }
+    .grid-stat::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .grid-sc-green::before { background: #22c55e; }
+    .grid-sc-blue::before { background: #3b82f6; }
+    .grid-sc-amber::before { background: #f59e0b; }
+    .grid-sc-purple::before { background: #a855f7; }
+    .grid-sc-slate::before { background: #94a3b8; }
+    .grid-stat-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+    .grid-stat-val {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-top: 3px;
+    }
+    .grid-stat-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 3px;
+    }
+    .grid-stat-of {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .grid-stat-mini-bar {
+      display: flex;
+      height: 3px;
+      gap: 1px;
+      margin-top: 7px;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+    .grid-smb-seg {
+      height: 100%;
+      min-width: 2px;
+      border-radius: 1px;
+      transition: flex .25s ease;
+    }
+    .grid-stat-panel {
+      display: none;
+      position: fixed;
+      z-index: 900;
+      width: min(360px, calc(100vw - 24px));
+      max-height: min(440px, calc(100vh - 160px));
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 18px 45px rgba(31, 48, 73, 0.18);
+    }
+    .grid-stat-panel.open {
+      display: block;
+    }
+    .grid-stat-panel::before {
+      content: '';
+      position: absolute;
+      top: -7px;
+      left: var(--grid-popover-arrow, 28px);
+      width: 12px;
+      height: 12px;
+      transform: rotate(45deg);
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+    }
+    .grid-stat-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .grid-stat-panel-title {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      line-height: 1.25;
+    }
+    .grid-stat-close {
+      width: 26px;
+      height: 26px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 0;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .grid-stat-close:hover {
+      background: var(--bg-soft);
+      color: var(--text-primary);
+    }
+    .grid-tech-list {
+      display: grid;
+      gap: 4px;
+      max-height: min(320px, calc(100vh - 240px));
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 2px;
+      overscroll-behavior: contain;
+      min-height: 0;
+    }
+    .grid-tech-chip {
+      display: grid;
+      grid-template-columns: 8px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+      border-radius: 8px;
+      background: transparent;
+      padding: 6px 7px;
+    }
+    .grid-tech-chip:hover {
+      background: var(--bg-soft);
+    }
+    .grid-tech-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .grid-tech-name {
+      min-width: 0;
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .grid-tech-meta {
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 400;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .grid-tech-code {
+      margin-left: auto;
+      border-radius: 5px;
+      padding: 3px 6px;
+      font-size: 10px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .grid-edit-mark {
+      position: relative;
+    }
+    .grid-edit-mark::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 0;
+      height: 0;
+      border-top: 6px solid var(--accent);
+      border-left: 6px solid transparent;
+      opacity: .95;
+    }
+    .grid-edit-pop {
+      position: fixed;
+      z-index: 950;
+      width: min(260px, calc(100vw - 24px));
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0;
+      box-shadow: 0 18px 45px rgba(31, 48, 73, 0.2);
+      display: none;
+      overflow: hidden;
+    }
+    .grid-edit-pop.open { display: flex; flex-direction: column; }
+    .grid-edit-head {
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .grid-edit-date {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .grid-edit-name {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .grid-edit-cur {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .grid-edit-cur-chip {
+      width: 28px;
+      height: 16px;
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 900;
+    }
+    .grid-edit-cur-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .grid-edit-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 6px 6px;
+      max-height: 300px;
+    }
+    .grid-edit-scroll::-webkit-scrollbar { width: 4px; }
+    .grid-edit-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .grid-edit-grp {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 6px 8px 3px;
+    }
+    .grid-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      transition: background .1s;
+    }
+    .grid-edit-row:hover { background: var(--bg-soft); }
+    .grid-edit-row.active {
+      border-color: var(--accent);
+      background: rgba(var(--accent-rgb), .06);
+    }
+    .grid-edit-chip {
+      width: 28px;
+      height: 16px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .grid-edit-row-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .grid-edit-row.active .grid-edit-row-lbl { color: var(--accent); font-weight: 800; }
+    .grid-edit-sep {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 8px;
+    }
+    .grid-edit-foot {
+      border-top: 1px solid var(--border);
+      padding: 8px 10px;
+      display: flex;
+      gap: 6px;
+    }
+    .grid-edit-action {
+      flex: 1;
+      height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-soft);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .12s;
+    }
+    .grid-edit-action:hover { border-color: var(--accent); color: var(--accent); }
+    .grid-edit-action.danger { border-color: rgba(220,38,38,.25); color: #dc2626; background: #fff5f5; }
+    .grid-edit-action.danger:hover { background: #fee2e2; border-color: #dc2626; }
+    .grid-sv-green { color: #15803d; }
+    .grid-sv-blue { color: #1d4ed8; }
+    .grid-sv-amber { color: #b45309; }
+    .grid-sv-purple { color: #7e22ce; }
+    .grid-sv-slate { color: #475569; }
+    .grid-stat-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .grid-controls {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .grid-ctrl-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 20px;
+      overflow-x: auto;
+    }
+    .grid-ctrl-row-a {
+      border-bottom: 1px solid var(--border);
+    }
+    .grid-month-tabs,
+    .grid-som-pills {
+      display: flex;
+      gap: 4px;
+    }
+    .grid-m-tab,
+    .grid-s-pill {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-secondary);
+      padding: 5px 10px;
+      min-height: 30px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .grid-m-tab:hover,
+    .grid-s-pill:hover {
+      background: var(--bg-soft);
+      color: var(--accent);
+    }
+    .grid-m-tab.active,
+    .grid-s-pill.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .grid-s-pill {
+      border-color: var(--border);
+      background: var(--bg-soft);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .grid-s-pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      opacity: .85;
+    }
+    .grid-ctrl-sep {
+      width: 1px;
+      height: 22px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .grid-search-box {
+      position: relative;
+      min-width: 150px;
+      max-width: 210px;
+      flex: 1;
+    }
+    .grid-search-box svg {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .grid-search-box input {
+      min-height: 32px;
+      border-radius: 8px;
+      padding: 5px 10px 5px 28px;
+      font-size: 12px;
+    }
+    .grid-date-pill,
+    .grid-range-pill {
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .grid-week-nav,
+    .grid-density-toggle {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .grid-week-btn,
+    .grid-density-btn {
+      min-height: 30px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: 0;
+      box-shadow: none;
+    }
+    .grid-week-btn::-moz-focus-inner,
+    .grid-week-label::-moz-focus-inner {
+      border: 0;
+      padding: 0;
+    }
+    .grid-week-btn:focus,
+    .grid-week-btn:focus-visible,
+    .grid-week-btn:active {
+      outline: none;
+      box-shadow: none;
+    }
+    .grid-week-btn:hover,
+    .grid-density-btn:hover {
+      background: var(--bg-soft);
+      color: var(--accent);
+    }
+    .grid-week-label {
+      min-width: 62px;
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-top: 0 !important;
+      border-bottom: 0 !important;
+      outline: 0;
+      box-shadow: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .grid-week-label:focus,
+    .grid-week-label:focus-visible,
+    .grid-week-label:active {
+      outline: none;
+      box-shadow: none !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+    }
+    .grid-week-label:hover {
+      background: var(--bg-soft);
+      color: var(--accent);
+    }
+    .grid-today-btn {
+      min-height: 30px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--accent);
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .grid-today-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    .grid-density-btn + .grid-density-btn {
+      border-left: 1px solid var(--border);
+    }
+    .grid-density-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .grid-outer {
+      flex: 1;
+      overflow: hidden;
+      padding: 12px 20px 16px;
+      min-height: 0;
+    }
+    .grid-wrap {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      touch-action: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      box-shadow: 0 4px 20px rgba(31, 48, 73, 0.08);
+      cursor: grab;
+    }
+    .grid-wrap.dragging { cursor: grabbing; user-select: none; }
+    .grid-wrap.dragging * { user-select: none; }
+    .grid-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+    .grid-wrap::-webkit-scrollbar-track { background: var(--bg-soft); }
+    .grid-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    .grid-empty {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      padding: 40px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .grid-empty h2 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 22px;
+    }
+    .grid-empty p {
+      margin: 0;
+      max-width: 440px;
+      line-height: 1.6;
+    }
+    #grid-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      width: max-content;
+      min-width: 0;
+    }
+    #grid-table th,
+    #grid-table td {
+      padding: 0;
+      border-bottom: 0;
+      text-align: initial;
+      vertical-align: middle;
+      font-size: inherit;
+      line-height: normal;
+    }
+    #grid-table .gfc {
+      position: sticky;
+      z-index: 40;
+      background: var(--bg-card);
+    }
+    #grid-table .gfc0 { left: 0; width: 36px; min-width: 36px; }
+    #grid-table .gfc1 { left: 36px; width: var(--grid-name-col-w, 220px); min-width: var(--grid-name-col-w, 220px); }
+    #grid-table .gfc1::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -8px;
+      bottom: 0;
+      width: 8px;
+      background: linear-gradient(to right, rgba(31,48,73,0.1), transparent);
+      pointer-events: none;
+    }
+    #grid-table .ghc {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg-soft);
+      background-clip: padding-box;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 0;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    #grid-table .ghc::before {
+      content: '';
+      position: absolute;
+      inset: -1px 0;
+      background: var(--bg-soft);
+      z-index: -1;
+    }
+    #grid-table .ghc.gfc { z-index: 120; }
+    #grid-table .gh-month {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      text-align: center;
+      padding: 4px 2px;
+      border-left: 2px solid var(--border);
+    }
+    #grid-table .gh-week { font-size: 9px; font-weight: 600; color: var(--text-muted); text-align: center; padding: 2px 1px; border-bottom: 1px solid var(--border); top: 21px; }
+    #grid-table .gh-day { font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: center; padding: 2px 0; top: 36px; width: 28px; min-width: 28px; }
+    #grid-table .gh-num { font-size: 9px; font-weight: 500; color: var(--text-muted); text-align: center; padding: 2px 0 3px; border-bottom: 2px solid var(--border); top: 51px; width: 28px; min-width: 28px; box-shadow: 0 2px 0 var(--border); }
+    #grid-table .gh-frozen {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: 6px 8px;
+      top: 0;
+      height: 70px;
+      vertical-align: bottom;
+      display: table-cell;
+    }
+    #grid-table .g-wknd { background: rgba(31,48,73,0.025) !important; }
+    #grid-table .ghc.g-wknd::before { background: #f2f5f9; }
+    #grid-table .gh-day.g-wknd,
+    #grid-table .gh-num.g-wknd { color: #b8cde0 !important; }
+    #grid-table .g-today-col {
+      background: #e7effc !important;
+      border-left: 1px solid rgba(var(--accent-rgb), 0.7) !important;
+      border-right: 1px solid rgba(var(--accent-rgb), 0.7) !important;
+    }
+    #grid-table .ghc.g-today-col::before { background: #e7effc !important; }
+    #grid-table .gh-day.g-today-col,
+    #grid-table .gh-num.g-today-col { color: var(--accent) !important; font-weight: 900 !important; }
+    #grid-table .gh-day,
+    #grid-table .gh-num,
+    #grid-table .gdc {
+      cursor: pointer;
+    }
+    #grid-table .g-selected-col {
+      background: #dbeafe !important;
+      border-left: 1px solid rgba(var(--accent-rgb), 0.86) !important;
+      border-right: 1px solid rgba(var(--accent-rgb), 0.86) !important;
+    }
+    #grid-table .ghc.g-selected-col::before { background: #dbeafe !important; }
+    #grid-table .gh-day.g-selected-col,
+    #grid-table .gh-num.g-selected-col { color: var(--accent) !important; font-weight: 900 !important; }
+    #grid-table .gdc.g-selected-col {
+      box-shadow: inset 1px 0 rgba(var(--accent-rgb),0.55), inset -1px 0 rgba(var(--accent-rgb),0.55);
+    }
+    #grid-table .grow-som { cursor: pointer; }
+    #grid-table .grow-som td {
+      background: #eef4fb;
+      border-top: 2px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    #grid-table .grow-som:hover td { background: #e4ecf7 !important; }
+    #grid-table .grow-som td.gdc {
+      height: 30px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 0;
+    }
+    .grid-som-cell {
+      padding: 7px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .grid-som-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .grid-som-stats-inline {
+      display: flex;
+      gap: 5px;
+      margin-left: auto;
+      flex-shrink: 0;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .grid-ssi {
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 9px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .grid-ssi-avail { background: #dcfce7; color: #15803d; }
+    .grid-ssi-oc { background: #dbeafe; color: #1d4ed8; }
+    .grid-ssi-al { background: #fef9c3; color: #a16207; }
+    .grid-som-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .grid-chevron { display: inline-flex; transition: transform .2s; }
+    .grow-som.collapsed .grid-chevron { transform: rotate(-90deg); }
+    #grid-table .grow-person td {
+      border-bottom: 1px solid rgba(213,225,239,0.5);
+      height: 30px;
+    }
+    #grid-table .grow-person {
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    #grid-table .grow-person.anim-hidden { opacity: 0; transform: translateY(-4px); }
+    #grid-table .grow-person:hover .gfc { background: #f0f5fb !important; }
+    .grid-rn { font-size: 10px; color: var(--text-muted); text-align: center; padding: 0 4px; }
+    .grid-nc { display: flex; align-items: center; gap: 6px; padding: 0 8px; height: 30px; }
+    .grid-tdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .grid-pname { font-size: 12px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(var(--grid-name-col-w, 220px) - 32px); }
+    .grid-area {
+      margin-top: 1px;
+      font-size: 9px;
+      line-height: 1;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: calc(var(--grid-name-col-w, 220px) - 32px);
+    }
+    #grid-table .gdc {
+      width: 28px;
+      min-width: 28px;
+      height: 30px;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.95);
+      padding: 0;
+    }
+    #grid-table .gdc.hover-row { box-shadow: inset 0 1px rgba(var(--accent-rgb),0.18), inset 0 -1px rgba(var(--accent-rgb),0.18); }
+    #grid-table .gdc.hover-col { box-shadow: inset 1px 0 rgba(var(--accent-rgb),0.24), inset -1px 0 rgba(var(--accent-rgb),0.24); }
+    #grid-table .gdc.hover-row.hover-col { box-shadow: inset 1px 0 rgba(var(--accent-rgb),0.32), inset -1px 0 rgba(var(--accent-rgb),0.32), inset 0 1px rgba(var(--accent-rgb),0.24), inset 0 -1px rgba(var(--accent-rgb),0.24); }
+    #grid-table .gh-day.hover-col,
+    #grid-table .gh-num.hover-col {
+      background: #e7effc !important;
+      border-left: 1px solid rgba(var(--accent-rgb),0.42) !important;
+      border-right: 1px solid rgba(var(--accent-rgb),0.42) !important;
+      box-shadow: none;
+    }
+    #grid-table .gh-day.hover-col::before,
+    #grid-table .gh-num.hover-col::before { background: #e7effc !important; }
+    #grid-table .gh-num.hover-col { box-shadow: 0 2px 0 var(--border); }
+    body.grid-density-compact #grid-table .grow-person td,
+    body.grid-density-compact #grid-table .grow-som td.gdc,
+    body.grid-density-compact #grid-table .gdc {
+      height: 24px !important;
+    }
+    body.grid-density-compact .grid-nc {
+      height: 24px !important;
+    }
+    body.grid-density-compact .grid-pname {
+      font-size: 11px;
+    }
+    body.grid-density-compact .grid-area {
+      display: none;
+    }
+    body.grid-density-compact .grid-som-cell {
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+
     @media (max-width: 980px) {
 
       .topbar,
@@ -719,6 +1612,175 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <style>
+    body.map-active .app-shell { height: 100vh; overflow: hidden; }
+    body.map-active main { padding: 0; width: 100%; overflow: hidden; height: 100%; }
+    #view-map { height: 100%; display: flex; flex-direction: column; margin: 0 !important; }
+    #view-map-inner { flex: 1; display: flex; flex-direction: row; height: 100%; min-height: 0; }
+    #map-right { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    #map-container { flex: 1; min-height: 0; }
+
+    /* ── SIDEBAR ── */
+    #map-sidebar {
+      width: 300px; flex-shrink: 0; display: flex; flex-direction: column;
+      background: var(--bg-card); border-right: 1px solid var(--border);
+      height: 100%; min-height: 0; overflow: hidden;
+    }
+    .msb-search {
+      padding: 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; position: relative;
+    }
+    .msb-search-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .msb-input {
+      flex: 1; border: 1px solid var(--border); border-radius: 8px;
+      padding: 7px 10px 7px 30px; font-size: 12px; background: var(--bg-soft);
+      color: var(--text-primary); outline: none; font-family: inherit;
+    }
+    .msb-input:focus { border-color: var(--accent); }
+    .msb-input-wrap { position: relative; flex: 1; }
+    .msb-input-wrap svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+    .msb-date {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 10px; font-size: 12px; background: var(--bg-soft);
+      color: var(--text-primary); font-family: inherit; outline: none;
+    }
+    .msb-date:focus { border-color: var(--accent); }
+    #msb-results {
+      position: absolute; left: 12px; right: 12px; top: calc(100% - 6px);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(31,48,73,0.15); z-index: 1000; max-height: 240px; overflow-y: auto;
+    }
+    .msb-result {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      font-size: 12px; cursor: pointer; border: none; background: none;
+      width: 100%; text-align: left; font-family: inherit;
+    }
+    .msb-result:hover { background: var(--bg-soft); }
+    .msb-result-name { font-weight: 700; color: var(--text-primary); flex: 1; }
+    .msb-result-meta { font-size: 10px; color: var(--text-muted); }
+
+    /* selected bar */
+    .msb-sel-bar {
+      display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+      background: #eff6ff; border-bottom: 1px solid #c7daf7; flex-shrink: 0;
+    }
+    .msb-sel-pill {
+      font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 999px;
+      background: var(--accent); color: #fff; flex-shrink: 0;
+    }
+    .msb-sel-name { font-size: 12px; font-weight: 800; color: var(--text-primary); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .msb-sel-clear { border: none; background: none; color: var(--text-muted); font-size: 18px; cursor: pointer; padding: 0; line-height: 1; flex-shrink: 0; }
+
+    /* candidates */
+    #msb-candidates { flex: 1; overflow-y: auto; padding: 8px; min-height: 0; }
+    #msb-candidates::-webkit-scrollbar { width: 4px; }
+    #msb-candidates::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .msb-section-lbl {
+      font-size: 9px; font-weight: 800; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .07em; padding: 6px 4px 3px;
+    }
+    .msb-cand {
+      border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px;
+      margin-bottom: 6px; background: var(--bg-card); cursor: pointer; transition: border-color .12s;
+    }
+    .msb-cand:hover { border-color: var(--accent); }
+    .msb-cand.best { border-color: #22c55e; background: #f0fdf4; }
+    .msb-cand-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+    .msb-rank {
+      width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff;
+      font-size: 8px; font-weight: 900; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .msb-cand-name { font-size: 12px; font-weight: 800; color: var(--text-primary); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .msb-cand-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .msb-cand-detail { font-size: 10px; color: var(--text-muted); }
+    .msb-cand-detail strong { color: var(--text-secondary); font-weight: 700; }
+    .msb-match { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 999px; }
+    .msb-match-green { background: #dcfce7; color: #15803d; }
+    .msb-match-amber { background: #fef9c3; color: #a16207; }
+    .msb-match-gray  { background: #f1f5f9; color: #64748b; }
+    .msb-status { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 999px; }
+    .msb-empty { padding: 32px 16px; text-align: center; color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+    .msb-cand-active { border-color: var(--accent) !important; background: #eff6ff !important; box-shadow: 0 0 0 2px rgba(45,107,228,.15); }
+    .msb-section-in { color: #15803d !important; }
+    .msb-section-divider { display: flex; align-items: center; gap: 8px; margin: 12px 0 6px; }
+    .msb-section-divider span { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; white-space: nowrap; }
+    .msb-section-divider::before, .msb-section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .msb-section-sub { font-size: 10px; color: var(--text-muted); line-height: 1.5; margin: 0 4px 8px; padding: 6px 8px; background: #fefce8; border: 1px solid #fde68a; border-radius: 6px; }
+    .msb-time-toggle { display: flex; gap: 0; margin-top: 6px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .msb-time-btn { flex: 1; border: none; background: var(--bg-soft); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 6px 8px; cursor: pointer; font-family: inherit; transition: all .12s; }
+    .msb-time-btn:not(:last-child) { border-right: 1px solid var(--border); }
+    .msb-time-btn.active { background: var(--accent); color: #fff; }
+    .msb-priority { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 999px; background: #fef9c3; color: #a16207; flex-shrink: 0; }
+    .msb-priority.call-first { background: #dcfce7; color: #15803d; }
+    .msb-priority.unavailable { background: #fee2e2; color: #991b1b; }
+
+    .map-toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; background: var(--bg-card);
+      border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap;
+    }
+    .map-search-box { position: relative; flex: 1; min-width: 180px; max-width: 280px; }
+    .map-search-box svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+    .map-search-box input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px 6px 28px; font-size: 12px; background: var(--bg-soft); color: var(--text-primary); outline: none; font-family: inherit; }
+    .map-search-box input:focus { border-color: var(--accent); }
+    #map-search-results {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(31,48,73,0.15); z-index: 1000; max-height: 220px; overflow-y: auto;
+    }
+    .map-sr-item { padding: 8px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .map-sr-item:hover { background: var(--bg-soft); }
+    .map-sr-code { font-weight: 800; color: var(--accent); min-width: 36px; }
+    .map-sr-name { color: var(--text-primary); }
+    .map-layer-toggle { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+    .map-layer-btn { border: none; background: var(--bg-soft); color: var(--text-secondary); font-size: 11px; font-weight: 700; padding: 6px 12px; cursor: pointer; font-family: inherit; transition: all .12s; display: flex; align-items: center; gap: 5px; }
+    .map-layer-btn:not(:last-child) { border-right: 1px solid var(--border); }
+    .map-layer-btn.active { background: var(--accent); color: #fff; }
+    .map-layer-btn .map-layer-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .map-stat-pill { font-size: 11px; font-weight: 700; color: var(--text-muted); background: var(--bg-soft); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+    #map-container { flex: 1; min-height: 0; }
+    .leaflet-div-icon { background: none !important; border: none !important; }
+
+    /* ── SETTINGS ── */
+    .stg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 20px; }
+    .stg-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+    .stg-card-title { font-size: 15px; font-weight: 900; color: var(--text-primary); margin-bottom: 4px; }
+    .stg-card-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+    .stg-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+    .stg-sep { height: 1px; background: var(--border); margin: 18px 0; }
+    .stg-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); margin-bottom: 6px; }
+    .stg-row-icon { font-size: 20px; flex-shrink: 0; }
+    .stg-row-body { flex: 1; min-width: 0; }
+    .stg-row-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .stg-row-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .stg-time-input { border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 13px; font-weight: 700; color: var(--text-primary); background: var(--bg-card); font-family: inherit; }
+    .stg-time-input:focus { outline: none; border-color: var(--accent); }
+    .stg-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 6px; }
+    .stg-arrow { font-size: 11px; color: var(--text-muted); }
+    .stg-priority-list { display: flex; flex-direction: column; gap: 4px; }
+    .stg-prow { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-soft); }
+    .stg-prow-rank { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 900; color: #fff; flex-shrink: 0; }
+    .stg-prow-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); flex: 1; }
+    .stg-mv-btn { border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); color: var(--text-muted); font-size: 10px; padding: 2px 6px; cursor: pointer; font-family: inherit; line-height: 1.4; }
+    .stg-mv-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .stg-mv-btn:disabled { opacity: .3; cursor: default; }
+    .stg-never-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .stg-never-item { display: flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; cursor: pointer; background: var(--bg-soft); user-select: none; }
+    .stg-never-item.on { border-color: #fca5a5; background: #fef2f2; }
+    .stg-never-cb { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; color: #fff; flex-shrink: 0; }
+    .stg-never-cb.on { background: #dc2626; border-color: #dc2626; }
+    .stg-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-soft); margin-bottom: 6px; }
+    .stg-toggle { width: 36px; height: 20px; border-radius: 999px; position: relative; cursor: pointer; flex-shrink: 0; transition: background .15s; }
+    .stg-toggle.on { background: #22c55e; }
+    .stg-toggle.off { background: #cbd5e1; }
+    .stg-toggle::after { content: ''; position: absolute; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: left .15s, right .15s; }
+    .stg-toggle.on::after { left: 19px; }
+    .stg-toggle.off::after { left: 3px; }
+  </style>
 </head>
 
 <body>
@@ -727,7 +1789,7 @@
       <div class="brand">
         <div class="brand-mark">RA</div>
         <div>
-          <h1>Resource Availability Planner <span class="version-chip">v1.0.44</span></h1>
+          <h1>Resource Availability Planner <span class="version-chip">v1.0.83</span></h1>
           <p>Contacts, tracker status, and exchange matching foundation</p>
         </div>
       </div>
@@ -739,7 +1801,9 @@
         <button id="tab-availability" onclick="setView('availability')">Availability</button>
         <button id="tab-issues" onclick="setView('issues')">Issues</button>
         <button id="tab-mappings" onclick="setView('mappings')">Mappings</button>
-        <button id="tab-grid" onclick="location.href='tracker-grid.html'">Grid</button>
+        <button id="tab-grid" onclick="setView('grid')">Grid</button>
+        <button id="tab-map" onclick="setView('map')">Map</button>
+        <button id="tab-settings" onclick="setView('settings')">Settings</button>
       </div>
     </header>
 
@@ -1081,21 +2145,164 @@
       <section id="view-mappings" class="hidden">
         <div class="page-head">
           <div>
-            <h2>Name Mappings</h2>
-            <p>Link tracker names to the correct contact when automatic matching fails. Saved locally and applied every time data is joined.</p>
+            <h2>Mappings</h2>
+            <p>Link tracker names and work-location terms when automatic matching fails. Saved locally and applied every time data is joined.</p>
           </div>
           <div class="actions">
-            <button class="btn danger" onclick="clearAllAliases()">Clear All Mappings</button>
+            <button class="btn danger" onclick="clearAllAliases()">Clear Name Mappings</button>
           </div>
         </div>
         <div id="mappings-content"></div>
+      </section>
+
+      <section id="view-grid" class="hidden">
+        <div class="grid-view-shell">
+          <div class="grid-stats-bar">
+            <div class="grid-stat grid-sc-green" data-stat="available" onclick="gridToggleStatPanel('available', event)">
+              <div class="grid-stat-lbl">Available</div>
+              <div class="grid-stat-row"><div class="grid-stat-val grid-sv-green" id="grid-s-avail">-</div><div class="grid-stat-of" id="grid-s-avail-of">of -</div></div>
+              <div class="grid-stat-sub">SA / SD / D / R</div>
+              <div class="grid-stat-mini-bar" id="grid-s-avail-bar"></div>
+            </div>
+            <div class="grid-stat grid-sc-blue" data-stat="oc" onclick="gridToggleStatPanel('oc', event)">
+              <div class="grid-stat-lbl">On Call</div>
+              <div class="grid-stat-row"><div class="grid-stat-val grid-sv-blue" id="grid-s-oc">-</div><div class="grid-stat-of" id="grid-s-oc-of">of -</div></div>
+              <div class="grid-stat-sub">OC / 50</div>
+              <div class="grid-stat-mini-bar" id="grid-s-oc-bar"></div>
+            </div>
+            <div class="grid-stat grid-sc-amber" data-stat="al" onclick="gridToggleStatPanel('al', event)">
+              <div class="grid-stat-lbl">Annual Leave</div>
+              <div class="grid-stat-row"><div class="grid-stat-val grid-sv-amber" id="grid-s-al">-</div><div class="grid-stat-of" id="grid-s-al-of">of -</div></div>
+              <div class="grid-stat-sub">A/L</div>
+              <div class="grid-stat-mini-bar" id="grid-s-al-bar"></div>
+            </div>
+            <div class="grid-stat grid-sc-purple" data-stat="wtt" onclick="gridToggleStatPanel('wtt', event)">
+              <div class="grid-stat-lbl">Training</div>
+              <div class="grid-stat-row"><div class="grid-stat-val grid-sv-purple" id="grid-s-wtt">-</div><div class="grid-stat-of" id="grid-s-wtt-of">of -</div></div>
+              <div class="grid-stat-sub">WTT</div>
+              <div class="grid-stat-mini-bar" id="grid-s-wtt-bar"></div>
+            </div>
+            <div class="grid-stat grid-sc-slate" data-stat="off" onclick="gridToggleStatPanel('off', event)">
+              <div class="grid-stat-lbl">Off / Sick</div>
+              <div class="grid-stat-row"><div class="grid-stat-val grid-sv-slate" id="grid-s-off">-</div><div class="grid-stat-of" id="grid-s-off-of">of -</div></div>
+              <div class="grid-stat-sub">off / S/L / BH</div>
+              <div class="grid-stat-mini-bar" id="grid-s-off-bar"></div>
+            </div>
+          </div>
+
+          <div class="grid-stat-panel" id="grid-stat-panel"></div>
+          <div class="grid-edit-pop" id="grid-edit-pop"></div>
+
+          <div class="grid-controls">
+            <div class="grid-ctrl-row grid-ctrl-row-a">
+              <div class="grid-month-tabs" id="grid-month-tabs"></div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0">
+                <div class="grid-week-nav">
+                  <button type="button" class="grid-week-btn" onclick="gridMoveWeek(-1)" title="Previous week">‹</button>
+                  <button type="button" class="grid-week-label" id="grid-week-label" onclick="gridResetWeek()" title="Jump to current week">W-</button>
+                  <button type="button" class="grid-week-btn" onclick="gridMoveWeek(1)" title="Next week">›</button>
+                </div>
+                <button type="button" class="grid-today-btn" onclick="gridJumpToToday()">Today</button>
+              </div>
+            </div>
+            <div class="grid-ctrl-row">
+              <div class="grid-som-pills" id="grid-som-pills"></div>
+              <div class="grid-ctrl-sep" style="margin-left:auto"></div>
+              <div class="grid-search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="grid-search-input" placeholder="Search name or area..." oninput="gridApplyFilters()">
+              </div>
+              <div class="grid-density-toggle">
+                <button type="button" class="grid-density-btn active" id="grid-density-normal" onclick="gridSetDensity('normal')">Normal</button>
+                <button type="button" class="grid-density-btn" id="grid-density-compact" onclick="gridSetDensity('compact')">Compact</button>
+              </div>
+              <div class="grid-date-pill" id="grid-today"></div>
+              <div class="grid-range-pill" id="grid-range">No data imported</div>
+            </div>
+          </div>
+
+          <div class="grid-legend-bar">
+            <div class="grid-legend-inner" id="grid-legend-inner"></div>
+          </div>
+
+          <div class="grid-outer">
+            <div class="grid-empty" id="grid-empty-state">
+              <h2>No data imported</h2>
+              <p>Import CFE Contacts and the 2026 Tracker first. The grid uses the same locally stored planner data.</p>
+              <button class="btn primary" onclick="setView('import')">Open Import</button>
+            </div>
+            <div class="grid-wrap hidden" id="grid-wrap">
+              <table id="grid-table"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="view-map" class="hidden" style="padding:0;border:none;box-shadow:none;border-radius:0;margin:0">
+        <div id="view-map-inner">
+          <!-- LEFT SIDEBAR -->
+          <div id="map-sidebar">
+            <div class="msb-search">
+              <div class="msb-search-row">
+                <div class="msb-input-wrap">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" class="msb-input" id="msb-search-input" placeholder="Search exchange or cabinet…" autocomplete="off"
+                    oninput="msbSearch(this.value)"
+                    onfocus="msbSearch(this.value)"
+                    onblur="setTimeout(function(){var r=document.getElementById('msb-results');if(r)r.innerHTML=''},200)">
+                </div>
+              </div>
+              <input type="date" class="msb-date" id="msb-date" onchange="msbRenderCandidates()">
+              <div class="msb-time-toggle">
+                <button class="msb-time-btn active" id="msb-btn-day" onclick="msbSetTimeMode('day')">☀ Business hours</button>
+                <button class="msb-time-btn" id="msb-btn-after" onclick="msbSetTimeMode('after')">🌙 After hours</button>
+              </div>
+              <div id="msb-results"></div>
+            </div>
+            <div id="msb-sel-bar" class="msb-sel-bar" style="display:none">
+              <span class="msb-sel-pill" id="msb-sel-pill">exchange</span>
+              <span class="msb-sel-name" id="msb-sel-name">—</span>
+              <button class="msb-sel-clear" onclick="msbClear()">×</button>
+            </div>
+            <div id="msb-candidates">
+              <div class="msb-empty">Search for an exchange or cabinet to see the closest available technicians.</div>
+            </div>
+          </div>
+
+          <!-- RIGHT: toolbar + map -->
+          <div id="map-right">
+            <div class="map-toolbar">
+              <div class="map-layer-toggle">
+                <button class="map-layer-btn active" id="map-btn-exchanges" onclick="mapToggleLayer('exchanges')"><span class="map-layer-dot" style="background:#2d6be4"></span>Exchanges</button>
+                <button class="map-layer-btn active" id="map-btn-cabinets" onclick="mapToggleLayer('cabinets')"><span class="map-layer-dot" style="background:#ea580c"></span>Cabinets</button>
+                <button class="map-layer-btn active" id="map-btn-technicians" onclick="mapToggleLayer('technicians')"><span class="map-layer-dot" style="background:#16a34a"></span>Technicians</button>
+              </div>
+              <span class="map-stat-pill" id="map-stat-ex">— exchanges</span>
+              <span class="map-stat-pill" id="map-stat-cab">— cabinets</span>
+              <span class="map-stat-pill" id="map-stat-tech">— technicians</span>
+              <div class="map-layer-toggle">
+                <button class="map-layer-btn active" id="map-btn-labels" onclick="mapToggleLabels()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                  Labels
+                </button>
+              </div>
+            </div>
+            <div id="map-container"></div>
+          </div>
+        </div>
+      </section>
+      <section id="view-settings" class="hidden">
+        <div class="page-head">
+          <div><h2>Settings</h2><p class="muted">Fault response rules, display preferences, and data management.</p></div>
+        </div>
+        <div id="settings-content"></div>
       </section>
     </main>
   </div>
 
   <script>
-    const APP_VERSION = '1.0.44';
+    const APP_VERSION = '1.1.0';
     const STORAGE_KEY = 'ra_planner_v1';
+    const VIEW_STORAGE_KEY = 'ra_planner_last_view';
     var _locPage = 1;
     const PLACE_ALIASES = {
       'ballydowd': 'Lucan Ballydowd'
@@ -1122,6 +2329,41 @@
       'L2': 'Leave'
     };
     const KNOWN_CODES = new Set(Object.keys(CODE_LABELS));
+    const GRID_STATUS_COLORS = {
+      'SA': { bg: '#FFE7BA', text: '#A15C13' },
+      'SD': { bg: '#D6E4FF', text: '#1D4ED8' },
+      'OC': { bg: '#FFF0A8', text: '#9A6500' },
+      '50': { bg: '#FFF0A8', text: '#9A6500' },
+      'D': { bg: '#FFE2C2', text: '#9A4A12' },
+      'D1': { bg: '#FFE2C2', text: '#9A4A12' },
+      'D2': { bg: '#FFE2C2', text: '#9A4A12' },
+      'R': { bg: '#FFE2C2', text: '#9A4A12' },
+      'L': { bg: '#FFE2C2', text: '#9A4A12' },
+      'L1': { bg: '#FFE2C2', text: '#9A4A12' },
+      'L2': { bg: '#FFE2C2', text: '#9A4A12' },
+      'A/L': { bg: '#D6F0BF', text: '#2D6B30' },
+      'S/L': { bg: '#FECACA', text: '#991B1B' },
+      'SP/L': { bg: '#E9D5FF', text: '#6B21A8' },
+      'OFF': { bg: '#EDF2F7', text: '#94A3B8' },
+      'off': { bg: '#EDF2F7', text: '#94A3B8' },
+      'WTT': { bg: '#FCE7F3', text: '#BE185D' },
+      'BH': { bg: '#E2E8F0', text: '#475569' },
+      'UWU': { bg: '#FBCFE8', text: '#9D174D' }
+    };
+    const GRID_STAT_META = {
+      available: { label: 'Available', codes: ['SA', 'SD', 'D', 'D1', 'D2', 'R', 'L', 'L1', 'L2'] },
+      oc: { label: 'On Call', codes: ['OC', '50'] },
+      al: { label: 'Annual Leave', codes: ['A/L'] },
+      wtt: { label: 'Training', codes: ['WTT'] },
+      off: { label: 'Off / Sick', codes: ['off', 'OFF', 'S/L', 'SP/L', 'BH', 'UWU'] }
+    };
+    const GRID_SOM_COLORS = ['#2d6be4', '#15803d', '#9333ea', '#b45309', '#0e7490', '#be123c', '#c026d3', '#0284c7'];
+    const GRID_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    const GRID_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var _gridDates = [];
+    var _gridGroups = [];
+    var _gridTooltip = null;
+    var _gridReady = false;
 
     const state = {
       view: 'import',
@@ -1140,7 +2382,15 @@
       locationsError: '',
       selectedFault: null,
       aliases: {},   // normTrackerName → contactId
-      ignored: {}    // normTrackerName → true (not a technician, skip)
+      placeAliases: {}, // normWorkLocation → { term, exchangeCode }
+      ignored: {},   // normTrackerName → true (not a technician, skip)
+      trackerOverrides: {},
+      gridActiveSom: 'all',
+      gridCollapsed: {},
+      gridDensity: 'normal',
+      gridWeekOffset: 0,
+      gridOpenStat: null,
+      gridSelectedDay: null
     };
 
     function esc(value) {
@@ -1149,6 +2399,13 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+    }
+
+    function jsArg(value) {
+      return String(value == null ? '' : value)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r?\n/g, ' ');
     }
 
     function norm(value) {
@@ -1209,7 +2466,11 @@
         state.trackerMeta = data.trackerMeta || null;
         state.imports = data.imports || state.imports;
         state.aliases = data.aliases || {};
+        state.placeAliases = data.placeAliases || {};
         state.ignored = data.ignored || {};
+        state.trackerOverrides = data.trackerOverrides || {};
+        state.gridCollapsed = data.gridCollapsed || {};
+        state.gridDensity = data.gridDensity || 'normal';
       } catch (err) {
         console.warn('Could not load planner data', err);
       }
@@ -1224,16 +2485,37 @@
         trackerMeta: state.trackerMeta,
         imports: state.imports,
         aliases: state.aliases,
-        ignored: state.ignored
+        placeAliases: state.placeAliases,
+        ignored: state.ignored,
+        trackerOverrides: state.trackerOverrides,
+        gridCollapsed: state.gridCollapsed,
+        gridDensity: state.gridDensity
       }));
+    }
+
+    function applyViewShell(view) {
+      document.body.classList.toggle('grid-active', view === 'grid');
+      document.body.classList.toggle('map-active', view === 'map');
+      ['import', 'people', 'locations', 'fault', 'availability', 'issues', 'mappings', 'grid', 'map', 'settings'].forEach(function (name) {
+        document.getElementById('view-' + name).classList.toggle('hidden', name !== view);
+        document.getElementById('tab-' + name).classList.toggle('active', name === view);
+      });
+    }
+
+    function rememberView(view, updateUrl) {
+      try { localStorage.setItem(VIEW_STORAGE_KEY, view); } catch (_) {}
+      if (!updateUrl || !window.history || !window.history.replaceState) return;
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', view);
+        window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      } catch (_) {}
     }
 
     function setView(view) {
       state.view = view;
-      ['import', 'people', 'locations', 'fault', 'availability', 'issues', 'mappings'].forEach(function (name) {
-        document.getElementById('view-' + name).classList.toggle('hidden', name !== view);
-        document.getElementById('tab-' + name).classList.toggle('active', name === view);
-      });
+      rememberView(view, true);
+      applyViewShell(view);
       render();
     }
 
@@ -1758,12 +3040,15 @@
     }
 
     function exchangeForPlace(place) {
-      const alias = PLACE_ALIASES[norm(place)];
-      const lookup = alias || place;
+      const key = norm(place);
+      const savedAlias = state.placeAliases && state.placeAliases[key];
+      const savedLookup = savedAlias && (savedAlias.exchangeCode || savedAlias);
+      const alias = PLACE_ALIASES[key];
+      const lookup = savedLookup || alias || place;
       const p = norm(lookup);
       if (!p) return null;
       let found = state.exchanges.find(function (ex) {
-        return norm(ex.name) === p || norm(ex.code) === p;
+        return norm(ex.name) === p || norm(ex.code) === p || norm(ex.id) === p;
       });
       if (found) return found;
       found = state.exchanges.find(function (ex) {
@@ -1947,13 +3232,7 @@
     }
 
     function statusScore(code) {
-      if (code === 'SA') return 45;
-      if (code === 'OC' || code === '50') return 40;
-      if (['SD', 'D', 'D1', 'D2', 'R'].includes(code)) return 30;
-      if (['WTT', 'BH'].includes(code)) return -10;
-      if (['A/L', 'S/L', 'SP/L', 'off'].includes(code)) return -30;
-      if (!code) return -5;
-      return 0;
+      return settingsStatusScore(code, isAfterHours());
     }
 
     function statusFilterPass(code, filter) {
@@ -2064,7 +3343,6 @@
           } else {
             target.innerHTML = '<div class="fault-results">' + rows.map(function (row) {
               const parent = row.type === 'cabinet' ? findExchangeByCode(row.code || row.mdf) : null;
-              const isSel = state.selectedFault && state.selectedFault.type === row.type && String(state.selectedFault.id) === String(row.id);
               const safeType = esc(row.type);
               const safeId = esc(String(row.id).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
               const meta = row.type === 'cabinet'
@@ -2096,6 +3374,27 @@
         (fault.coords ? '<span class="pill gray">' + esc(fault.coords.lat + ', ' + fault.coords.lng) + '</span>' : '') +
         '</div>' +
         (mapUrl ? '<a class="btn" style="margin-top:16px;text-decoration:none" href="' + esc(mapUrl) + '" target="_blank" rel="noopener">Open Map</a>' : '');
+    }
+
+    function quickTopCandidates(row, date) {
+      const fault = enrichFaultLocation(row);
+      const tokens = faultTokens(fault);
+      if (!tokens.length) return [];
+      const scored = joinedRows().map(function (jr) {
+        const contact = jr.contact || {};
+        const tracker = jr.tracker || {};
+        const workText = norm(contact.workLocations);
+        const trackerText = norm(tracker.trackerArea);
+        const startText = norm(contact.homeStartLocation);
+        const hits = tokens.filter(function (t) { return workText.includes(t); });
+        const soft = !hits.length && tokens.some(function (t) { return trackerText.includes(t) || startText.includes(t); });
+        const score = hits.length ? 100 + hits.length * 10 : soft ? 55 : 0;
+        if (!score) return null;
+        const code = tracker.availability ? (tracker.availability[date] || '') : '';
+        return { name: contact.name || tracker.techName || '', code: code, score: score + statusScore(code) };
+      }).filter(Boolean);
+      scored.sort(function (a, b) { return b.score - a.score; });
+      return scored.slice(0, 2);
     }
 
     function renderFaultCandidates() {
@@ -2184,8 +3483,11 @@
       const pageSize = Number(document.getElementById('loc-limit').value || 50);
       const allRows = locationRows().filter(function (row) {
         if (type !== 'all' && row.type !== type) return false;
-        const hay = norm([row.type, row.id, row.code, row.name, row.mdf, row.cabinet, row.coords && row.coords.lat, row.coords && row.coords.lng].join(' '));
-        return !q || hay.includes(q);
+        if (!q) return true;
+        return faultSearchScore(row, q) > 0;
+      }).sort(function (a, b) {
+        if (!q) return 0;
+        return faultSearchScore(b, q) - faultSearchScore(a, q);
       });
 
       if (!allRows.length) {
@@ -2242,6 +3544,7 @@
     }
 
     function renderAll() {
+      applyViewShell(state.view);
       renderHeader();
       renderImportSummaries();
       renderLocationsSummary();
@@ -2253,6 +3556,9 @@
       renderAvailability();
       renderIssues();
       renderMappings();
+      if (state.view === 'grid') renderGridView();
+      if (state.view === 'map') renderMapView();
+      if (state.view === 'settings') renderSettings();
     }
 
     function render() {
@@ -2267,6 +3573,9 @@
       if (state.view === 'availability') renderAvailability();
       if (state.view === 'issues') renderIssues();
       if (state.view === 'mappings') renderMappings();
+      if (state.view === 'grid') renderGridView();
+      if (state.view === 'map') renderMapView();
+      if (state.view === 'settings') renderSettings();
     }
 
     function renderHeader() {
@@ -2617,6 +3926,40 @@
       renderIssues();
     }
 
+    function setPlaceAlias(normTerm, term, exchangeCode) {
+      if (!exchangeCode) {
+        delete state.placeAliases[normTerm];
+      } else {
+        state.placeAliases[normTerm] = {
+          term: term,
+          exchangeCode: exchangeCode
+        };
+      }
+      saveData();
+      renderMappings();
+      renderPeople();
+      if (state.view === 'fault') renderFaultCandidates();
+    }
+
+    function clearPlaceAlias(normTerm) {
+      delete state.placeAliases[normTerm];
+      saveData();
+      renderMappings();
+      renderPeople();
+      if (state.view === 'fault') renderFaultCandidates();
+    }
+
+    function clearAllPlaceAliases() {
+      const count = Object.keys(state.placeAliases || {}).length;
+      if (!count) return;
+      if (!confirm('Remove all ' + count + ' work-location mappings?')) return;
+      state.placeAliases = {};
+      saveData();
+      renderMappings();
+      renderPeople();
+      if (state.view === 'fault') renderFaultCandidates();
+    }
+
     function renderMappings() {
       const target = document.getElementById('mappings-content');
       if (!target) return;
@@ -2628,6 +3971,7 @@
 
       const contactsMap = contactByNorm();
       const aliases = state.aliases || {};
+      const placeAliases = state.placeAliases || {};
       const contactById = {};
       state.contacts.forEach(function (c) { contactById[c.id] = c; });
       const managerNames = new Set(state.contacts.map(function (c) { return norm(c.manager); }).filter(Boolean));
@@ -2640,6 +3984,12 @@
       }).join('');
 
       const ignored = state.ignored || {};
+      const exchangeOptions = state.exchanges.slice().sort(function (a, b) {
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      }).map(function (ex) {
+        const value = ex.code || ex.name || '';
+        return '<option value="' + esc(value) + '">' + esc(ex.name || '-') + (ex.code ? ' · ' + esc(ex.code) : '') + '</option>';
+      }).join('');
 
       // Unmatched tracker rows (no exact match, no alias, not a SOM/manager, not ignored)
       const unmatched = state.tracker.filter(function (row) {
@@ -2709,6 +4059,63 @@
       }
       html += '</div>';
 
+      // Work-location mappings card
+      const unresolvedGroups = unresolvedCoverageGroups().byPlace;
+      const activePlaceAliases = Object.keys(placeAliases).map(function (key) {
+        const alias = placeAliases[key];
+        const term = alias && alias.term ? alias.term : key;
+        const exchangeCode = alias && alias.exchangeCode ? alias.exchangeCode : alias;
+        const exchange = exchangeForPlace(term);
+        return {
+          key: key,
+          term: term,
+          exchangeCode: exchangeCode,
+          exchange: exchange
+        };
+      }).filter(function (item) { return item.exchangeCode; });
+
+      html += '<div class="card" style="margin-bottom:16px">';
+      html += '<div class="card-head"><h3>Work Location Mappings <span class="pill" style="margin-left:8px">' + activePlaceAliases.length + '</span></h3>' +
+        (activePlaceAliases.length ? '<button class="clear-btn" onclick="clearAllPlaceAliases()">Clear Work Mappings</button>' : '') +
+        '</div>';
+      if (!state.exchanges.length) {
+        html += '<div class="card-body"><div class="empty">Import exchanges first, then unresolved work-location terms can be mapped here.</div></div>';
+      } else {
+        if (unresolvedGroups.length) {
+          html += '<div class="card-body" style="padding-bottom:0"><div class="status">Map unresolved Excel work-location terms to the nearest real exchange. This immediately improves Fault Search matching.</div></div>';
+          html += '<div>';
+          unresolvedGroups.forEach(function (group) {
+            const key = norm(group.term);
+            html += '<div class="mapping-row">' +
+              '<div><div class="mapping-name">' + esc(group.term) + '</div>' +
+              '<div class="mapping-suggestion">' + esc(group.technicians.length) + ' technician(s): ' + esc(group.technicians.map(function (c) { return c.name; }).join(', ')) + '</div>' +
+              '</div>' +
+              '<select class="mapping-select" onchange="setPlaceAlias(\'' + esc(jsArg(key)) + '\',\'' + esc(jsArg(group.term)) + '\', this.value)">' +
+              '<option value="">— select exchange —</option>' + exchangeOptions +
+              '</select>' +
+              '<span></span>' +
+              '</div>';
+          });
+          html += '</div>';
+        } else {
+          html += '<div class="card-body"><div class="status ok">All current work-location terms resolve to exchange points.</div></div>';
+        }
+
+        if (activePlaceAliases.length) {
+          html += '<div class="card-body" style="padding-top:0"><div class="table-wrap compact"><table><thead><tr><th>Work Term</th><th>Mapped Exchange</th><th></th></tr></thead><tbody>';
+          activePlaceAliases.forEach(function (item) {
+            const safeKey = esc(jsArg(item.key));
+            html += '<tr>' +
+              '<td><strong>' + esc(item.term) + '</strong></td>' +
+              '<td>' + (item.exchange ? esc(item.exchange.name || '-') + '<div class="small muted">' + esc(item.exchange.code || item.exchangeCode) + '</div>' : esc(item.exchangeCode)) + '</td>' +
+              '<td><button class="clear-btn" onclick="clearPlaceAlias(\'' + safeKey + '\')">Remove</button></td>' +
+              '</tr>';
+          });
+          html += '</tbody></table></div></div>';
+        }
+      }
+      html += '</div>';
+
       // Ignored rows section
       if (ignoredRows.length) {
         html += '<div class="card" style="margin-top:16px">';
@@ -2730,6 +4137,1047 @@
       target.innerHTML = html;
     }
 
+    function gridDateRange() {
+      if (!state.trackerMeta || !state.trackerMeta.dateStart || !state.trackerMeta.dateEnd) return [];
+      const start = new Date(state.trackerMeta.dateStart + 'T00:00:00');
+      const end = new Date(state.trackerMeta.dateEnd + 'T00:00:00');
+      const dates = [];
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) return dates;
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        dates.push(todayStrFromDate(d));
+      }
+      return dates;
+    }
+
+    function todayStrFromDate(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function gridBuildGroups() {
+      const contactsByNorm = {};
+      state.contacts.forEach(function (c) { contactsByNorm[norm(c.name)] = c; });
+      const trackerByName = {};
+      state.tracker.forEach(function (t) { trackerByName[norm(t.techName)] = t; });
+      const managerNames = new Set(state.contacts.map(function (c) { return norm(c.manager); }).filter(Boolean));
+      const somTrackers = {};
+      state.tracker.forEach(function (t) {
+        const n = norm(t.techName);
+        if (managerNames.has(n)) somTrackers[n] = t;
+      });
+
+      const aliasReverse = {};
+      Object.keys(state.aliases || {}).forEach(function (trackerName) {
+        aliasReverse[state.aliases[trackerName]] = trackerName;
+      });
+      const contactById = {};
+      state.contacts.forEach(function (c) { contactById[c.id] = c; });
+      const usedTrackerNames = new Set();
+      const rows = [];
+
+      state.contacts.forEach(function (contact) {
+        let tracker = trackerByName[norm(contact.name)];
+        if (tracker) {
+          usedTrackerNames.add(norm(contact.name));
+        } else {
+          const aliasName = aliasReverse[contact.id];
+          if (aliasName && trackerByName[aliasName]) {
+            tracker = trackerByName[aliasName];
+            usedTrackerNames.add(aliasName);
+          }
+        }
+        rows.push({ contact: contact, tracker: tracker || null });
+      });
+
+      state.tracker.forEach(function (tracker) {
+        const n = norm(tracker.techName);
+        if (somTrackers[n] || usedTrackerNames.has(n) || contactsByNorm[n] || state.ignored[n]) return;
+        const contact = state.aliases[n] ? (contactById[state.aliases[n]] || null) : null;
+        rows.push({ contact: contact, tracker: tracker });
+      });
+
+      const order = [];
+      const bySom = {};
+      rows.forEach(function (row) {
+        const som = (row.contact && row.contact.manager) || (row.tracker && row.tracker.manager) || 'Unknown';
+        if (!bySom[som]) {
+          bySom[som] = [];
+          order.push(som);
+        }
+        bySom[som].push(row);
+      });
+
+      return order.map(function (som, idx) {
+        return {
+          som: som,
+          color: GRID_SOM_COLORS[idx % GRID_SOM_COLORS.length],
+          somTracker: somTrackers[norm(som)] || null,
+          people: bySom[som]
+        };
+      });
+    }
+
+    function gridUpdateNameColumnWidth() {
+      const names = [];
+      _gridGroups.forEach(function (g) {
+        names.push(g.som || '');
+        g.people.forEach(function (person) {
+          names.push((person.contact && person.contact.name) || (person.tracker && person.tracker.techName) || '');
+        });
+      });
+      const longest = names.reduce(function (max, name) { return Math.max(max, String(name).length); }, 0);
+      const width = Math.max(145, Math.min(220, 38 + longest * 7.2));
+      document.documentElement.style.setProperty('--grid-name-col-w', width + 'px');
+    }
+
+    function renderGridView() {
+      _gridDates = gridDateRange();
+      _gridGroups = gridBuildGroups();
+      if (state.gridSelectedDay && !_gridDates.includes(state.gridSelectedDay)) state.gridSelectedDay = null;
+      gridUpdateNameColumnWidth();
+
+      const today = gridActiveStatsDay();
+      const todayEl = document.getElementById('grid-today');
+      if (todayEl) {
+        const label = state.gridSelectedDay ? 'Selected: ' : 'Today: ';
+        todayEl.textContent = label + new Date(today + 'T00:00:00').toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      const empty = document.getElementById('grid-empty-state');
+      const wrap = document.getElementById('grid-wrap');
+      const range = document.getElementById('grid-range');
+      if (!state.trackerMeta || !_gridDates.length) {
+        if (empty) empty.classList.remove('hidden');
+        if (wrap) wrap.classList.add('hidden');
+        if (range) range.textContent = 'No data imported';
+        gridUpdateStats(today);
+        gridRenderStatPanel();
+        gridBuildLegend();
+        gridBuildMonthTabs();
+        gridBuildSomPills();
+        gridSetDensity(state.gridDensity || 'normal', true);
+        gridUpdateWeekLabel();
+        gridInitStatPopoverDismiss();
+        return;
+      }
+
+      if (empty) empty.classList.add('hidden');
+      if (wrap) wrap.classList.remove('hidden');
+      if (range) range.textContent = formatShortDate(state.trackerMeta.dateStart) + ' - ' + formatShortDate(state.trackerMeta.dateEnd);
+      gridUpdateStats(today);
+      gridRenderStatPanel();
+      gridBuildLegend();
+      gridBuildMonthTabs();
+      gridBuildSomPills();
+      gridSetDensity(state.gridDensity || 'normal', true);
+      gridUpdateWeekLabel();
+      gridBuildTable();
+      gridUpdateSelectedDayUi();
+      gridInitTooltip();
+      gridInitDragScroll();
+      gridInitStatPopoverDismiss();
+      setTimeout(gridScrollToToday, 50);
+    }
+
+    function gridActiveStatsDay() {
+      return state.gridSelectedDay || todayStr();
+    }
+
+    function gridPersonKey(person) {
+      const contact = person && person.contact;
+      const tracker = person && person.tracker;
+      return (tracker && norm(tracker.techName)) || (contact && norm(contact.name)) || '';
+    }
+
+    function gridBaseCode(person, day) {
+      return person && person.tracker && person.tracker.availability ? (person.tracker.availability[day] || '') : '';
+    }
+
+    function gridOverrideCode(person, day) {
+      const key = gridPersonKey(person);
+      return key && state.trackerOverrides[key] ? state.trackerOverrides[key][day] : undefined;
+    }
+
+    function gridCodeForPerson(person, day) {
+      const override = gridOverrideCode(person, day);
+      return override === undefined ? gridBaseCode(person, day) : override;
+    }
+
+    function gridHasOverride(person, day) {
+      return gridOverrideCode(person, day) !== undefined;
+    }
+
+    function gridCellClick(day, event) {
+      const wrap = document.getElementById('grid-wrap');
+      if (wrap && wrap._gridDragMoved) return;
+      if (event && event.detail && event.detail > 1) return;
+      gridToggleDaySelection(day, event);
+    }
+
+    function gridToggleDaySelection(day, event) {
+      const wrap = document.getElementById('grid-wrap');
+      if (wrap && wrap._gridDragMoved) return;
+      if (!day) return;
+      state.gridSelectedDay = state.gridSelectedDay === day ? null : day;
+      gridUpdateSelectedDayUi();
+      gridUpdateStats(gridActiveStatsDay());
+      gridRenderStatPanel();
+      const todayEl = document.getElementById('grid-today');
+      if (todayEl) {
+        const active = gridActiveStatsDay();
+        const label = state.gridSelectedDay ? 'Selected: ' : 'Today: ';
+        todayEl.textContent = label + new Date(active + 'T00:00:00').toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    }
+
+    function gridHandleTimelineDayClick(event) {
+      const wrap = document.getElementById('grid-wrap');
+      if (!wrap || wrap._gridDragMoved) return;
+      if (event.detail && event.detail > 1) return;
+      gridCloseEditPicker();
+      // setPointerCapture redirects click to wrap, so event.target may be wrap itself.
+      // Use elementFromPoint to get the actual element under the cursor.
+      const actual = document.elementFromPoint(event.clientX, event.clientY);
+      const cell = actual && actual.closest ? actual.closest('#grid-table [data-date]') : null;
+      const day = cell && cell.dataset.date;
+      if (!day) return;
+      event.stopPropagation();
+      gridToggleDaySelection(day, null);
+    }
+
+    function gridUpdateSelectedDayUi() {
+      document.querySelectorAll('#grid-table .g-selected-col').forEach(function (cell) {
+        cell.classList.remove('g-selected-col');
+      });
+      if (!state.gridSelectedDay) return;
+      const idx = _gridDates.indexOf(state.gridSelectedDay);
+      if (idx < 0) return;
+      document.querySelectorAll('#grid-table [data-i="' + idx + '"]').forEach(function (cell) {
+        cell.classList.add('g-selected-col');
+      });
+    }
+
+    function gridUpdateStats(day) {
+      let a = 0, o = 0, al = 0, w = 0, f = 0;
+      let total = 0;
+      const teamCounts = {
+        available: [],
+        oc: [],
+        al: [],
+        wtt: [],
+        off: []
+      };
+      _gridGroups.forEach(function (g) {
+        const counts = { available: 0, oc: 0, al: 0, wtt: 0, off: 0 };
+        g.people.forEach(function (p) {
+          total++;
+          const code = gridCodeForPerson(p, day);
+          if (!code) return;
+          const statKey = gridStatKeyForCode(code);
+          if (statKey === 'available') { a++; counts.available++; }
+          else if (statKey === 'oc') { o++; counts.oc++; }
+          else if (statKey === 'al') { al++; counts.al++; }
+          else if (statKey === 'wtt') { w++; counts.wtt++; }
+          else if (statKey === 'off') { f++; counts.off++; }
+        });
+        Object.keys(teamCounts).forEach(function (key) {
+          teamCounts[key].push({ value: counts[key], color: g.color, som: g.som });
+        });
+      });
+      const set = function (id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+      const setOf = function (id) { set(id, 'of ' + total); };
+      const setBar = function (id, rows) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const nonZero = rows.filter(function (row) { return row.value > 0; });
+        el.innerHTML = (nonZero.length ? nonZero : rows).map(function (row) {
+          return '<div class="grid-smb-seg" title="' + esc(row.som + ': ' + row.value) + '" style="flex:' + Math.max(row.value, nonZero.length ? 1 : 0) + ';background:' + row.color + '"></div>';
+        }).join('');
+      };
+      set('grid-s-avail', a);
+      set('grid-s-oc', o);
+      set('grid-s-al', al);
+      set('grid-s-wtt', w);
+      set('grid-s-off', f);
+      setOf('grid-s-avail-of');
+      setOf('grid-s-oc-of');
+      setOf('grid-s-al-of');
+      setOf('grid-s-wtt-of');
+      setOf('grid-s-off-of');
+      setBar('grid-s-avail-bar', teamCounts.available);
+      setBar('grid-s-oc-bar', teamCounts.oc);
+      setBar('grid-s-al-bar', teamCounts.al);
+      setBar('grid-s-wtt-bar', teamCounts.wtt);
+      setBar('grid-s-off-bar', teamCounts.off);
+    }
+
+    function gridStatKeyForCode(code) {
+      if (!code) return null;
+      const keys = Object.keys(GRID_STAT_META);
+      for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        if (GRID_STAT_META[key].codes.includes(code)) return key;
+      }
+      return null;
+    }
+
+    function gridToggleStatPanel(key, event) {
+      if (event) event.stopPropagation();
+      state.gridOpenStat = state.gridOpenStat === key ? null : key;
+      gridRenderStatPanel(event ? event.currentTarget : null);
+    }
+
+    function gridCloseStatPanel() {
+      state.gridOpenStat = null;
+      gridRenderStatPanel();
+    }
+
+    function gridStatRows(key) {
+      const meta = GRID_STAT_META[key];
+      if (!meta) return [];
+      const day = gridActiveStatsDay();
+      const rows = [];
+      _gridGroups.forEach(function (group) {
+        group.people.forEach(function (person) {
+          const code = gridCodeForPerson(person, day);
+          if (!meta.codes.includes(code)) return;
+          const contact = person.contact || {};
+          const tracker = person.tracker || {};
+          const area = contact.homeStartLocation || contact.workLocations || tracker.trackerArea || '';
+          rows.push({
+            name: contact.name || tracker.techName || '-',
+            area: area,
+            som: group.som,
+            color: group.color,
+            code: code
+          });
+        });
+      });
+      return rows.sort(function (a, b) {
+        return a.som.localeCompare(b.som) || a.name.localeCompare(b.name);
+      });
+    }
+
+    function gridPositionStatPanel(panel, anchor) {
+      if (!panel || !anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      const vw = window.innerWidth || document.documentElement.clientWidth || 0;
+      const panelWidth = Math.min(360, Math.max(280, vw - 24));
+      const left = Math.max(12, Math.min(vw - panelWidth - 12, rect.left + rect.width / 2 - panelWidth / 2));
+      const arrow = Math.max(18, Math.min(panelWidth - 24, rect.left + rect.width / 2 - left - 6));
+      panel.style.width = panelWidth + 'px';
+      panel.style.left = left + 'px';
+      panel.style.top = (rect.bottom + 9) + 'px';
+      panel.style.setProperty('--grid-popover-arrow', arrow + 'px');
+    }
+
+    function gridRenderStatPanel(anchor) {
+      const panel = document.getElementById('grid-stat-panel');
+      const activeCard = anchor || document.querySelector('.grid-stat[data-stat="' + state.gridOpenStat + '"]');
+      document.querySelectorAll('.grid-stat').forEach(function (card) {
+        card.classList.toggle('active', !!state.gridOpenStat && card.dataset.stat === state.gridOpenStat);
+      });
+      if (!panel) return;
+      const meta = GRID_STAT_META[state.gridOpenStat];
+      if (!meta) {
+        panel.classList.remove('open');
+        panel.innerHTML = '';
+        return;
+      }
+      const rows = gridStatRows(state.gridOpenStat);
+      const activeDay = gridActiveStatsDay();
+      const dayLabel = new Date(activeDay + 'T00:00:00').toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' });
+      panel.classList.add('open');
+      gridPositionStatPanel(panel, activeCard);
+      panel.innerHTML =
+        '<div class="grid-stat-panel-head">' +
+          '<div class="grid-stat-panel-title">' + esc(meta.label) + ' · ' + esc(dayLabel) + ' · ' + rows.length + ' technician' + (rows.length === 1 ? '' : 's') + '</div>' +
+          '<button type="button" class="grid-stat-close" onclick="gridCloseStatPanel()" aria-label="Close">×</button>' +
+        '</div>' +
+        '<div class="grid-tech-list">' +
+          (rows.length ? rows.map(function (row) {
+            const color = GRID_STATUS_COLORS[row.code] || { bg: '#EDF2F7', text: '#64748b' };
+            return '<div class="grid-tech-chip" title="' + esc(row.name + ' · ' + row.som + (row.area ? ' · ' + row.area : '')) + '">' +
+              '<div class="grid-tech-dot" style="background:' + esc(row.color) + '"></div>' +
+              '<div style="min-width:0;flex:1">' +
+                '<div class="grid-tech-name">' + esc(row.name) + '</div>' +
+                '<div class="grid-tech-meta">' + esc(row.som) + (row.area ? ' · ' + esc(row.area) : '') + '</div>' +
+              '</div>' +
+              '<div class="grid-tech-code" style="background:' + color.bg + ';color:' + color.text + '">' + esc(row.code) + '</div>' +
+            '</div>';
+          }).join('') : '<div class="empty" style="width:100%;padding:16px">No technicians match this status today.</div>') +
+        '</div>';
+    }
+
+    function gridInitStatPopoverDismiss() {
+      if (window._gridStatPopoverReady) return;
+      window._gridStatPopoverReady = true;
+      document.addEventListener('click', function (event) {
+        if (event.target.closest && event.target.closest('#grid-edit-pop')) return;
+        if (event.target.closest && event.target.closest('#grid-table .gdc')) return;
+        gridCloseEditPicker();
+        if (!state.gridOpenStat) return;
+        if (event.target.closest && (event.target.closest('.grid-stat') || event.target.closest('#grid-stat-panel'))) return;
+        gridCloseStatPanel();
+      });
+      window.addEventListener('resize', function () {
+        if (state.gridOpenStat) gridRenderStatPanel();
+        gridCloseEditPicker();
+      });
+      window.addEventListener('scroll', function (event) {
+        if (event.target && event.target.closest && event.target.closest('#grid-edit-pop')) return;
+        gridCloseEditPicker();
+        if (!state.gridOpenStat) return;
+        if (event.target && event.target.closest && event.target.closest('#grid-stat-panel')) return;
+        gridRenderStatPanel();
+      }, true);
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') gridCloseEditPicker();
+        if (event.key === 'Escape' && state.gridOpenStat) {
+          event.preventDefault();
+          gridCloseStatPanel();
+        }
+      });
+    }
+
+    function gridBuildLegend() {
+      const el = document.getElementById('grid-legend-inner');
+      if (!el) return;
+      const codes = [
+        ['SA', 'Service Assurance'], ['SD', 'Service Delivery'], ['OC', 'On Call'], ['50', 'OC 50/50'],
+        ['D', 'Dublin'], ['R', 'Rota'], ['A/L', 'Annual Leave'], ['S/L', 'Sick Leave'],
+        ['WTT', 'Training'], ['BH', 'Bank Holiday'], ['OFF', 'Off Duty'], ['SP/L', 'Special Leave']
+      ];
+      el.innerHTML = codes.map(function (pair) {
+        const color = GRID_STATUS_COLORS[pair[0]] || { bg: '#EDF2F7', text: '#64748b' };
+        return '<div class="grid-l-item"><div class="grid-l-sw" style="background:' + color.bg + ';color:' + color.text + '">' + esc(pair[0]) + '</div>' + esc(pair[1]) + '</div>';
+      }).join('');
+    }
+
+    function gridBuildMonthTabs() {
+      const el = document.getElementById('grid-month-tabs');
+      if (!el) return;
+      if (!_gridDates.length) {
+        el.innerHTML = '';
+        return;
+      }
+      const seen = {};
+      _gridDates.forEach(function (d) {
+        const key = d.slice(0, 7);
+        if (!seen[key]) {
+          const parts = d.split('-');
+          seen[key] = { key: key, label: GRID_MONTHS[Number(parts[1]) - 1] + ' ' + parts[0] };
+        }
+      });
+      el.innerHTML = Object.values(seen).map(function (m) {
+        return '<button type="button" class="grid-m-tab" data-month="' + esc(m.key) + '">' + esc(m.label) + '</button>';
+      }).join('');
+      const jump = function (event) {
+        const btn = event.target.closest('.grid-m-tab');
+        if (!btn) return;
+        event.preventDefault();
+        event.stopPropagation();
+        gridJumpToMonth(btn.dataset.month);
+      };
+      el.onclick = jump;
+      el.onpointerdown = jump;
+      const active = document.querySelector('.grid-m-tab[data-month="' + todayStr().slice(0, 7) + '"]') || document.querySelector('.grid-m-tab');
+      if (active) active.classList.add('active');
+    }
+
+    function gridJumpToMonth(monthKey) {
+      document.querySelectorAll('.grid-m-tab').forEach(function (btn) {
+        btn.classList.toggle('active', btn.dataset.month === monthKey);
+      });
+      const idx = _gridDates.findIndex(function (d) { return d.startsWith(monthKey); });
+      const wrap = document.getElementById('grid-wrap');
+      if (!wrap || idx < 0) return;
+      const target = Math.max(0, gridFrozenWidth() + idx * 28 - 20);
+      if (typeof wrap.scrollTo === 'function') {
+        wrap.scrollTo({ left: target, behavior: 'smooth' });
+      } else {
+        wrap.scrollLeft = target;
+      }
+    }
+
+    function gridJumpToToday() {
+      state.gridWeekOffset = 0;
+      gridUpdateWeekLabel();
+      gridJumpToMonth(todayStr().slice(0, 7));
+      setTimeout(gridScrollToToday, 120);
+    }
+
+    function gridMoveWeek(delta) {
+      state.gridWeekOffset += delta;
+      gridUpdateWeekLabel();
+      const todayIdx = _gridDates.indexOf(todayStr());
+      const targetIdx = todayIdx >= 0 ? todayIdx + state.gridWeekOffset * 7 : state.gridWeekOffset * 7;
+      const idx = Math.max(0, Math.min(_gridDates.length - 1, targetIdx));
+      const wrap = document.getElementById('grid-wrap');
+      if (!wrap || !_gridDates.length) return;
+      const target = Math.max(0, gridFrozenWidth() + idx * 28 - 80);
+      if (typeof wrap.scrollTo === 'function') wrap.scrollTo({ left: target, behavior: 'smooth' });
+      else wrap.scrollLeft = target;
+      const monthKey = _gridDates[idx] ? _gridDates[idx].slice(0, 7) : '';
+      document.querySelectorAll('.grid-m-tab').forEach(function (btn) {
+        btn.classList.toggle('active', btn.dataset.month === monthKey);
+      });
+    }
+
+    function gridResetWeek() {
+      state.gridWeekOffset = 0;
+      gridJumpToToday();
+    }
+
+    function gridUpdateWeekLabel() {
+      const el = document.getElementById('grid-week-label');
+      if (!el) return;
+      const today = new Date(todayStr() + 'T00:00:00');
+      const week = gridWeekNum(today) + (state.gridWeekOffset || 0);
+      el.textContent = 'W' + week;
+    }
+
+    function gridSetDensity(density, skipSave) {
+      state.gridDensity = density === 'compact' ? 'compact' : 'normal';
+      document.body.classList.toggle('grid-density-compact', state.gridDensity === 'compact');
+      const normal = document.getElementById('grid-density-normal');
+      const compact = document.getElementById('grid-density-compact');
+      if (normal) normal.classList.toggle('active', state.gridDensity === 'normal');
+      if (compact) compact.classList.toggle('active', state.gridDensity === 'compact');
+      if (!skipSave) saveData();
+    }
+
+    function gridBuildSomPills() {
+      const el = document.getElementById('grid-som-pills');
+      if (!el) return;
+      el.innerHTML = '<button class="grid-s-pill active" data-som="all" onclick="gridSetSom(\'all\')">All Teams</button>' +
+        _gridGroups.map(function (g) {
+          return '<button class="grid-s-pill" data-som="' + esc(g.som) + '" onclick="gridSetSom(\'' + esc(jsArg(g.som)) + '\')"><span class="grid-s-pill-dot" style="background:' + esc(g.color) + '"></span>' + esc(g.som.split(' ')[0]) + '</button>';
+        }).join('');
+      gridSetSom(state.gridActiveSom || 'all');
+    }
+
+    function gridSetSom(som) {
+      state.gridActiveSom = som;
+      document.querySelectorAll('.grid-s-pill').forEach(function (btn) {
+        const active = btn.dataset.som === som;
+        btn.classList.toggle('active', active);
+        if (active && som !== 'all') {
+          const group = _gridGroups.find(function (g) { return g.som === som; });
+          btn.style.background = group ? group.color : '';
+          btn.style.borderColor = 'transparent';
+          btn.style.color = '#fff';
+        } else {
+          btn.style.background = '';
+          btn.style.borderColor = '';
+          btn.style.color = '';
+        }
+      });
+      gridApplyFilters();
+    }
+
+    function gridApplyFilters() {
+      const input = document.getElementById('grid-search-input');
+      const q = norm(input ? input.value : '');
+      const activeSom = state.gridActiveSom || 'all';
+      document.querySelectorAll('.grow-som').forEach(function (row) {
+        const show = activeSom === 'all' || row.dataset.som === activeSom;
+        row.classList.toggle('hidden', !show);
+      });
+      document.querySelectorAll('.grow-person').forEach(function (row) {
+        const showSom = activeSom === 'all' || row.dataset.som === activeSom;
+        const showName = !q || norm(row.dataset.name || '').includes(q) || norm(row.dataset.area || '').includes(q);
+        gridSetPersonVisible(row, showSom && showName && !state.gridCollapsed[row.dataset.som], false);
+      });
+    }
+
+    function gridToggleSom(som) {
+      state.gridCollapsed[som] = !state.gridCollapsed[som];
+      saveData();
+      const header = Array.from(document.querySelectorAll('.grow-som')).find(function (row) { return row.dataset.som === som; });
+      if (header) header.classList.toggle('collapsed', !!state.gridCollapsed[som]);
+      document.querySelectorAll('.grow-person').forEach(function (row) {
+        if (row.dataset.som !== som) return;
+        const input = document.getElementById('grid-search-input');
+        const q = norm(input ? input.value : '');
+        const showSom = (state.gridActiveSom || 'all') === 'all' || row.dataset.som === state.gridActiveSom;
+        const showName = !q || norm(row.dataset.name || '').includes(q) || norm(row.dataset.area || '').includes(q);
+        gridSetPersonVisible(row, showSom && showName && !state.gridCollapsed[som], true);
+      });
+    }
+
+    function gridSetPersonVisible(row, visible, animate) {
+      clearTimeout(row._gridCollapseTimer);
+      if (visible) {
+        row.classList.remove('hidden');
+        if (animate) {
+          row.classList.add('anim-hidden');
+          requestAnimationFrame(function () { row.classList.remove('anim-hidden'); });
+        } else {
+          row.classList.remove('anim-hidden');
+        }
+        return;
+      }
+      if (animate && !row.classList.contains('hidden')) {
+        row.classList.add('anim-hidden');
+        row._gridCollapseTimer = setTimeout(function () { row.classList.add('hidden'); }, 180);
+      } else {
+        row.classList.add('hidden', 'anim-hidden');
+      }
+    }
+
+    function gridBuildTable() {
+      const table = document.getElementById('grid-table');
+      if (!table) return;
+      table.innerHTML = '';
+      table.appendChild(gridBuildThead());
+      table.appendChild(gridBuildTbody());
+    }
+
+    function gridBuildThead() {
+      const today = todayStr();
+      const thead = document.createElement('thead');
+      const r1 = document.createElement('tr');
+      ['#', 'Name & Area'].forEach(function (label, idx) {
+        const th = document.createElement('th');
+        th.className = 'ghc gfc gfc' + idx;
+        th.rowSpan = 4;
+        th.innerHTML = '<div class="gh-frozen">' + esc(label) + '</div>';
+        r1.appendChild(th);
+      });
+      const monthSpans = {};
+      _gridDates.forEach(function (d) {
+        const key = d.slice(0, 7);
+        monthSpans[key] = (monthSpans[key] || 0) + 1;
+      });
+      Object.keys(monthSpans).forEach(function (key) {
+        const th = document.createElement('th');
+        th.className = 'ghc gh-month';
+        th.colSpan = monthSpans[key];
+        const parts = key.split('-');
+        th.textContent = GRID_MONTHS[Number(parts[1]) - 1] + ' ' + parts[0];
+        r1.appendChild(th);
+      });
+      thead.appendChild(r1);
+
+      const r2 = document.createElement('tr');
+      let lastWeek = null;
+      let weekSpan = 0;
+      const weekCells = [];
+      _gridDates.forEach(function (d) {
+        const week = gridWeekNum(new Date(d + 'T00:00:00'));
+        if (week !== lastWeek) {
+          if (lastWeek !== null) weekCells.push({ week: lastWeek, span: weekSpan });
+          lastWeek = week;
+          weekSpan = 1;
+        } else {
+          weekSpan++;
+        }
+      });
+      if (lastWeek !== null) weekCells.push({ week: lastWeek, span: weekSpan });
+      weekCells.forEach(function (item) {
+        const th = document.createElement('th');
+        th.className = 'ghc gh-week';
+        th.colSpan = item.span;
+        th.textContent = 'W' + item.week;
+        r2.appendChild(th);
+      });
+      thead.appendChild(r2);
+
+      const r3 = document.createElement('tr');
+      const r4 = document.createElement('tr');
+      _gridDates.forEach(function (d, idx) {
+        const dt = new Date(d + 'T00:00:00');
+        const wknd = dt.getDay() === 0 || dt.getDay() === 6;
+        const isToday = d === today;
+        const day = document.createElement('th');
+        day.className = 'ghc gh-day' + (wknd ? ' g-wknd' : '') + (isToday ? ' g-today-col' : '');
+        day.dataset.i = idx;
+        day.dataset.date = d;
+        day.textContent = GRID_DAYS[dt.getDay()];
+        day.style.cursor = 'pointer';
+        day.onclick = function (e) { gridCellClick(d, e); };
+        r3.appendChild(day);
+        const num = document.createElement('th');
+        num.className = 'ghc gh-num' + (wknd ? ' g-wknd' : '') + (isToday ? ' g-today-col' : '');
+        num.dataset.i = idx;
+        num.dataset.date = d;
+        num.textContent = dt.getDate();
+        num.style.cursor = 'pointer';
+        num.onclick = function (e) { gridCellClick(d, e); };
+        r4.appendChild(num);
+      });
+      thead.appendChild(r3);
+      thead.appendChild(r4);
+      return thead;
+    }
+
+    function gridBuildTbody() {
+      const tbody = document.createElement('tbody');
+      const today = todayStr();
+      const availableCodes = ['SA', 'SD', 'D', 'D1', 'D2', 'R', 'L', 'L1', 'L2'];
+      _gridGroups.forEach(function (group) {
+        const som = group.som;
+        const todayCodes = group.people.map(function (person) {
+          return gridCodeForPerson(person, today);
+        });
+        const tAvail = todayCodes.filter(function (code) { return availableCodes.includes(code); }).length;
+        const tOc = todayCodes.filter(function (code) { return code === 'OC' || code === '50'; }).length;
+        const tAl = todayCodes.filter(function (code) { return code === 'A/L'; }).length;
+        const tr = document.createElement('tr');
+        tr.className = 'grow-som' + (state.gridCollapsed[som] ? ' collapsed' : '');
+        tr.dataset.som = som;
+        tr.onpointerdown = function (e) {
+          if (e.button !== 0) return;
+          if (!e.target.closest('.gfc')) return;
+          e.preventDefault();
+          gridToggleSom(som);
+        };
+        const td0 = document.createElement('td');
+        td0.className = 'gfc gfc0';
+        td0.innerHTML = '<div class="grid-som-cell"><div class="grid-som-badge" style="background:' + group.color + '">' + esc(som[0] || '?') + '</div></div>';
+        tr.appendChild(td0);
+        const td1 = document.createElement('td');
+        td1.className = 'gfc gfc1';
+        td1.innerHTML = '<div class="grid-som-cell"><span class="grid-chevron"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span><span class="grid-som-name" style="color:' + group.color + '">' + esc(som) + '</span>' +
+          '<div class="grid-som-stats-inline">' +
+          (tAvail ? '<span class="grid-ssi grid-ssi-avail">' + esc(tAvail) + ' avail</span>' : '') +
+          (tOc ? '<span class="grid-ssi grid-ssi-oc">' + esc(tOc) + ' OC</span>' : '') +
+          (tAl ? '<span class="grid-ssi grid-ssi-al">' + esc(tAl) + ' A/L</span>' : '') +
+          '</div></div>';
+        tr.appendChild(td1);
+        _gridDates.forEach(function (d) {
+          const somPerson = { tracker: group.somTracker };
+          const code = gridCodeForPerson(somPerson, d);
+          const td = document.createElement('td');
+          const dt = new Date(d + 'T00:00:00');
+          td.className = 'gdc' + ((dt.getDay() === 0 || dt.getDay() === 6) ? ' g-wknd' : '') + (d === today ? ' g-today-col' : '');
+          td.dataset.i = _gridDates.indexOf(d);
+          td.dataset.date = d;
+          td.dataset.code = code;
+          td.dataset.personKey = gridPersonKey(somPerson);
+          if (gridHasOverride(somPerson, d)) td.classList.add('grid-edit-mark');
+          td.onclick = function (e) { gridCellClick(d, e); };
+          td.oncontextmenu = function (event) { gridOpenEditPicker(somPerson, d, td, event); };
+          gridApplyStatusCell(td, code);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+
+        group.people.forEach(function (person, idx) {
+          const name = (person.contact && person.contact.name) || (person.tracker && person.tracker.techName) || '-';
+          const area = (person.contact && (person.contact.homeStartLocation || person.contact.workLocations)) || (person.tracker && person.tracker.trackerArea) || '';
+          const row = document.createElement('tr');
+          row.className = 'grow-person' + (state.gridCollapsed[som] ? ' hidden anim-hidden' : '');
+          row.dataset.som = som;
+          row.dataset.name = name;
+          row.dataset.area = area;
+          const rn = document.createElement('td');
+          rn.className = 'gfc gfc0';
+          rn.innerHTML = '<div class="grid-rn">' + esc(idx + 1) + '</div>';
+          row.appendChild(rn);
+          const nameCell = document.createElement('td');
+          nameCell.className = 'gfc gfc1';
+          nameCell.innerHTML = '<div class="grid-nc"><div class="grid-tdot" style="background:' + group.color + '"></div><div style="min-width:0"><div class="grid-pname" title="' + esc(name) + '">' + esc(name) + '</div>' + (area ? '<div class="grid-area" title="' + esc(area) + '">' + esc(area) + '</div>' : '') + '</div></div>';
+          row.appendChild(nameCell);
+          _gridDates.forEach(function (d, di) {
+            const code = gridCodeForPerson(person, d);
+            const dt = new Date(d + 'T00:00:00');
+            const td = document.createElement('td');
+            td.className = 'gdc' + ((dt.getDay() === 0 || dt.getDay() === 6) ? ' g-wknd' : '') + (d === today ? ' g-today-col' : '');
+            td.dataset.i = di;
+            td.dataset.date = d;
+            td.dataset.code = code;
+            td.dataset.personKey = gridPersonKey(person);
+            if (gridHasOverride(person, d)) td.classList.add('grid-edit-mark');
+            td.onclick = function (e) { gridCellClick(d, e); };
+            td.oncontextmenu = function (event) { gridOpenEditPicker(person, d, td, event); };
+            gridApplyStatusCell(td, code);
+            row.appendChild(td);
+          });
+          tbody.appendChild(row);
+        });
+      });
+      return tbody;
+    }
+
+    function gridApplyStatusCell(cell, code) {
+      cell.textContent = '';
+      cell.style.background = '';
+      cell.style.color = '';
+      if (!code) return;
+      const color = GRID_STATUS_COLORS[code] || { bg: '#EDF2F7', text: '#64748b' };
+      cell.style.setProperty('background', color.bg, 'important');
+      cell.style.color = color.text;
+      cell.textContent = code;
+    }
+
+    function gridApplyCellOverride(person, day, code) {
+      const key = gridPersonKey(person);
+      if (!key || !day) return;
+      if (!state.trackerOverrides[key]) state.trackerOverrides[key] = {};
+      if (code) state.trackerOverrides[key][day] = code;
+      else delete state.trackerOverrides[key][day];
+      if (!Object.keys(state.trackerOverrides[key]).length) delete state.trackerOverrides[key];
+      saveData();
+      gridCloseEditPicker();
+      gridBuildTable();
+      gridUpdateSelectedDayUi();
+      gridUpdateStats(gridActiveStatsDay());
+      gridRenderStatPanel();
+      gridInitTooltip();
+      gridInitDragScroll();
+    }
+
+    function gridOpenEditPicker(person, day, cell, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const pop = document.getElementById('grid-edit-pop');
+      if (!pop || !person || !day || !cell) return;
+      state.gridSelectedDay = day;
+      gridUpdateSelectedDayUi();
+      gridUpdateStats(gridActiveStatsDay());
+      const todayEl = document.getElementById('grid-today');
+      if (todayEl) {
+        todayEl.textContent = 'Selected: ' + new Date(day + 'T00:00:00').toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      }
+      const name = (person.contact && person.contact.name) || (person.tracker && person.tracker.techName) || 'Technician';
+      const base = gridBaseCode(person, day);
+      const current = gridCodeForPerson(person, day);
+      const hasOverride = gridHasOverride(person, day);
+      const groups = [
+        { label: 'Working',  codes: ['SA', 'SD', 'D', 'D1', 'D2', 'R'] },
+        { label: 'On Call',  codes: ['OC', '50'] },
+        { label: 'Leave',    codes: ['A/L', 'S/L', 'SP/L'] },
+        { label: 'Other',    codes: ['WTT', 'BH', 'OFF', 'UWU'] }
+      ];
+      const dt = new Date(day + 'T00:00:00');
+      const dateLabel = dt.toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' });
+      const nameLabel = esc(name) + (hasOverride ? ' · <span style="color:var(--accent)">edited</span>' : '');
+      function rowHtml(code) {
+        const color = GRID_STATUS_COLORS[code] || { bg: '#EDF2F7', text: '#64748b' };
+        const label = CODE_LABELS[code] || code;
+        const active = code === current;
+        return '<button type="button" class="grid-edit-row' + (active ? ' active' : '') + '" onclick="gridChooseStatus(\'' + esc(jsArg(code)) + '\')">' +
+          '<div class="grid-edit-chip" style="background:' + color.bg + ';color:' + color.text + '">' + esc(code) + '</div>' +
+          '<span class="grid-edit-row-lbl">' + esc(label) + '</span>' +
+          '</button>';
+      }
+      pop._gridEditPerson = person;
+      pop._gridEditDay = day;
+      const curColor = GRID_STATUS_COLORS[current] || { bg: '#EDF2F7', text: '#64748b' };
+      pop.innerHTML =
+        '<div class="grid-edit-head">' +
+          '<div class="grid-edit-date">' + esc(dateLabel) + '</div>' +
+          '<div class="grid-edit-name">' + nameLabel + '</div>' +
+          '<div class="grid-edit-cur">Current: <span class="grid-edit-cur-chip" style="background:' + curColor.bg + ';color:' + curColor.text + '">' + esc(current || '—') + '</span><span class="grid-edit-cur-lbl">' + esc(CODE_LABELS[current] || current || '—') + '</span></div>' +
+        '</div>' +
+        '<div class="grid-edit-scroll">' +
+          groups.map(function (g, gi) {
+            const rows = g.codes.map(rowHtml).join('');
+            return (gi > 0 ? '<div class="grid-edit-sep"></div>' : '') +
+              '<div class="grid-edit-grp">' + esc(g.label) + '</div>' + rows;
+          }).join('') +
+        '</div>' +
+        '<div class="grid-edit-foot">' +
+          (hasOverride ? '<button type="button" class="grid-edit-action danger" onclick="gridChooseStatus(\'\')">Clear override</button>' : '') +
+          '<button type="button" class="grid-edit-action" onclick="gridCloseEditPicker()">Cancel</button>' +
+        '</div>';
+      const rect = cell.getBoundingClientRect();
+      const vw = window.innerWidth || document.documentElement.clientWidth || 0;
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      const width = Math.min(260, vw - 24);
+      let left = Math.max(12, Math.min(vw - width - 12, rect.left + rect.width / 2 - width / 2));
+      let top = rect.bottom + 8;
+      if (top + 255 > vh) top = Math.max(12, rect.top - 255);
+      pop.style.width = width + 'px';
+      pop.style.left = left + 'px';
+      pop.style.top = top + 'px';
+      pop.classList.add('open');
+    }
+
+    function gridChooseStatus(code) {
+      const pop = document.getElementById('grid-edit-pop');
+      if (!pop || !pop._gridEditPerson || !pop._gridEditDay) return;
+      gridApplyCellOverride(pop._gridEditPerson, pop._gridEditDay, code);
+    }
+
+    function gridCloseEditPicker() {
+      const pop = document.getElementById('grid-edit-pop');
+      if (!pop) return;
+      pop.classList.remove('open');
+      pop.innerHTML = '';
+      pop._gridEditPerson = null;
+      pop._gridEditDay = null;
+    }
+
+    function gridWeekNum(d) {
+      const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = dt.getUTCDay() || 7;
+      dt.setUTCDate(dt.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+      return Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function gridFrozenWidth() {
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--grid-name-col-w');
+      return 36 + (parseFloat(raw) || 220);
+    }
+
+    function gridScrollToToday() {
+      const idx = _gridDates.indexOf(todayStr());
+      const wrap = document.getElementById('grid-wrap');
+      if (!wrap || idx < 0) return;
+      wrap.scrollLeft = Math.max(0, idx * 28 - (wrap.clientWidth - gridFrozenWidth()) / 2);
+    }
+
+    function gridInitTooltip() {
+      const wrap = document.getElementById('grid-wrap');
+      if (!wrap || wrap._tooltipReady) return;
+      wrap._tooltipReady = true;
+      wrap.addEventListener('mouseover', function (e) {
+        const td = e.target.closest('td.gdc');
+        if (!td) {
+          gridClearHoverGuides();
+          gridHideTooltip();
+          return;
+        }
+        const row = td.closest('tr');
+        if (!row || !row.dataset.name) {
+          gridClearHoverGuides();
+          gridHideTooltip();
+          return;
+        }
+        const idx = Number(td.dataset.i);
+        if (isNaN(idx) || idx >= _gridDates.length) {
+          gridClearHoverGuides();
+          gridHideTooltip();
+          return;
+        }
+        gridSetHoverGuides(row, idx);
+        const d = new Date(_gridDates[idx] + 'T00:00:00');
+        const name = row.querySelector('.grid-pname') ? row.querySelector('.grid-pname').textContent : row.dataset.name;
+        const code = td.textContent.trim();
+        const color = GRID_STATUS_COLORS[code] || { bg: '#EDF2F7', text: '#64748b' };
+        gridShowTooltip(e, name, d.toLocaleDateString('en-IE', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }), code, CODE_LABELS[code] || code || 'No status', color);
+      });
+      wrap.addEventListener('mousemove', gridPositionTooltip);
+      wrap.addEventListener('mouseout', function (e) {
+        if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('td.gdc')) {
+          gridClearHoverGuides();
+          gridHideTooltip();
+        }
+      });
+    }
+
+    function gridSetHoverGuides(row, index) {
+      const prev = document.querySelector('tr.grid-hover-row-active');
+      if (prev && prev !== row) {
+        prev.classList.remove('grid-hover-row-active');
+        prev.querySelectorAll('td.gdc.hover-row').forEach(function (cell) { cell.classList.remove('hover-row'); });
+      }
+      document.querySelectorAll('#grid-table .hover-col').forEach(function (cell) { cell.classList.remove('hover-col'); });
+      row.classList.add('grid-hover-row-active');
+      row.querySelectorAll('td.gdc').forEach(function (cell) { cell.classList.add('hover-row'); });
+      document.querySelectorAll('#grid-table [data-i="' + index + '"]').forEach(function (cell) { cell.classList.add('hover-col'); });
+    }
+
+    function gridClearHoverGuides() {
+      document.querySelectorAll('.grid-hover-row-active').forEach(function (row) { row.classList.remove('grid-hover-row-active'); });
+      document.querySelectorAll('#grid-table .hover-row,#grid-table .hover-col').forEach(function (cell) { cell.classList.remove('hover-row', 'hover-col'); });
+    }
+
+    function gridShowTooltip(e, name, date, code, desc, color) {
+      if (!_gridTooltip) {
+        _gridTooltip = document.createElement('div');
+        _gridTooltip.style.cssText = 'position:fixed;z-index:9999;background:#fff;border:1px solid #d5e1ef;border-radius:8px;padding:10px 14px;font-size:12px;color:#10203a;box-shadow:0 10px 30px rgba(31,48,73,0.18);pointer-events:none;white-space:nowrap;display:none;min-width:190px;font-family:inherit';
+        document.body.appendChild(_gridTooltip);
+      }
+      _gridTooltip.innerHTML = '<div style="font-weight:900;font-size:13px;margin-bottom:2px">' + esc(name) + '</div>' +
+        '<div style="font-size:11px;color:#64748b;margin-bottom:8px">' + esc(date) + '</div>' +
+        (code ? '<div style="display:flex;align-items:center;gap:7px"><div style="width:11px;height:11px;border-radius:3px;background:' + color.bg + ';flex-shrink:0"></div><span style="font-weight:900;color:' + color.text + '">' + esc(code) + '</span><span style="color:#48617f">' + esc(desc) + '</span></div>' : '<div style="color:#64748b">No status</div>');
+      _gridTooltip.style.display = 'block';
+      gridPositionTooltip(e);
+    }
+
+    function gridPositionTooltip(e) {
+      if (!_gridTooltip || _gridTooltip.style.display === 'none') return;
+      let x = e.clientX + 14;
+      let y = e.clientY + 14;
+      if (x + _gridTooltip.offsetWidth > window.innerWidth - 8) x = e.clientX - _gridTooltip.offsetWidth - 10;
+      if (y + _gridTooltip.offsetHeight > window.innerHeight - 8) y = e.clientY - _gridTooltip.offsetHeight - 10;
+      _gridTooltip.style.left = x + 'px';
+      _gridTooltip.style.top = y + 'px';
+    }
+
+    function gridHideTooltip() {
+      if (_gridTooltip) _gridTooltip.style.display = 'none';
+    }
+
+    function gridInitDragScroll() {
+      const wrap = document.getElementById('grid-wrap');
+      if (!wrap || wrap._dragReady) return;
+      wrap._dragReady = true;
+      let dragging = false;
+      let moved = false;
+      let startX = 0;
+      let startY = 0;
+      let startLeft = 0;
+      let startTop = 0;
+      let pointerId = null;
+      const beginDrag = function (e) {
+        if (e.button !== 0 || e.target.closest('button,input,select,a')) return;
+        dragging = true;
+        moved = false;
+        wrap._gridDragMoved = false;
+        pointerId = e.pointerId;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = wrap.scrollLeft;
+        startTop = wrap.scrollTop;
+        wrap.classList.add('dragging');
+        try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+      };
+      const moveDrag = function (e) {
+        if (!dragging || (pointerId !== null && e.pointerId !== pointerId)) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+        if (moved) wrap._gridDragMoved = true;
+        wrap.scrollLeft = startLeft - dx;
+        wrap.scrollTop = startTop - dy;
+        if (moved) {
+          e.preventDefault();
+          gridHideTooltip();
+        }
+      };
+      const stop = function (e) {
+        if (!dragging || (e && pointerId !== null && e.pointerId !== pointerId)) return;
+        dragging = false;
+        pointerId = null;
+        wrap.classList.remove('dragging');
+        setTimeout(function () {
+          wrap._gridDragMoved = false;
+        }, 0);
+        try { if (e) wrap.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      wrap.addEventListener('pointerdown', beginDrag, true);
+      wrap.addEventListener('pointermove', moveDrag, true);
+      wrap.addEventListener('click', gridHandleTimelineDayClick, true);
+      document.addEventListener('pointermove', moveDrag, true);
+      document.addEventListener('pointerup', stop, true);
+      document.addEventListener('pointercancel', stop, true);
+      wrap.addEventListener('lostpointercapture', function () {
+        dragging = false;
+        pointerId = null;
+        wrap.classList.remove('dragging');
+      });
+    }
+
     function clearPlannerData() {
       if (!confirm('Clear imported planner data from this browser?')) return;
       state.contacts = [];
@@ -2742,7 +5190,13 @@
       state.selectedFault = null;
       state.imports = { contacts: null, tracker: null, exchanges: null, cabinets: null };
       state.aliases = {};
+      state.placeAliases = {};
       state.ignored = {};
+      state.trackerOverrides = {};
+      state.gridCollapsed = {};
+      state.gridActiveSom = 'all';
+      state.gridDensity = 'normal';
+      state.gridWeekOffset = 0;
       localStorage.removeItem(STORAGE_KEY);
       setStatus('contacts', 'No contacts imported yet.', '');
       setStatus('tracker', 'No tracker imported yet.', '');
@@ -2760,13 +5214,755 @@
       if (filter) filter.value = 'best';
     }
 
+    // ── MAP ──────────────────────────────────────────────────
+    // chip+triangle+dot icon (Option C style)
+    // anchor = dot centre, chip floats above
+    function mapChipIcon(chipBg, chipColor, dotColor, labelHtml, anchorY) {
+      var inner =
+        '<div style="background:' + chipBg + ';color:' + chipColor + ';font-size:9px;font-weight:900;padding:2px 7px;border-radius:4px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.22);font-family:Inter,system-ui,sans-serif;line-height:1.4">' + labelHtml + '</div>' +
+        '<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ' + chipBg + ';margin:0 auto"></div>' +
+        '<div style="width:8px;height:8px;background:' + dotColor + ';border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);margin:0 auto"></div>';
+      var html = '<div style="transform:translate(-50%,-' + anchorY + 'px);display:inline-flex;flex-direction:column;align-items:center;cursor:pointer">' + inner + '</div>';
+      return L.divIcon({ html: html, className: '', iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -anchorY] });
+    }
+
+    function mapDotIcon(color, size) {
+      var half = size / 2;
+      var html = '<div style="width:' + size + 'px;height:' + size + 'px;background:' + color + ';border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3);transform:translate(-' + half + 'px,-' + half + 'px)"></div>';
+      return L.divIcon({ html: html, className: '', iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -half] });
+    }
+    var _leafletMap = null;
+    var _mapLayers = { exchanges: null, cabinets: null, technicians: null };
+    var _mapVisible = { exchanges: true, cabinets: true, technicians: true };
+    var _mapLabelsOn = true;
+    var _mapExMarkers = [];
+    var _mapCabMarkers = [];
+    var _mapTechMarkers = [];
+    var _mapTechCache = {}; // normLocation → [lat,lng] cached from Nominatim
+
+    function mapParseCoord(link) {
+      if (!link) return null;
+      var p = String(link).split(',');
+      if (p.length < 2) return null;
+      var lat = parseFloat(p[0]), lng = parseFloat(p[1]);
+      if (isNaN(lat) || isNaN(lng)) return null;
+      return [lat, lng];
+    }
+
+    function renderMapView() {
+      var container = document.getElementById('map-container');
+      if (!container) return;
+      var dateEl = document.getElementById('msb-date');
+      if (dateEl && !dateEl.value) {
+        dateEl.value = todayStr();
+        // Only auto-set time mode on first open, not on every re-render
+        _msbAfterHours = isAfterHours();
+        var btnDay = document.getElementById('msb-btn-day');
+        var btnAfter = document.getElementById('msb-btn-after');
+        if (btnDay) btnDay.classList.toggle('active', !_msbAfterHours);
+        if (btnAfter) btnAfter.classList.toggle('active', _msbAfterHours);
+      }
+
+      if (!_leafletMap) {
+        _leafletMap = L.map('map-container', { center: [53.35, -8.1], zoom: 7 });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19
+        }).addTo(_leafletMap);
+        _leafletMap.on('zoomend', mapUpdateLabelVisibility);
+      }
+
+      mapBuildExchangeLayer();
+      mapBuildCabinetLayer();
+      mapBuildTechLayer();
+    }
+
+    function mapBuildExchangeLayer() {
+      if (_mapLayers.exchanges) { _leafletMap.removeLayer(_mapLayers.exchanges); _mapLayers.exchanges = null; }
+      var exchanges = state.exchanges || [];
+      var cluster = L.markerClusterGroup({ maxClusterRadius: 40, disableClusteringAtZoom: 12 });
+      var count = 0;
+      _mapExMarkers = [];
+      exchanges.forEach(function (ex) {
+        var ll = mapParseCoord(ex.link);
+        if (!ll) return;
+        var marker = L.marker(ll, { icon: mapDotIcon('#2d6be4', 10) });
+        marker._mapExData = ex;
+        marker.bindPopup(
+          '<div style="font-family:inherit;min-width:160px">' +
+          '<div style="font-size:13px;font-weight:900;color:#10203a">' + esc(ex.name) + '</div>' +
+          '<div style="font-size:11px;color:#48617f;margin:2px 0 8px;font-weight:700">' + esc(ex.code) + '</div>' +
+          '<div style="font-size:11px;color:#89a0ba">' + esc(ex.link) + '</div>' +
+          '</div>'
+        );
+        _mapExMarkers.push(marker);
+        cluster.addLayer(marker);
+        count++;
+      });
+      _mapLayers.exchanges = cluster;
+      if (_mapVisible.exchanges) cluster.addTo(_leafletMap);
+      var el = document.getElementById('map-stat-ex');
+      if (el) el.textContent = count.toLocaleString() + ' exchanges';
+    }
+
+    function mapBuildCabinetLayer() {
+      if (_mapLayers.cabinets) { _leafletMap.removeLayer(_mapLayers.cabinets); _mapLayers.cabinets = null; }
+      var cabinets = state.cabinets || [];
+      var cluster = L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 13 });
+      var count = 0;
+      _mapCabMarkers = [];
+      cabinets.forEach(function (cab) {
+        var ll = mapParseCoord(cab.link);
+        if (!ll) return;
+        var marker = L.marker(ll, { icon: mapDotIcon('#ea580c', 8) });
+        marker._mapCabData = cab;
+        marker.bindPopup(
+          '<div style="font-family:inherit;min-width:140px">' +
+          '<div style="font-size:13px;font-weight:900;color:#10203a">' + esc(cab.mdf) + ' / ' + esc(cab.ccp) + '</div>' +
+          '<div style="font-size:11px;color:#48617f;margin:2px 0">IPID: ' + esc(cab.ipid) + '</div>' +
+          '<div style="font-size:11px;color:#89a0ba">' + esc(cab.link) + '</div>' +
+          '</div>'
+        );
+        _mapCabMarkers.push(marker);
+        cluster.addLayer(marker);
+        count++;
+      });
+      _mapLayers.cabinets = cluster;
+      if (_mapVisible.cabinets) cluster.addTo(_leafletMap);
+      var el = document.getElementById('map-stat-cab');
+      if (el) el.textContent = count.toLocaleString() + ' cabinets';
+    }
+
+    var _SOM_COLORS = ['#2d6be4','#15803d','#9333ea','#b45309','#0e7490','#be123c','#c026d3','#0284c7'];
+    var _somColorMap = {};
+    function mapSomColor(som) {
+      if (!_somColorMap[som]) {
+        var idx = Object.keys(_somColorMap).length % _SOM_COLORS.length;
+        _somColorMap[som] = _SOM_COLORS[idx];
+      }
+      return _somColorMap[som];
+    }
+
+    function mapTechIcon(color) {
+      // Person silhouette SVG pin
+      var svg = '<svg viewBox="0 0 24 34" width="20" height="28" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M12 0C5.4 0 0 5.4 0 12c0 8.4 12 22 12 22S24 20.4 24 12C24 5.4 18.6 0 12 0z" fill="' + color + '" stroke="white" stroke-width="2"/>' +
+        '<circle cx="12" cy="10" r="3.5" fill="white" opacity="0.95"/>' +
+        '<path d="M6 19c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="white" opacity="0.95"/>' +
+        '</svg>';
+      return L.divIcon({ html: svg, className: '', iconSize: [20, 28], iconAnchor: [10, 28], popupAnchor: [0, -28] });
+    }
+
+    function mapTechPopup(loc, people) {
+      return '<div style="font-family:inherit;min-width:180px">' +
+        '<div style="font-size:11px;font-weight:700;color:#89a0ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">' + esc(loc) + '</div>' +
+        people.map(function (p) {
+          return '<div style="margin-bottom:8px">' +
+            '<div style="font-size:13px;font-weight:900;color:#10203a">' + esc(p.name) + '</div>' +
+            '<div style="font-size:11px;color:#48617f;margin:1px 0">' + esc(p.role || '—') + '</div>' +
+            (p.mobile ? '<div style="font-size:11px;color:#48617f">📞 ' + esc(p.mobile) + '</div>' : '') +
+            '<div style="font-size:10px;color:#89a0ba;margin-top:2px">Manager: ' + esc(p.manager || '—') + '</div>' +
+            '</div>';
+        }).join('<hr style="border:none;border-top:1px solid #eef4fb;margin:4px 0">') +
+        '</div>';
+    }
+
+    function mapTechLabelIcon(color, label) {
+      var pinSvg = '<svg viewBox="0 0 24 34" width="20" height="28" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M12 0C5.4 0 0 5.4 0 12c0 8.4 12 22 12 22S24 20.4 24 12C24 5.4 18.6 0 12 0z" fill="' + color + '" stroke="white" stroke-width="2"/>' +
+        '<circle cx="12" cy="10" r="3.5" fill="white" opacity="0.95"/>' +
+        '<path d="M6 19c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="white" opacity="0.95"/>' +
+        '</svg>';
+      var html = '<div style="transform:translate(-50%,-52px);display:inline-flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer">' +
+        '<div style="background:#fff;border-radius:4px;padding:3px 7px;font-size:10px;font-weight:700;color:#10203a;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2);font-family:Inter,system-ui,sans-serif;line-height:1.6;text-align:left">' + label + '</div>' +
+        pinSvg +
+        '</div>';
+      return L.divIcon({ html: html, className: '', iconSize: [0, 0], iconAnchor: [0, 0], popupAnchor: [0, -52] });
+    }
+
+    function mapBuildTechLayer() {
+      if (_mapLayers.technicians) {
+        _leafletMap.removeLayer(_mapLayers.technicians);
+        _mapLayers.technicians = null;
+      }
+      var contacts = state.contacts || [];
+      if (!contacts.length) return;
+
+      var group = L.layerGroup();
+      var placed = 0;
+      var unresolved = [];
+      _mapTechMarkers = [];
+
+      // Group contacts by homeStartLocation to avoid stacking pins
+      var byLocation = {};
+      contacts.forEach(function (c) {
+        var loc = (c.homeStartLocation || '').trim();
+        if (!loc) return;
+        if (!byLocation[loc]) byLocation[loc] = [];
+        byLocation[loc].push(c);
+      });
+
+      Object.keys(byLocation).forEach(function (loc) {
+        var people = byLocation[loc];
+        // Try exchange match first
+        var ex = exchangeForPlace(loc);
+        var coords = ex ? parseCoords(ex.link) : null;
+        // Try cached Nominatim result
+        if (!coords && _mapTechCache[norm(loc)]) coords = _mapTechCache[norm(loc)];
+
+        if (coords) {
+          var color = mapSomColor(people[0].manager || 'Unknown');
+          var icon = mapTechIcon(color);
+          var names = people.map(function (p) { return esc(p.name); }).join('<br>');
+          var marker = L.marker([coords.lat, coords.lng], { icon: icon, zIndexOffset: 500 });
+          marker._mapTechData = { loc: loc, people: people, color: color };
+          marker.bindPopup(mapTechPopup(loc, people));
+          group.addLayer(marker);
+          _mapTechMarkers.push(marker);
+          placed++;
+        } else {
+          unresolved.push(loc);
+        }
+      });
+
+      _mapLayers.technicians = group;
+      if (_mapVisible.technicians) group.addTo(_leafletMap);
+      var el = document.getElementById('map-stat-tech');
+      if (el) el.textContent = placed + ' technician locations';
+
+      // Geocode unresolved via Nominatim (rate-limited)
+      if (unresolved.length) mapGeocodeQueue(unresolved, group);
+    }
+
+    function mapGeocodeQueue(queue, group) {
+      var i = 0;
+      function next() {
+        if (i >= queue.length) return;
+        var loc = queue[i++];
+        var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ie&q=' + encodeURIComponent(loc);
+        fetch(url, { headers: { 'Accept-Language': 'en' } })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data && data[0]) {
+              var ll = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+              _mapTechCache[norm(loc)] = { lat: ll[0], lng: ll[1] };
+              var people = (state.contacts || []).filter(function (c) { return (c.homeStartLocation || '').trim() === loc; });
+              if (people.length && _mapLayers.technicians) {
+                var color = mapSomColor(people[0].manager || 'Unknown');
+                var marker = L.marker(ll, { icon: mapTechIcon(color), zIndexOffset: 500 });
+                marker._mapTechData = { loc: loc, people: people, color: color };
+                marker.bindPopup(mapTechPopup(loc, people));
+                group.addLayer(marker);
+                _mapTechMarkers.push(marker);
+                var el = document.getElementById('map-stat-tech');
+                if (el) {
+                  var n = parseInt(el.textContent) || 0;
+                  el.textContent = (n + 1) + ' technician locations';
+                }
+              }
+            }
+          })
+          .catch(function () {})
+          .finally(function () { setTimeout(next, 1100); }); // Nominatim ToS: max 1 req/s
+      }
+      next();
+    }
+
+    function mapToggleLabels() {
+      _mapLabelsOn = !_mapLabelsOn;
+      var btn = document.getElementById('map-btn-labels');
+      if (btn) btn.classList.toggle('active', _mapLabelsOn);
+      mapUpdateLabelVisibility();
+    }
+
+    function mapUpdateLabelVisibility() {
+      var z = _leafletMap ? _leafletMap.getZoom() : 0;
+      var showEx   = _mapLabelsOn && z >= 10;
+      var showCab  = _mapLabelsOn && z >= 13;
+      var showTech = _mapLabelsOn && z >= 10;
+      _mapExMarkers.forEach(function (m) {
+        var ex = m._mapExData;
+        if (!ex) return;
+        m.setIcon(showEx
+          ? mapChipIcon('#2d6be4', '#fff', '#2d6be4', '<strong>' + esc(ex.code) + '</strong> <span style="font-weight:600;opacity:.9">' + esc(ex.name) + '</span>', 30)
+          : mapDotIcon('#2d6be4', 10));
+      });
+      _mapCabMarkers.forEach(function (m) {
+        var cab = m._mapCabData;
+        if (!cab) return;
+        m.setIcon(showCab
+          ? mapChipIcon('#ea580c', '#fff', '#ea580c', '<strong>' + esc(cab.mdf) + '</strong>-' + esc(cab.ccp), 27)
+          : mapDotIcon('#ea580c', 8));
+      });
+      _mapTechMarkers.forEach(function (m) {
+        var d = m._mapTechData;
+        if (!d) return;
+        if (showTech) {
+          var shown = d.people.slice(0, 2).map(function (p) { return esc(p.name); }).join('<br>');
+          var extra = d.people.length > 2 ? '<br><span style="opacity:.6;font-weight:600">+' + (d.people.length - 2) + ' more</span>' : '';
+          var label = shown + extra;
+          m.setIcon(mapTechLabelIcon(d.color, label));
+        } else {
+          m.setIcon(mapTechIcon(d.color));
+        }
+      });
+    }
+
+    function mapToggleLayer(which) {
+      if (!_leafletMap) return;
+      _mapVisible[which] = !_mapVisible[which];
+      var btn = document.getElementById('map-btn-' + which);
+      if (btn) btn.classList.toggle('active', _mapVisible[which]);
+      var layer = _mapLayers[which];
+      if (!layer) return;
+      if (_mapVisible[which]) _leafletMap.addLayer(layer);
+      else _leafletMap.removeLayer(layer);
+    }
+
+    // ── MAP SIDEBAR ──────────────────────────────────────────
+    var _msbSelectedFault = null;
+    var _msbFaultMarker = null;
+    var _msbRouteLayer = null;
+    var _msbRouteLine = null;
+    var _msbCandidates = [];
+    var _msbSelectedCandIdx = -1;
+    var _msbAfterHours = (new Date().getHours() >= 16);
+
+    function msbSetTimeMode(mode) {
+      _msbAfterHours = (mode === 'after');
+      document.getElementById('msb-btn-day').classList.toggle('active', !_msbAfterHours);
+      document.getElementById('msb-btn-after').classList.toggle('active', _msbAfterHours);
+      msbRenderCandidates();
+    }
+
+    function msbFaultStatusScore(code) {
+      return settingsStatusScore(code, _msbAfterHours);
+    }
+
+    function msbPriorityLabel(code) {
+      if (_settings.neverCall.includes(code)) return { label: 'Unavailable', cls: 'unavailable' };
+      var list = _msbAfterHours ? _settings.afterPriority : _settings.dayPriority;
+      var idx = list.indexOf(code);
+      if (idx === -1) return null;
+      if (idx === 0) return { label: 'Call first', cls: 'call-first' };
+      if (idx === 1) return { label: 'Call first', cls: 'call-first' };
+      if (idx <= 3) return { label: 'Available', cls: '' };
+      return null;
+    }
+
+    function msbSearch(q) {
+      var el = document.getElementById('msb-results');
+      if (!el) return;
+      q = (q || '').trim();
+      if (!q) { el.innerHTML = ''; return; }
+      var nq = norm(q);
+      var rows = locationRows().filter(function (r) { return faultSearchScore(r, nq) > 0; })
+        .sort(function (a, b) { return faultSearchScore(b, nq) - faultSearchScore(a, nq); })
+        .slice(0, 15);
+      if (!rows.length) { el.innerHTML = '<div class="msb-result" style="color:var(--text-muted)">No results</div>'; return; }
+      el.innerHTML = rows.map(function (r) {
+        var parent = r.type === 'cabinet' ? findExchangeByCode(r.code || r.mdf) : null;
+        var name = r.type === 'cabinet' ? (r.name || r.id) : (r.name + (r.code ? ' (' + r.code + ')' : ''));
+        var meta = r.type === 'cabinet' ? (parent ? parent.name + ' · ' : '') + r.id : r.code;
+        var safeType = esc(r.type);
+        var safeId = esc(String(r.id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"));
+        return '<button class="msb-result" onclick="msbSelect(\'' + safeType + '\',\'' + safeId + '\')">' +
+          '<span class="pill ' + (r.type === 'exchange' ? 'green' : 'purple') + '" style="font-size:9px;padding:2px 6px">' + esc(r.type) + '</span>' +
+          '<span class="msb-result-name">' + esc(name) + '</span>' +
+          '<span class="msb-result-meta">' + esc(meta || '') + '</span>' +
+          '</button>';
+      }).join('');
+    }
+
+    function msbSelect(type, id) {
+      var el = document.getElementById('msb-results');
+      if (el) el.innerHTML = '';
+      var rows = locationRows();
+      var row = rows.find(function (r) { return r.type === type && String(r.id) === String(id); });
+      if (!row) return;
+      _msbSelectedFault = enrichFaultLocation(row);
+      var inp = document.getElementById('msb-search-input');
+      if (inp) inp.value = _msbSelectedFault.name || _msbSelectedFault.id || '';
+      var bar = document.getElementById('msb-sel-bar');
+      var pill = document.getElementById('msb-sel-pill');
+      var name = document.getElementById('msb-sel-name');
+      if (bar) bar.style.display = 'flex';
+      if (pill) pill.textContent = type;
+      if (name) name.textContent = _msbSelectedFault.name || _msbSelectedFault.id || '';
+      msbRenderCandidates();
+      if (_msbSelectedFault.coords && _leafletMap) {
+        var ll = [_msbSelectedFault.coords.lat, _msbSelectedFault.coords.lng];
+        if (_msbFaultMarker) _leafletMap.removeLayer(_msbFaultMarker);
+        var svg = '<svg viewBox="0 0 24 34" width="22" height="32" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M12 0C5.4 0 0 5.4 0 12c0 8.4 12 22 12 22S24 20.4 24 12C24 5.4 18.6 0 12 0z" fill="#dc2626" stroke="white" stroke-width="2"/>' +
+          '<circle cx="12" cy="12" r="5" fill="white" opacity="0.9"/>' +
+          '</svg>';
+        _msbFaultMarker = L.marker(ll, {
+          icon: L.divIcon({ html: svg, className: '', iconSize: [22, 32], iconAnchor: [11, 32], popupAnchor: [0, -32] }),
+          zIndexOffset: 1000
+        }).addTo(_leafletMap);
+        _msbFaultMarker.bindPopup('<strong>' + esc(_msbSelectedFault.name || '') + '</strong><br><span style="font-size:11px;color:#64748b">' + esc(type) + ' · ' + esc(String(id)) + '</span>');
+        _leafletMap.flyTo(ll, 13, { duration: 1 });
+      }
+    }
+
+    function msbClear() {
+      _msbSelectedFault = null;
+      msbClearRoute();
+      if (_msbFaultMarker && _leafletMap) { _leafletMap.removeLayer(_msbFaultMarker); _msbFaultMarker = null; }
+      var inp = document.getElementById('msb-search-input');
+      if (inp) inp.value = '';
+      var bar = document.getElementById('msb-sel-bar');
+      if (bar) bar.style.display = 'none';
+      var cands = document.getElementById('msb-candidates');
+      if (cands) cands.innerHTML = '<div class="msb-empty">Search for an exchange or cabinet to see the closest available technicians.</div>';
+    }
+
+    function msbStatusPill(code) {
+      var c = GRID_STATUS_COLORS[code] || { bg: '#EDF2F7', text: '#94A3B8' };
+      return '<span class="msb-status" style="background:' + c.bg + ';color:' + c.text + '">' + esc(code || '—') + '</span>';
+    }
+
+    function msbClearRoute() {
+      if (_msbRouteLine && _leafletMap) { _leafletMap.removeLayer(_msbRouteLine); _msbRouteLine = null; }
+      if (_msbRouteLayer && _leafletMap) { _leafletMap.removeLayer(_msbRouteLayer); _msbRouteLayer = null; }
+      _msbSelectedCandIdx = -1;
+      document.querySelectorAll('.msb-cand').forEach(function (el) { el.classList.remove('msb-cand-active'); });
+    }
+
+    function msbClickCand(idx) {
+      if (_msbSelectedCandIdx === idx) { msbClearRoute(); return; }
+      msbClearRoute();
+      _msbSelectedCandIdx = idx;
+      var cand = _msbCandidates[idx];
+      if (!cand) return;
+      var cards = document.querySelectorAll('.msb-cand');
+      if (cards[idx]) cards[idx].classList.add('msb-cand-active');
+      var startLoc = cand.contact.homeStartLocation;
+      if (!startLoc || !_msbSelectedFault || !_msbSelectedFault.coords) return;
+      var ex = exchangeForPlace(startLoc);
+      var startCoords = ex ? parseCoords(ex.link) : (_mapTechCache[norm(startLoc)] || null);
+      if (!startCoords) return;
+      var fc = _msbSelectedFault.coords;
+      var url = 'https://router.project-osrm.org/route/v1/driving/' +
+        startCoords.lng + ',' + startCoords.lat + ';' +
+        fc.lng + ',' + fc.lat +
+        '?overview=full&geometries=geojson';
+      fetch(url)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.routes || !data.routes[0]) throw new Error('no route');
+          var route = data.routes[0];
+          var lls = route.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+          var km = (route.distance / 1000).toFixed(1);
+          var mins = Math.round(route.duration / 60);
+          var hrs = mins >= 60 ? Math.floor(mins/60) + 'h ' + (mins%60) + 'm' : mins + ' min';
+          _msbRouteLine = L.polyline(lls, { color: '#2d6be4', weight: 4, opacity: 0.85 }).addTo(_leafletMap);
+          _msbRouteLine.bindPopup(
+            '<div style="font-family:inherit">' +
+            '<div style="font-size:13px;font-weight:900;color:#10203a">' + esc(cand.contact.name || '') + '</div>' +
+            '<div style="font-size:11px;color:#48617f;margin-top:4px">🚗 ' + km + ' km · ' + hrs + '</div>' +
+            '<div style="font-size:10px;color:#89a0ba;margin-top:2px">From: ' + esc(startLoc) + '</div>' +
+            '</div>'
+          ).openPopup();
+          // Update the card with real distance
+          var cards = document.querySelectorAll('.msb-cand');
+          if (cards[idx]) {
+            var hint = cards[idx].querySelector('.msb-route-hint');
+            if (hint) hint.textContent = '🚗 ' + km + ' km · ' + hrs;
+          }
+          _leafletMap.fitBounds(_msbRouteLine.getBounds(), { padding: [40, 40] });
+        })
+        .catch(function () {
+          // Fallback: straight dashed line
+          _msbRouteLine = L.polyline(
+            [[startCoords.lat, startCoords.lng], [fc.lat, fc.lng]],
+            { color: '#2d6be4', weight: 3, opacity: 0.7, dashArray: '8 5' }
+          ).addTo(_leafletMap);
+          _leafletMap.fitBounds(_msbRouteLine.getBounds(), { padding: [40, 40] });
+        });
+    }
+
+    function msbRenderCandidates() {
+      var el = document.getElementById('msb-candidates');
+      if (!el) return;
+      if (!_msbSelectedFault) { el.innerHTML = '<div class="msb-empty">No fault selected.</div>'; return; }
+      var date = (document.getElementById('msb-date') || {}).value || todayStr();
+      var rows = joinedRows().map(function (jr) {
+        var contact = jr.contact || {};
+        var tracker = jr.tracker || {};
+        var code = tracker.availability ? (tracker.availability[date] || '') : '';
+        var match = scoreAreaMatch(_msbSelectedFault, contact, tracker);
+        return { contact: contact, tracker: tracker, code: code, match: match, total: match.score + msbFaultStatusScore(code) };
+      }).filter(function (r) { return r.contact && r.match.score > 0; })
+        .sort(function (a, b) { return b.total !== a.total ? b.total - a.total : String(a.contact.name).localeCompare(String(b.contact.name)); });
+
+      if (!rows.length) {
+        el.innerHTML = '<div class="msb-empty">No matched technicians found for this location.</div>';
+        return;
+      }
+
+      var inArea  = rows.filter(function (r) { return r.match.label === 'Work area match' || r.match.label === 'Possible area match'; });
+      var nearby  = rows.filter(function (r) { return r.match.label !== 'Work area match' && r.match.label !== 'Possible area match'; });
+      _msbCandidates = inArea.concat(nearby).slice(0, 15);
+      _msbSelectedCandIdx = -1;
+
+      var rankColors = ['#22c55e','#22c55e','#84cc16','#f59e0b','#94a3b8'];
+
+      function candHtml(r, i) {
+        var c = r.contact;
+        var isBest = i === 0 && inArea.length > 0;
+        var rankColor = rankColors[Math.min(i, rankColors.length - 1)];
+        var matchCls = r.match.cls === 'green' ? 'msb-match-green' : r.match.cls === 'amber' ? 'msb-match-amber' : 'msb-match-gray';
+        var priority = msbPriorityLabel(r.code);
+        var priorityHtml = priority ? '<span class="msb-priority ' + priority.cls + '">' + priority.label + '</span>' : '';
+        return '<div class="msb-cand' + (isBest ? ' best' : '') + '" onclick="msbClickCand(' + i + ')">' +
+          '<div class="msb-cand-row">' +
+            '<div class="msb-rank" style="background:' + rankColor + '">' + (i+1) + '</div>' +
+            '<div class="msb-cand-name">' + esc(c.name || r.tracker.techName || '-') + '</div>' +
+            priorityHtml +
+            msbStatusPill(r.code) +
+          '</div>' +
+          '<div class="msb-cand-meta">' +
+            (c.homeStartLocation ? '<span class="msb-cand-detail"><strong>Start:</strong> ' + esc(c.homeStartLocation) + '</span>' : '') +
+            '<span class="msb-route-hint msb-cand-detail" style="color:var(--text-muted)">↗ route</span>' +
+          '</div>' +
+          '</div>';
+      }
+
+      var dateLabel = esc(new Date(date+'T00:00:00').toLocaleDateString('en-IE',{day:'numeric',month:'short'}));
+      var inAreaHtml = inArea.length
+        ? '<div class="msb-section-lbl msb-section-in">✓ Designated area · ' + inArea.length + ' technician' + (inArea.length > 1 ? 's' : '') + '</div>' +
+          inArea.map(function (r, i) { return candHtml(r, i); }).join('')
+        : '<div class="msb-empty" style="padding:12px 8px;font-size:11px">No technicians have this area in their work locations.</div>';
+
+      var nearbyHtml = nearby.length
+        ? '<div class="msb-section-divider"><span>Outside designated area</span></div>' +
+          '<div class="msb-section-sub">These technicians are geographically nearby but this exchange is not in their assigned work area.</div>' +
+          nearby.map(function (r, i) { return candHtml(r, inArea.length + i); }).join('')
+        : '';
+
+      el.innerHTML = '<div class="msb-section-lbl" style="margin-bottom:6px">Candidates · ' + dateLabel + ' · click to route</div>' +
+        inAreaHtml + nearbyHtml;
+    }
+
+    function mapSearch(q) {
+      var el = document.getElementById('map-search-results');
+      if (!el) return;
+      q = (q || '').trim().toLowerCase();
+      if (!q) { el.innerHTML = ''; return; }
+      var exchanges = state.exchanges || [];
+      var results = exchanges.filter(function (ex) {
+        return ex.name.toLowerCase().includes(q) || ex.code.toLowerCase().includes(q);
+      }).slice(0, 12);
+      if (!results.length) { el.innerHTML = '<div class="map-sr-item" style="color:var(--text-muted)">No exchanges found</div>'; return; }
+      el.innerHTML = results.map(function (ex) {
+        return '<div class="map-sr-item" onclick="mapFlyTo(\'' + esc(ex.link) + '\',\'' + esc(ex.code) + '\',\'' + esc(ex.name).replace(/'/g,"\\'") + '\')">' +
+          '<span class="map-sr-code">' + esc(ex.code) + '</span>' +
+          '<span class="map-sr-name">' + esc(ex.name) + '</span>' +
+          '</div>';
+      }).join('');
+    }
+
+    function mapFlyTo(link, code, name) {
+      var ll = mapParseCoord(link);
+      if (!ll || !_leafletMap) return;
+      document.getElementById('map-search-results').innerHTML = '';
+      document.getElementById('map-search-input').value = name;
+      _leafletMap.flyTo(ll, 14, { duration: 1 });
+    }
+
+    // ── SETTINGS ─────────────────────────────────────────────
+    const SETTINGS_KEY = 'ra_planner_settings_v1';
+    const SETTINGS_DEFAULTS = {
+      afterHoursCutoff: '16:00',
+      autoDetectAfterHours: true,
+      showUnavailable: true,
+      dayPriority:   ['SA', 'SD', 'OC', '50', 'D', 'D1', 'D2', 'R'],
+      afterPriority: ['OC', '50', 'SA', 'SD', 'D', 'D1', 'D2', 'R'],
+      neverCall:     ['A/L', 'S/L', 'SP/L', 'off', 'OFF']
+    };
+    var _settings = Object.assign({}, SETTINGS_DEFAULTS);
+
+    function loadSettings() {
+      try {
+        var raw = localStorage.getItem(SETTINGS_KEY);
+        if (raw) _settings = Object.assign({}, SETTINGS_DEFAULTS, JSON.parse(raw));
+      } catch (_) {}
+    }
+
+    function saveSettings() {
+      try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(_settings)); } catch (_) {}
+    }
+
+    function settingsStatusScore(code, afterHours) {
+      var list = afterHours ? _settings.afterPriority : _settings.dayPriority;
+      if (_settings.neverCall.includes(code)) return -50;
+      var idx = list.indexOf(code);
+      if (idx === -1) return 5;
+      return 60 - idx * 8;
+    }
+
+    function isAfterHours() {
+      if (!_settings.autoDetectAfterHours) return false;
+      var now = new Date();
+      var parts = (_settings.afterHoursCutoff || '16:00').split(':').map(Number);
+      var cutoff = parts[0] * 60 + (parts[1] || 0);
+      return now.getHours() * 60 + now.getMinutes() >= cutoff;
+    }
+
+    var _RANK_COLORS = ['#22c55e','#22c55e','#84cc16','#f59e0b','#f97316','#94a3b8','#94a3b8','#94a3b8'];
+
+    function renderSettings() {
+      var el = document.getElementById('settings-content');
+      if (!el) return;
+      var s = _settings;
+      var allCodes = ['SA','SD','OC','50','D','D1','D2','R','L','L1','L2','A/L','S/L','SP/L','WTT','BH','OFF','off','UWU'];
+      var neverCodes = ['A/L','S/L','SP/L','off','OFF','WTT','BH','UWU'];
+
+      function priorityListHtml(listKey) {
+        return s[listKey].map(function (code, i) {
+          var col = _RANK_COLORS[Math.min(i, _RANK_COLORS.length - 1)];
+          var sc = GRID_STATUS_COLORS[code] || { bg: '#EDF2F7', text: '#94A3B8' };
+          return '<div class="stg-prow">' +
+            '<div class="stg-prow-rank" style="background:' + col + '">' + (i+1) + '</div>' +
+            '<div class="grid-l-sw" style="background:' + sc.bg + ';color:' + sc.text + '">' + esc(code) + '</div>' +
+            '<span class="stg-prow-name">' + esc(CODE_LABELS[code] || code) + '</span>' +
+            '<button class="stg-mv-btn" ' + (i === 0 ? 'disabled' : '') + ' onclick="settingsMoveCode(\'' + listKey + '\',' + i + ',-1)">▲</button>' +
+            '<button class="stg-mv-btn" ' + (i === s[listKey].length - 1 ? 'disabled' : '') + ' onclick="settingsMoveCode(\'' + listKey + '\',' + i + ',1)">▼</button>' +
+            '</div>';
+        }).join('');
+      }
+
+      function neverHtml() {
+        return neverCodes.map(function (code) {
+          var on = s.neverCall.includes(code);
+          var sc = GRID_STATUS_COLORS[code] || { bg: '#EDF2F7', text: '#94A3B8' };
+          return '<div class="stg-never-item' + (on ? ' on' : '') + '" onclick="settingsToggleNever(\'' + esc(code) + '\')">' +
+            '<div class="stg-never-cb' + (on ? ' on' : '') + '">' + (on ? '✓' : '') + '</div>' +
+            '<div class="grid-l-sw" style="background:' + sc.bg + ';color:' + sc.text + '">' + esc(code) + '</div>' +
+            '<span style="font-size:11px;font-weight:600;color:var(--text-secondary)">' + esc(CODE_LABELS[code] || code) + '</span>' +
+            '</div>';
+        }).join('');
+      }
+
+      el.innerHTML =
+        '<div class="stg-grid">' +
+
+        // ── Fault Response Rules ──
+        '<div class="stg-card">' +
+          '<div class="stg-card-title">Fault Response Rules</div>' +
+          '<div class="stg-card-sub">Controls who gets called for faults and in what order. Used on both Map and Fault Search pages.</div>' +
+          '<div class="stg-label">After-hours cutoff</div>' +
+          '<div class="stg-row">' +
+            '<div class="stg-row-icon">⏰</div>' +
+            '<div class="stg-row-body"><div class="stg-row-title">Switch to after-hours priority at</div>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
+              '<input type="time" class="stg-time-input" value="' + esc(s.afterHoursCutoff) + '" onchange="settingsSave(\'afterHoursCutoff\',this.value)">' +
+              '<span style="font-size:11px;color:var(--text-muted)">After this time OC ranks above SA</span>' +
+            '</div></div>' +
+          '</div>' +
+          '<div class="stg-sep"></div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
+            '<div><div class="stg-label">☀ Business hours order</div><div class="stg-priority-list">' + priorityListHtml('dayPriority') + '</div></div>' +
+            '<div><div class="stg-label">🌙 After-hours order</div><div class="stg-priority-list">' + priorityListHtml('afterPriority') + '</div></div>' +
+          '</div>' +
+          '<div class="stg-sep"></div>' +
+          '<div class="stg-label">Never call — always ranked bottom</div>' +
+          '<div class="stg-never-grid">' + neverHtml() + '</div>' +
+        '</div>' +
+
+        // ── Display & Behaviour ──
+        '<div>' +
+          '<div class="stg-card" style="margin-bottom:16px">' +
+            '<div class="stg-card-title">Display & Behaviour</div>' +
+            '<div class="stg-card-sub">Controls how the fault search and map behave.</div>' +
+            '<div class="stg-toggle-row">' +
+              '<div><div class="stg-row-title">Auto-detect after hours</div><div class="stg-row-sub">Toggle switches automatically at the cutoff time</div></div>' +
+              '<div class="stg-toggle ' + (s.autoDetectAfterHours ? 'on' : 'off') + '" onclick="settingsToggleBool(\'autoDetectAfterHours\')"></div>' +
+            '</div>' +
+            '<div class="stg-toggle-row">' +
+              '<div><div class="stg-row-title">Show unavailable candidates</div><div class="stg-row-sub">Show A/L, S/L etc. at bottom of results rather than hiding them</div></div>' +
+              '<div class="stg-toggle ' + (s.showUnavailable ? 'on' : 'off') + '" onclick="settingsToggleBool(\'showUnavailable\')"></div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="stg-card">' +
+            '<div class="stg-card-title">Data Management</div>' +
+            '<div class="stg-card-sub">Reset or export planner data.</div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+              '<button class="btn" style="color:#dc2626;border-color:rgba(220,38,38,.3)" onclick="clearPlannerData()">Clear all imported data</button>' +
+              '<button class="btn" onclick="settingsExport()">Export as JSON</button>' +
+              '<button class="btn" onclick="settingsResetRules()">Reset rules to defaults</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '</div>';
+    }
+
+    function settingsMoveCode(listKey, idx, dir) {
+      var list = _settings[listKey].slice();
+      var newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= list.length) return;
+      var tmp = list[idx]; list[idx] = list[newIdx]; list[newIdx] = tmp;
+      _settings[listKey] = list;
+      saveSettings();
+      renderSettings();
+    }
+
+    function settingsToggleNever(code) {
+      var idx = _settings.neverCall.indexOf(code);
+      if (idx === -1) _settings.neverCall.push(code);
+      else _settings.neverCall.splice(idx, 1);
+      saveSettings();
+      renderSettings();
+    }
+
+    function settingsToggleBool(key) {
+      _settings[key] = !_settings[key];
+      saveSettings();
+      renderSettings();
+    }
+
+    function settingsSave(key, value) {
+      _settings[key] = value;
+      saveSettings();
+    }
+
+    function settingsResetRules() {
+      _settings = Object.assign({}, SETTINGS_DEFAULTS);
+      saveSettings();
+      renderSettings();
+    }
+
+    function settingsExport() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY) || '{}';
+        var blob = new Blob([raw], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ra_planner_data.json';
+        a.click();
+      } catch (_) {}
+    }
+
     function applyInitialViewFromUrl() {
       const view = new URLSearchParams(window.location.search).get('view');
-      if (!view || !['import', 'people', 'locations', 'fault', 'availability', 'issues', 'mappings'].includes(view)) return;
-      state.view = view;
+      const allowed = ['import', 'people', 'locations', 'fault', 'availability', 'issues', 'mappings', 'grid', 'map', 'settings'];
+      if (view && allowed.includes(view)) {
+        state.view = view;
+        rememberView(view, false);
+        return;
+      }
+      try {
+        const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+        if (saved && allowed.includes(saved)) state.view = saved;
+      } catch (_) {}
     }
 
     loadData();
+    loadSettings();
     applyInitialViewFromUrl();
     resetFaultSelectionOnLoad();
     document.getElementById('avail-date').value = todayStr();
