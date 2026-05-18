@@ -15097,6 +15097,9 @@
     }
 
     .rtn-tools-row {
+      position: sticky;
+      top: 0;
+      z-index: 9;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -15769,7 +15772,7 @@
         background: var(--bg-card);
         border-radius: 16px;
         border: 1px solid var(--border);
-        overflow: hidden;
+        overflow: clip;
       }
 
       .rtn-dash-card-hdr {
@@ -15810,7 +15813,7 @@
 
       /* Compact grid inside card */
       .rtn-dash-card .rtn-sticky-hdr {
-        display: none;
+        top: 0;
       }
 
       .rtn-dash-card .rtn-grid-scroll {
@@ -20719,7 +20722,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.22';
+    const VERSION = '6.3.24';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -36855,7 +36858,14 @@
     }
 
     // Browser / phone back button — navigate within app instead of closing
+    var _backButtonLastMs = 0;
     function _handleBackButton() {
+      // Debounce: Methods 1, 2, 3 (Capacitor/Cordova) + popstate can all fire
+      // for the same physical back press. Only the first call within 400ms acts.
+      var _now = Date.now();
+      if (_now - _backButtonLastMs < 400) return;
+      _backButtonLastMs = _now;
+
       // 0. Exit dialog open — dismiss it
       var exitDlg = document.getElementById('exit-dialog');
       if (exitDlg) { exitDlg.remove(); return; }
@@ -40898,6 +40908,11 @@
         const w = td.offsetWidth;
         th.style.width = w + 'px';
         th.style.minWidth = w + 'px';
+      }
+      // On mobile, stack the column header below the sticky tools row
+      const toolsRow = document.querySelector('.rtn-tools-row');
+      if (toolsRow && window.innerWidth < 1280) {
+        hdr.style.top = toolsRow.offsetHeight + 'px';
       }
     }
 
