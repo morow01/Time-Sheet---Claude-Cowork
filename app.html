@@ -15205,6 +15205,48 @@
       display: none;
     }
 
+    /* ── Routines Map tab ── */
+    .rtn-map-wrap { position: relative; }
+    .rtn-map-stats-bar {
+      display: flex; gap: 1px; background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .rtn-map-stat { flex: 1; background: var(--bg-card); padding: 10px 8px; text-align: center; }
+    .rtn-map-stat-val { font-size: 20px; font-weight: 800; line-height: 1; }
+    .rtn-map-stat-lbl {
+      font-size: 10px; font-weight: 600; color: var(--text-muted);
+      margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    #rtn-map { height: calc(100vh - 200px); min-height: 300px; width: 100%; }
+    .rtn-map-legend {
+      position: absolute; bottom: 20px; left: 12px; z-index: 1000;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 9px 12px;
+      box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.12);
+      font-size: 11px; pointer-events: none;
+    }
+    .rtn-map-legend-title {
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px;
+    }
+    .rtn-map-legend-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 4px; color: var(--text-secondary);
+    }
+    .rtn-map-legend-row:last-child { margin-bottom: 0; }
+    .rtn-map-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    /* Leaflet popup overrides */
+    .leaflet-popup-content-wrapper {
+      border-radius: 12px !important; padding: 0 !important; overflow: hidden;
+      box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.18) !important;
+      border: 1px solid var(--border) !important; background: var(--bg-card) !important;
+    }
+    .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+    .leaflet-popup-tip-container { display: none !important; }
+    .leaflet-control-zoom {
+      border-radius: 10px !important; overflow: hidden; border: 1px solid var(--border) !important;
+    }
+
     /* Grid body — horizontal scroll only */
     .rtn-grid-scroll {
       overflow-x: auto;
@@ -20722,7 +20764,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.24';
+    const VERSION = '6.3.25';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -40858,6 +40900,7 @@
         + '<button class="rtn-tab-btn active" onclick="rtnMobTab(\'grid\',this)">Grid</button>'
         + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'stats\',this)">Stats</button>'
         + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'due\',this)">Due <span class="rtn-tab-badge">' + dueVisits.length + '</span></button>'
+        + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'map\',this)">Map</button>'
         + '</div>'
         + '<div class="rtn-tool-actions">'
         + '<button class="rtn-edit-btn rtn-tool-icon" onclick="refreshRoutines()" title="Refresh data"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>'
@@ -40884,6 +40927,20 @@
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Due Visits <span class="rtn-mob-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b">' + dueVisits.length + '</span></div>' + dueHtml + '</div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Never Visited <span class="rtn-mob-badge" style="background:rgba(239,68,68,0.1);color:#ef4444">' + neverVisited.length + '</span></div>' + neverHtml + '</div>'
         + '</div>'
+        // Tab: Map
+        + '<div class="rtn-tab-content" id="rtn-tab-map">'
+        + '<div id="rtn-map-stats" class="rtn-map-stats-bar"></div>'
+        + '<div class="rtn-map-wrap">'
+        + '<div id="rtn-map"></div>'
+        + '<div class="rtn-map-legend">'
+        + '<div class="rtn-map-legend-title">Last Visit</div>'
+        + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#16a34a"></div>Within 1 month</div>'
+        + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#f59e0b"></div>1 – 3 months</div>'
+        + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#ef4444"></div>Over 3 months</div>'
+        + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#94a3b8"></div>Never visited</div>'
+        + '</div>'
+        + '</div>'
+        + '</div>'
         + '</div>';
     }
 
@@ -40893,6 +40950,169 @@
       var el = document.getElementById('rtn-tab-' + id);
       if (el) el.classList.add('active');
       btn.classList.add('active');
+      if (id === 'map') setTimeout(_rtnInitMap, 0);
+    }
+
+    // ── Routines Map ─────────────────────────────────────────────
+    var _rtnLeafletLoaded = false;
+    var _rtnMapInstance = null;
+    var _RTN_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    function _rtnSiteCoords(name) {
+      var exch = (TOWNS || state.exchanges || []).find(function(e) { return e.name === name; });
+      if (!exch || !exch.link) return null;
+      var p = exch.link.split(',');
+      if (p.length < 2) return null;
+      return { lat: parseFloat(p[0]), lng: parseFloat(p[1]), code: exch.code || name.slice(0,3).toUpperCase() };
+    }
+
+    function _rtnLastVisit(site) {
+      var visits = (state.routines && state.routines.visits) || {};
+      var auto = state.routinesAutoVisits || {};
+      var bestY = 0, bestM = 0, bestD = 0;
+      var prefix = site + '__';
+      var allKeys = Object.keys(visits).concat(Object.keys(auto));
+      for (var i = 0; i < allKeys.length; i++) {
+        var k = allKeys[i];
+        if (k.indexOf(prefix) !== 0) continue;
+        var parts = k.split('__');
+        if (parts.length !== 3) continue;
+        var y = parseInt(parts[1]), m = parseInt(parts[2]);
+        var d = (visits[k] && visits[k].day) || (auto[k] && auto[k].day) || 1;
+        if (y > bestY || (y === bestY && m > bestM) || (y === bestY && m === bestM && d > bestD)) {
+          bestY = y; bestM = m; bestD = d;
+        }
+      }
+      return bestY ? { year: bestY, month: bestM, day: bestD } : null;
+    }
+
+    function _rtnMonthsAgo(v) {
+      if (!v) return null;
+      var now = new Date();
+      var then = new Date(v.year, v.month - 1, v.day);
+      return (now - then) / (1000 * 60 * 60 * 24 * 30.44);
+    }
+
+    function _rtnMarkerColor(monthsAgo) {
+      if (monthsAgo === null) return '#94a3b8';
+      if (monthsAgo <= 1)    return '#16a34a';
+      if (monthsAgo <= 3)    return '#f59e0b';
+      return '#ef4444';
+    }
+
+    async function _rtnInitMap() {
+      var mapDiv = document.getElementById('rtn-map');
+      if (!mapDiv) return;
+
+      // Lazy-load Leaflet once
+      if (!_rtnLeafletLoaded) {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+        await new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+        _rtnLeafletLoaded = true;
+      }
+
+      // Destroy previous instance if the DOM node was re-created by a render()
+      if (_rtnMapInstance) {
+        try { _rtnMapInstance.remove(); } catch(e) {}
+        _rtnMapInstance = null;
+      }
+
+      var map = window.L.map('rtn-map', { zoomControl: false }).setView([53.0, -8.0], 7);
+      _rtnMapInstance = map;
+
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18
+      }).addTo(map);
+
+      window.L.control.zoom({ position: 'topright' }).addTo(map);
+
+      var sites = (state.routines && state.routines.selectedSites) || [];
+      var cntGreen = 0, cntAmber = 0, cntRed = 0, cntGray = 0;
+      var bounds = [];
+
+      sites.forEach(function(site) {
+        var coords = _rtnSiteCoords(site);
+        if (!coords) return;
+
+        var lastVisit = _rtnLastVisit(site);
+        var monthsAgo = _rtnMonthsAgo(lastVisit);
+        var color = _rtnMarkerColor(monthsAgo);
+
+        if (monthsAgo === null) cntGray++;
+        else if (monthsAgo <= 1) cntGreen++;
+        else if (monthsAgo <= 3) cntAmber++;
+        else cntRed++;
+
+        var visitStr = lastVisit
+          ? (_RTN_MONTHS[lastVisit.month - 1] + ' ' + lastVisit.day + ', ' + lastVisit.year)
+          : '—';
+        var timeStr = '';
+        if (monthsAgo !== null) {
+          timeStr = monthsAgo < 1
+            ? (Math.round(monthsAgo * 30) + ' days ago')
+            : (monthsAgo.toFixed(1) + ' months ago');
+        }
+        var statusText = monthsAgo === null ? 'Never visited'
+          : monthsAgo <= 1 ? '✓ Up to date'
+          : monthsAgo <= 3 ? '⚠ Due soon'
+          : '✕ Overdue';
+
+        var icon = window.L.divIcon({
+          className: '',
+          html: '<div style="width:32px;height:32px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:' + color + ';border:2.5px solid rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.28);display:flex;align-items:center;justify-content:center;">'
+            + '<span style="transform:rotate(45deg);font-size:8px;font-weight:800;color:#fff;line-height:1">' + coords.code.slice(0,3) + '</span>'
+            + '</div>',
+          iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -36]
+        });
+
+        var popupHtml = '<div style="min-width:195px;font-family:inherit;">'
+          + '<div style="padding:14px 16px 10px;">'
+          + '<div style="display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;margin-bottom:6px;letter-spacing:0.04em;background:' + color + '22;color:' + color + '">' + esc(coords.code) + '</div>'
+          + '<div style="font-size:14px;font-weight:700;margin-bottom:10px;">' + esc(site) + '</div>'
+          + '<div style="height:1px;background:var(--border,#e2e8f0);margin:0 -16px 10px;"></div>'
+          + '<div style="font-size:12px;color:var(--text-secondary,#475569);margin-bottom:4px;display:flex;align-items:center;gap:6px;">'
+          + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+          + '<span><b>Last visit:</b> ' + visitStr + '</span></div>'
+          + (timeStr ? '<div style="font-size:12px;color:var(--text-muted,#94a3b8);display:flex;align-items:center;gap:6px;margin-bottom:4px;">'
+            + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+            + '<span>' + timeStr + '</span></div>' : '')
+          + '<div style="margin-top:8px;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;background:' + color + '18;color:' + color + '">' + statusText + '</div>'
+          + '</div>'
+          + '<div style="display:flex;gap:6px;padding:8px 16px 14px;">'
+          + '<button onclick="var _b=document.querySelector(\'.rtn-tab-btn\');if(_b)rtnMobTab(\'grid\',_b);" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent,#2D6BE4);color:#fff;font-family:inherit;">Open Grid</button>'
+          + '<button onclick="openRoutinesLogModal(\'' + esc(site).replace(/'/g,"\\'") + '\',' + state.routinesYear + ',' + (new Date().getMonth()+1) + ')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;background:var(--bg-page,#f1f5f9);color:var(--text-secondary,#475569);border:1px solid var(--border,#e2e8f0);font-family:inherit;">Log Visit</button>'
+          + '</div>'
+          + '</div>';
+
+        window.L.marker([coords.lat, coords.lng], { icon })
+          .addTo(map)
+          .bindPopup(window.L.popup({ closeButton: false }).setContent(popupHtml));
+
+        bounds.push([coords.lat, coords.lng]);
+      });
+
+      // Fit map to all markers if any exist
+      if (bounds.length > 0) {
+        try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 11 }); } catch(e) {}
+      }
+
+      // Update stats bar
+      var statsEl = document.getElementById('rtn-map-stats');
+      if (statsEl) {
+        statsEl.innerHTML = '<div class="rtn-map-stat"><div class="rtn-map-stat-val" style="color:var(--accent)">' + sites.length + '</div><div class="rtn-map-stat-lbl">Sites</div></div>'
+          + '<div class="rtn-map-stat"><div class="rtn-map-stat-val" style="color:#16a34a">' + cntGreen + '</div><div class="rtn-map-stat-lbl">Up to date</div></div>'
+          + '<div class="rtn-map-stat"><div class="rtn-map-stat-val" style="color:#f59e0b">' + cntAmber + '</div><div class="rtn-map-stat-lbl">Due soon</div></div>'
+          + '<div class="rtn-map-stat"><div class="rtn-map-stat-val" style="color:#ef4444">' + cntRed + '</div><div class="rtn-map-stat-lbl">Overdue</div></div>';
+      }
     }
 
     function initRtnStickyHeader() {
