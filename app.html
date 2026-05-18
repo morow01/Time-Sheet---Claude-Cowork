@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.29';
+    const VERSION = '6.3.30';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -36906,7 +36906,7 @@
       if (document.getElementById('exit-dialog')) return;
       const overlay = document.createElement('div');
       overlay.id = 'exit-dialog';
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(var(--shadow-rgb), 0.5);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn 0.15s ease';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10200;background:rgba(var(--shadow-rgb), 0.5);display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn 0.15s ease';
       overlay.innerHTML = '<div style="background:var(--bg-card);border-radius:16px;padding:24px;width:100%;max-width:320px;box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.3);">'
         + '<div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">Exit Rian?</div>'
         + '<div style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px;">Are you sure you want to close the app?</div>'
@@ -36926,16 +36926,17 @@
       var _now = Date.now();
       if (_now - _backButtonLastMs < 400) return;
       _backButtonLastMs = _now;
+      console.warn('[Rian] _handleBackButton fired, view=' + state.view);
 
       // 0. Exit dialog open — dismiss it
       var exitDlg = document.getElementById('exit-dialog');
       if (exitDlg) { exitDlg.remove(); return; }
-      // 0a. Task fullscreen modal open — close it
-      if (_taskModalState) { closeTaskModal(); return; }
-      // 0b. Note fullscreen modal open — close it
-      if (_noteModalState) { closeNoteModal(); return; }
-      // 0c. Callout fullscreen modal open — close it
-      if (_coModalState) { closeCoModal(); return; }
+      // 0a. Fullscreen map — exit fullscreen first
+      if (_rtnMapFs) { _rtnToggleMapFs(_rtnMapInstance); return; }
+      // 0b. Task / Note / Callout fullscreen modal — use DOM check so JS state can't get stuck
+      if (_isModalShown('task-modal-overlay')) { if (typeof closeTaskModal === 'function') closeTaskModal(); return; }
+      if (_isModalShown('note-modal-overlay')) { if (typeof closeNoteModal === 'function') closeNoteModal(); return; }
+      if (_isModalShown('co-modal-overlay'))   { if (typeof closeCoModal  === 'function') closeCoModal();  return; }
       // 1. Import overlays
       if (_isModalShown('jdocx-overlay')) { closeJDocxImport(); return; }
       if (_isModalShown('av-import-modal')) { avCloseImportDialog(); return; }
@@ -36982,6 +36983,7 @@
         return;
       }
       // 8. Already on week — show exit confirmation dialog
+      console.warn('[Rian] _handleBackButton: showing exit dialog, view=' + state.view);
       _showExitDialog();
     }
 
