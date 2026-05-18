@@ -4097,6 +4097,61 @@
       pointer-events: none;
     }
 
+    .draft-warning-banner {
+      background: #d97706;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .draft-warning-banner-text {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .draft-warning-banner-btn {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .save-error-banner {
+      display: none;
+      background: #d97706;
+      padding: 9px 16px;
+      align-items: center;
+      gap: 10px;
+    }
+    .save-error-banner.save-error-visible {
+      display: flex;
+    }
+    .save-error-banner-text {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .save-error-banner-btn {
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
     .conflict-global-banner {
       background: var(--bg-ot);
       border-bottom: 2px solid #F59E0B;
@@ -8094,7 +8149,6 @@
         overflow-x: auto;
         scrollbar-width: none;
         cursor: grab;
-        user-select: none;
       }
 
       #note-fs-tt-toolbar:active {
@@ -8103,6 +8157,8 @@
 
       #note-fs-tt-toolbar.tt-dragging {
         cursor: grabbing;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       #note-fs-tt-toolbar::-webkit-scrollbar {
@@ -20663,7 +20719,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.06';
+    const VERSION = '6.3.22';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21401,7 +21457,7 @@
       djSelectedSec: null,     // desktop journal: selected section id (col1 → col2)
       djSelectedPage: null,    // desktop journal: selected page id
       djTreeSearch: '',        // desktop journal: search query in page list (col2)
-      micFabHidden: localStorage.getItem('micFabHidden') === '1',  // track which day indices are expanded
+      micFabHidden: localStorage.getItem('micFabHidden') !== '0',  // track which day indices are expanded
       notesOpen: new Map(), // explicit open/closed per actId; default = open if note has content
       selectionMode: false,
       selectedNotes: new Set(),
@@ -22774,10 +22830,12 @@
       _avParsedDays = null;
       _avParsedPeople = null;
       document.getElementById('av-import-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
     }
 
     function avCloseImportDialog() {
       document.getElementById('av-import-modal').classList.add('hidden');
+      document.body.style.overflow = '';
     }
 
     function _avSetImportStatus(msg, ok) {
@@ -23918,7 +23976,9 @@
     // dataAttr: optional data-* attributes for state updates (e.g. `data-notes-preview="abc"`)
     function renderNoteInline(noteContent, onclickAttr, dataAttr = '') {
       const nc = (noteContent || '').trim();
-      const hasContent = !!nc;
+      const hasContent = nc.startsWith('<')
+        ? !!(nc.replace(/<[^>]*>/g, '').trim() || /<(img|table|figure|hr)\b/i.test(nc))
+        : !!nc;
       if (!hasContent) {
         return `<div class="note-inline-empty" onclick="event.stopPropagation();${onclickAttr}" ${dataAttr}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -24900,7 +24960,7 @@
 
       // Detach desktop journal TipTap wrapper before innerHTML wipes the DOM
       if (_djTiptapWrap && _djTiptapWrap.parentNode) _djTiptapWrap.remove();
-      app.innerHTML = renderHeader() + _renderConflictBanner() + viewBody;
+      app.innerHTML = renderHeader() + _renderConflictBanner() + _renderDraftWarningBanner() + _renderSaveErrorBanner() + viewBody;
       // Restore menu scroll position after DOM rebuild
       if (_menuWasOpen && _menuScroll > 0) {
         const _newMenuEl = document.getElementById('theme-dropdown');
@@ -25309,6 +25369,7 @@
           }
         });
       }
+      _syncSaveErrorBanner();
     }
 
     // ============================================================
@@ -29983,6 +30044,7 @@
       _jDocxFiles = [];
       _jDocxMode = 'new';
       document.getElementById('jdocx-overlay').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
       document.getElementById('jdocx-sec-name').value = '';
       document.getElementById('jdocx-file-list').innerHTML = '';
       document.getElementById('jdocx-run-btn').disabled = true;
@@ -30008,6 +30070,7 @@
     }
     function closeJDocxImport() {
       document.getElementById('jdocx-overlay').style.display = 'none';
+      document.body.style.overflow = '';
     }
     function _jDocxDragSetup() {
       const drop = document.getElementById('jdocx-drop');
@@ -33662,8 +33725,11 @@
         openNoteModal(note.id);
       } else {
         state.expandedNotes.add(note.id);
+        saveNotesUiState(); // persist before render reloads expandedNotes from localStorage
         render();
         setTimeout(() => {
+          const card = document.querySelector(`.note-card[data-note-id="${note.id}"]`);
+          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
           const ta = document.querySelector(`textarea[data-note-id="${note.id}"]`);
           if (ta) ta.focus();
         }, 80);
@@ -35578,6 +35644,7 @@
         ['backup-modal', () => { const el = document.getElementById('backup-modal'); if (el) el.classList.add('hidden'); }],
         ['restore-confirm-modal', () => { const el = document.getElementById('restore-confirm-modal'); if (el) el.classList.add('hidden'); }],
         ['jdocx-overlay', () => typeof closeJDocxImport === 'function' && closeJDocxImport()],
+        ['av-import-modal', () => typeof avCloseImportDialog === 'function' && avCloseImportDialog()],
         ['rian-dialog-overlay', () => typeof _rdnClose === 'function' && _rdnClose(null)],
         ['code-modal', () => typeof closeCodeModal === 'function' && closeCodeModal()],
         ['location-modal', () => typeof closeLocationModal === 'function' && closeLocationModal()],
@@ -36798,7 +36865,10 @@
       if (_noteModalState) { closeNoteModal(); return; }
       // 0c. Callout fullscreen modal open — close it
       if (_coModalState) { closeCoModal(); return; }
-      // 1. Any open bottom sheet / action sheet
+      // 1. Import overlays
+      if (_isModalShown('jdocx-overlay')) { closeJDocxImport(); return; }
+      if (_isModalShown('av-import-modal')) { avCloseImportDialog(); return; }
+      // 2. Any open bottom sheet / action sheet
       const sheets = document.querySelectorAll('.btm-sheet.open, .bottom-sheet.open');
       if (sheets.length) {
         sheets.forEach(s => s.classList.remove('open'));
@@ -36960,13 +37030,14 @@
       try { localStorage.setItem('rian_task_style', s); } catch { }
       state.activitiesExpanded.clear();
       state.expandedNotes.clear();
+      saveNotesUiState();
       const isModal = s === 'modal';
       showToast(isModal ? 'Card style: Fullscreen' : 'Card style: Expand in place');
       render();
     }
 
     function getTaskLayout() {
-      try { return localStorage.getItem('rian_task_layout') || 'grouped'; } catch { return 'grouped'; }
+      try { return localStorage.getItem('rian_task_layout') || 'timeline'; } catch { return 'timeline'; }
     }
     function applyTaskLayout() {
       const layout = getTaskLayout();
@@ -37212,6 +37283,59 @@
         }
       } catch (e) { showToast('Could not resolve all: ' + (e.message || e)); return; }
       render();
+    }
+
+    // Draft warning banner — shown when the user leaves a view with an unsaved draft task or note
+    function _renderDraftWarningBanner() {
+      const hasDraftTask = !!(state.weekData?.days?.some(d => d.activities?.some(a => a._draft))) && state.view !== 'week';
+      const hasDraftNote = !!(state.notes?.some(n => n._draft)) && state.view !== 'notes';
+      if (!hasDraftTask && !hasDraftNote) return '';
+      const msg = (hasDraftTask && hasDraftNote) ? 'You have unsaved task and note'
+                : hasDraftTask ? 'You have an unsaved task'
+                : 'You have an unsaved note';
+      const returnView = hasDraftTask ? 'week' : 'notes';
+      return `<div class="draft-warning-banner">
+        <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        <span class="draft-warning-banner-text">${msg}</span>
+        <button class="draft-warning-banner-btn" onclick="setView('${returnView}')">Return</button>
+      </div>`;
+    }
+
+    // Save-error banner — shown when Firestore write fails for tasks or notes
+    function _renderSaveErrorBanner() {
+      const taskErr = state.syncStatus === 'error';
+      const notesErr = state.notesSyncStatus === 'error';
+      const hasError = taskErr || notesErr;
+      const msg = (taskErr && notesErr) ? 'Timesheet and notes could not be saved'
+                : taskErr ? 'Timesheet changes could not be saved'
+                : 'Note could not be saved';
+      return `<div class="save-error-banner${hasError ? ' save-error-visible' : ''}" id="save-error-banner">
+        <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </span>
+        <span class="save-error-banner-text">${hasError ? msg : ''}</span>
+        <button class="save-error-banner-btn" onclick="_retrySave()">Retry</button>
+      </div>`;
+    }
+    function _retrySave() {
+      if (state.syncStatus === 'error') scheduleAutoSave();
+      if (state.notesSyncStatus === 'error') scheduleNotesSave();
+    }
+    function _syncSaveErrorBanner() {
+      const banner = document.getElementById('save-error-banner');
+      if (!banner) return;
+      const taskErr = state.syncStatus === 'error';
+      const notesErr = state.notesSyncStatus === 'error';
+      const hasError = taskErr || notesErr;
+      banner.classList.toggle('save-error-visible', hasError);
+      if (hasError) {
+        const textEl = banner.querySelector('.save-error-banner-text');
+        if (textEl) textEl.textContent = (taskErr && notesErr) ? 'Timesheet and notes could not be saved'
+                                        : taskErr ? 'Timesheet changes could not be saved'
+                                        : 'Note could not be saved';
+      }
     }
 
     // Global conflict banner — rendered on every screen
@@ -46324,12 +46448,16 @@ QUESTION: ${query}`;
           dragStartX = ev.clientX;
           dragStartScroll = toolbar.scrollLeft;
           didDrag = false;
-          toolbar.setPointerCapture?.(ev.pointerId);
+          // Do NOT call setPointerCapture here — capturing on pointerdown redirects the
+          // pointerup to the toolbar on mobile Chrome, so click fires on the toolbar
+          // element instead of the button, breaking all button handlers. Capture only
+          // after a drag is confirmed (>4 px), when we know it isn't a tap.
         });
         toolbar.addEventListener('pointermove', (ev) => {
           if (dragPointerId !== ev.pointerId) return;
           const dx = ev.clientX - dragStartX;
           if (Math.abs(dx) > 4) {
+            if (!didDrag) toolbar.setPointerCapture?.(ev.pointerId);
             didDrag = true;
             suppressToolbarClick = true;
             toolbar.classList.add('tt-dragging');
@@ -46347,6 +46475,8 @@ QUESTION: ${query}`;
             didDrag = false;
             toolbar.classList.remove('tt-dragging');
           }, 0);
+          // Always clear after a short delay so a drag never permanently blocks the next tap
+          setTimeout(() => { suppressToolbarClick = false; }, 100);
         };
         toolbar.addEventListener('pointerup', endDrag);
         toolbar.addEventListener('pointercancel', endDrag);
@@ -47537,6 +47667,27 @@ QUESTION: ${query}`;
 
     function _ttTableKeyDown(editor, event) {
       var kc = event.keyCode || event.which || 0;
+
+      // Enter at the very start of a table that is the first document node
+      // → insert a blank paragraph above (OneNote-style)
+      if ((event.key === 'Enter' || kc === 13) && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+        var state = editor.state;
+        if (state.selection.empty && state.doc.firstChild && state.doc.firstChild.type.name === 'table') {
+          var $f = state.selection.$from;
+          if ($f.depth >= 3 &&
+              $f.node(1).type.name === 'table' &&
+              $f.before(1) === 0 &&
+              $f.before(2) === $f.start(1) &&
+              $f.before(3) === $f.start(2) &&
+              $f.parentOffset === 0) {
+            editor.view.dispatch(state.tr.insert(0, state.schema.nodes.paragraph.create()));
+            editor.commands.setTextSelection(1);
+            event.preventDefault();
+            return true;
+          }
+        }
+      }
+
       var isBackDel = event.key === 'Backspace' || event.key === 'Delete' || kc === 8 || kc === 46
         || event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward';
       if (!isBackDel) return false;
@@ -47609,7 +47760,7 @@ QUESTION: ${query}`;
       } catch(ex) {}
     }
 
-    var _ttEnsureTrailingGuard = false;
+var _ttEnsureTrailingGuard = false;
     function _ttEnsureTrailingParagraph(editor) {
       if (_ttEnsureTrailingGuard) return;
       var doc = editor.state.doc;
@@ -47628,7 +47779,7 @@ QUESTION: ${query}`;
       _ttEnsureTrailingGuard = false;
     }
 
-    function _ttStripDefaultTableWidths() {
+function _ttStripDefaultTableWidths() {
       var tables = document.querySelectorAll('#note-fs-editor .ProseMirror table, #dj-editor-mount .ProseMirror table');
       for (var i = 0; i < tables.length; i++) {
         var t = tables[i];
