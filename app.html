@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.39';
+    const VERSION = '6.3.40';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27524,7 +27524,7 @@
       render();
     }
 
-    function _showNoteModal() {
+    function _showNoteModal(noAnim) {
       if (!_noteModalState) return;
       const note = state.notes.find(n => n.id === _noteModalState);
       if (!note) { closeNoteModal(); return; }
@@ -27533,12 +27533,15 @@
       if (!ov) {
         ov = document.createElement('div');
         ov.id = 'note-modal-overlay';
-        ov.id = 'note-modal-overlay';
         ov.setAttribute('onclick', 'if(event.target===this)closeNoteModal()');
         ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:10005;background:rgba(0,0,0,0.45);align-items:center;justify-content:center';
         document.body.appendChild(ov);
       }
       ov.innerHTML = _renderNoteModalHtml(note);
+      if (noAnim) {
+        const sheet = ov.querySelector('.task-modal-sheet');
+        if (sheet) sheet.style.animation = 'none';
+      }
       ov.style.display = 'flex';
       document.body.style.overflow = 'hidden';
 
@@ -28920,8 +28923,12 @@
       if (filtered.length < reminders.length) {
         saveReminders(filtered);
         showToast('Reminder removed');
-        saveNotesUiState();
-        render();
+        if (_noteModalState === noteId) {
+          _showNoteModal(true);
+        } else {
+          saveNotesUiState();
+          render();
+        }
       }
     }
 
@@ -29163,10 +29170,13 @@
       const dateLabel = formatDate(dateToStr(dt));
       const timeLabel = dt.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
       showToast(`Reminder ${oldIdx >= 0 ? 'updated' : 'set'} for ${dateLabel} at ${timeLabel}`);
-      // Persist expanded state then render so the reminder field updates immediately
-      // (the Firestore echo is async and may arrive too late for the user to see)
-      saveNotesUiState();
-      render();
+      // Refresh note modal if open (modal mode), or render notes view (card/timeline mode)
+      if (_noteModalState === noteId) {
+        _showNoteModal(true);
+      } else {
+        saveNotesUiState();
+        render();
+      }
     }
 
     // Timer management
@@ -48398,10 +48408,15 @@ function _ttStripDefaultTableWidths() {
               if (!keepLocal) {
                 // Discard local — don't save, keep remote content
                 window._tiptapNoteEdited = false;
+                const _discardNoteId = _fnFsNoteId;
                 _fnFsNoteId = null;
                 if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
-                saveNotesUiState();
-                render();
+                if (_noteModalState && _noteModalState === _discardNoteId) {
+                  _showNoteModal(true);
+                } else {
+                  saveNotesUiState();
+                  render();
+                }
                 _noteFsActId = null; _noteFsDi = null;
                 _ttResetDraftState();
                 return;
@@ -48439,11 +48454,17 @@ function _ttStripDefaultTableWidths() {
         }
         window._tiptapNoteEdited = false;
         window._ttFsDirty = false;
+        const _closedNoteId = _fnFsNoteId;
         _fnFsNoteId = null;
         // Destroy editor AFTER content is saved
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
-        saveNotesUiState(); // persist expanded state before render() reloads it from localStorage
-        render();
+        // Refresh note modal (modal mode) or notes view (card/timeline mode)
+        if (_noteModalState && _noteModalState === _closedNoteId) {
+          _showNoteModal(true);
+        } else {
+          saveNotesUiState(); // persist expanded state before render() reloads it from localStorage
+          render();
+        }
       } else if (_noteFsActId != null) {
         // Activity inline note (timesheet) — flush final TipTap content
         if (_tiptapEditor) {
