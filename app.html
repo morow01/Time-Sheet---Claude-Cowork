@@ -1901,6 +1901,10 @@
       animation: ttAiSlideUp 0.22s ease;
     }
 
+    .task-modal-no-anim .task-modal-sheet {
+      animation: none !important;
+    }
+
     .task-modal-body {
       min-height: 0;
     }
@@ -20783,7 +20787,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.32';
+    const VERSION = '6.3.34';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21104,6 +21108,7 @@
         note.location = val;
         note.updatedAt = Date.now();
         scheduleNotesSave();
+        saveNotesUiState(); // persist expanded state before render() reloads it from localStorage
         render();
       } else {
         // Activity location — surgical DOM update, no render() to avoid triggering password manager
@@ -21136,7 +21141,7 @@
           tblLocEl.style.color = val ? '' : 'var(--text-muted)';
         }
         // Refresh task modal if it's open for this activity (card style mode)
-        if (_taskModalState && _taskModalState.actId === actId) _showTaskModal();
+        if (_taskModalState && _taskModalState.actId === actId) _showTaskModal(true);
       }
     }
 
@@ -27300,7 +27305,7 @@
       render(); // refresh card summaries
     }
 
-    function _showTaskModal() {
+    function _showTaskModal(noAnim) {
       if (!_taskModalState) return;
       const { actId, di } = _taskModalState;
       const act = state.weekData.days[di]?.activities.find(a => a.id === actId);
@@ -27312,8 +27317,10 @@
         ov.id = 'task-modal-overlay';
         document.body.appendChild(ov);
       }
+      if (noAnim) ov.classList.add('task-modal-no-anim');
       ov.innerHTML = _renderTaskModalHtml(act, di);
       ov.style.display = 'flex';
+      if (noAnim) requestAnimationFrame(() => ov.classList.remove('task-modal-no-anim'));
       document.body.style.overflow = 'hidden';
 
       requestAnimationFrame(() => {
@@ -35768,7 +35775,7 @@
         scheduleAutoSave();
         render();
         // Refresh task modal if it's open for this activity (card style mode)
-        if (_taskModalState && _taskModalState.actId === actId) _showTaskModal();
+        if (_taskModalState && _taskModalState.actId === actId) _showTaskModal(true);
       }
       closeCodeModal();
     }
@@ -48445,7 +48452,7 @@ function _ttStripDefaultTableWidths() {
         window._ttFsDirty = false;
         render();
         // Refresh task modal if it's open for this activity (card style mode)
-        if (_taskModalState && _taskModalState.actId === _noteFsActId) _showTaskModal();
+        if (_taskModalState && _taskModalState.actId === _noteFsActId) _showTaskModal(true);
       } else {
         // No note context — still destroy to free memory
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
