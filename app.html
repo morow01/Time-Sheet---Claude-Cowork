@@ -15219,7 +15219,7 @@
     }
     #rtn-map { min-height: 300px; width: 100%; isolation: isolate; }
     .rtn-map-legend {
-      position: absolute; bottom: 20px; left: 12px; z-index: 1000;
+      position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); left: 12px; z-index: 1000;
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 10px; padding: 9px 12px;
       box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.12);
@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.42';
+    const VERSION = '6.3.43';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
