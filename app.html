@@ -20801,7 +20801,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.47';
+    const VERSION = '6.3.48';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -41259,8 +41259,8 @@
           + '<div style="margin-top:8px;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;background:' + color + '18;color:' + color + '">' + statusText + '</div>'
           + '</div>'
           + '<div style="display:flex;gap:6px;padding:8px 16px 14px;">'
-          + '<button onclick="_rtnSwitchToGrid()" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent,#2D6BE4);color:#fff;font-family:inherit;">Open Grid</button>'
-          + '<button onclick="if(_rtnMapInstance)_rtnMapInstance.closePopup();openRoutinesLogModal(\'' + esc(site).replace(/'/g,"\\'") + '\',' + state.routinesYear + ',' + (new Date().getMonth()+1) + ')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;background:var(--bg-page,#f1f5f9);color:var(--text-secondary,#475569);border:1px solid var(--border,#e2e8f0);font-family:inherit;">Log Visit</button>'
+          + '<button onclick="if(_rtnMapInstance)_rtnMapInstance.closePopup();openRoutinesLogModal(\'' + esc(site).replace(/'/g,"\\'") + '\',' + state.routinesYear + ',' + (new Date().getMonth()+1) + ')" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent,#2D6BE4);color:#fff;font-family:inherit;">Log Visit</button>'
+          + '<button onclick="if(_rtnMapInstance)_rtnMapInstance.closePopup()" style="padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;background:var(--bg-page,#f1f5f9);color:var(--text-secondary,#475569);border:1px solid var(--border,#e2e8f0);font-family:inherit;">✕</button>'
           + '</div>'
           + '</div>';
 
