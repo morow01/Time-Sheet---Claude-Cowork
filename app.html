@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.40';
+    const VERSION = '6.3.41';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33947,8 +33947,8 @@
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
         _ttSetContent(note.noteContent || '');
         _ttResetHistory(_ttGetHTML());
-        // Blur so cursor isn't visible at top — user taps to edit
-        if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
+        // Focus and place cursor at end so user can start typing immediately
+        if (_tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
         _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
         _tiptapLastSavedNoteId = noteId;
         window._tiptapOpenedEmpty = !(note.noteContent || '').trim(); // was editor empty at open?
