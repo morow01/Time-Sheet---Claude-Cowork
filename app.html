@@ -20801,7 +20801,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.46';
+    const VERSION = '6.3.47';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -41062,6 +41062,16 @@
       // Map init is handled by _renderNow hook, but trigger immediately too
       if (id === 'map') setTimeout(_rtnInitMap, 0);
     }
+    // Unified "switch to grid" used by map popup button — works on both desktop and mobile
+    function _rtnSwitchToGrid() {
+      if (_isDesktop()) {
+        if (_rtnMapInstance) try { _rtnMapInstance.closePopup(); } catch(e) {}
+        rtnDeskPanel('grid');
+      } else {
+        var _b = document.querySelector('.rtn-tab-btn');
+        if (_b) rtnMobTab('grid', _b);
+      }
+    }
     var _rtnMapFs = false;
     function _rtnToggleMapFs(map) {
       _rtnMapFs = !_rtnMapFs;
@@ -41151,7 +41161,12 @@
 
       // Destroy previous instance if the DOM node was re-created by a render()
       if (_rtnMapInstance) {
-        try { _rtnMapInstance.remove(); } catch(e) {}
+        try {
+          // Only call remove() if the old container is still in the document;
+          // if render() already replaced it, skip remove() to avoid Leaflet errors
+          var _oldContainer = _rtnMapInstance.getContainer ? _rtnMapInstance.getContainer() : null;
+          if (_oldContainer && document.body.contains(_oldContainer)) _rtnMapInstance.remove();
+        } catch(e) {}
         _rtnMapInstance = null;
       }
 
@@ -41244,7 +41259,7 @@
           + '<div style="margin-top:8px;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:700;background:' + color + '18;color:' + color + '">' + statusText + '</div>'
           + '</div>'
           + '<div style="display:flex;gap:6px;padding:8px 16px 14px;">'
-          + '<button onclick="var _b=document.querySelector(\'.rtn-tab-btn\');if(_b)rtnMobTab(\'grid\',_b);" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent,#2D6BE4);color:#fff;font-family:inherit;">Open Grid</button>'
+          + '<button onclick="_rtnSwitchToGrid()" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent,#2D6BE4);color:#fff;font-family:inherit;">Open Grid</button>'
           + '<button onclick="if(_rtnMapInstance)_rtnMapInstance.closePopup();openRoutinesLogModal(\'' + esc(site).replace(/'/g,"\\'") + '\',' + state.routinesYear + ',' + (new Date().getMonth()+1) + ')" style="flex:1;padding:7px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;background:var(--bg-page,#f1f5f9);color:var(--text-secondary,#475569);border:1px solid var(--border,#e2e8f0);font-family:inherit;">Log Visit</button>'
           + '</div>'
           + '</div>';
