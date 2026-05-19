@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.31';
+    const VERSION = '6.3.32';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -48444,6 +48444,8 @@ function _ttStripDefaultTableWidths() {
         window._actNoteDirty = false;
         window._ttFsDirty = false;
         render();
+        // Refresh task modal if it's open for this activity (card style mode)
+        if (_taskModalState && _taskModalState.actId === _noteFsActId) _showTaskModal();
       } else {
         // No note context — still destroy to free memory
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
