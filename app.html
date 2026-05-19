@@ -15259,6 +15259,27 @@
     #rtn-map .leaflet-bottom {
       padding-bottom: 10px;
     }
+
+    /* GPS location dot pulse */
+    @keyframes rtnLocPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(37,99,235,0.5); }
+      70%  { box-shadow: 0 0 0 10px rgba(37,99,235,0); }
+      100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+    }
+    .rtn-loc-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #2563eb; border: 2.5px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      animation: rtnLocPulse 2s infinite;
+    }
+    /* Locate-me button */
+    .rtn-locate-btn {
+      width: 34px; height: 34px; border-radius: 6px;
+      background: #fff; border: 2px solid rgba(0,0,0,0.2);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.25); color: #2563eb;
+    }
+    .rtn-locate-btn.locating { color: #94a3b8; }
     /* Leaflet popup overrides */
     .leaflet-popup-content-wrapper {
       border-radius: 12px !important; padding: 0 !important; overflow: hidden;
@@ -20805,7 +20826,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.51';
+    const VERSION = '6.3.52';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -41230,6 +41251,50 @@
         return btn;
       };
       fsCtrl.addTo(map);
+
+      // ── GPS location ──────────────────────────────────────────────
+      var _locMarker = null, _locCircle = null;
+
+      // Locate-me button (top-left, below fullscreen)
+      var locCtrl = window.L.control({ position: 'topleft' });
+      locCtrl.onAdd = function() {
+        var btn = window.L.DomUtil.create('button', 'rtn-locate-btn');
+        btn.title = 'Show my location';
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>';
+        window.L.DomEvent.disableClickPropagation(btn);
+        window.L.DomEvent.on(btn, 'click', function() {
+          if (_locMarker) {
+            map.setView(_locMarker.getLatLng(), Math.max(map.getZoom(), 13));
+          } else {
+            btn.classList.add('locating');
+            map.locate({ enableHighAccuracy: true });
+          }
+        });
+        return btn;
+      };
+      locCtrl.addTo(map);
+
+      map.on('locationfound', function(e) {
+        var locBtn = document.querySelector('.rtn-locate-btn');
+        if (locBtn) locBtn.classList.remove('locating');
+        var dot = window.L.divIcon({ className: '', html: '<div class="rtn-loc-dot"></div>', iconSize: [14,14], iconAnchor: [7,7] });
+        if (!_locMarker) {
+          _locMarker = window.L.marker(e.latlng, { icon: dot, zIndexOffset: 1000 })
+            .bindTooltip('You are here', { permanent: false, direction: 'top' })
+            .addTo(map);
+          _locCircle = window.L.circle(e.latlng, { radius: e.accuracy, color: '#2563eb', fillColor: '#2563eb', fillOpacity: 0.08, weight: 1 }).addTo(map);
+        } else {
+          _locMarker.setLatLng(e.latlng);
+          _locCircle.setLatLng(e.latlng).setRadius(e.accuracy);
+        }
+      });
+      map.on('locationerror', function() {
+        var locBtn = document.querySelector('.rtn-locate-btn');
+        if (locBtn) locBtn.classList.remove('locating');
+      });
+
+      // Auto-request location on open
+      map.locate({ enableHighAccuracy: true });
 
       var sites = (state.routines && state.routines.selectedSites) || [];
       var cntGreen = 0, cntAmber = 0, cntRed = 0, cntGray = 0;
