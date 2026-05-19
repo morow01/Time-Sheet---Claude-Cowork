@@ -20826,7 +20826,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.52';
+    const VERSION = '6.3.53';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -48156,11 +48156,24 @@ QUESTION: ${query}`;
     function _ttTableKeyDown(editor, event) {
       var kc = event.keyCode || event.which || 0;
 
-      // Enter at the very start of a table that is the first document node
+      // Enter at the very start of a document whose first node is a table or block image
       // → insert a blank paragraph above (OneNote-style)
       if ((event.key === 'Enter' || kc === 13) && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
         var state = editor.state;
-        if (state.selection.empty && state.doc.firstChild && state.doc.firstChild.type.name === 'table') {
+        var doc = state.doc;
+        var sel = state.selection;
+        var firstChild = doc.firstChild;
+
+        // Block image at top: cursor/selection is at or before the image (pos 0 or 1)
+        if (firstChild && firstChild.type.name === 'image' && sel.from <= 1) {
+          editor.view.dispatch(state.tr.insert(0, state.schema.nodes.paragraph.create()));
+          editor.commands.setTextSelection(1);
+          event.preventDefault();
+          return true;
+        }
+
+        // Table at top: cursor is inside the first cell at offset 0
+        if (state.selection.empty && firstChild && firstChild.type.name === 'table') {
           var $f = state.selection.$from;
           if ($f.depth >= 3 &&
               $f.node(1).type.name === 'table' &&
