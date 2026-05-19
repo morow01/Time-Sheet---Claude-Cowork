@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.38';
+    const VERSION = '6.3.39';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -28920,12 +28920,8 @@
       if (filtered.length < reminders.length) {
         saveReminders(filtered);
         showToast('Reminder removed');
-        [
-          document.querySelector(`.note-card[data-note-id="${noteId}"] .note-reminder-field`),
-          document.querySelector(`.dnotes-field-group .note-reminder-field`),
-        ].forEach(el => {
-          if (el) el.outerHTML = renderNoteReminderField(noteId);
-        });
+        saveNotesUiState();
+        render();
       }
     }
 
@@ -29167,13 +29163,10 @@
       const dateLabel = formatDate(dateToStr(dt));
       const timeLabel = dt.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
       showToast(`Reminder ${oldIdx >= 0 ? 'updated' : 'set'} for ${dateLabel} at ${timeLabel}`);
-      // Surgical update — replace reminder field in note card and desktop panel in-place
-      [
-        document.querySelector(`.note-card[data-note-id="${noteId}"] .note-reminder-field`),
-        document.querySelector(`.dnotes-field-group .note-reminder-field`),
-      ].forEach(el => {
-        if (el) el.outerHTML = renderNoteReminderField(noteId);
-      });
+      // Persist expanded state then render so the reminder field updates immediately
+      // (the Firestore echo is async and may arrive too late for the user to see)
+      saveNotesUiState();
+      render();
     }
 
     // Timer management
@@ -48418,6 +48411,10 @@ function _ttStripDefaultTableWidths() {
             // Surgical inline preview update — do this before the async save so a Firestore
             // snapshot mid-await can't race render() and show stale content / collapse card
             if (_fnFsSource === 'notes') {
+              // Always persist expanded state — not gated on card being in DOM
+              state.expandedNotes.add(_fnFsNoteId);
+              saveNotesUiState();
+              // Surgical inline preview update before async save
               const _inEl = document.querySelector(`[data-fn-inline="${_fnFsNoteId}"]`);
               if (_inEl && _inEl.parentNode) {
                 const _w = document.createElement('div');
@@ -48429,8 +48426,6 @@ function _ttStripDefaultTableWidths() {
                 _card.classList.add('expanded');
                 const _arr = _card.querySelector('.note-expand-arrow');
                 if (_arr) _arr.classList.add('open');
-                state.expandedNotes.add(_fnFsNoteId);
-                saveNotesUiState();
               }
             }
             // User explicitly saved — allow intentional shrinkage on THIS device
