@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.35';
+    const VERSION = '6.3.36';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21098,14 +21098,34 @@
     function _applyLocationValue(val) {
       const { dayIndex: di, actId, noteId } = locationModalCtx;
       if (noteId) {
-        // Note location
+        // Note location — surgical DOM update (no render to avoid card collapse / transition)
         const note = state.notes.find(n => n.id === noteId);
         if (!note) return;
         note.location = val;
         note.updatedAt = Date.now();
         scheduleNotesSave();
-        saveNotesUiState(); // persist expanded state before render() reloads it from localStorage
-        render();
+        // Update location input in expanded card (and task modal note form)
+        document.querySelectorAll(`input[data-note-id="${noteId}"][data-note-field="location"]`).forEach(el => { el.value = val; });
+        // Update collapsed meta row — first location item (pin icon + name)
+        const card = document.querySelector(`.note-card[data-note-id="${noteId}"]`);
+        if (card) {
+          const metaRow = card.querySelector('.note-row-meta');
+          if (metaRow) {
+            // Remove existing location meta item, add new one if val is set
+            const existing = metaRow.querySelector('.note-meta-item');
+            if (existing) existing.remove();
+            if (val) {
+              const pinSvg = `<svg class="note-meta-icon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
+              const item = document.createElement('div');
+              item.className = 'note-meta-item';
+              item.innerHTML = pinSvg + `<span>${esc(val.replace(/\s*\([^)]+\)\s*$/, '').trim())}</span>`;
+              metaRow.insertBefore(item, metaRow.firstChild);
+            }
+          }
+        }
+        // Desktop notes panel location field
+        const deskLocEl = document.querySelector(`.dnotes-field-input[data-note-id="${noteId}"][data-note-field="location"]`);
+        if (deskLocEl) deskLocEl.value = val;
       } else {
         // Activity location — surgical DOM update, no render() to avoid triggering password manager
         if (di === null || !actId) return;
