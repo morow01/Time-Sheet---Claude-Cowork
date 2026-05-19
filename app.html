@@ -15226,8 +15226,14 @@
     }
     .rtn-map-legend-title {
       font-size: 10px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px;
+      letter-spacing: 0.06em; color: var(--text-muted);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; cursor: pointer; user-select: none;
     }
+    .rtn-map-legend-title svg { flex-shrink: 0; transition: transform 0.2s; }
+    .rtn-map-legend.collapsed .rtn-map-legend-title svg { transform: rotate(-90deg); }
+    .rtn-map-legend-rows { margin-top: 6px; }
+    .rtn-map-legend.collapsed .rtn-map-legend-rows { display: none; }
     .rtn-map-legend-row {
       display: flex; align-items: center; gap: 6px;
       margin-bottom: 4px; color: var(--text-secondary);
@@ -20801,7 +20807,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.49';
+    const VERSION = '6.3.50';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -41195,15 +41201,21 @@
 
       window.L.control.zoom({ position: 'topright' }).addTo(map);
 
-      // Legend (Leaflet control so it can't be clipped by ancestor CSS)
+      // Legend — collapsible, starts collapsed on mobile
       var legendCtrl = window.L.control({ position: 'bottomleft' });
       legendCtrl.onAdd = function() {
-        var div = window.L.DomUtil.create('div', 'rtn-map-legend');
-        div.innerHTML = '<div class="rtn-map-legend-title">Last Visit</div>'
+        var div = window.L.DomUtil.create('div', 'rtn-map-legend' + (_isDesktop() ? '' : ' collapsed'));
+        var chevron = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+        div.innerHTML = '<div class="rtn-map-legend-title">Last Visit ' + chevron + '</div>'
+          + '<div class="rtn-map-legend-rows">'
           + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#16a34a"></div>Within 1 month</div>'
           + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#f59e0b"></div>1 – 3 months</div>'
           + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#ef4444"></div>Over 3 months</div>'
-          + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#94a3b8"></div>Never visited</div>';
+          + '<div class="rtn-map-legend-row"><div class="rtn-map-legend-dot" style="background:#94a3b8"></div>Never visited</div>'
+          + '</div>';
+        div.querySelector('.rtn-map-legend-title').addEventListener('click', function() {
+          div.classList.toggle('collapsed');
+        });
         window.L.DomEvent.disableClickPropagation(div);
         return div;
       };
