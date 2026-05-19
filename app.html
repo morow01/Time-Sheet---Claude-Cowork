@@ -9476,11 +9476,14 @@
       display: inline-block;
       max-width: 100%;
       margin: 6px 0;
-      margin-top: 44px;
-      /* space for toolbar above */
+      margin-top: 8px;
       line-height: 0;
       overflow: visible;
       touch-action: pan-y;
+    }
+    /* Reserve toolbar space only when image is selected */
+    .img-resize-wrap.selected {
+      margin-top: 44px;
     }
 
     .img-resize-wrap .tt-resizable-img {
@@ -20826,7 +20829,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.53';
+    const VERSION = '6.3.54';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -48164,10 +48167,20 @@ QUESTION: ${query}`;
         var sel = state.selection;
         var firstChild = doc.firstChild;
 
-        // Block image at top: cursor/selection is at or before the image (pos 0 or 1)
-        if (firstChild && firstChild.type.name === 'image' && sel.from <= 1) {
-          editor.view.dispatch(state.tr.insert(0, state.schema.nodes.paragraph.create()));
-          editor.commands.setTextSelection(1);
+        // Block image — insert paragraph BEFORE the image when Enter is pressed
+        // while the image is selected or the cursor is immediately before it.
+        // Covers: NodeSelection on image, GapCursor before image, cursor at image boundary.
+        var _imgInsertPos = null;
+        if (sel.node && sel.node.type.name === 'image') {
+          // NodeSelection directly on the image
+          _imgInsertPos = sel.from;
+        } else if (sel.$from.nodeAfter && sel.$from.nodeAfter.type.name === 'image') {
+          // Cursor/GapCursor sitting immediately before an image block
+          _imgInsertPos = sel.$from.pos;
+        }
+        if (_imgInsertPos !== null) {
+          editor.view.dispatch(state.tr.insert(_imgInsertPos, state.schema.nodes.paragraph.create()));
+          editor.commands.setTextSelection(_imgInsertPos + 1);
           event.preventDefault();
           return true;
         }
