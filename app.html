@@ -15863,6 +15863,23 @@
         gap: 16px;
       }
 
+      .rtn-panel-toggle {
+        display: flex; gap: 2px;
+        background: var(--bg-code-group);
+        border-radius: 10px; padding: 2px;
+      }
+      .rtn-panel-btn {
+        font-size: 11px; font-weight: 700;
+        padding: 4px 12px; border-radius: 8px;
+        color: var(--text-muted); cursor: pointer;
+        border: none; background: none;
+      }
+      .rtn-panel-btn.active {
+        background: var(--bg-segment-active);
+        color: var(--accent);
+        box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.10);
+      }
+
       .rtn-recent-card {
         display: flex;
         flex-direction: column;
@@ -20784,7 +20801,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.44';
+    const VERSION = '6.3.45';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -40920,10 +40937,19 @@
           + '</div></div>'
           // Dashboard grid
           + '<div class="rtn-dash">'
-          // Main grid card
+          // Main panel card (Grid or Map)
           + '<div class="rtn-dash-card">'
-          + '<div class="rtn-dash-card-hdr">Routine Visits <span class="rtn-card-title-actions"><button class="rtn-edit-btn rtn-tool-icon" onclick="refreshRoutines()" title="Refresh data"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button><button class="rtn-edit-btn" onclick="openRoutinesSitePicker()">Edit Sites</button></span></div>'
-          + '<div class="rtn-grid-scroll" id="rtn-grid-scroll"><table class="rtn-table"><thead><tr>' + deskHeadCells + '</tr></thead><tbody>' + rows + '</tbody></table></div>'
+          + '<div class="rtn-dash-card-hdr">Routine Visits'
+          + '<div style="display:flex;align-items:center;gap:10px">'
+          + '<div class="rtn-panel-toggle">'
+          + '<button class="rtn-panel-btn' + (_rtnDeskPanel === 'grid' ? ' active' : '') + '" onclick="rtnDeskPanel(\'grid\')">Grid</button>'
+          + '<button class="rtn-panel-btn' + (_rtnDeskPanel === 'map' ? ' active' : '') + '" onclick="rtnDeskPanel(\'map\')">Map</button>'
+          + '</div>'
+          + '<span class="rtn-card-title-actions"><button class="rtn-edit-btn rtn-tool-icon" onclick="refreshRoutines()" title="Refresh data"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button><button class="rtn-edit-btn" onclick="openRoutinesSitePicker()">Edit Sites</button></span>'
+          + '</div></div>'
+          + (_rtnDeskPanel === 'map'
+            ? '<div id="rtn-map-stats" class="rtn-map-stats-bar"></div><div class="rtn-map-wrap"><div id="rtn-map" style="min-height:400px"></div></div>'
+            : '<div class="rtn-grid-scroll" id="rtn-grid-scroll"><table class="rtn-table"><thead><tr>' + deskHeadCells + '</tr></thead><tbody>' + rows + '</tbody></table></div>')
           + '</div>'
           // Sidebar
           + '<div class="rtn-dash-sidebar">'
@@ -41021,6 +41047,13 @@
     }
 
     // ── Routines Map ─────────────────────────────────────────────
+    var _rtnDeskPanel = 'grid'; // 'grid' | 'map' — desktop main panel toggle
+    function rtnDeskPanel(id) {
+      if (_rtnDeskPanel === id) return;
+      _rtnDeskPanel = id;
+      render();
+      if (id === 'map') setTimeout(_rtnInitMap, 0);
+    }
     var _rtnMapFs = false;
     function _rtnToggleMapFs(map) {
       _rtnMapFs = !_rtnMapFs;
