@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.30';
+    const VERSION = '6.3.31';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21135,6 +21135,8 @@
           tblLocEl.textContent = val || 'Location…';
           tblLocEl.style.color = val ? '' : 'var(--text-muted)';
         }
+        // Refresh task modal if it's open for this activity (card style mode)
+        if (_taskModalState && _taskModalState.actId === actId) _showTaskModal();
       }
     }
 
@@ -35765,6 +35767,8 @@
         if (selected.length > 1 && !act.tasks) act.tasks = String(selected.length);
         scheduleAutoSave();
         render();
+        // Refresh task modal if it's open for this activity (card style mode)
+        if (_taskModalState && _taskModalState.actId === actId) _showTaskModal();
       }
       closeCodeModal();
     }
