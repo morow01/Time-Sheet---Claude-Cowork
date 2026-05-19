@@ -20783,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.36';
+    const VERSION = '6.3.37';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -48395,6 +48395,7 @@ function _ttStripDefaultTableWidths() {
                 window._tiptapNoteEdited = false;
                 _fnFsNoteId = null;
                 if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+                saveNotesUiState();
                 render();
                 _noteFsActId = null; _noteFsDi = null;
                 _ttResetDraftState();
@@ -48416,6 +48417,7 @@ function _ttStripDefaultTableWidths() {
         _fnFsNoteId = null;
         // Destroy editor AFTER content is saved
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+        saveNotesUiState(); // persist expanded state before render() reloads it from localStorage
         render();
       } else if (_noteFsActId != null) {
         // Activity inline note (timesheet) — flush final TipTap content
