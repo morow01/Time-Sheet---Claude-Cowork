@@ -1901,10 +1901,6 @@
       animation: ttAiSlideUp 0.22s ease;
     }
 
-    .task-modal-no-anim .task-modal-sheet {
-      animation: none !important;
-    }
-
     .task-modal-body {
       min-height: 0;
     }
@@ -20787,7 +20783,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.34';
+    const VERSION = '6.3.35';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27317,10 +27313,12 @@
         ov.id = 'task-modal-overlay';
         document.body.appendChild(ov);
       }
-      if (noAnim) ov.classList.add('task-modal-no-anim');
       ov.innerHTML = _renderTaskModalHtml(act, di);
+      if (noAnim) {
+        const sheet = ov.querySelector('.task-modal-sheet');
+        if (sheet) sheet.style.animation = 'none';
+      }
       ov.style.display = 'flex';
-      if (noAnim) requestAnimationFrame(() => ov.classList.remove('task-modal-no-anim'));
       document.body.style.overflow = 'hidden';
 
       requestAnimationFrame(() => {
