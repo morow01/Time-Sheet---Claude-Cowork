@@ -15536,8 +15536,7 @@
       display: block;
     }
 
-    #rtn-tab-stats,
-    #rtn-tab-due {
+    #rtn-tab-stats {
       padding: 12px 16px 0;
     }
 
@@ -20832,7 +20831,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.69';
+    const VERSION = '6.3.71';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -41044,8 +41043,7 @@
         // Tab bar
         + '<div class="rtn-tab-bar">'
         + '<button class="rtn-tab-btn active" onclick="rtnMobTab(\'grid\',this)">Grid</button>'
-        + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'stats\',this)">Stats</button>'
-        + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'due\',this)">Due <span class="rtn-tab-badge">' + dueVisits.length + '</span></button>'
+        + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'stats\',this)">Stats' + (dueVisits.length > 0 ? ' <span class="rtn-tab-badge">' + dueVisits.length + '</span>' : '') + '</button>'
         + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'map\',this)">Map</button>'
         + '</div>'
         + '<div class="rtn-tool-actions">'
@@ -41057,7 +41055,7 @@
         + '<div class="rtn-sticky-hdr" id="rtn-sticky-hdr"><table class="rtn-table"><thead><tr>' + headCells + '</tr></thead></table></div>'
         + '<div class="rtn-grid-scroll" id="rtn-grid-scroll"><table class="rtn-table"><tbody>' + rows + '</tbody></table></div>'
         + '</div>'
-        // Tab: Stats
+        // Tab: Stats (includes Due Visits + Never Visited below)
         + '<div class="rtn-tab-content" id="rtn-tab-stats">'
         + '<div class="rtn-mob-stats">'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:var(--accent)">' + sortedSites.length + '</div><div class="rtn-mob-stat-lbl">Sites</div></div>'
@@ -41065,13 +41063,11 @@
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#16a34a">' + cntUpToDate + '</div><div class="rtn-mob-stat-lbl">Up to date</div></div>'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#ef4444">' + cntOverdue + '</div><div class="rtn-mob-stat-lbl">Overdue</div></div>'
         + '</div>'
-        + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Visits per Month</div><div class="rtn-mob-month-bar">' + mobMonthBarHtml + '</div></div>'
-        + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Recent Visits <span class="rtn-mob-badge" style="background:rgba(34,197,94,0.1);color:#15803d">Latest</span></div><div class="rtn-mob-recent-scroll">' + mobRecentHtml + '</div></div>'
-        + '</div>'
-        // Tab: Due
-        + '<div class="rtn-tab-content" id="rtn-tab-due">'
+        + '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px"><div style="flex:1;height:1px;background:var(--border)"></div><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Action Items</div><div style="flex:1;height:1px;background:var(--border)"></div></div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Due Visits <span class="rtn-mob-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b">' + dueVisits.length + '</span></div>' + dueHtml + '</div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Never Visited <span class="rtn-mob-badge" style="background:rgba(239,68,68,0.1);color:#ef4444">' + neverVisited.length + '</span></div>' + neverHtml + '</div>'
+        + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Visits per Month</div><div class="rtn-mob-month-bar">' + mobMonthBarHtml + '</div></div>'
+        + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Recent Visits <span class="rtn-mob-badge" style="background:rgba(34,197,94,0.1);color:#15803d">Latest</span></div><div class="rtn-mob-recent-scroll">' + mobRecentHtml + '</div></div>'
         + '</div>'
         // Tab: Map
         + '<div class="rtn-tab-content" id="rtn-tab-map">'
