@@ -20831,7 +20831,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.71';
+    const VERSION = '6.3.72';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -41042,21 +41042,21 @@
         + '<div class="rtn-tools-row">'
         // Tab bar
         + '<div class="rtn-tab-bar">'
-        + '<button class="rtn-tab-btn active" onclick="rtnMobTab(\'grid\',this)">Grid</button>'
-        + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'stats\',this)">Stats' + (dueVisits.length > 0 ? ' <span class="rtn-tab-badge">' + dueVisits.length + '</span>' : '') + '</button>'
-        + '<button class="rtn-tab-btn" onclick="rtnMobTab(\'map\',this)">Map</button>'
+        + '<button class="rtn-tab-btn' + (state.rtnMobTab === 'grid' || !state.rtnMobTab ? ' active' : '') + '" onclick="rtnMobTab(\'grid\',this)">Grid</button>'
+        + '<button class="rtn-tab-btn' + (state.rtnMobTab === 'stats' ? ' active' : '') + '" onclick="rtnMobTab(\'stats\',this)">Stats' + (dueVisits.length > 0 ? ' <span class="rtn-tab-badge">' + dueVisits.length + '</span>' : '') + '</button>'
+        + '<button class="rtn-tab-btn' + (state.rtnMobTab === 'map' ? ' active' : '') + '" onclick="rtnMobTab(\'map\',this)">Map</button>'
         + '</div>'
         + '<div class="rtn-tool-actions">'
         + '<button class="rtn-edit-btn rtn-tool-icon" onclick="refreshRoutines()" title="Refresh data"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>'
         + '<button class="rtn-edit-btn rtn-tool-icon" onclick="openRoutinesSitePicker()" title="Edit sites"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>'
         + '</div></div>'
         // Tab: Grid
-        + '<div class="rtn-tab-content active" id="rtn-tab-grid">'
+        + '<div class="rtn-tab-content' + (state.rtnMobTab === 'grid' || !state.rtnMobTab ? ' active' : '') + '" id="rtn-tab-grid">'
         + '<div class="rtn-sticky-hdr" id="rtn-sticky-hdr"><table class="rtn-table"><thead><tr>' + headCells + '</tr></thead></table></div>'
         + '<div class="rtn-grid-scroll" id="rtn-grid-scroll"><table class="rtn-table"><tbody>' + rows + '</tbody></table></div>'
         + '</div>'
         // Tab: Stats (includes Due Visits + Never Visited below)
-        + '<div class="rtn-tab-content" id="rtn-tab-stats">'
+        + '<div class="rtn-tab-content' + (state.rtnMobTab === 'stats' ? ' active' : '') + '" id="rtn-tab-stats">'
         + '<div class="rtn-mob-stats">'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:var(--accent)">' + sortedSites.length + '</div><div class="rtn-mob-stat-lbl">Sites</div></div>'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#15803d">' + visitCount + '</div><div class="rtn-mob-stat-lbl">Visits</div></div>'
@@ -41070,7 +41070,7 @@
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Recent Visits <span class="rtn-mob-badge" style="background:rgba(34,197,94,0.1);color:#15803d">Latest</span></div><div class="rtn-mob-recent-scroll">' + mobRecentHtml + '</div></div>'
         + '</div>'
         // Tab: Map
-        + '<div class="rtn-tab-content" id="rtn-tab-map">'
+        + '<div class="rtn-tab-content' + (state.rtnMobTab === 'map' ? ' active' : '') + '" id="rtn-tab-map">'
         + '<div class="rtn-map-wrap">'
         + '<div id="rtn-map"></div>'
         + '</div>'
@@ -41079,6 +41079,7 @@
     }
 
     function rtnMobTab(id, btn) {
+      state.rtnMobTab = id;
       document.querySelectorAll('.rtn-tab-content').forEach(function (t) { t.classList.remove('active'); });
       document.querySelectorAll('.rtn-tab-btn').forEach(function (b) { b.classList.remove('active'); });
       var el = document.getElementById('rtn-tab-' + id);
