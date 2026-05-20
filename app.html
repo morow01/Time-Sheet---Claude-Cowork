@@ -20819,7 +20819,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.63';
+    const VERSION = '6.3.64';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -46405,19 +46405,9 @@ QUESTION: ${query}`;
               },
               selectNode() {
                 container.classList.add('selected');
-                // Flip toolbar below image if there's no room above (image near top of editor)
-                const editorEl = container.closest('.ProseMirror');
-                if (editorEl) {
-                  const edTop = editorEl.getBoundingClientRect().top;
-                  const cTop = container.getBoundingClientRect().top;
-                  if (cTop - edTop < 56) {
-                    presets.style.top = 'auto';
-                    presets.style.bottom = '-48px';
-                  } else {
-                    presets.style.top = '-48px';
-                    presets.style.bottom = '';
-                  }
-                }
+                // Toolbar overlays inside the image — clear any stale inline position overrides
+                presets.style.top = '8px';
+                presets.style.bottom = '';
                 // Focus the container div (not a text input — won't trigger mobile keyboard)
                 // This lets keydown events (Delete, Enter) reach our handler above
                 const sx = window.scrollX, sy = window.scrollY;
