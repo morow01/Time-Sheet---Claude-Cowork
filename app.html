@@ -20824,7 +20824,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.65';
+    const VERSION = '6.3.66';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33973,8 +33973,22 @@
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
         _ttSetContent(note.noteContent || '');
         _ttResetHistory(_ttGetHTML());
-        // Focus and place cursor at end so user can start typing immediately
-        if (_tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
+        // Restore last scroll + cursor position, or fall back to end
+        let _restored = false;
+        try {
+          const _sp = localStorage.getItem('rian_tt_pos_n_' + noteId);
+          if (_sp && _tiptapEditor) {
+            const { cursor, scroll } = JSON.parse(_sp);
+            const _sz = _tiptapEditor.state.doc.content.size;
+            _tiptapEditor.commands.setTextSelection(Math.min(cursor, Math.max(0, _sz - 1)));
+            requestAnimationFrame(() => {
+              const _el = document.getElementById('note-fs-editor');
+              if (_el) _el.scrollTop = scroll || 0;
+            });
+            _restored = true;
+          }
+        } catch(e) {}
+        if (!_restored && _tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
         _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
         _tiptapLastSavedNoteId = noteId;
         window._tiptapOpenedEmpty = !(note.noteContent || '').trim(); // was editor empty at open?
@@ -48481,8 +48495,22 @@ function _ttStripDefaultTableWidths() {
         _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
         _ttSetContent(currentValue);
         _ttResetHistory(_ttGetHTML());
-        // Focus and place cursor at end so user can start typing immediately
-        if (_tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
+        // Restore last scroll + cursor position, or fall back to end
+        let _restoredAct = false;
+        try {
+          const _sp = localStorage.getItem('rian_tt_pos_a_' + actId);
+          if (_sp && _tiptapEditor) {
+            const { cursor, scroll } = JSON.parse(_sp);
+            const _sz = _tiptapEditor.state.doc.content.size;
+            _tiptapEditor.commands.setTextSelection(Math.min(cursor, Math.max(0, _sz - 1)));
+            requestAnimationFrame(() => {
+              const _el = document.getElementById('note-fs-editor');
+              if (_el) _el.scrollTop = scroll || 0;
+            });
+            _restoredAct = true;
+          }
+        } catch(e) {}
+        if (!_restoredAct && _tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
         _tiptapOnUpdate = (editor) => {
           _ttMarkDraftDirty();
           if (_noteFsActId != null) {
@@ -48493,6 +48521,21 @@ function _ttStripDefaultTableWidths() {
       }, 80);
     }
     async function closeNoteFullscreen(action) {
+      // Persist scroll + cursor so the next open restores position
+      if (_tiptapEditor) {
+        try {
+          const _pk = _fnFsNoteId ? 'rian_tt_pos_n_' + _fnFsNoteId
+                    : _noteFsActId ? 'rian_tt_pos_a_' + _noteFsActId
+                    : null;
+          if (_pk) {
+            const _edEl = document.getElementById('note-fs-editor');
+            localStorage.setItem(_pk, JSON.stringify({
+              cursor: _tiptapEditor.state.selection.from,
+              scroll: _edEl ? _edEl.scrollTop : 0
+            }));
+          }
+        } catch(e) {}
+      }
       const shouldSave = action === 'save';
       if (!shouldSave && _tiptapEditor && window._ttFsDirty) {
         const discard = await showRianDialog({
