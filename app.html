@@ -897,12 +897,8 @@
 
     .act-actions-row {
       display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
+      gap: 0;
     }
-    .act-actions-row::-webkit-scrollbar { display: none; }
 
     .act-action-btn {
       flex: 1 0 auto;
@@ -13811,18 +13807,14 @@
     /* ===== Mockup J: Done + Delete buttons ===== */
     .note-bottom-actions {
       display: flex;
-      gap: 6px;
+      gap: 0;
       margin-top: 6px;
       margin-left: -16px;
       margin-right: -16px;
-      padding: 14px 16px 0;
+      padding: 14px 0 0;
       border-top: 1px solid var(--border);
       position: relative;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
     }
-    .note-bottom-actions::-webkit-scrollbar { display: none; }
 
     .note-bottom-actions .task-modal-text-btn {
       padding: 8px 6px;
@@ -20832,7 +20824,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.67';
+    const VERSION = '6.3.68';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27888,30 +27880,34 @@
               </div>
             </div>
 
-            <div class="act-actions-row" style="gap:8px;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:34px;">
+            <div class="act-actions-row" style="border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-left:-16px;margin-right:-16px;">
               ${act._draft
-          ? `<button onclick="saveTaskDraft('${act.id}',${di})" class="act-action-btn act-action-note" style="flex:1;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Save
-                </button>
-                <button onclick="discardTaskDraft('${act.id}',${di})" class="act-action-btn act-action-delete">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  Discard
-                </button>`
-          : `<button onclick="event.stopPropagation();openCopyPicker('${act.id}',${di},false)" class="task-modal-text-btn" title="Copy / Move">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
-                <button onclick="event.stopPropagation();openAddToNotes('${act.id}',${di})" class="task-modal-text-btn" title="Add to Notes">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                  Notes
-                </button>
-                <button onclick="event.stopPropagation();toggleRemedyFlag(${di},'${act.id}')" class="task-modal-text-btn${act.remedyPending ? ' active' : ''}" title="${act.remedyPending ? 'Remedy logged' : 'Log Remedy ticket'}">
-                  <svg viewBox="0 0 24 24" fill="${act.remedyPending ? '#7c3aed' : 'none'}" stroke="${act.remedyPending ? '#7c3aed' : 'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>
-                  Remedy
-                </button>
-                <div style="width:1px;background:var(--border);align-self:stretch;margin:0 2px;flex-shrink:0"></div>
-                <button onclick="event.stopPropagation();showConfirm('Delete task?','${escAttr(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))" class="act-action-btn act-action-delete" style="flex:none;padding:0 14px;margin-right:10px" title="Delete">
+          ? `<div style="flex:1;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 16px">
+                  <button onclick="saveTaskDraft('${act.id}',${di})" class="act-action-btn act-action-note" style="flex:1 0 auto">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Save
+                  </button>
+                  <button onclick="discardTaskDraft('${act.id}',${di})" class="act-action-btn act-action-delete" style="flex:1 0 auto">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    Discard
+                  </button>
+                </div>`
+          : `<div style="flex:1;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 0 0 16px">
+                  <button onclick="event.stopPropagation();openCopyPicker('${act.id}',${di},false)" class="task-modal-text-btn" title="Copy / Move">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copy
+                  </button>
+                  <button onclick="event.stopPropagation();openAddToNotes('${act.id}',${di})" class="task-modal-text-btn" title="Add to Notes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    Notes
+                  </button>
+                  <button onclick="event.stopPropagation();toggleRemedyFlag(${di},'${act.id}')" class="task-modal-text-btn${act.remedyPending ? ' active' : ''}" title="${act.remedyPending ? 'Remedy logged' : 'Log Remedy ticket'}">
+                    <svg viewBox="0 0 24 24" fill="${act.remedyPending ? '#7c3aed' : 'none'}" stroke="${act.remedyPending ? '#7c3aed' : 'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>
+                    Remedy
+                  </button>
+                </div>
+                <div style="width:1px;background:var(--border);align-self:stretch;flex-shrink:0;margin:0 4px"></div>
+                <button onclick="event.stopPropagation();showConfirm('Delete task?','${escAttr(act.description || 'Unnamed')}',()=>removeActivity('${act.id}',${di}))" class="act-action-btn act-action-delete" style="flex:none;padding:0 16px" title="Delete">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                 </button>`}
             </div>
@@ -31552,35 +31548,39 @@
             </div>
             <div class="note-bottom-actions">
               ${note._draft ? `
-              <button class="btn-primary" onclick="saveNoteDraft('${note.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
-              </button>
-              <button class="note-btn-delete" onclick="discardNoteDraft('${note.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
-              </button>` : `
-              <button class="task-modal-text-btn" onclick="markNoteDone('${note.id}')">
-                ${note.status === 'done'
+              <div style="flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 16px">
+                <button class="btn-primary" onclick="saveNoteDraft('${note.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
+                </button>
+                <button class="note-btn-delete" onclick="discardNoteDraft('${note.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
+                </button>
+              </div>` : `
+              <div style="flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:0 0 0 16px">
+                <button class="task-modal-text-btn" onclick="markNoteDone('${note.id}')">
+                  ${note.status === 'done'
             ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg> Reopen`
             : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Complete`}
-              </button>
-              ${!note.archived && !note.deleted ? `
-              <button class="task-modal-text-btn" onclick="openNoteToTask('${note.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task
-              </button>
-              <button class="task-modal-text-btn" onclick="archiveNote('${note.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive
-              </button>` : ''}
-              ${note.archived && !note.deleted ? `
-              <button class="task-modal-text-btn" onclick="unarchiveNote('${note.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Unarchive
-              </button>` : ''}
-              ${note.deleted ? `
-              <button class="task-modal-text-btn" onclick="restoreNote('${note.id}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> Restore
-              </button>` : ''}
+                </button>
+                ${!note.archived && !note.deleted ? `
+                <button class="task-modal-text-btn" onclick="openNoteToTask('${note.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg> Task
+                </button>
+                <button class="task-modal-text-btn" onclick="archiveNote('${note.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive
+                </button>` : ''}
+                ${note.archived && !note.deleted ? `
+                <button class="task-modal-text-btn" onclick="unarchiveNote('${note.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Unarchive
+                </button>` : ''}
+                ${note.deleted ? `
+                <button class="task-modal-text-btn" onclick="restoreNote('${note.id}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> Restore
+                </button>` : ''}
+              </div>
               ${!note.deleted ? `
-              <div style="width:1px;background:var(--border);align-self:stretch;margin:0 2px;flex-shrink:0"></div>
-              <button class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" onclick="deleteNote('${note.id}')">
+              <div style="width:1px;background:var(--border);align-self:stretch;flex-shrink:0;margin:0 4px"></div>
+              <button class="act-action-btn act-action-delete" style="flex:none;padding:0 16px" onclick="deleteNote('${note.id}')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               </button>` : ''}`}
             </div>
