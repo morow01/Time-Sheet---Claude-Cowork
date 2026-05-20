@@ -9481,11 +9481,6 @@
       overflow: visible;
       touch-action: pan-y;
     }
-    /* Reserve toolbar space only when image is selected */
-    .img-resize-wrap.selected {
-      margin-top: 44px;
-    }
-
     .img-resize-wrap .tt-resizable-img {
       max-width: 100%;
       border-radius: 8px;
@@ -9577,7 +9572,7 @@
 
     .img-resize-presets {
       position: absolute;
-      top: -48px;
+      top: 8px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -10478,11 +10473,6 @@
       padding-bottom: 24px;
     }
 
-    #notes-search-input[contenteditable]:empty::before {
-      content: attr(data-placeholder);
-      color: var(--text-muted);
-      pointer-events: none;
-    }
 
     .notes-tab-bar {
       display: flex;
@@ -20829,7 +20819,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.54';
+    const VERSION = '6.3.62';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -28447,14 +28437,18 @@
     // ============================================================
     // ADD TASK TO NOTES
     // ============================================================
-    let noteConfirmState = { actId: null, di: null };
+    let noteConfirmState = { actId: null, di: null, desc: null, loc: null, notes: null };
 
     let noteConfirmPriority = 'medium';
 
     function openAddToNotes(actId, di) {
       const act = state.weekData.days[di]?.activities.find(a => a.id === actId);
       if (!act) return;
-      noteConfirmState = { actId, di };
+      // Sync TipTap inline note to state before capturing snapshot
+      if (_noteFsActId === actId && _tiptapEditor) _syncOpenActivityNoteDraft(_ttGetHTML());
+      // Snapshot current field values — Firestore snapshots during the dialog could overwrite state
+      noteConfirmState = { actId, di, desc: act.description, loc: act.location, notes: act.notes };
+      saveWeekNow().catch(() => {});
       noteConfirmPriority = 'medium';
       const desc = act.description || 'Unnamed';
       const loc = act.location || '';
@@ -28515,9 +28509,8 @@
     }
 
     async function executeAddToNotes() {
-      const { actId, di } = noteConfirmState;
-      const act = state.weekData.days[di]?.activities.find(a => a.id === actId);
-      if (!act) return;
+      const { actId, di, desc, loc, notes } = noteConfirmState;
+      if (!actId) return;
       const priority = noteConfirmPriority || 'medium';
       const dayDate = state.weekData.days[di]?.date || dateToStr(new Date());
 
@@ -28533,13 +28526,14 @@
         }
       }
 
+      // Use values captured at open time — immune to Firestore snapshot overwrites
       const note = createNote();
-      note.description = act.description || '';
-      note.location = act.location || '';
+      note.description = desc || '';
+      note.location = loc || '';
       note.date = dayDate;
       note.priority = priority;
-      // Put task notes into noteContent if present
-      if (act.notes) note.noteContent = act.notes;
+      if (notes) note.noteContent = notes;
+      delete note._draft; // must remove _draft or scheduleNotesSave() will filter it out
       state.notes.unshift(note);
       scheduleNotesSave();
 
@@ -28555,6 +28549,7 @@
     function openNoteToTask(noteId) {
       const note = state.notes.find(n => n.id === noteId);
       if (!note) return;
+      saveNotesNow().catch(() => {});
       taskPickerState.noteId = noteId;
       taskPickerState.viewingWeekStart = state.weekStart;
       taskPickerState.selectedDate = null;
@@ -28704,6 +28699,7 @@
       newAct.description = note.description || '';
       newAct.location = note.location || '';
       if (note.noteContent) newAct.notes = note.noteContent;
+      delete newAct._draft; // must remove _draft or saveWeekNow() will filter it out
 
       if (targetWeekStart === state.weekStart) {
         // Current week — add in-memory
@@ -29966,6 +29962,7 @@
         }
 
         dbPut('notes', { id: 'notes_all', userId: state.currentUser?.uid || null, data: state.notes, updatedAt: remote._updatedAt || Date.now() });
+        _pruneOrphanedReminders();
 
         if (state.view === 'notes' && !editingNoteId && !tiptapEditingId && !recentClosedNote) render();
 
@@ -31645,13 +31642,14 @@
         style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <div id="notes-search-input" contenteditable="true" role="searchbox" spellcheck="false"
-        data-placeholder="Search ${notesTab === 'archive' ? 'archive' : notesTab === 'bin' ? 'bin' : 'notes'}…"
-        oninput="notesSearchInput(this.textContent)"
+      <input id="notes-search-input" type="search" autocomplete="off" spellcheck="false"
+        data-lpignore="true" data-form-type="other" data-1p-ignore="true"
+        placeholder="Search ${notesTab === 'archive' ? 'archive' : notesTab === 'bin' ? 'bin' : 'notes'}…"
+        oninput="notesSearchInput(this.value)"
+        value="${esc(state.notesSearch)}"
         style="width:100%;box-sizing:border-box;padding:9px 34px 9px 34px;border-radius:12px;border:1px solid var(--border);
-          background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;
-          white-space:nowrap;overflow:hidden;line-height:1.4;">${esc(state.notesSearch)}</div>
-      ${state.notesSearch ? `<button onclick="notesSearchInput('');const _si=document.getElementById('notes-search-input');if(_si){_si.textContent='';_si.focus();}" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px;line-height:1">×</button>` : ''}
+          background:var(--bg-card);color:var(--text-primary);font-size:14px;font-family:inherit;outline:none;-webkit-appearance:none;">
+      ${state.notesSearch ? `<button onclick="notesSearchInput('');const _si=document.getElementById('notes-search-input');if(_si){_si.value='';_si.focus();}" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:2px;line-height:1">×</button>` : ''}
     </div>
   </div>`;
       const headerRow = `<div style="margin-top:4px"></div>`;
@@ -33267,43 +33265,17 @@
       _notesSearchTimer = setTimeout(() => {
         _notesSearchTimer = null;
         const wasFocused = document.activeElement?.id === 'notes-search-input';
+        const _mobileSearchPos = wasFocused ? document.activeElement.selectionStart : null;
         const _deskSearchFocused = document.activeElement?.classList?.contains('dnotes-search');
         const _deskSearchPos = _deskSearchFocused ? document.activeElement.selectionStart : null;
-        // Save caret offset for contenteditable restoration
-        let caretOffset = null;
-        if (wasFocused) {
-          const sel = window.getSelection();
-          if (sel && sel.rangeCount > 0) {
-            caretOffset = sel.getRangeAt(0).startOffset;
-          }
-        }
         render();
-        // Restore focus and caret after re-render
+        // Restore focus after re-render (mobile)
         if (wasFocused) {
           requestAnimationFrame(() => {
             const el2 = document.getElementById('notes-search-input');
             if (el2) {
               el2.focus();
-              if (caretOffset !== null && el2.firstChild) {
-                try {
-                  const range = document.createRange();
-                  const textNode = el2.firstChild;
-                  const offset = Math.min(caretOffset, textNode.length || 0);
-                  range.setStart(textNode, offset);
-                  range.collapse(true);
-                  const sel2 = window.getSelection();
-                  sel2.removeAllRanges();
-                  sel2.addRange(range);
-                } catch (e) { /* ignore */ }
-              } else if (caretOffset !== null) {
-                // Empty field — put caret at end
-                const range = document.createRange();
-                range.selectNodeContents(el2);
-                range.collapse(false);
-                const sel2 = window.getSelection();
-                sel2.removeAllRanges();
-                sel2.addRange(range);
-              }
+              if (_mobileSearchPos !== null) try { el2.setSelectionRange(_mobileSearchPos, _mobileSearchPos); } catch (e) {}
             }
           });
         }
@@ -33964,6 +33936,7 @@
       const note = arr.find(n => n.id === noteId);
       if (!note) return;
       _fnFsNoteId = noteId;
+      window._fnFsWasExpanded = state.expandedNotes.has(noteId); // remember pre-TipTap expansion state
       history.pushState({ noteFs: true }, '');
       window._tiptapNoteOpenTs = Date.now();
       // Snapshot the content at open time so the stale-editor guard can detect
@@ -34816,6 +34789,18 @@
         }
       });
       if (changed) scheduleNotesSave();
+    }
+
+    // Remove reminders whose noteId no longer exists anywhere in state.notes (incl. bin/archive).
+    // Called after notes sync from server to clean up orphaned reminders from deleted notes.
+    function _pruneOrphanedReminders() {
+      if (!remindersData.length || !state.notes.length) return;
+      const noteIds = new Set(state.notes.map(n => n.id));
+      const pruned = remindersData.filter(r => !r.noteId || noteIds.has(r.noteId));
+      if (pruned.length < remindersData.length) {
+        console.log('[Rian] Pruned', remindersData.length - pruned.length, 'orphaned reminder(s)');
+        saveReminders(pruned);
+      }
     }
 
     // Cancel and remove all reminders associated with a note
@@ -40997,8 +40982,6 @@
           + '<div class="rtn-stats-bar">'
           + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:var(--accent)">' + sortedSites.length + '</div><div class="rtn-stat-label">Sites</div></div>'
           + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#15803d">' + visitCount + '</div><div class="rtn-stat-label">Visits</div></div>'
-          + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#D97706">' + coverage + '%</div><div class="rtn-stat-label">Coverage</div></div>'
-          + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#8B5CF6">' + MONTHS_SHORT[curMonth - 1] + '</div><div class="rtn-stat-label">Current Month</div></div>'
           + '</div>'
           + '<div class="rtn-stats-bar">'
           + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#16a34a">' + cntUpToDate + '</div><div class="rtn-stat-label">Up to date</div></div>'
@@ -41052,8 +41035,6 @@
         + '<div class="rtn-mob-stats">'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:var(--accent)">' + sortedSites.length + '</div><div class="rtn-mob-stat-lbl">Sites</div></div>'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#15803d">' + visitCount + '</div><div class="rtn-mob-stat-lbl">Visits</div></div>'
-        + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#D97706">' + coverage + '%</div><div class="rtn-mob-stat-lbl">Coverage</div></div>'
-        + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#8B5CF6">' + MONTHS_SHORT[curMonth - 1] + '</div><div class="rtn-mob-stat-lbl">Current Month</div></div>'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#16a34a">' + cntUpToDate + '</div><div class="rtn-mob-stat-lbl">Up to date</div></div>'
         + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#ef4444">' + cntOverdue + '</div><div class="rtn-mob-stat-lbl">Overdue</div></div>'
         + '</div>'
@@ -46087,6 +46068,14 @@ QUESTION: ${query}`;
             const presets = document.createElement('div');
             presets.classList.add('img-resize-presets');
             presets.innerHTML = `
+              <button data-action="insert-above" title="Insert paragraph above">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="2" y1="2" x2="14" y2="2"/>
+                  <line x1="8" y1="14" x2="8" y2="5"/>
+                  <polyline points="4,8 8,4 12,8"/>
+                </svg>
+              </button>
+              <span class="preset-divider"></span>
               <button data-align="left" title="Left (no wrap)">
                 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-linecap="round">
                   <rect x="1" y="1" width="6" height="5" rx="1" fill="currentColor" stroke="none" opacity="0.85"/>
@@ -46154,6 +46143,13 @@ QUESTION: ${query}`;
               const btn = e.target.closest('button[data-size], button[data-align], button[data-action]');
               if (!btn) return;
               e.stopPropagation();
+              if (btn.dataset.action === 'insert-above') {
+                const p = typeof getPos === 'function' ? getPos() : null;
+                if (p == null) return;
+                editor.view.dispatch(editor.state.tr.insert(p, editor.state.schema.nodes.paragraph.create()));
+                editor.commands.setTextSelection(p + 1);
+                return;
+              }
               if (btn.dataset.action === 'zoom') {
                 if (window.openLightbox) window.openLightbox(img.src);
                 return;
@@ -48589,8 +48585,14 @@ function _ttStripDefaultTableWidths() {
             // Surgical inline preview update — do this before the async save so a Firestore
             // snapshot mid-await can't race render() and show stale content / collapse card
             if (_fnFsSource === 'notes') {
-              // Always persist expanded state — not gated on card being in DOM
-              state.expandedNotes.add(_fnFsNoteId);
+              // Restore the card's expansion state to what it was before TipTap opened.
+              // If the user accessed the note via modal (card was collapsed), don't force expansion.
+              const _wasExp = !!window._fnFsWasExpanded;
+              if (_wasExp) {
+                state.expandedNotes.add(_fnFsNoteId);
+              } else {
+                state.expandedNotes.delete(_fnFsNoteId);
+              }
               saveNotesUiState();
               // Surgical inline preview update before async save
               const _inEl = document.querySelector(`[data-fn-inline="${_fnFsNoteId}"]`);
@@ -48601,9 +48603,9 @@ function _ttStripDefaultTableWidths() {
               }
               const _card = document.querySelector(`.note-card[data-note-id="${_fnFsNoteId}"]`);
               if (_card) {
-                _card.classList.add('expanded');
+                _card.classList.toggle('expanded', _wasExp);
                 const _arr = _card.querySelector('.note-expand-arrow');
-                if (_arr) _arr.classList.add('open');
+                if (_arr) _arr.classList.toggle('open', _wasExp);
               }
             }
             // User explicitly saved — allow intentional shrinkage on THIS device
