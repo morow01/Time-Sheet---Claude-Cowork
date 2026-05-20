@@ -2037,10 +2037,15 @@
       padding: 12px 16px 16px;
       border-top: 1px solid var(--border);
       flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
 
+    .task-modal-actions::-webkit-scrollbar { display: none; }
+
     .task-modal-text-btn {
-      flex: 1;
+      flex: 0 0 auto;
       padding: 8px 10px;
       border-radius: 10px;
       border: 1px solid var(--border);
@@ -20819,7 +20824,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.64';
+    const VERSION = '6.3.65';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
