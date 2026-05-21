@@ -20945,7 +20945,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.81';
+    const VERSION = '6.3.82';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25640,7 +25640,7 @@
         const isPast = day.date <= today;
 
         const acts = day.activities.filter(a =>
-          a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0
+          (a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && !a._draft
         );
 
         // ── 2. Empty weekday with 0 total hours ───────────────
@@ -26709,7 +26709,7 @@
           var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
           var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
           var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
-          var hasIssue = isMissingCode || isMissingHours || isMissingLocation;
+          var hasIssue = (isMissingCode || isMissingHours || isMissingLocation) && !act._draft;
 
           var cls = 'desk-task-card' +
             (isSel ? ' desk-task-selected' : '') +
@@ -26776,7 +26776,9 @@
       var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
       var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
       var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
-      var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
+      var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation) && !act._draft;
+      var showWarnCode = isMissingCode && !act._draft;
+      var showWarnHours = isMissingHours && !act._draft;
 
       var bannerHtml = '';
       if (showRedBorder) {
@@ -26863,7 +26865,7 @@
         '<div class="act-codes-wrap" data-act-codes="' + act.id + '" onclick="openCodeModal(' + di + ',\'' + escId + '\')" style="cursor:pointer;min-height:42px">' +
         codesHtml +
         '</div>' +
-        '<div class="act-missing-warn act-missing-warn-code" style="display:' + (isMissingCode ? 'flex' : 'none') + '">' +
+        '<div class="act-missing-warn act-missing-warn-code" style="display:' + (showWarnCode ? 'flex' : 'none') + '">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code' +
         '</div>' +
         '</div>' +
@@ -26888,7 +26890,7 @@
         '</div>' +
         '</div>' +
         '</div>' +
-        '<div class="act-missing-warn act-missing-warn-hours" style="display:' + (isMissingHours ? 'flex' : 'none') + ';margin-top:8px">' +
+        '<div class="act-missing-warn act-missing-warn-hours" style="display:' + (showWarnHours ? 'flex' : 'none') + ';margin-top:8px">' +
         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours' +
         '</div>' +
 
@@ -26976,37 +26978,25 @@
       var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
       var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
       var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
-      var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
+      var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation) && !act._draft;
 
-      // 1. Update warning banner in detail panel in real time
+      // 1. Update warning banner in detail panel (hidden while editing/selected)
       var bannerWrap = document.getElementById('desk-warning-banner-wrap');
       if (bannerWrap) {
-        if (showRedBorder) {
-          bannerWrap.style.display = '';
-          var msg = '';
-          if (isMissingCode) msg += '• Needs a work code assigned.<br>';
-          if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
-          if (isMissingLocation) msg += '• Location is empty.';
-          bannerWrap.innerHTML = '<div class="act-warning-banner">' +
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
-            '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
-            '</div>';
-        } else {
-          bannerWrap.innerHTML = '';
-          bannerWrap.style.display = 'none';
-        }
+        bannerWrap.innerHTML = '';
+        bannerWrap.style.display = 'none';
       }
 
-      // 2. Update field warnings in detail panel in real time
+      // 2. Update field warnings in detail panel (hidden while editing/selected)
       var detailPanel = document.getElementById('desk-detail-panel');
       if (detailPanel) {
         var warnCodeEl = detailPanel.querySelector('.act-missing-warn-code');
         if (warnCodeEl) {
-          warnCodeEl.style.display = isMissingCode ? '' : 'none';
+          warnCodeEl.style.display = 'none';
         }
         var warnHoursEl = detailPanel.querySelector('.act-missing-warn-hours');
         if (warnHoursEl) {
-          warnHoursEl.style.display = isMissingHours ? '' : 'none';
+          warnHoursEl.style.display = 'none';
         }
       }
 
@@ -27029,44 +27019,34 @@
       var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
       var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
       var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
-      var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
+      var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation) && !act._draft;
 
       var card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
       if (card) {
         var isExpanded = card.classList.contains('expanded');
         card.classList.toggle('has-warning', showRedBorder && !isExpanded);
 
-        // 1. Update warning banner wrap inside the card in real time
+        // 1. Update warning banner wrap inside the card (hidden while expanded/editing)
         var warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
         if (warnWrap) {
-          if (showRedBorder) {
-            warnWrap.style.display = '';
-            var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
-            if (msgEl) {
-              msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
-                                (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
-                                (isMissingLocation ? '• Location is empty.' : '');
-            }
-          } else {
-            warnWrap.style.display = 'none';
-          }
+          warnWrap.style.display = 'none';
         }
 
-        // 2. Update inline warning labels in real time
+        // 2. Update inline warning labels (hidden while expanded/editing)
         var warnCode = card.querySelector('.act-missing-warn-code');
         var warnHours = card.querySelector('.act-missing-warn-hours');
-        if (warnCode) warnCode.style.display = isMissingCode ? '' : 'none';
-        if (warnHours) warnHours.style.display = isMissingHours ? '' : 'none';
+        if (warnCode) warnCode.style.display = 'none';
+        if (warnHours) warnHours.style.display = 'none';
       }
       
-      // 3. Update task modal warnings if open in real time
+      // 3. Update task modal warnings if open (suppressed while editing in modal)
       if (_taskModalState && _taskModalState.actId === actId) {
         var ov = document.getElementById('task-modal-overlay');
         if (ov && ov.style.display !== 'none') {
           var modalWarnCode = ov.querySelector('.act-modal-missing-code');
           var modalWarnHours = ov.querySelector('.act-modal-missing-hours');
-          if (modalWarnCode) modalWarnCode.style.display = isMissingCode ? 'flex' : 'none';
-          if (modalWarnHours) modalWarnHours.style.display = isMissingHours ? 'flex' : 'none';
+          if (modalWarnCode) modalWarnCode.style.display = 'none';
+          if (modalWarnHours) modalWarnHours.style.display = 'none';
           
           // Also update the status pills row in modal header
           var pillRow = ov.querySelector('.task-modal-header .act-pill-row');
@@ -27275,7 +27255,7 @@
           const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
           otherCard.style.borderColor = '';
           otherCard.style.boxShadow = '';
-          if (isMissingCode || isMissingHours || isMissingLocation) {
+          if ((isMissingCode || isMissingHours || isMissingLocation) && !act._draft) {
             otherCard.classList.add('has-warning');
           } else {
             otherCard.classList.remove('has-warning');
@@ -27302,7 +27282,9 @@
           const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
           const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
           const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
-          const hasError = isMissingCode || isMissingHours || isMissingLocation;
+          const hasError = (isMissingCode || isMissingHours || isMissingLocation) && !act._draft;
+          const showWarnCode = isMissingCode && !act._draft;
+          const showWarnHours = isMissingHours && !act._draft;
 
           const warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
           if (warnWrap) {
@@ -27320,8 +27302,8 @@
           }
           const warnCode = card.querySelector('.act-missing-warn-code');
           const warnHours = card.querySelector('.act-missing-warn-hours');
-          if (warnCode) warnCode.style.display = isMissingCode ? '' : 'none';
-          if (warnHours) warnHours.style.display = isMissingHours ? '' : 'none';
+          if (warnCode) warnCode.style.display = showWarnCode ? '' : 'none';
+          if (warnHours) warnHours.style.display = showWarnHours ? '' : 'none';
         }
 
         if (detail) {
@@ -27373,7 +27355,7 @@
           const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
           card.style.borderColor = '';
           card.style.boxShadow = '';
-          if (isMissingCode || isMissingHours || isMissingLocation) {
+          if ((isMissingCode || isMissingHours || isMissingLocation) && !act._draft) {
             card.classList.add('has-warning');
           } else {
             card.classList.remove('has-warning');
@@ -27735,6 +27717,8 @@
       const overtime = parseFloat(act.overtime) || 0;
       const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
       const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
+      const showWarnCode = isMissingCode && !act._draft;
+      const showWarnHours = isMissingHours && !act._draft;
       const escId = act.id.replace(/'/g, "\\'");
 
       const codesHtml = act.codes.length === 0
@@ -27814,7 +27798,7 @@
                 </button>
               </div>
               <div class="act-codes-wrap" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${escId}')" style="cursor:pointer;min-height:42px">${codesHtml}</div>
-              <div class="act-missing-warn act-modal-missing-code" style="display:${isMissingCode ? 'flex' : 'none'}">
+              <div class="act-missing-warn act-modal-missing-code" style="display:${showWarnCode ? 'flex' : 'none'}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code
               </div>
               <div id="suggest-wrap-${act.id}"></div>
@@ -27837,7 +27821,7 @@
                 </div>
               </div>
             </div>
-            <div class="act-missing-warn act-modal-missing-hours" style="display:${isMissingHours ? 'flex' : 'none'};margin-top:8px">
+            <div class="act-missing-warn act-modal-missing-hours" style="display:${showWarnHours ? 'flex' : 'none'};margin-top:8px">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours
             </div>
           </form>
@@ -28101,7 +28085,9 @@
       const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
       const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
       const isMissingLocation = (ordinary > 0 || overtime > 0) && !act.location;
-      const showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
+      const showRedBorder = (isMissingCode || isMissingHours || isMissingLocation) && !act._draft;
+      const showWarnCode = isMissingCode && !act._draft;
+      const showWarnHours = isMissingHours && !act._draft;
       const isActExpanded = state.activitiesExpanded.has(act.id);
 
       const adminCode = WORK_CODES.find(c => c.c.startsWith('WWO')) || { c: 'WWO0001A99', d: 'General Admin' };
@@ -28188,7 +28174,7 @@
                     <span class="act-code-mono">${c.c}</span>
                   </div>`).join('')}
               </div>
-              <div class="act-missing-warn act-missing-warn-code" style="display:${isMissingCode ? 'flex' : 'none'}">
+              <div class="act-missing-warn act-missing-warn-code" style="display:${showWarnCode ? 'flex' : 'none'}">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code
               </div>
               <div id="suggest-wrap-${act.id}"></div>
@@ -28212,7 +28198,7 @@
                 </div>
               </div>
             </div>
-            <div class="act-missing-warn act-missing-warn-hours" style="display:${isMissingHours ? 'flex' : 'none'};margin-top:8px">
+            <div class="act-missing-warn act-missing-warn-hours" style="display:${showWarnHours ? 'flex' : 'none'};margin-top:8px">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours
             </div>
 
@@ -28478,6 +28464,68 @@
       if (!day) return;
       const act = day.activities.find(a => a.id === actId);
       if (!act) return;
+
+      // Validate before saving
+      var ord = parseFloat(act.ordinary) || 0;
+      var ot = parseFloat(act.overtime) || 0;
+      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var hasError = isMissingCode || isMissingHours || isMissingLocation;
+
+      if (hasError) {
+        if (_isDesktop()) {
+          var bannerWrap = document.getElementById('desk-warning-banner-wrap');
+          if (bannerWrap) {
+            bannerWrap.style.display = '';
+            var msg = '';
+            if (isMissingCode) msg += '• Needs a work code assigned.<br>';
+            if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
+            if (isMissingLocation) msg += '• Location is empty.';
+            bannerWrap.innerHTML = '<div class="act-warning-banner">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+              '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
+              '</div>';
+          }
+          var detailPanel = document.getElementById('desk-detail-panel');
+          if (detailPanel) {
+            var warnCodeEl = detailPanel.querySelector('.act-missing-warn-code');
+            if (warnCodeEl) warnCodeEl.style.display = isMissingCode ? '' : 'none';
+            var warnHoursEl = detailPanel.querySelector('.act-missing-warn-hours');
+            if (warnHoursEl) warnHoursEl.style.display = isMissingHours ? '' : 'none';
+          }
+        } else {
+          var card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
+          if (card) {
+            var warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
+            if (warnWrap) {
+              warnWrap.style.display = '';
+              var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
+              if (msgEl) {
+                msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
+                                  (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
+                                  (isMissingLocation ? '• Location is empty.' : '');
+              }
+            }
+            var warnCode = card.querySelector('.act-missing-warn-code');
+            var warnHours = card.querySelector('.act-missing-warn-hours');
+            if (warnCode) warnCode.style.display = isMissingCode ? '' : 'none';
+            if (warnHours) warnHours.style.display = isMissingHours ? '' : 'none';
+          }
+        }
+        
+        var modal = document.getElementById('task-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+          var modalCodeWarn = modal.querySelector('.act-modal-missing-code');
+          var modalHoursWarn = modal.querySelector('.act-modal-missing-hours');
+          if (modalCodeWarn) modalCodeWarn.style.display = isMissingCode ? 'flex' : 'none';
+          if (modalHoursWarn) modalHoursWarn.style.display = isMissingHours ? 'flex' : 'none';
+        }
+        
+        showToast('Please correct validation errors before saving', 3000);
+        return;
+      }
+
       delete act._draft;
       scheduleAutoSave();
       render();
