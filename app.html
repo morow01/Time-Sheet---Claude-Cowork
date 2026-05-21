@@ -20945,7 +20945,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.77';
+    const VERSION = '6.3.78';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26827,6 +26827,18 @@
       var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
       var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
 
+      var bannerHtml = '';
+      if (showRedBorder) {
+        var msg = '';
+        if (isMissingCode) msg += '• Needs a work code assigned.<br>';
+        if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
+        if (isMissingLocation) msg += '• Location is empty.';
+        bannerHtml = '<div class="act-warning-banner">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+          '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
+          '</div>';
+      }
+
       var codesHtml = '';
       if (act.codes.length === 0) {
         codesHtml = '<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer" onclick="openCodeModal(' + di + ',\'' + act.id + '\')">' +
@@ -26870,6 +26882,9 @@
         '</div>' +
         '</div>' +
         '</div>' +
+        '<div id="desk-warning-banner-wrap"' + (showRedBorder ? '' : ' style="display:none"') + '>' +
+        bannerHtml +
+        '</div>' +
         '<div class="desk-detail-form">' +
         '<div class="desk-field-group">' +
         '<span class="act-field-label">Description</span>' +
@@ -26897,6 +26912,9 @@
         '<div class="act-codes-wrap" data-act-codes="' + act.id + '" onclick="openCodeModal(' + di + ',\'' + escId + '\')" style="cursor:pointer;min-height:42px">' +
         codesHtml +
         '</div>' +
+        '<div class="act-missing-warn act-missing-warn-code" style="display:' + (isMissingCode ? 'flex' : 'none') + '">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code' +
+        '</div>' +
         '</div>' +
         '<div id="suggest-wrap-' + act.id + '"></div>' +
         '</div>' +
@@ -26918,6 +26936,9 @@
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',1)">+</button>' +
         '</div>' +
         '</div>' +
+        '</div>' +
+        '<div class="act-missing-warn act-missing-warn-hours" style="display:' + (isMissingHours ? 'flex' : 'none') + ';margin-top:8px">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours' +
         '</div>' +
 
         (act._draft
@@ -27301,20 +27322,44 @@
 
       if (nowExpanded) {
         card.classList.add('expanded');
-        // Clear all warnings and borders on active tasks while they are expanded/editing (grace period)
+        // Clear warning borders on the card header while expanded/editing (grace period)
         card.classList.remove('has-warning');
         card.style.borderColor = '';
         card.style.boxShadow = '';
 
-        // Hide warning banner inside the card immediately
-        const warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
-        if (warnWrap) warnWrap.style.display = 'none';
+        // Re-show validation warnings on expand so they see what is missing (first selected / opened)
+        let act = null;
+        for (const day of state.weekData.days) {
+          act = day.activities.find(a => a.id === actId);
+          if (act) break;
+        }
+        if (act) {
+          const ord = parseFloat(act.ordinary) || 0;
+          const ot = parseFloat(act.overtime) || 0;
+          const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+          const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+          const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+          const hasError = isMissingCode || isMissingHours || isMissingLocation;
 
-        // Hide inline warnings immediately
-        const warnCode = card.querySelector('.act-missing-warn-code');
-        const warnHours = card.querySelector('.act-missing-warn-hours');
-        if (warnCode) warnCode.style.display = 'none';
-        if (warnHours) warnHours.style.display = 'none';
+          const warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
+          if (warnWrap) {
+            if (hasError) {
+              warnWrap.style.display = '';
+              const msgEl = warnWrap.querySelector('.act-warning-banner-messages');
+              if (msgEl) {
+                msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
+                                  (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
+                                  (isMissingLocation ? '• Location is empty.' : '');
+              }
+            } else {
+              warnWrap.style.display = 'none';
+            }
+          }
+          const warnCode = card.querySelector('.act-missing-warn-code');
+          const warnHours = card.querySelector('.act-missing-warn-hours');
+          if (warnCode) warnCode.style.display = isMissingCode ? '' : 'none';
+          if (warnHours) warnHours.style.display = isMissingHours ? '' : 'none';
+        }
 
         if (detail) {
           detail.style.display = 'block';
@@ -27806,6 +27851,9 @@
                 </button>
               </div>
               <div class="act-codes-wrap" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${escId}')" style="cursor:pointer;min-height:42px">${codesHtml}</div>
+              <div class="act-missing-warn act-modal-missing-code" style="display:${isMissingCode ? 'flex' : 'none'}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code
+              </div>
               <div id="suggest-wrap-${act.id}"></div>
             </div>
             <div class="flex gap-3">
@@ -27825,6 +27873,9 @@
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'overtime',1)">+</button>
                 </div>
               </div>
+            </div>
+            <div class="act-missing-warn act-modal-missing-hours" style="display:${isMissingHours ? 'flex' : 'none'};margin-top:8px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours
             </div>
           </form>
         </div>
@@ -28125,6 +28176,15 @@
         <div class="activity-detail${isActExpanded ? ' open' : ''}" style="${isActExpanded ? '' : 'display:none'}">
           <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
           <div class="act-detail-inner">
+            <div data-warn-wrap="${act.id}" class="act-warning-banner" style="display:${showRedBorder ? 'flex' : 'none'}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div class="act-warning-banner-messages" style="flex:1">
+                ${(isMissingCode ? '• Needs a work code assigned.<br>' : '') +
+                  (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
+                  (isMissingLocation ? '• Location is empty.' : '')}
+              </div>
+            </div>
+
             <div class="flex flex-col gap-1.5">
               <span class="act-field-label">Description</span>
               <textarea placeholder="Description of work" rows="1"
@@ -28165,6 +28225,9 @@
                     <span class="act-code-mono">${c.c}</span>
                   </div>`).join('')}
               </div>
+              <div class="act-missing-warn act-missing-warn-code" style="display:${isMissingCode ? 'flex' : 'none'}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code
+              </div>
               <div id="suggest-wrap-${act.id}"></div>
             </div>
 
@@ -28185,6 +28248,9 @@
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
+            </div>
+            <div class="act-missing-warn act-missing-warn-hours" style="display:${isMissingHours ? 'flex' : 'none'};margin-top:8px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours
             </div>
 
             <div class="act-actions-row" style="gap:8px;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;">
