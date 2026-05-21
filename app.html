@@ -20945,7 +20945,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.80';
+    const VERSION = '6.3.81';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26978,23 +26978,35 @@
       var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
       var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
 
-      // 1. Clear/Hide the warning banner in detail panel (always hidden during editing)
+      // 1. Update warning banner in detail panel in real time
       var bannerWrap = document.getElementById('desk-warning-banner-wrap');
       if (bannerWrap) {
-        bannerWrap.innerHTML = '';
-        bannerWrap.style.display = 'none';
+        if (showRedBorder) {
+          bannerWrap.style.display = '';
+          var msg = '';
+          if (isMissingCode) msg += '• Needs a work code assigned.<br>';
+          if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
+          if (isMissingLocation) msg += '• Location is empty.';
+          bannerWrap.innerHTML = '<div class="act-warning-banner">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
+            '</div>';
+        } else {
+          bannerWrap.innerHTML = '';
+          bannerWrap.style.display = 'none';
+        }
       }
 
-      // 2. Clear/Hide field warnings in detail panel
+      // 2. Update field warnings in detail panel in real time
       var detailPanel = document.getElementById('desk-detail-panel');
       if (detailPanel) {
         var warnCodeEl = detailPanel.querySelector('.act-missing-warn-code');
         if (warnCodeEl) {
-          warnCodeEl.style.display = 'none';
+          warnCodeEl.style.display = isMissingCode ? '' : 'none';
         }
         var warnHoursEl = detailPanel.querySelector('.act-missing-warn-hours');
         if (warnHoursEl) {
-          warnHoursEl.style.display = 'none';
+          warnHoursEl.style.display = isMissingHours ? '' : 'none';
         }
       }
 
@@ -27024,10 +27036,10 @@
         var isExpanded = card.classList.contains('expanded');
         card.classList.toggle('has-warning', showRedBorder && !isExpanded);
 
-        // 1. Update warning banner wrap inside the card (only if collapsed)
+        // 1. Update warning banner wrap inside the card in real time
         var warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
         if (warnWrap) {
-          if (showRedBorder && !isExpanded) {
+          if (showRedBorder) {
             warnWrap.style.display = '';
             var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
             if (msgEl) {
@@ -27040,21 +27052,21 @@
           }
         }
 
-        // 2. Update inline warning labels (only if collapsed)
+        // 2. Update inline warning labels in real time
         var warnCode = card.querySelector('.act-missing-warn-code');
         var warnHours = card.querySelector('.act-missing-warn-hours');
-        if (warnCode) warnCode.style.display = (isMissingCode && !isExpanded) ? '' : 'none';
-        if (warnHours) warnHours.style.display = (isMissingHours && !isExpanded) ? '' : 'none';
+        if (warnCode) warnCode.style.display = isMissingCode ? '' : 'none';
+        if (warnHours) warnHours.style.display = isMissingHours ? '' : 'none';
       }
       
-      // 3. Update task modal warnings if open (suppressed while editing in modal)
+      // 3. Update task modal warnings if open in real time
       if (_taskModalState && _taskModalState.actId === actId) {
         var ov = document.getElementById('task-modal-overlay');
         if (ov && ov.style.display !== 'none') {
           var modalWarnCode = ov.querySelector('.act-modal-missing-code');
           var modalWarnHours = ov.querySelector('.act-modal-missing-hours');
-          if (modalWarnCode) modalWarnCode.style.display = 'none';
-          if (modalWarnHours) modalWarnHours.style.display = 'none';
+          if (modalWarnCode) modalWarnCode.style.display = isMissingCode ? 'flex' : 'none';
+          if (modalWarnHours) modalWarnHours.style.display = isMissingHours ? 'flex' : 'none';
           
           // Also update the status pills row in modal header
           var pillRow = ov.querySelector('.task-modal-header .act-pill-row');
