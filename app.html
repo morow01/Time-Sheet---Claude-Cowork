@@ -1683,7 +1683,7 @@
       box-shadow: inset 2px 0 0 rgba(232, 69, 60, 0.08) !important;
     }
 
-    .activity-card.is-draft {
+    .activity-card.is-draft:not(.expanded) {
       border-left: 4px dashed rgba(var(--amber-rgb), 1.0) !important;
       box-shadow: 0 2px 8px rgba(var(--amber-rgb), 0.08) !important;
     }
@@ -17761,7 +17761,7 @@
         border-left: 3px solid #7c3aed;
       }
 
-      .desk-card-wrap.desk-wrap-draft {
+      .desk-card-wrap.desk-wrap-draft:not(.desk-sel-wrap) {
         border-left: 3px dashed rgba(var(--amber-rgb), 1.0) !important;
       }
 
@@ -20988,7 +20988,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.87';
+    const VERSION = '6.3.88';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
