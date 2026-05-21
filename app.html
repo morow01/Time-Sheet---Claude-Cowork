@@ -1261,6 +1261,21 @@
       font-weight: 100;
     }
 
+    .pill-draft {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(var(--amber-rgb), 0.15);
+      color: rgba(var(--amber-rgb), 1.0);
+      border: 1px solid rgba(var(--amber-rgb), 0.3);
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .remedy-banner {
       background: #7c3aed;
       color: #fff;
@@ -1656,6 +1671,11 @@
     .activity-card.has-warning {
       border-left-color: var(--btn-danger-color) !important;
       box-shadow: 0 4px 12px rgba(232, 69, 60, 0.12) !important;
+    }
+
+    .activity-card.is-draft {
+      border-left: 4px dashed rgba(var(--amber-rgb), 1.0) !important;
+      box-shadow: 0 2px 8px rgba(var(--amber-rgb), 0.08) !important;
     }
 
     /* Preset Buttons & Quick Chips */
@@ -17726,6 +17746,10 @@
         border-left: 3px solid #7c3aed;
       }
 
+      .desk-card-wrap.desk-wrap-draft {
+        border-left: 3px dashed rgba(var(--amber-rgb), 1.0) !important;
+      }
+
       .desk-card-wrap.desk-sel-wrap.desk-wrap-invalid {
         border-left-color: var(--btn-danger-color);
       }
@@ -20945,7 +20969,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.83';
+    const VERSION = '6.3.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26718,7 +26742,8 @@
 
           var wrapCls = 'desk-card-wrap' + (isSel ? ' desk-sel-wrap' : '') +
             (hasIssue && !isSel ? ' desk-wrap-invalid' : '') +
-            (act.remedyPending && !(hasIssue && !isSel) ? ' desk-wrap-remedy' : '');
+            (act.remedyPending && !(hasIssue && !isSel) ? ' desk-wrap-remedy' : '') +
+            (act._draft && !isSel ? ' desk-wrap-draft' : '');
           cards += '<div class="' + wrapCls + '">';
           cards += '<div class="' + cls + '" onclick="deskSelectAct(\'' + act.id + '\')">' +
             '<div class="flex items-center gap-3">' +
@@ -26733,6 +26758,7 @@
             (ord > 0 ? '<span class="pill-hrs">' + ord + 'h</span>' : '') +
             (ot > 0 ? '<span class="pill-ot">+' + ot + ' OT</span>' : '') +
             (act.remedyPending ? '<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>' : '') +
+            (act._draft ? '<span class="pill-draft">Draft</span>' : '') +
             '</div>' +
             '</div>' +
             '</div>' +
@@ -28111,6 +28137,7 @@
       const showWarnCode = isMissingCode && !act._draft;
       const showWarnHours = isMissingHours && !act._draft;
       const isActExpanded = state.activitiesExpanded.has(act.id);
+      const isDraft = !!act._draft;
 
       const adminCode = WORK_CODES.find(c => c.c.startsWith('WWO')) || { c: 'WWO0001A99', d: 'General Admin' };
       const leaveCode = WORK_CODES.find(c => c.c.startsWith('UWA')) || { c: 'UWA0001A99', d: 'Annual Leave' };
@@ -28125,7 +28152,7 @@
       const trainingDescEsc = trainingCode.d.replace(/'/g, "\\'");
 
       return `
-      <div class="activity-card${act.remedyPending ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}${showRedBorder && !isActExpanded ? ' has-warning' : ''}" data-act-id="${act.id}">
+      <div class="activity-card${act.remedyPending ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}${showRedBorder && !isActExpanded ? ' has-warning' : ''}${isDraft && !isActExpanded ? ' is-draft' : ''}" data-act-id="${act.id}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="getTaskStyle()==='modal'?openTaskModal('${act.id}',${di}):toggleActivityDetails('${act.id}')">
           <div class="task-num">${actIndex + 1}</div>
           <div class="flex-1 min-w-0 act-meta">
@@ -28138,12 +28165,13 @@
                 ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" class="pill-hrs" style="display:none"></span>`}
                 ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" class="pill-ot" style="display:none"></span>`}
                 ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>` : ''}
+                ${act._draft ? `<span class="pill-draft">Draft</span>` : ''}
               </div>
             </div>
           </div>
           
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--chevron-color);${isActExpanded ? 'transform:rotate(90deg)' : ''}"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
+        </div>`,StartLine:28130,TargetContent:
         <div class="activity-detail${isActExpanded ? ' open' : ''}" style="${isActExpanded ? '' : 'display:none'}">
           <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
           <div class="act-detail-inner">
@@ -28552,6 +28580,60 @@
       scheduleAutoSave();
       render();
       showToast('Task saved');
+    }
+
+    function saveAllDrafts() {
+      let savedTasks = 0;
+      let errorTasks = 0;
+      let savedNotes = 0;
+
+      if (state.weekData) {
+        state.weekData.days.forEach((day, di) => {
+          const drafts = (day.activities || []).filter(a => a._draft);
+          drafts.forEach(act => {
+            var ord = parseFloat(act.ordinary) || 0;
+            var ot = parseFloat(act.overtime) || 0;
+            var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+            var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+            var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+            var hasError = isMissingCode || isMissingHours || isMissingLocation;
+
+            if (hasError) {
+              errorTasks++;
+              state.activitiesExpanded.add(act.id);
+            } else {
+              delete act._draft;
+              savedTasks++;
+            }
+          });
+        });
+      }
+
+      if (state.notes) {
+        const drafts = state.notes.filter(n => n._draft);
+        drafts.forEach(note => {
+          delete note._draft;
+          note.updatedAt = Date.now();
+          savedNotes++;
+        });
+      }
+
+      if (savedTasks > 0) {
+        scheduleAutoSave();
+      }
+      if (savedNotes > 0) {
+        scheduleNotesSave();
+      }
+
+      let msgs = [];
+      if (savedTasks > 0) msgs.push(`Saved ${savedTasks} task${savedTasks > 1 ? 's' : ''}`);
+      if (savedNotes > 0) msgs.push(`Saved ${savedNotes} note${savedNotes > 1 ? 's' : ''}`);
+      if (errorTasks > 0) msgs.push(`Could not save ${errorTasks} task${errorTasks > 1 ? 's' : ''} due to validation errors`);
+
+      if (msgs.length) {
+        showToast(msgs.join(', '), 3000);
+      }
+      render();
     }
 
     function discardTaskDraft(actId, di) {
@@ -37983,11 +38065,40 @@
       render();
     }
 
-    // Draft warning banner — shown when the user leaves a view with an unsaved draft task or note
+    // Draft warning banner — shown when the user leaves a view with an unsaved draft task or note, or as a hint on the active view
     function _renderDraftWarningBanner() {
-      const hasDraftTask = !!(state.weekData?.days?.some(d => d.activities?.some(a => a._draft))) && state.view !== 'week';
-      const hasDraftNote = !!(state.notes?.some(n => n._draft)) && state.view !== 'notes';
+      const anyDraftTask = !!(state.weekData?.days?.some(d => d.activities?.some(a => a._draft)));
+      const anyDraftNote = !!(state.notes?.some(n => n._draft));
+      
+      if (!anyDraftTask && !anyDraftNote) return '';
+
+      // 1. If on Timesheet view and there are draft tasks
+      if (state.view === 'week' && anyDraftTask) {
+        return `<div class="draft-warning-banner">
+          <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </span>
+          <span class="draft-warning-banner-text">You have unsaved tasks (drafts)</span>
+          <button class="draft-warning-banner-btn" onclick="saveAllDrafts()">Save Drafts</button>
+        </div>`;
+      }
+
+      // 2. If on Notes view and there are draft notes
+      if (state.view === 'notes' && anyDraftNote) {
+        return `<div class="draft-warning-banner">
+          <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </span>
+          <span class="draft-warning-banner-text">You have unsaved notes (drafts)</span>
+          <button class="draft-warning-banner-btn" onclick="saveAllDrafts()">Save Notes</button>
+        </div>`;
+      }
+
+      // 3. Otherwise (on other views), show original behavior for leaving active views
+      const hasDraftTask = anyDraftTask && state.view !== 'week';
+      const hasDraftNote = anyDraftNote && state.view !== 'notes';
       if (!hasDraftTask && !hasDraftNote) return '';
+
       const msg = (hasDraftTask && hasDraftNote) ? 'You have unsaved task and note'
                 : hasDraftTask ? 'You have an unsaved task'
                 : 'You have an unsaved note';
