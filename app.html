@@ -20945,7 +20945,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.78';
+    const VERSION = '6.3.79';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26492,49 +26492,14 @@
         <div class="sum-new-title">Weekly Summary</div>
       </div>
       <div class="sum-head-right">
-        <div class="sum-new-badge">${Math.round(totalOrd)}h</div>
-        ${totalOT > 0 ? `<div class="sum-new-badge-ot">+${Math.round(totalOT)} OT</div>` : ''}
+        <div class="sum-new-badge" data-sum-ord>${Math.round(totalOrd)}h</div>
+        <div class="sum-new-badge-ot" data-sum-ot style="display:${totalOT > 0 ? '' : 'none'}">${totalOT > 0 ? `+${Math.round(totalOT)} OT` : ''}</div>
         ${chevronSvg}
       </div>
     </button>
-    <div class="sum-table-wrap${state.showSummary ? ' open' : ''}">
-      <div class="sum-new-col-head">
-        <div class="sum-new-col-th">Code / Description</div>
-        <div class="sum-new-col-th r">ORD</div>
-        <div class="sum-new-col-th r">OT</div>
-      </div>
-      ${(() => {
-          const adjOrd = adjOrdHrs(summary, totalOrd); return summary.map((row, idx) => {
-            const m = row.isUncategorized;
-            const pct = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
-            const pctOT = totalOrd > 0 ? Math.round((row.overtime / totalOrd) * 100) : 0;
-            return `
-      <div class="sum-new-row${m ? ' sum-missing' : ''}">
-        <div>
-          <div class="sum-row-code">${row.code}</div>
-          <div class="sum-row-desc">${row.description}</div>
-          <div class="sum-row-bar-wrap"><div class="sum-row-bar-fill" style="width:${pct}%"></div></div>
-          ${row.overtime > 0 ? `<div class="sum-row-bar-ot-wrap"><div class="sum-row-bar-ot-fill" style="width:${pctOT}%"></div></div>` : ''}
-        </div>
-        <div class="sum-td-num${m ? ' missing' : ''}">${adjOrd[idx]}</div>
-        <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? fmtHrs(row.overtime) : '—'}</div>
-      </div>`;
-          }).join('');
-        })()}
-      <div class="sum-new-footer">
-        <div class="sum-footer-label">Total</div>
-        <div class="sum-footer-totals">
-          <div class="sum-footer-item">
-            <div class="sum-footer-lbl">ORD</div>
-            <div class="sum-footer-val">${Math.round(totalOrd)}</div>
-          </div>
-          <div class="sum-footer-div"></div>
-          <div class="sum-footer-item">
-            <div class="sum-footer-lbl">OT</div>
-            <div class="sum-footer-val ot">${totalOT > 0 ? Math.round(totalOT) : 0}</div>
-          </div>
-        </div>
-      </div>
+    <div class="sum-table-wrap${state.showSummary ? ' open' : ''}" data-sum-table-content>
+      ${_buildSummaryTableContentHtml(summary, totalOrd, totalOT)}
+    </div>
       ${(function () {
           var _coEntries = state.callouts && state.callouts.weeks && state.weekData ? (state.callouts.weeks[state.weekData.weekStart] && state.callouts.weeks[state.weekData.weekStart].callouts || []) : [];
           if (!_coEntries.length) return '';
@@ -26644,13 +26609,13 @@
           '<div class="desk-day-info">' +
           '<div class="desk-day-name">' + esc(day.dayName) + '</div>' +
           (taskCount > 0
-            ? '<div class="desk-day-pills">' +
+            ? '<div class="desk-day-pills" data-day-pills="' + di + '">' +
             '<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">' + taskCount + ' task' + (taskCount !== 1 ? 's' : '') + '</span>' +
             (dt.ord > 0 ? '<span class="pill-hrs">' + (Math.round(dt.ord) === dt.ord ? dt.ord : dt.ord.toFixed(1)) + 'h</span>' : '') +
             (dt.ot > 0 ? '<span class="pill-ot">+' + (Math.round(dt.ot) === dt.ot ? dt.ot : dt.ot.toFixed(1)) + ' OT</span>' : '') +
             _avDayBadgesHtml(day.date, true) +
             '</div>'
-            : (_avDayBadgesHtml(day.date, true) ? '<div class="desk-day-pills">' + _avDayBadgesHtml(day.date, true) + '</div>' : '<div class="desk-day-empty">' + (isWe ? '' : 'No entries') + '</div>')) +
+            : (_avDayBadgesHtml(day.date, true) ? '<div class="desk-day-pills" data-day-pills="' + di + '">' + _avDayBadgesHtml(day.date, true) + '</div>' : '<div class="desk-day-empty" data-day-pills="' + di + '">' + (isWe ? '' : 'No entries') + '</div>')) +
           '</div>' +
           '</div>';
         if (di === 2 && weekendEmpty) {
@@ -26675,8 +26640,6 @@
           '<div class="sum-td-num' + (m ? ' missing' : '') + '">' + adjOrd[idx] + '</div>' +
           '<div class="sum-td-num ' + (row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash') + '">' + (row.overtime > 0 ? fmtHrs(row.overtime) : '\u2014') + '</div>' +
           '</div>';
-      });
-
       var deskSumOpen = state.showSummary;
       var deskChevron = '<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:' + (deskSumOpen ? 'rotate(180deg)' : 'rotate(0deg)') + '"><path d="M4 6l4 4 4-4" stroke="var(--text-muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -26687,26 +26650,13 @@
         '<div class="sum-new-title">Weekly Summary</div>' +
         '</div>' +
         '<div class="sum-head-right">' +
-        '<div class="sum-new-badge">' + Math.round(totalOrd) + 'h</div>' +
-        (totalOT > 0 ? '<div class="sum-new-badge-ot">+' + Math.round(totalOT) + ' OT</div>' : '') +
+        '<div class="sum-new-badge" data-sum-ord>' + Math.round(totalOrd) + 'h</div>' +
+        '<div class="sum-new-badge-ot" data-sum-ot style="display:' + (totalOT > 0 ? '' : 'none') + '">' + (totalOT > 0 ? '+' + Math.round(totalOT) + ' OT' : '') + '</div>' +
         deskChevron +
         '</div>' +
         '</button>' +
-        '<div class="sum-table-wrap' + (deskSumOpen ? ' open' : '') + '">' +
-        '<div class="sum-new-col-head">' +
-        '<div class="sum-new-col-th">Code / Description</div>' +
-        '<div class="sum-new-col-th r">ORD</div>' +
-        '<div class="sum-new-col-th r">OT</div>' +
-        '</div>' +
-        summaryRowsHtml +
-        '<div class="sum-new-footer">' +
-        '<div class="sum-footer-label">Total</div>' +
-        '<div class="sum-footer-totals">' +
-        '<div class="sum-footer-item"><div class="sum-footer-lbl">ORD</div><div class="sum-footer-val">' + Math.round(totalOrd) + '</div></div>' +
-        '<div class="sum-footer-div"></div>' +
-        '<div class="sum-footer-item"><div class="sum-footer-lbl">OT</div><div class="sum-footer-val ot">' + (totalOT > 0 ? Math.round(totalOT) : 0) + '</div></div>' +
-        '</div>' +
-        '</div>' +
+        '<div class="sum-table-wrap' + (deskSumOpen ? ' open' : '') + '" data-sum-table-content>' +
+        _buildSummaryTableContentHtml(summary, totalOrd, totalOT) +
         '</div>' +
         '</div>';
 
@@ -28295,8 +28245,8 @@
     }
 
     function _refreshDayPills(di) {
-      const el = document.querySelector(`[data-day-pills="${di}"]`);
-      if (!el) return;
+      const elements = document.querySelectorAll(`[data-day-pills="${di}"]`);
+      if (elements.length === 0) return;
       const day = state.weekData?.days[di];
       if (!day) return;
       const acts = day.activities;
@@ -28310,12 +28260,20 @@
       });
       const isWeekend = di === 1 || di === 2;
       const fmtNum = n => Math.round(n) === n ? n : n.toFixed(1);
-      el.innerHTML =
+      const html =
         (actCount > 0 ? `<span class="pill-hrs" style="background:var(--pill-slate-bg);color:var(--pill-slate-color)">${actCount} task${actCount !== 1 ? 's' : ''}</span>` : (isWeekend ? '' : `<span style="font-size:11px;color:var(--border);font-weight:600">No entries</span>`)) +
         (ord > 0 ? `<span class="pill-hrs">${fmtNum(ord)}h</span>` : '') +
         (ot > 0 ? `<span class="pill-ot">+${fmtNum(ot)} OT</span>` : '') +
         (remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : '') +
         (hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : '');
+      elements.forEach(el => {
+        el.innerHTML = html;
+        if (el.classList.contains('desk-day-empty') && actCount > 0) {
+          el.className = 'desk-day-pills';
+        } else if (el.classList.contains('desk-day-pills') && actCount === 0 && !isWeekend && el.parentNode.querySelector('.desk-day-name')) {
+          el.className = 'desk-day-empty';
+        }
+      });
     }
 
     function _applyHrsInPlace(act, actId, field, val, di) {
@@ -29962,15 +29920,67 @@
       render();
     }
 
+    function _buildSummaryTableContentHtml(summary, totalOrd, totalOT) {
+      const adjOrd = adjOrdHrs(summary, totalOrd);
+      const rowsHtml = summary.map((row, idx) => {
+        const m = row.isUncategorized;
+        const pct = totalOrd > 0 ? Math.round((row.ordinary / totalOrd) * 100) : 0;
+        const pctOT = totalOrd > 0 ? Math.round((row.overtime / totalOrd) * 100) : 0;
+        return `
+      <div class="sum-new-row${m ? ' sum-missing' : ''}">
+        <div>
+          <div class="sum-row-code">${esc(row.code)}</div>
+          <div class="sum-row-desc">${esc(row.description)}</div>
+          <div class="sum-row-bar-wrap"><div class="sum-row-bar-fill" style="width:${pct}%"></div></div>
+          ${row.overtime > 0 ? `<div class="sum-row-bar-ot-wrap"><div class="sum-row-bar-ot-fill" style="width:${pctOT}%"></div></div>` : ''}
+        </div>
+        <div class="sum-td-num${m ? ' missing' : ''}">${adjOrd[idx]}</div>
+        <div class="sum-td-num ${row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash'}">${row.overtime > 0 ? fmtHrs(row.overtime) : '—'}</div>
+      </div>`;
+      }).join('');
+
+      return `
+      <div class="sum-new-col-head">
+        <div class="sum-new-col-th">Code / Description</div>
+        <div class="sum-new-col-th r">ORD</div>
+        <div class="sum-new-col-th r">OT</div>
+      </div>
+      ${rowsHtml}
+      <div class="sum-new-footer">
+        <div class="sum-footer-label">Total</div>
+        <div class="sum-footer-totals">
+          <div class="sum-footer-item">
+            <div class="sum-footer-lbl">ORD</div>
+            <div class="sum-footer-val">${Math.round(totalOrd)}</div>
+          </div>
+          <div class="sum-footer-div"></div>
+          <div class="sum-footer-item">
+            <div class="sum-footer-lbl">OT</div>
+            <div class="sum-footer-val ot">${totalOT > 0 ? Math.round(totalOT) : 0}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+
     function updateSummaryDisplay() {
-      // lightweight re-render of just the summary header pills
       const summary = calcSummary(state.weekData);
       const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
       const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
-      const ordEl = document.querySelector('[data-sum-ord]');
-      const otEl = document.querySelector('[data-sum-ot]');
-      if (ordEl) { ordEl.textContent = Math.round(totalOrd) + 'h'; ordEl.style.display = totalOrd > 0 ? '' : 'none'; }
-      if (otEl) { otEl.textContent = '+' + Math.round(totalOT) + ' OT'; otEl.style.display = totalOT > 0 ? '' : 'none'; }
+
+      // Update header badges
+      document.querySelectorAll('[data-sum-ord]').forEach(el => {
+        el.textContent = Math.round(totalOrd) + 'h';
+      });
+      document.querySelectorAll('[data-sum-ot]').forEach(el => {
+        el.textContent = '+' + Math.round(totalOT) + ' OT';
+        el.style.display = totalOT > 0 ? '' : 'none';
+      });
+
+      // Update summary tables
+      const html = _buildSummaryTableContentHtml(summary, totalOrd, totalOT);
+      document.querySelectorAll('[data-sum-table-content]').forEach(el => {
+        el.innerHTML = html;
+      });
     }
 
     function toggleSummary() {
