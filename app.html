@@ -20945,7 +20945,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.79';
+    const VERSION = '6.3.80';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26640,6 +26640,7 @@
           '<div class="sum-td-num' + (m ? ' missing' : '') + '">' + adjOrd[idx] + '</div>' +
           '<div class="sum-td-num ' + (row.overtime > 0 ? (m ? 'missing' : 'ot') : 'dash') + '">' + (row.overtime > 0 ? fmtHrs(row.overtime) : '\u2014') + '</div>' +
           '</div>';
+      });
       var deskSumOpen = state.showSummary;
       var deskChevron = '<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:' + (deskSumOpen ? 'rotate(180deg)' : 'rotate(0deg)') + '"><path d="M4 6l4 4 4-4" stroke="var(--text-muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
