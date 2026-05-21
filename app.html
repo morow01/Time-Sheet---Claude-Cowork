@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1634,14 +1634,96 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(var(--shadow-brand-rgb), 0.06);
       border: 1px solid var(--border);
+      border-left: 4px solid var(--border);
       margin: 0 14px 10px 0;
       /* Removed left margin to use parent padding */
       overflow: visible;
       /* CRITICAL: Don't clip the connector/node */
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s, border-left-color 0.2s;
       position: relative;
       z-index: 2;
     }
+
+    .activity-card.expanded {
+      border-left-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(var(--shadow-brand-rgb), 0.12);
+    }
+
+    .activity-card.remedy-flagged {
+      border-left-color: #7c3aed;
+    }
+
+    .activity-card.has-warning {
+      border-left-color: var(--btn-danger-color) !important;
+      box-shadow: 0 4px 12px rgba(232, 69, 60, 0.12) !important;
+    }
+
+    /* Preset Buttons & Quick Chips */
+    .preset-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .preset-pill:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.08);
+    }
+    .preset-pill:active {
+      transform: scale(0.95);
+    }
+
+    .code-preset-chip {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 10px;
+      background: var(--bg-card-alt);
+      border: 1px dashed var(--border);
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-top: 4px;
+    }
+    .code-preset-chip:hover {
+      background: rgba(var(--accent-rgb), 0.08);
+      border-color: var(--accent);
+      color: var(--accent);
+      border-style: solid;
+    }
+    .code-preset-chip .code-mono {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      opacity: 0.65;
+    }
+
+    .act-warning-banner {
+      background: rgba(232, 69, 60, 0.08);
+      border: 1px solid rgba(232, 69, 60, 0.2);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--btn-danger-color);
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
 
     /* Timeline Horizontal Branch */
     .activity-card::before {
@@ -18165,6 +18247,7 @@
         flex-shrink: 0;
         position: relative;
         z-index: 2;
+        transition: background-color 0.2s;
       }
 
       .dj-resize-handle::before {
@@ -18174,6 +18257,37 @@
         bottom: 0;
         left: -3px;
         width: 7px;
+      }
+
+      .dj-resize-handle::after {
+        content: '⋮';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: bold;
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+        background: var(--accent);
+        width: 14px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        z-index: 10;
+      }
+
+      .dj-resize-handle:hover {
+        background: var(--accent);
+      }
+
+      .dj-resize-handle:hover::after {
+        opacity: 1;
       }
 
       /* Used where panel has its own border-right — handle is drag-only, no visual */
@@ -20831,7 +20945,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.72';
+    const VERSION = '6.3.77';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21206,6 +21320,11 @@
         }
         // Refresh task modal if it's open for this activity (card style mode)
         if (_taskModalState && _taskModalState.actId === actId) _showTaskModal(true);
+        if (_isDesktop()) {
+          _deskUpdateDetailValidation(di, actId);
+        } else {
+          _mobUpdateActivityValidation(di, actId);
+        }
       }
     }
 
@@ -23590,10 +23709,8 @@
           const missingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
           const missingHrs = act.codes.length > 0 && ordinary === 0 && overtime === 0;
           const missingLoc = (ordinary > 0 || overtime > 0) && !act.location;
-          if (!missingCode && !missingHrs && !missingLoc) {
-            card.style.borderColor = isPending ? '#7c3aed' : '';
-            card.style.boxShadow = isPending ? '0 0 0 3px rgba(124,58,237,0.13)' : '';
-          }
+          card.style.borderColor = '';
+          card.style.boxShadow = '';
         }
 
         // Remedy pill in the compact header row
@@ -26645,12 +26762,12 @@
 
           var cls = 'desk-task-card' +
             (isSel ? ' desk-task-selected' : '') +
-            (hasIssue ? ' desk-task-invalid' : '') +
-            (act.remedyPending && !hasIssue ? ' desk-task-remedy' : '');
+            (hasIssue && !isSel ? ' desk-task-invalid' : '') +
+            (act.remedyPending && !(hasIssue && !isSel) ? ' desk-task-remedy' : '');
 
           var wrapCls = 'desk-card-wrap' + (isSel ? ' desk-sel-wrap' : '') +
-            (hasIssue ? ' desk-wrap-invalid' : '') +
-            (act.remedyPending && !hasIssue ? ' desk-wrap-remedy' : '');
+            (hasIssue && !isSel ? ' desk-wrap-invalid' : '') +
+            (act.remedyPending && !(hasIssue && !isSel) ? ' desk-wrap-remedy' : '');
           cards += '<div class="' + wrapCls + '">';
           cards += '<div class="' + cls + '" onclick="deskSelectAct(\'' + act.id + '\')">' +
             '<div class="flex items-center gap-3">' +
@@ -26707,7 +26824,8 @@
       var ot = parseFloat(act.overtime) || 0;
       var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
       var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-      var notePreview = act.notes ? act.notes.replace(/<[^>]+>/g, '').substring(0, 120) : '';
+      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
 
       var codesHtml = '';
       if (act.codes.length === 0) {
@@ -26720,9 +26838,20 @@
         });
       }
 
-      // Escape values for onclick attributes (single-quote safe)
       var escId = act.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       var escDesc = (act.description || 'Unnamed').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+      const adminCode = WORK_CODES.find(c => c.c.startsWith('WWO')) || { c: 'WWO0001A99', d: 'General Admin' };
+      const leaveCode = WORK_CODES.find(c => c.c.startsWith('UWA')) || { c: 'UWA0001A99', d: 'Annual Leave' };
+      const trainingCode = WORK_CODES.find(c => c.c.startsWith('WTT')) || { c: 'WTT0001A99', d: 'Training' };
+
+      const adminActive = act.codes.some(c => c.c === adminCode.c) ? ' active' : '';
+      const leaveActive = act.codes.some(c => c.c === leaveCode.c) ? ' active' : '';
+      const trainingActive = act.codes.some(c => c.c === trainingCode.c) ? ' active' : '';
+
+      const adminDescEsc = adminCode.d.replace(/'/g, "\\'");
+      const leaveDescEsc = leaveCode.d.replace(/'/g, "\\'");
+      const trainingDescEsc = trainingCode.d.replace(/'/g, "\\'");
 
       return '<div class="desk-panel-days-hdr">Task Details</div>' +
         '<div class="desk-detail-body">' +
@@ -26768,9 +26897,8 @@
         '<div class="act-codes-wrap" data-act-codes="' + act.id + '" onclick="openCodeModal(' + di + ',\'' + escId + '\')" style="cursor:pointer;min-height:42px">' +
         codesHtml +
         '</div>' +
+        '</div>' +
         '<div id="suggest-wrap-' + act.id + '"></div>' +
-        (isMissingCode ? '<div class="act-missing-warn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code</div>' : '') +
-        (isMissingHours ? '<div class="act-missing-warn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours</div>' : '') +
         '</div>' +
 
         '<div class="flex gap-3">' +
@@ -26862,6 +26990,149 @@
       if (!_isDesktop()) return;
       var tasksPanel = document.getElementById('desk-tasks-panel');
       if (tasksPanel) tasksPanel.innerHTML = _renderDeskTasks(state.deskSelectedDay);
+    }
+
+    function _deskUpdateDetailValidation(di, actId) {
+      if (!_isDesktop()) return;
+      var day = state.weekData?.days[di];
+      if (!day) return;
+      var act = day.activities.find(a => a.id === actId);
+      if (!act) return;
+
+      var ord = parseFloat(act.ordinary) || 0;
+      var ot = parseFloat(act.overtime) || 0;
+      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
+
+      // 1. Clear/Hide the warning banner in detail panel (always hidden during editing)
+      var bannerWrap = document.getElementById('desk-warning-banner-wrap');
+      if (bannerWrap) {
+        bannerWrap.innerHTML = '';
+        bannerWrap.style.display = 'none';
+      }
+
+      // 2. Clear/Hide field warnings in detail panel
+      var detailPanel = document.getElementById('desk-detail-panel');
+      if (detailPanel) {
+        var warnCodeEl = detailPanel.querySelector('.act-missing-warn-code');
+        if (warnCodeEl) {
+          warnCodeEl.style.display = 'none';
+        }
+        var warnHoursEl = detailPanel.querySelector('.act-missing-warn-hours');
+        if (warnHoursEl) {
+          warnHoursEl.style.display = 'none';
+        }
+      }
+
+      // 3. Update the middle panel tasks to apply correct classes
+      var tasksPanel = document.getElementById('desk-tasks-panel');
+      if (tasksPanel) {
+        tasksPanel.innerHTML = _renderDeskTasks(di);
+      }
+    }
+
+    function _mobUpdateActivityValidation(di, actId) {
+      if (_isDesktop()) return;
+      var day = state.weekData?.days[di];
+      if (!day) return;
+      var act = day.activities.find(a => a.id === actId);
+      if (!act) return;
+
+      var ord = parseFloat(act.ordinary) || 0;
+      var ot = parseFloat(act.overtime) || 0;
+      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
+
+      var card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
+      if (card) {
+        var isExpanded = card.classList.contains('expanded');
+        card.classList.toggle('has-warning', showRedBorder && !isExpanded);
+
+        // 1. Update warning banner wrap inside the card (only if collapsed)
+        var warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
+        if (warnWrap) {
+          if (showRedBorder && !isExpanded) {
+            warnWrap.style.display = '';
+            var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
+            if (msgEl) {
+              msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
+                                (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
+                                (isMissingLocation ? '• Location is empty.' : '');
+            }
+          } else {
+            warnWrap.style.display = 'none';
+          }
+        }
+
+        // 2. Update inline warning labels (only if collapsed)
+        var warnCode = card.querySelector('.act-missing-warn-code');
+        var warnHours = card.querySelector('.act-missing-warn-hours');
+        if (warnCode) warnCode.style.display = (isMissingCode && !isExpanded) ? '' : 'none';
+        if (warnHours) warnHours.style.display = (isMissingHours && !isExpanded) ? '' : 'none';
+      }
+      
+      // 3. Update task modal warnings if open (suppressed while editing in modal)
+      if (_taskModalState && _taskModalState.actId === actId) {
+        var ov = document.getElementById('task-modal-overlay');
+        if (ov && ov.style.display !== 'none') {
+          var modalWarnCode = ov.querySelector('.act-modal-missing-code');
+          var modalWarnHours = ov.querySelector('.act-modal-missing-hours');
+          if (modalWarnCode) modalWarnCode.style.display = 'none';
+          if (modalWarnHours) modalWarnHours.style.display = 'none';
+          
+          // Also update the status pills row in modal header
+          var pillRow = ov.querySelector('.task-modal-header .act-pill-row');
+          if (pillRow) {
+            var ordPill = pillRow.querySelector('.pill-hrs');
+            var otPill = pillRow.querySelector('.pill-ot');
+            if (ordPill) {
+              if (ord > 0) {
+                ordPill.textContent = `${ord}h`;
+                ordPill.style.display = '';
+              } else {
+                ordPill.style.display = 'none';
+              }
+            } else if (ord > 0) {
+              // Create it if it didn't exist
+              var newPill = document.createElement('span');
+              newPill.className = 'pill-hrs';
+              newPill.textContent = `${ord}h`;
+              pillRow.insertBefore(newPill, pillRow.firstChild);
+            }
+            if (otPill) {
+              if (ot > 0) {
+                otPill.textContent = `+${ot} OT`;
+                otPill.style.display = '';
+              } else {
+                otPill.style.display = 'none';
+              }
+            } else if (ot > 0) {
+              var newPill = document.createElement('span');
+              newPill.className = 'pill-ot';
+              newPill.textContent = `+${ot} OT`;
+              // Insert after ordPill if it exists
+              var ordPillNow = pillRow.querySelector('.pill-hrs');
+              if (ordPillNow) {
+                ordPillNow.after(newPill);
+              } else {
+                pillRow.insertBefore(newPill, pillRow.firstChild);
+              }
+            }
+          }
+
+          // Also update location text in modal header
+          var modalLocText = ov.querySelector('.task-modal-header div[style*="font-size:13px"]');
+          if (modalLocText) {
+            modalLocText.innerHTML = act.location
+              ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(act.location)}`
+              : '<span style="opacity:0.4">No location</span>';
+          }
+        }
+      }
     }
 
     function calcDayTotals(day) {
@@ -27005,28 +27276,46 @@
           }, ANIM_EXPAND_MS + 20);
         }
         if (otherChevron) otherChevron.style.transform = 'rotate(0deg)';
+
+        // Re-evaluate warning border on collapse for sibling card
+        let act = null;
+        for (const day of state.weekData.days) {
+          act = day.activities.find(a => a.id === otherId);
+          if (act) break;
+        }
+        if (act) {
+          const ord = parseFloat(act.ordinary) || 0;
+          const ot = parseFloat(act.overtime) || 0;
+          const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
+          const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
+          const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+          otherCard.style.borderColor = '';
+          otherCard.style.boxShadow = '';
+          if (isMissingCode || isMissingHours || isMissingLocation) {
+            otherCard.classList.add('has-warning');
+          } else {
+            otherCard.classList.remove('has-warning');
+          }
+        }
       });
 
       if (nowExpanded) {
         card.classList.add('expanded');
-        // Clear "missing hours" red border while editing (grace period)
-        // but keep it for "missing code" since that means hours are set with no code
-        {
-          let act = null;
-          for (const day of state.weekData.days) {
-            act = day.activities.find(a => a.id === actId);
-            if (act) break;
-          }
-          if (act) {
-            const ord = parseFloat(act.ordinary) || 0;
-            const ot = parseFloat(act.overtime) || 0;
-            const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-            if (!isMissingCode) {
-              card.style.borderColor = '';
-              card.style.boxShadow = '';
-            }
-          }
-        }
+        // Clear all warnings and borders on active tasks while they are expanded/editing (grace period)
+        card.classList.remove('has-warning');
+        card.style.borderColor = '';
+        card.style.boxShadow = '';
+
+        // Hide warning banner inside the card immediately
+        const warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
+        if (warnWrap) warnWrap.style.display = 'none';
+
+        // Hide inline warnings immediately
+        const warnCode = card.querySelector('.act-missing-warn-code');
+        const warnHours = card.querySelector('.act-missing-warn-hours');
+        if (warnCode) warnCode.style.display = 'none';
+        if (warnHours) warnHours.style.display = 'none';
+
         if (detail) {
           detail.style.display = 'block';
           detail.style.maxHeight = '0px';
@@ -27062,7 +27351,7 @@
         }
         if (chevron) chevron.style.transform = 'rotate(0deg)';
 
-        // Re-evaluate red border on collapse (renderActivity doesn't re-run here)
+        // Re-evaluate red border on collapse
         let act = null;
         for (const day of state.weekData.days) {
           act = day.activities.find(a => a.id === actId);
@@ -27074,9 +27363,12 @@
           const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
           const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
           const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+          card.style.borderColor = '';
+          card.style.boxShadow = '';
           if (isMissingCode || isMissingHours || isMissingLocation) {
-            card.style.borderColor = 'var(--btn-danger-color)';
-            card.style.boxShadow = '0 0 8px rgba(232, 69, 60, 0.2)';
+            card.classList.add('has-warning');
+          } else {
+            card.classList.remove('has-warning');
           }
         }
         syncTimelineAnimation();
@@ -27515,8 +27807,6 @@
               </div>
               <div class="act-codes-wrap" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${escId}')" style="cursor:pointer;min-height:42px">${codesHtml}</div>
               <div id="suggest-wrap-${act.id}"></div>
-              ${isMissingCode ? `<div class="act-missing-warn">Missing work code</div>` : ''}
-              ${isMissingHours ? `<div class="act-missing-warn">Missing hours</div>` : ''}
             </div>
             <div class="flex gap-3">
               <div class="hrs-box flex-1">
@@ -27798,10 +28088,22 @@
       const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
       const isMissingLocation = (ordinary > 0 || overtime > 0) && !act.location;
       const showRedBorder = isMissingCode || isMissingHours || isMissingLocation;
-      const remedyStyle = act.remedyPending && !showRedBorder ? 'border-color:#7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.13)' : '';
       const isActExpanded = state.activitiesExpanded.has(act.id);
+
+      const adminCode = WORK_CODES.find(c => c.c.startsWith('WWO')) || { c: 'WWO0001A99', d: 'General Admin' };
+      const leaveCode = WORK_CODES.find(c => c.c.startsWith('UWA')) || { c: 'UWA0001A99', d: 'Annual Leave' };
+      const trainingCode = WORK_CODES.find(c => c.c.startsWith('WTT')) || { c: 'WTT0001A99', d: 'Training' };
+
+      const adminActive = act.codes.some(c => c.c === adminCode.c) ? ' active' : '';
+      const leaveActive = act.codes.some(c => c.c === leaveCode.c) ? ' active' : '';
+      const trainingActive = act.codes.some(c => c.c === trainingCode.c) ? ' active' : '';
+
+      const adminDescEsc = adminCode.d.replace(/'/g, "\\'");
+      const leaveDescEsc = leaveCode.d.replace(/'/g, "\\'");
+      const trainingDescEsc = trainingCode.d.replace(/'/g, "\\'");
+
       return `
-      <div class="activity-card${act.remedyPending ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}" data-act-id="${act.id}" style="${showRedBorder ? 'border-color:var(--btn-danger-color); box-shadow: 0 0 8px rgba(232, 69, 60, 0.2)' : remedyStyle}">
+      <div class="activity-card${act.remedyPending ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}${showRedBorder && !isActExpanded ? ' has-warning' : ''}" data-act-id="${act.id}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="getTaskStyle()==='modal'?openTaskModal('${act.id}',${di}):toggleActivityDetails('${act.id}')">
           <div class="task-num">${actIndex + 1}</div>
           <div class="flex-1 min-w-0 act-meta">
@@ -27811,8 +28113,8 @@
                 ${act.location ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(act.location)}` : '<span style="opacity:0.4">No location</span>'}
               </div>
               <div class="act-pill-row">
-                ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" style="display:none"></span>`}
-                ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" style="display:none"></span>`}
+                ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" class="pill-hrs" style="display:none"></span>`}
+                ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" class="pill-ot" style="display:none"></span>`}
                 ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>` : ''}
               </div>
             </div>
@@ -27864,8 +28166,6 @@
                   </div>`).join('')}
               </div>
               <div id="suggest-wrap-${act.id}"></div>
-              ${isMissingCode ? `<div class="act-missing-warn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code</div>` : ''}
-              ${isMissingHours ? `<div class="act-missing-warn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours</div>` : ''}
             </div>
 
             <div class="flex gap-3">
@@ -27963,6 +28263,11 @@
       if (_taskModalState && _taskModalState.actId === actId) _taskModalFlashSaved();
       // Refresh day header pills
       if (di !== undefined) _refreshDayPills(di);
+      if (_isDesktop()) {
+        _deskUpdateDetailValidation(di, actId);
+      } else {
+        _mobUpdateActivityValidation(di, actId);
+      }
     }
 
     function stepHrs(actId, di, field, delta) {
@@ -27987,6 +28292,59 @@
       act[field] = val;
       if (!act._draft) scheduleAutoSave();
       _applyHrsInPlace(act, actId, field, val, di);
+    }
+
+    function quickAddWorkCode(di, actId, code, desc) {
+      const day = state.weekData.days[di];
+      if (!day) return;
+      const act = day.activities.find(a => a.id === actId);
+      if (!act) return;
+      const existsIdx = act.codes.findIndex(c => c.c === code);
+      if (existsIdx > -1) {
+        act.codes.splice(existsIdx, 1);
+      } else {
+        act.codes.push({ c: code, d: desc });
+      }
+      if (act.codes.length > 1 && !act.tasks) act.tasks = String(act.codes.length);
+      scheduleAutoSave();
+
+      // Update the codes wrap in place
+      var codesWrap = document.querySelector(`[data-act-codes="${actId}"]`);
+      if (codesWrap) {
+        var codesHtml = '';
+        if (act.codes.length === 0) {
+          codesHtml = '<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer" onclick="openCodeModal(' + di + ',\'' + act.id + '\')">' +
+            '<svg width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add work codes</span>';
+        } else {
+          act.codes.forEach(function (c) {
+            codesHtml += '<div class="act-code-chip" style="pointer-events:none">' +
+              esc(c.d) + '<span class="act-code-mono">' + esc(c.c) + '</span></div>';
+          });
+        }
+        codesWrap.innerHTML = codesHtml;
+      }
+
+      // Update active class on preset-pills
+      var container = _isDesktop() ? document.getElementById('desk-detail-panel') : document.querySelector(`.activity-card[data-act-id="${actId}"]`);
+      if (container) {
+        const adminCode = WORK_CODES.find(c => c.c.startsWith('WWO')) || { c: 'WWO0001A99', d: 'General Admin' };
+        const leaveCode = WORK_CODES.find(c => c.c.startsWith('UWA')) || { c: 'UWA0001A99', d: 'Annual Leave' };
+        const trainingCode = WORK_CODES.find(c => c.c.startsWith('WTT')) || { c: 'WTT0001A99', d: 'Training' };
+
+        var pills = container.querySelectorAll('.quick-suggest-row .preset-pill');
+        if (pills.length === 3) {
+          pills[0].classList.toggle('active', act.codes.some(c => c.c === adminCode.c));
+          pills[1].classList.toggle('active', act.codes.some(c => c.c === leaveCode.c));
+          pills[2].classList.toggle('active', act.codes.some(c => c.c === trainingCode.c));
+        }
+      }
+
+      if (_isDesktop()) {
+        _deskUpdateDetailValidation(di, actId);
+      } else {
+        _mobUpdateActivityValidation(di, actId);
+      }
+      if (_taskModalState && _taskModalState.actId === actId) _showTaskModal(true);
     }
 
     function updateField(el) {
@@ -28047,6 +28405,11 @@
       }
       // Don't sync draft tasks — they only save when user taps Save
       if (!act._draft) scheduleAutoSave();
+      if (_isDesktop()) {
+        _deskUpdateDetailValidation(parseInt(di), actId);
+      } else {
+        _mobUpdateActivityValidation(parseInt(di), actId);
+      }
     }
 
     function adjHrs(btn, delta) {
