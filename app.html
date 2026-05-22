@@ -20988,7 +20988,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.88';
+    const VERSION = '6.3.89';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25255,7 +25255,7 @@
 
       // Detach desktop journal TipTap wrapper before innerHTML wipes the DOM
       if (_djTiptapWrap && _djTiptapWrap.parentNode) _djTiptapWrap.remove();
-      app.innerHTML = renderHeader() + _renderConflictBanner() + _renderDraftWarningBanner() + _renderSaveErrorBanner() + viewBody;
+      app.innerHTML = renderHeader() + _renderConflictBanner() + '<div id="draft-warning-banner-container">' + _renderDraftWarningBanner() + '</div>' + _renderSaveErrorBanner() + viewBody;
       // Restore menu scroll position after DOM rebuild
       if (_menuWasOpen && _menuScroll > 0) {
         const _newMenuEl = document.getElementById('theme-dropdown');
@@ -26984,6 +26984,7 @@
         detailPanel.innerHTML = _renderDeskDetail(state.deskSelectedDay, actId);
         detailPanel.querySelectorAll('textarea').forEach(autoGrow);
       }
+      _syncDraftWarningBanner();
     }
 
     function deskAddTask(di) {
@@ -27422,6 +27423,7 @@
         }
         syncTimelineAnimation();
       }
+      _syncDraftWarningBanner();
     }
 
     function toggleNotes(actId) {
@@ -38084,8 +38086,27 @@
       
       if (!anyDraftTask && !anyDraftNote) return '';
 
-      // 1. If on Timesheet view and there are draft tasks
-      if (state.view === 'week' && anyDraftTask) {
+      // Check if there are inactive/dormant drafts on the current view
+      const hasDormantDraftTask = !!(state.weekData?.days?.some(d => d.activities?.some(a => {
+        if (!a._draft) return false;
+        if (_isDesktop()) {
+          return state.deskSelectedAct !== a.id;
+        } else {
+          return !state.activitiesExpanded.has(a.id);
+        }
+      })));
+
+      const hasDormantDraftNote = !!(state.notes?.some(n => {
+        if (!n._draft) return false;
+        if (_isDesktop()) {
+          return state.deskSelectedNote !== n.id;
+        } else {
+          return !state.expandedNotes.has(n.id);
+        }
+      }));
+
+      // 1. If on Timesheet view and there are dormant draft tasks
+      if (state.view === 'week' && hasDormantDraftTask) {
         return `<div class="draft-warning-banner">
           <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -38095,8 +38116,8 @@
         </div>`;
       }
 
-      // 2. If on Notes view and there are draft notes
-      if (state.view === 'notes' && anyDraftNote) {
+      // 2. If on Notes view and there are dormant draft notes
+      if (state.view === 'notes' && hasDormantDraftNote) {
         return `<div class="draft-warning-banner">
           <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -38122,6 +38143,13 @@
         <span class="draft-warning-banner-text">${msg}</span>
         <button class="draft-warning-banner-btn" onclick="setView('${returnView}')">Return</button>
       </div>`;
+    }
+
+    function _syncDraftWarningBanner() {
+      const container = document.getElementById('draft-warning-banner-container');
+      if (container) {
+        container.innerHTML = _renderDraftWarningBanner();
+      }
     }
 
     // Save-error banner — shown when Firestore write fails for tasks or notes
