@@ -21002,7 +21002,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.15';
+    const VERSION = '6.4.16';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -30011,7 +30011,17 @@
                 merged.push(lr);
               }
             }
-            remindersData = merged;
+            // Prune reminders for deleted or missing notes immediately during merge
+            let filteredMerged = merged;
+            if (state.notes && state.notes.length > 0) {
+              const activeNotes = new Map(state.notes.map(n => [n.id, n]));
+              filteredMerged = merged.filter(r => {
+                if (!r.noteId) return true;
+                const parent = activeNotes.get(r.noteId);
+                return parent && !parent.deleted;
+              });
+            }
+            remindersData = filteredMerged;
             dbPut('notes', { id: 'reminders_all', userId: state.currentUser?.uid || null, data: remindersData, updatedAt: remote._updatedAt || Date.now() }).catch(() => { });
 
             // Only schedule/fire reminders once we have confirmed server data
@@ -30061,12 +30071,17 @@
       const now = Date.now();
       const reminders = getReminders();
       let changed = false;
+      const activeNotes = new Map((state.notes || []).map(n => [n.id, n]));
+      const filtered = [];
       reminders.forEach(r => {
-        // Skip reminders for notes that have been deleted or no longer exist
-        const parentNote = r.noteId ? state.notes.find(n => n.id === r.noteId) : null;
-        if (r.noteId && (!parentNote || parentNote.deleted)) {
-          if (reminderTimers[r.id]) { clearTimeout(reminderTimers[r.id]); delete reminderTimers[r.id]; }
-          return;
+        // Skip and prune reminders for notes that have been deleted or no longer exist
+        if (r.noteId) {
+          const parentNote = activeNotes.get(r.noteId);
+          if (!parentNote || parentNote.deleted) {
+            if (reminderTimers[r.id]) { clearTimeout(reminderTimers[r.id]); delete reminderTimers[r.id]; }
+            changed = true;
+            return;
+          }
         }
         if (!r.fired && r.firedBy !== 'server' && r.remindAt <= now) {
           r.fired = true;
@@ -30077,8 +30092,9 @@
           if (reminderTimers[r.id]) { clearTimeout(reminderTimers[r.id]); delete reminderTimers[r.id]; }
           fireReminder(r, true);
         }
+        filtered.push(r);
       });
-      if (changed) saveReminders(reminders);
+      if (changed) saveReminders(filtered);
     }
 
     // ============================================================
@@ -35517,14 +35533,19 @@
       if (changed) scheduleNotesSave();
     }
 
-    // Remove reminders whose noteId no longer exists anywhere in state.notes (incl. bin/archive).
+    // Remove reminders whose noteId no longer exists anywhere in state.notes (incl. bin/archive) or whose note is deleted.
     // Called after notes sync from server to clean up orphaned reminders from deleted notes.
     function _pruneOrphanedReminders() {
       if (!remindersData.length || !state.notes.length) return;
-      const noteIds = new Set(state.notes.map(n => n.id));
-      const pruned = remindersData.filter(r => !r.noteId || noteIds.has(r.noteId));
+      const activeNotes = new Map(state.notes.map(n => [n.id, n]));
+      const pruned = remindersData.filter(r => {
+        if (!r.noteId) return true;
+        const parent = activeNotes.get(r.noteId);
+        if (!parent || parent.deleted) return false;
+        return true;
+      });
       if (pruned.length < remindersData.length) {
-        console.log('[Rian] Pruned', remindersData.length - pruned.length, 'orphaned reminder(s)');
+        console.log('[Rian] Pruned', remindersData.length - pruned.length, 'orphaned/deleted note reminder(s)');
         saveReminders(pruned);
       }
     }
