@@ -20988,7 +20988,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.95';
+    const VERSION = '6.3.97';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25705,7 +25705,7 @@
         const isPast = day.date <= today;
 
         const acts = day.activities.filter(a =>
-          (a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && !a._draft
+          (a.description || a.location || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0) && !a._draft
         );
 
         // ── 2. Empty weekday with 0 total hours ───────────────
@@ -25724,22 +25724,29 @@
         acts.forEach(act => {
           const ord = parseFloat(act.ordinary) || 0;
           const ot = parseFloat(act.overtime) || 0;
+          const hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
 
-          // 3. Has hours but no work codes
-          if ((ord > 0 || ot > 0) && act.codes.length === 0) {
+          // 3. Has content but no work codes
+          if (hasContent && act.codes.length === 0) {
             const desc = act.description ? `"${act.description}"` : 'an activity';
+            const msgText = (ord > 0 || ot > 0)
+              ? `<strong>${day.dayName}</strong>: ${desc} has hours but <strong>no work code</strong>.`
+              : `<strong>${day.dayName}</strong>: ${desc} has <strong>no work code</strong>.`;
             issues.push({
               severity: 'error', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: ${desc} has hours but <strong>no work code</strong>.`, actId: act.id
+              msg: msgText, actId: act.id
             });
           }
 
-          // 4. Has codes but no hours
-          if (act.codes.length > 0 && ord === 0 && ot === 0) {
+          // 4. Has content but no hours
+          if (hasContent && ord === 0 && ot === 0) {
             const desc = act.description ? `"${act.description}"` : 'an activity';
+            const msgText = (act.codes.length > 0)
+              ? `<strong>${day.dayName}</strong>: ${desc} has a code but <strong>no hours</strong> entered.`
+              : `<strong>${day.dayName}</strong>: ${desc} has <strong>no hours</strong> entered.`;
             issues.push({
               severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`, dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: ${desc} has a code but <strong>no hours</strong> entered.`, actId: act.id
+              msg: msgText, actId: act.id
             });
           }
 
@@ -25751,12 +25758,12 @@
             });
           }
 
-          // 6. Has hours but no location
-          if ((ord > 0 || ot > 0) && !act.location) {
+          // 6. Has content but no location
+          if (hasContent && !act.location) {
             const desc = act.description ? `"${act.description}"` : 'an activity';
             issues.push({
               severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`, dayIdx: di,
-              msg: `<strong>${day.dayName}</strong>: ${desc} has hours but <strong>no location</strong>.`, actId: act.id
+              msg: `<strong>${day.dayName}</strong>: ${desc} has <strong>no location</strong>.`, actId: act.id
             });
           }
         });
@@ -26772,9 +26779,10 @@
           var ot = parseFloat(act.overtime) || 0;
           var isSel = (act.id === state.deskSelectedAct);
           var isDraft = !!act._draft;
-          var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
-          var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-          var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
+          var hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+          var isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+          var isMissingHours = !isDraft && hasContent && ord === 0 && ot === 0;
+          var isMissingLocation = !isDraft && hasContent && !act.location;
           var hasIssue = (isMissingCode || isMissingHours || isMissingLocation);
 
           var cls = 'desk-task-card' +
@@ -26842,9 +26850,10 @@
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
       var isDraft = !!act._draft;
-      var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
-      var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-      var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
+      var hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+      var isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+      var isMissingHours = !isDraft && hasContent && ord === 0 && ot === 0;
+      var isMissingLocation = !isDraft && hasContent && !act.location;
       var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
       var showWarnCode = isMissingCode;
       var showWarnHours = isMissingHours;
@@ -26853,7 +26862,13 @@
       if (showRedBorder) {
         var msg = '';
         if (isMissingCode) msg += '• Needs a work code assigned.<br>';
-        if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
+        if (isMissingHours) {
+          if (act.codes.length > 0) {
+            msg += '• Work code assigned, but hours are 0.<br>';
+          } else {
+            msg += '• Hours are 0.<br>';
+          }
+        }
         if (isMissingLocation) msg += '• Location is empty.';
         bannerHtml = '<div class="act-warning-banner">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
@@ -27046,9 +27061,10 @@
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
       var isDraft = !!act._draft;
-      var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
-      var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-      var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
+      var hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+      var isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+      var isMissingHours = !isDraft && hasContent && ord === 0 && ot === 0;
+      var isMissingLocation = !isDraft && hasContent && !act.location;
       var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
 
       // 1. Update warning banner in detail panel
@@ -27057,7 +27073,13 @@
         if (showRedBorder) {
           var msg = '';
           if (isMissingCode) msg += '• Needs a work code assigned.<br>';
-          if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
+          if (isMissingHours) {
+            if (act.codes.length > 0) {
+              msg += '• Work code assigned, but hours are 0.<br>';
+            } else {
+              msg += '• Hours are 0.<br>';
+            }
+          }
           if (isMissingLocation) msg += '• Location is empty.';
           bannerWrap.innerHTML = '<div class="act-warning-banner">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
@@ -27100,9 +27122,10 @@
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
       var isDraft = !!act._draft;
-      var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
-      var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-      var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
+      var hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+      var isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+      var isMissingHours = !isDraft && hasContent && ord === 0 && ot === 0;
+      var isMissingLocation = !isDraft && hasContent && !act.location;
       var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
 
       var card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
@@ -27119,7 +27142,7 @@
             var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
             if (msgEl) {
               msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
-                                (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
+                                (isMissingHours ? (act.codes.length > 0 ? '• Work code assigned, but hours are 0.<br>' : '• Hours are 0.<br>') : '') +
                                 (isMissingLocation ? '• Location is empty.' : '');
             }
           } else {
@@ -27346,9 +27369,10 @@
           const ord = parseFloat(act.ordinary) || 0;
           const ot = parseFloat(act.overtime) || 0;
           const isDraft = !!act._draft;
-          const isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
-          const isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-          const isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
+          const hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+          const isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+          const isMissingHours = !isDraft && hasContent && ord === 0 && ot === 0;
+          const isMissingLocation = !isDraft && hasContent && !act.location;
           otherCard.style.borderColor = '';
           otherCard.style.boxShadow = '';
           if (isMissingCode || isMissingHours || isMissingLocation) {
@@ -27376,9 +27400,10 @@
           const ord = parseFloat(act.ordinary) || 0;
           const ot = parseFloat(act.overtime) || 0;
           const isDraft = !!act._draft;
-          const isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
-          const isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-          const isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
+          const hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+          const isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+          const isMissingHours = !isDraft && hasContent && ord === 0 && ot === 0;
+          const isMissingLocation = !isDraft && hasContent && !act.location;
           const hasError = (isMissingCode || isMissingHours || isMissingLocation);
           const showWarnCode = isMissingCode;
           const showWarnHours = isMissingHours;
@@ -27390,7 +27415,7 @@
               const msgEl = warnWrap.querySelector('.act-warning-banner-messages');
               if (msgEl) {
                 msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
-                                  (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
+                                  (isMissingHours ? (act.codes.length > 0 ? '• Work code assigned, but hours are 0.<br>' : '• Hours are 0.<br>') : '') +
                                   (isMissingLocation ? '• Location is empty.' : '');
               }
             } else {
@@ -27450,7 +27475,7 @@
           const isDraft = !!act._draft;
           const isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
           const isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-          const isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
+          const isMissingLocation = !isDraft && (ord > 0 || ot > 0 || act.codes.length > 0) && !act.location;
           card.style.borderColor = '';
           card.style.boxShadow = '';
           if (isMissingCode || isMissingHours || isMissingLocation) {
@@ -27816,8 +27841,9 @@
       const ordinary = parseFloat(act.ordinary) || 0;
       const overtime = parseFloat(act.overtime) || 0;
       const isDraft = !!act._draft;
-      const isMissingCode = !isDraft && (ordinary > 0 || overtime > 0) && act.codes.length === 0;
-      const isMissingHours = !isDraft && act.codes.length > 0 && ordinary === 0 && overtime === 0;
+      const hasContent = !!(act.description || act.location || act.codes.length > 0 || ordinary > 0 || overtime > 0);
+      const isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+      const isMissingHours = !isDraft && hasContent && ordinary === 0 && overtime === 0;
       const showWarnCode = isMissingCode;
       const showWarnHours = isMissingHours;
       const escId = act.id.replace(/'/g, "\\'");
@@ -28184,9 +28210,10 @@
       const ordinary = parseFloat(act.ordinary) || 0;
       const overtime = parseFloat(act.overtime) || 0;
       const isDraft = !!act._draft;
-      const isMissingCode = !isDraft && (ordinary > 0 || overtime > 0) && act.codes.length === 0;
-      const isMissingHours = !isDraft && act.codes.length > 0 && ordinary === 0 && overtime === 0;
-      const isMissingLocation = !isDraft && (ordinary > 0 || overtime > 0) && !act.location;
+      const hasContent = !!(act.description || act.location || act.codes.length > 0 || ordinary > 0 || overtime > 0);
+      const isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+      const isMissingHours = !isDraft && hasContent && ordinary === 0 && overtime === 0;
+      const isMissingLocation = !isDraft && hasContent && !act.location;
       const showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
       const showWarnCode = isMissingCode;
       const showWarnHours = isMissingHours;
@@ -28572,9 +28599,10 @@
       // Check validation just to show an informative toast
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
-      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+      var isMissingCode = hasContent && act.codes.length === 0;
+      var isMissingHours = hasContent && ord === 0 && ot === 0;
+      var isMissingLocation = hasContent && !act.location;
       var hasError = isMissingCode || isMissingHours || isMissingLocation;
 
       delete act._draft;
@@ -28599,9 +28627,10 @@
           drafts.forEach(act => {
             var ord = parseFloat(act.ordinary) || 0;
             var ot = parseFloat(act.overtime) || 0;
-            var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-            var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-            var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+            var hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+            var isMissingCode = hasContent && act.codes.length === 0;
+            var isMissingHours = hasContent && ord === 0 && ot === 0;
+            var isMissingLocation = hasContent && !act.location;
             var hasError = isMissingCode || isMissingHours || isMissingLocation;
 
             delete act._draft;
