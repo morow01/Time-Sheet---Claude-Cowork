@@ -21002,7 +21002,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.14';
+    const VERSION = '6.4.15';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26585,7 +26585,6 @@
     </button>
     <div class="sum-table-wrap${state.showSummary ? ' open' : ''}" data-sum-table-content>
       ${_buildSummaryTableContentHtml(summary, totalOrd, totalOT)}
-    </div>
       ${(function () {
           var _coEntries = state.callouts && state.callouts.weeks && state.weekData ? (state.callouts.weeks[state.weekData.weekStart] && state.callouts.weeks[state.weekData.weekStart].callouts || []) : [];
           if (!_coEntries.length) return '';
