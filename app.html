@@ -264,6 +264,8 @@
       --priority-low-rgb: 22, 163, 74;
       --priority-medium-rgb: 249, 115, 22;
       --amber-rgb: 245, 166, 35;
+      --purple: #818cf8;
+      --purple-rgb: 129, 140, 248;
     }
 
     /* Force .font-mono to use the theme font instead of Tailwind's monospace stack.
@@ -800,14 +802,12 @@
       border-radius: 4px;
     }
 
-    .act-missing-warn {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: var(--btn-danger-color);
-      font-weight: 600;
-      margin-top: 4px;
+
+    .invalid-field {
+      border-color: var(--btn-danger-color) !important;
+    }
+    .hrs-stepper.invalid-field {
+      outline-color: var(--btn-danger-color) !important;
     }
 
     .act-textarea {
@@ -1265,9 +1265,9 @@
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      background: rgba(var(--amber-rgb), 0.15);
-      color: rgba(var(--amber-rgb), 1.0);
-      border: 1px solid rgba(var(--amber-rgb), 0.3);
+      background: rgba(var(--purple-rgb), 0.15);
+      color: var(--purple);
+      border: 1px solid rgba(var(--purple-rgb), 0.3);
       border-radius: 20px;
       padding: 1px 7px;
       font-size: 10px;
@@ -1660,7 +1660,6 @@
     }
 
     .activity-card.expanded {
-      border-left-color: var(--accent);
       box-shadow: 0 4px 12px rgba(var(--shadow-brand-rgb), 0.12);
     }
 
@@ -1669,28 +1668,30 @@
     }
 
     .activity-card.has-warning {
-      border-left-color: var(--btn-danger-color) !important;
       box-shadow: 0 4px 12px rgba(232, 69, 60, 0.12) !important;
     }
-
-    .note-card.has-warning {
-      border-left: 4px solid var(--btn-danger-color) !important;
-      box-shadow: 0 4px 12px rgba(232, 69, 60, 0.12) !important;
+    .activity-card.has-warning .task-num {
+      background: var(--btn-danger-color) !important;
+      color: #fff !important;
     }
 
-    .dnotes-note-row.has-warning {
-      border-left-color: var(--btn-danger-color) !important;
-      box-shadow: inset 2px 0 0 rgba(232, 69, 60, 0.08) !important;
+    .note-card.is-draft {
+      border-left: 4px solid var(--purple) !important;
+      box-shadow: 0 4px 12px rgba(var(--purple-rgb), 0.12) !important;
+    }
+
+    .dnotes-note-row.is-draft {
+      border-left-color: var(--purple) !important;
+      box-shadow: inset 2px 0 0 rgba(var(--purple-rgb), 0.08) !important;
     }
 
     .activity-card.is-draft:not(.expanded) {
-      border-left: 4px dashed rgba(var(--amber-rgb), 1.0) !important;
-      box-shadow: 0 2px 8px rgba(var(--amber-rgb), 0.08) !important;
+      box-shadow: 0 2px 8px rgba(var(--purple-rgb), 0.08) !important;
     }
 
-    .activity-card.is-draft.has-warning {
-      border-left: 4px solid var(--btn-danger-color) !important;
-      box-shadow: 0 4px 12px rgba(232, 69, 60, 0.12) !important;
+    .activity-card.is-draft .task-num {
+      background: var(--purple) !important;
+      color: #fff !important;
     }
 
     /* Preset Buttons & Quick Chips */
@@ -1757,6 +1758,17 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 12px;
+    }
+
+    .act-field-error {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--btn-danger-color);
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 5px;
+      padding: 0 2px;
     }
 
 
@@ -17727,6 +17739,7 @@
         padding: 1px 12px;
         min-height: 74px;
         border-bottom: 1px solid var(--border-subtle);
+        border-left: 3px solid transparent;
         cursor: pointer;
         transition: background 0.12s;
       }
@@ -17741,7 +17754,7 @@
 
       .desk-card-wrap.desk-sel-wrap {
         background: linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03));
-        border-left: 3px solid var(--accent);
+        border-left-color: var(--accent);
       }
 
       .desk-task-card.desk-task-selected {
@@ -17753,28 +17766,22 @@
         color: #fff;
       }
 
-      .desk-card-wrap.desk-wrap-invalid {
-        border-left: 3px solid var(--btn-danger-color);
-      }
-
       .desk-card-wrap.desk-wrap-remedy {
-        border-left: 3px solid #7c3aed;
+        border-left-color: #7c3aed;
       }
 
-      .desk-card-wrap.desk-wrap-draft:not(.desk-sel-wrap) {
-        border-left: 3px dashed rgba(var(--amber-rgb), 1.0) !important;
-      }
-
-      .desk-card-wrap.desk-wrap-draft.desk-wrap-invalid {
-        border-left: 3px solid var(--btn-danger-color) !important;
-      }
-
-      .desk-card-wrap.desk-sel-wrap.desk-wrap-invalid {
-        border-left-color: var(--btn-danger-color);
+      .desk-card-wrap.is-draft .task-num {
+        background: var(--purple) !important;
+        color: #fff !important;
       }
 
       .desk-card-wrap.desk-sel-wrap.desk-wrap-remedy {
         border-left-color: #7c3aed;
+      }
+
+      .desk-card-wrap.has-warning .task-num {
+        background: var(--btn-danger-color) !important;
+        color: #fff !important;
       }
 
       /* Task cards reuse mobile .act-desc-txt, .act-row2, .act-loc-txt, .act-pill-row, .pill-hrs, .pill-ot */
@@ -19150,6 +19157,7 @@
         gap: 10px;
         padding: 11px 14px;
         border-bottom: 1px solid var(--border);
+        border-left: 3px solid transparent;
         cursor: pointer;
         transition: background 0.15s;
       }
@@ -19160,11 +19168,11 @@
 
       .dco-week-row.dco-selected {
         background: linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03));
-        border-left: 3px solid var(--accent);
+        border-left-color: var(--accent);
       }
 
       .dco-week-row.dco-current {
-        border-left: 3px solid var(--accent);
+        border-left-color: var(--accent);
       }
 
       .dco-co-row {
@@ -19173,6 +19181,7 @@
         gap: 10px;
         padding: 11px 14px;
         border-bottom: 1px solid var(--border);
+        border-left: 3px solid transparent;
         cursor: pointer;
         transition: background 0.15s;
       }
@@ -19183,7 +19192,7 @@
 
       .dco-co-row.dco-co-selected {
         background: linear-gradient(to right, rgba(var(--accent-rgb), 0.10), rgba(var(--accent-rgb), 0.03));
-        border-left: 3px solid var(--accent);
+        border-left-color: var(--accent);
       }
 
       .dco-detail-hdr {
@@ -20988,7 +20997,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.97';
+    const VERSION = '6.4.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21407,12 +21416,12 @@
       return q ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) : '';
     }
 
-    function _renderActLocationControl(act, di, actIdJs) {
+    function _renderActLocationControl(act, di, actIdJs, isInvalid) {
       const loc = act.location || '';
       const idJs = actIdJs || _jsStr(act.id);
       const mapUrl = _activityLocationMapUrl(loc);
       return '<div class="act-location-row">' +
-        '<div class="act-input" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;' + (loc ? '' : 'color:var(--text-muted)') + '" ' +
+        '<div class="act-input' + (isInvalid ? ' invalid-field' : '') + '" role="button" tabindex="0" style="cursor:pointer;user-select:none;min-height:1.6em;' + (loc ? '' : 'color:var(--text-muted)') + '" ' +
         'data-field="location" data-act="' + esc(act.id) + '" data-day="' + di + '" ' +
         'onclick="openLocationModal(' + di + ',\'' + idJs + '\')">' +
         (loc ? esc(loc) : 'Town name or code\u2026') +
@@ -25733,7 +25742,7 @@
               ? `<strong>${day.dayName}</strong>: ${desc} has hours but <strong>no work code</strong>.`
               : `<strong>${day.dayName}</strong>: ${desc} has <strong>no work code</strong>.`;
             issues.push({
-              severity: 'error', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, dayIdx: di,
+              severity: 'error', icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`, dayIdx: di,
               msg: msgText, actId: act.id
             });
           }
@@ -25745,7 +25754,7 @@
               ? `<strong>${day.dayName}</strong>: ${desc} has a code but <strong>no hours</strong> entered.`
               : `<strong>${day.dayName}</strong>: ${desc} has <strong>no hours</strong> entered.`;
             issues.push({
-              severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`, dayIdx: di,
+              severity: 'warn', icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`, dayIdx: di,
               msg: msgText, actId: act.id
             });
           }
@@ -25780,7 +25789,7 @@
           }
           if (dayOT > 0 && dayOrd === 0) {
             issues.push({
-              severity: 'warn', icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`, dayIdx: di,
+              severity: 'warn', icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`, dayIdx: di,
               msg: `<strong>${day.dayName}</strong>: Has <strong>overtime</strong> but no ordinary hours.`
             });
           }
@@ -26787,13 +26796,13 @@
 
           var cls = 'desk-task-card' +
             (isSel ? ' desk-task-selected' : '') +
-            (hasIssue && !isSel ? ' desk-task-invalid' : '') +
-            (act.remedyPending && !isDraft && !(hasIssue && !isSel) ? ' desk-task-remedy' : '');
+            (act.remedyPending && !isDraft ? ' desk-task-remedy' : '');
 
           var wrapCls = 'desk-card-wrap' + (isSel ? ' desk-sel-wrap' : '') +
-            (hasIssue && !isSel ? ' desk-wrap-invalid' : '') +
-            (act.remedyPending && !isDraft && !(hasIssue && !isSel) ? ' desk-wrap-remedy' : '') +
-            (act._draft && !isSel ? ' desk-wrap-draft' : '');
+            (hasIssue ? ' has-warning' : '') +
+            (act.remedyPending && !isDraft ? ' desk-wrap-remedy' : '') +
+            (act._draft ? ' is-draft' : '');
+
           cards += '<div class="' + wrapCls + '">';
           cards += '<div class="' + cls + '" onclick="deskSelectAct(\'' + act.id + '\')">' +
             '<div class="flex items-center gap-3">' +
@@ -26860,18 +26869,19 @@
 
       var bannerHtml = '';
       if (showRedBorder) {
-        var msg = '';
-        if (isMissingCode) msg += '• Needs a work code assigned.<br>';
+        var msgParts = [];
+        if (isMissingLocation) msgParts.push('• Location is empty.');
+        if (isMissingCode) msgParts.push('• Needs a work code assigned.');
         if (isMissingHours) {
           if (act.codes.length > 0) {
-            msg += '• Work code assigned, but hours are 0.<br>';
+            msgParts.push('• Work code assigned, but hours are 0.');
           } else {
-            msg += '• Hours are 0.<br>';
+            msgParts.push('• Hours are 0.');
           }
         }
-        if (isMissingLocation) msg += '• Location is empty.';
+        var msg = msgParts.join('<br>');
         bannerHtml = '<div class="act-warning-banner">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>' +
           '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
           '</div>';
       }
@@ -26937,7 +26947,7 @@
 
         '<div class="desk-field-group">' +
         '<span class="act-field-label">Location</span>' +
-        _renderActLocationControl(act, di, escId) +
+        _renderActLocationControl(act, di, escId, isMissingLocation) +
         '</div>' +
 
         '<div class="desk-field-group">' +
@@ -26946,11 +26956,8 @@
         '<button id="suggest-btn-' + act.id + '" class="act-suggest-btn" onclick="suggestCodes(\'' + escId + '\',' + di + ')">' +
         '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg> Suggest</button>' +
         '</div>' +
-        '<div class="act-codes-wrap" data-act-codes="' + act.id + '" onclick="openCodeModal(' + di + ',\'' + escId + '\')" style="cursor:pointer;min-height:42px">' +
+        '<div class="act-codes-wrap' + (isMissingCode ? ' invalid-field' : '') + '" data-act-codes="' + act.id + '" onclick="openCodeModal(' + di + ',\'' + escId + '\')" style="cursor:pointer;min-height:42px">' +
         codesHtml +
-        '</div>' +
-        '<div class="act-missing-warn act-missing-warn-code" style="display:' + (showWarnCode ? 'flex' : 'none') + '">' +
-        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code' +
         '</div>' +
         '</div>' +
         '<div id="suggest-wrap-' + act.id + '"></div>' +
@@ -26959,7 +26966,7 @@
         '<div class="flex gap-3">' +
         '<div class="hrs-box flex-1">' +
         '<div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>' +
-        '<div class="hrs-stepper flex items-center justify-between">' +
+        '<div class="hrs-stepper' + (isMissingHours ? ' invalid-field' : '') + ' flex items-center justify-between">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',-1)">&#8722;</button>' +
         '<input type="tel" class="val" data-step-val="' + act.id + '-ordinary" value="' + (act.ordinary || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'ordinary\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',1)">+</button>' +
@@ -26967,15 +26974,12 @@
         '</div>' +
         '<div class="hrs-box ot-box flex-1">' +
         '<div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>' +
-        '<div class="hrs-stepper flex items-center justify-between">' +
+        '<div class="hrs-stepper' + (isMissingHours ? ' invalid-field' : '') + ' flex items-center justify-between">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',-1)">&#8722;</button>' +
         '<input type="tel" class="val" data-step-val="' + act.id + '-overtime" value="' + (act.overtime || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'overtime\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',1)">+</button>' +
         '</div>' +
         '</div>' +
-        '</div>' +
-        '<div class="act-missing-warn act-missing-warn-hours" style="display:' + (showWarnHours ? 'flex' : 'none') + ';margin-top:8px">' +
-        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours' +
         '</div>' +
 
         (act._draft
@@ -27071,18 +27075,19 @@
       var bannerWrap = document.getElementById('desk-warning-banner-wrap');
       if (bannerWrap) {
         if (showRedBorder) {
-          var msg = '';
-          if (isMissingCode) msg += '• Needs a work code assigned.<br>';
+          var msgParts = [];
+          if (isMissingLocation) msgParts.push('• Location is empty.');
+          if (isMissingCode) msgParts.push('• Needs a work code assigned.');
           if (isMissingHours) {
             if (act.codes.length > 0) {
-              msg += '• Work code assigned, but hours are 0.<br>';
+              msgParts.push('• Work code assigned, but hours are 0.');
             } else {
-              msg += '• Hours are 0.<br>';
+              msgParts.push('• Hours are 0.');
             }
           }
-          if (isMissingLocation) msg += '• Location is empty.';
+          var msg = msgParts.join('<br>');
           bannerWrap.innerHTML = '<div class="act-warning-banner">' +
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>' +
             '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
             '</div>';
           bannerWrap.style.display = '';
@@ -27095,14 +27100,18 @@
       // 2. Update field warnings in detail panel
       var detailPanel = document.getElementById('desk-detail-panel');
       if (detailPanel) {
-        var warnCodeEl = detailPanel.querySelector('.act-missing-warn-code');
-        if (warnCodeEl) {
-          warnCodeEl.style.display = isMissingCode ? 'flex' : 'none';
+        var locEl = detailPanel.querySelector('[data-field="location"]');
+        if (locEl) {
+          locEl.classList.toggle('invalid-field', !!isMissingLocation);
         }
-        var warnHoursEl = detailPanel.querySelector('.act-missing-warn-hours');
-        if (warnHoursEl) {
-          warnHoursEl.style.display = isMissingHours ? 'flex' : 'none';
+        var codeEl = detailPanel.querySelector('.act-codes-wrap');
+        if (codeEl) {
+          codeEl.classList.toggle('invalid-field', !!isMissingCode);
         }
+        var hrsSteppers = detailPanel.querySelectorAll('.hrs-stepper');
+        hrsSteppers.forEach(function (stepper) {
+          stepper.classList.toggle('invalid-field', !!isMissingHours);
+        });
       }
 
       // 3. Update the middle panel tasks to apply correct classes (shows red/warn borders in task list only)
@@ -27131,8 +27140,8 @@
       var card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
       if (card) {
         var isExpanded = card.classList.contains('expanded');
-        // Warning border on card header only when collapsed (saves screen real estate/noise when expanded)
-        card.classList.toggle('has-warning', showRedBorder && !isExpanded);
+        // Warning border always shown when task has issues (collapsed or expanded)
+        card.classList.toggle('has-warning', showRedBorder);
 
         // 1. Update warning banner wrap inside the card
         var warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
@@ -27141,30 +27150,47 @@
             warnWrap.style.display = '';
             var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
             if (msgEl) {
-              msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
-                                (isMissingHours ? (act.codes.length > 0 ? '• Work code assigned, but hours are 0.<br>' : '• Hours are 0.<br>') : '') +
-                                (isMissingLocation ? '• Location is empty.' : '');
+              msgEl.innerHTML = (isMissingLocation ? '• Location is empty.<br>' : '') +
+                                (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
+                                (isMissingHours ? (act.codes.length > 0 ? '• Work code assigned, but hours are 0.<br>' : '• Hours are 0.<br>') : '');
             }
           } else {
             warnWrap.style.display = 'none';
           }
         }
 
-        // 2. Update inline warning labels
-        var warnCode = card.querySelector('.act-missing-warn-code');
-        var warnHours = card.querySelector('.act-missing-warn-hours');
-        if (warnCode) warnCode.style.display = isMissingCode ? 'flex' : 'none';
-        if (warnHours) warnHours.style.display = isMissingHours ? 'flex' : 'none';
+        // 2. Update input border validation styling
+        var locEl = card.querySelector('[data-field="location"]');
+        if (locEl) {
+          locEl.classList.toggle('invalid-field', !!isMissingLocation);
+        }
+        var codeEl = card.querySelector('.act-codes-wrap');
+        if (codeEl) {
+          codeEl.classList.toggle('invalid-field', !!isMissingCode);
+        }
+        var hrsSteppers = card.querySelectorAll('.hrs-stepper');
+        hrsSteppers.forEach(function (stepper) {
+          stepper.classList.toggle('invalid-field', !!isMissingHours);
+        });
+
       }
       
       // 3. Update task modal warnings if open
       if (_taskModalState && _taskModalState.actId === actId) {
         var ov = document.getElementById('task-modal-overlay');
         if (ov && ov.style.display !== 'none') {
-          var modalWarnCode = ov.querySelector('.act-modal-missing-code');
-          var modalWarnHours = ov.querySelector('.act-modal-missing-hours');
-          if (modalWarnCode) modalWarnCode.style.display = isMissingCode ? 'flex' : 'none';
-          if (modalWarnHours) modalWarnHours.style.display = isMissingHours ? 'flex' : 'none';
+          var modalLocEl = ov.querySelector('[data-field="location"]');
+          if (modalLocEl) {
+            modalLocEl.classList.toggle('invalid-field', !!isMissingLocation);
+          }
+          var modalCodeEl = ov.querySelector('.act-codes-wrap');
+          if (modalCodeEl) {
+            modalCodeEl.classList.toggle('invalid-field', !!isMissingCode);
+          }
+          var modalHrsSteppers = ov.querySelectorAll('.hrs-stepper');
+          modalHrsSteppers.forEach(function (stepper) {
+            stepper.classList.toggle('invalid-field', !!isMissingHours);
+          });
           
           // Also update the status pills row in modal header
           var pillRow = ov.querySelector('.task-modal-header .act-pill-row');
@@ -27385,8 +27411,6 @@
 
       if (nowExpanded) {
         card.classList.add('expanded');
-        // Clear warning borders on the card header while expanded/editing (grace period)
-        card.classList.remove('has-warning');
         card.style.borderColor = '';
         card.style.boxShadow = '';
 
@@ -27414,18 +27438,28 @@
               warnWrap.style.display = '';
               const msgEl = warnWrap.querySelector('.act-warning-banner-messages');
               if (msgEl) {
-                msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
-                                  (isMissingHours ? (act.codes.length > 0 ? '• Work code assigned, but hours are 0.<br>' : '• Hours are 0.<br>') : '') +
-                                  (isMissingLocation ? '• Location is empty.' : '');
+                msgEl.innerHTML = (isMissingLocation ? '• Location is empty.<br>' : '') +
+                                  (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
+                                  (isMissingHours ? (act.codes.length > 0 ? '• Work code assigned, but hours are 0.<br>' : '• Hours are 0.<br>') : '');
               }
             } else {
               warnWrap.style.display = 'none';
             }
           }
-          const warnCode = card.querySelector('.act-missing-warn-code');
-          const warnHours = card.querySelector('.act-missing-warn-hours');
-          if (warnCode) warnCode.style.display = showWarnCode ? '' : 'none';
-          if (warnHours) warnHours.style.display = showWarnHours ? '' : 'none';
+          const locEl = card.querySelector('[data-field="location"]');
+          if (locEl) {
+            locEl.classList.toggle('invalid-field', !!isMissingLocation);
+          }
+          const codeEl = card.querySelector('.act-codes-wrap');
+          if (codeEl) {
+            codeEl.classList.toggle('invalid-field', !!isMissingCode);
+          }
+          const hrsSteppers = card.querySelectorAll('.hrs-stepper');
+          hrsSteppers.forEach(stepper => {
+            stepper.classList.toggle('invalid-field', !!isMissingHours);
+          });
+          // Apply has-warning on expand too so red border shows while editing
+          card.classList.toggle('has-warning', !!hasError);
         }
 
         if (detail) {
@@ -27473,9 +27507,10 @@
           const ord = parseFloat(act.ordinary) || 0;
           const ot = parseFloat(act.overtime) || 0;
           const isDraft = !!act._draft;
-          const isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
-          const isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
-          const isMissingLocation = !isDraft && (ord > 0 || ot > 0 || act.codes.length > 0) && !act.location;
+          const hasContent = !!(act.description || act.location || act.codes.length > 0 || ord > 0 || ot > 0);
+          const isMissingCode = !isDraft && hasContent && act.codes.length === 0;
+          const isMissingHours = !isDraft && hasContent && ord === 0 && ot === 0;
+          const isMissingLocation = !isDraft && hasContent && !act.location;
           card.style.borderColor = '';
           card.style.boxShadow = '';
           if (isMissingCode || isMissingHours || isMissingLocation) {
@@ -27485,6 +27520,14 @@
           }
         }
         syncTimelineAnimation();
+        // Refresh day header dot after collapse so it reflects current validity
+        if (act) {
+          const day = state.weekData?.days?.find(d => (d.activities || []).includes(act));
+          if (day) {
+            const dayIdx = state.weekData.days.indexOf(day);
+            if (dayIdx !== -1) _refreshDayPills(dayIdx);
+          }
+        }
       }
       _syncDraftWarningBanner();
     }
@@ -27523,11 +27566,16 @@
       const activeActivities = day.activities.filter(a => a.description || a.codes.length || (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0));
       const actCount = activeActivities.length;
 
-      const hasMissingCode = day.activities.some(a => {
+      const hasAnyIssue = day.activities.some(a => {
         if (a._draft) return false;
         const ord = parseFloat(a.ordinary) || 0;
         const ot = parseFloat(a.overtime) || 0;
-        return ((ord > 0 || ot > 0) && a.codes.length === 0) || (a.codes.length > 0 && ord === 0 && ot === 0);
+        const hasContent = !!(a.description || a.location || a.codes.length > 0 || ord > 0 || ot > 0);
+        if (!hasContent) return false;
+        const isMissingCode = a.codes.length === 0;
+        const isMissingHours = ord === 0 && ot === 0;
+        const isMissingLocation = !a.location;
+        return isMissingCode || isMissingHours || isMissingLocation;
       });
       const remedyCount = day.activities.filter(a => a.remedyPending && !a._draft).length;
       const availabilityBadges = _avDayBadgesHtml(day.date, false);
@@ -27546,7 +27594,7 @@
         ${ot > 0 ? `<span class="pill-ot">+${Math.round(ot) === ot ? ot : ot.toFixed(1)} OT</span>` : ''}
         ${remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : ''}
         ${availabilityBadges}
-        ${hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : ''}
+        ${hasAnyIssue ? `<span class="dot-flash animate-pulse" title="Task has missing fields"></span>` : ''}
       </div>
     </div>
     <div class="day-chevron">
@@ -27844,6 +27892,7 @@
       const hasContent = !!(act.description || act.location || act.codes.length > 0 || ordinary > 0 || overtime > 0);
       const isMissingCode = !isDraft && hasContent && act.codes.length === 0;
       const isMissingHours = !isDraft && hasContent && ordinary === 0 && overtime === 0;
+      const isMissingLocation = !isDraft && hasContent && !act.location;
       const showWarnCode = isMissingCode;
       const showWarnHours = isMissingHours;
       const escId = act.id.replace(/'/g, "\\'");
@@ -27914,7 +27963,7 @@
             <textarea class="act-notes-area" style="display:none" data-field="notes" data-act="${act.id}" data-day="${di}">${esc(act.notes || '')}</textarea>
             <div class="flex flex-col gap-1.5">
               <span class="act-field-label">Location</span>
-              ${_renderActLocationControl(act, di, escId)}
+              ${_renderActLocationControl(act, di, escId, isMissingLocation)}
             </div>
             <div class="flex flex-col gap-1.5">
               <div style="display:flex;align-items:center;justify-content:space-between">
@@ -27924,16 +27973,13 @@
                   Suggest
                 </button>
               </div>
-              <div class="act-codes-wrap" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${escId}')" style="cursor:pointer;min-height:42px">${codesHtml}</div>
-              <div class="act-missing-warn act-modal-missing-code" style="display:${showWarnCode ? 'flex' : 'none'}">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code
-              </div>
+              <div class="act-codes-wrap${isMissingCode ? ' invalid-field' : ''}" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${escId}')" style="cursor:pointer;min-height:42px">${codesHtml}</div>
               <div id="suggest-wrap-${act.id}"></div>
             </div>
             <div class="flex gap-3">
               <div class="hrs-box flex-1">
                 <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>
-                <div class="hrs-stepper flex items-center justify-between">
+                <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'ordinary',-1)">−</button>
                   <input type="tel" class="val" data-step-val="${act.id}-ordinary" value="${ordinary}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" onclick="event.stopPropagation()" onchange="event.stopPropagation();setHrs('${escId}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'ordinary',1)">+</button>
@@ -27941,15 +27987,12 @@
               </div>
               <div class="hrs-box ot-box flex-1">
                 <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>
-                <div class="hrs-stepper flex items-center justify-between">
+                <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'overtime',-1)">−</button>
                   <input type="tel" class="val" data-step-val="${act.id}-overtime" value="${overtime}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" onclick="event.stopPropagation()" onchange="event.stopPropagation();setHrs('${escId}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'overtime',1)">+</button>
                 </div>
               </div>
-            </div>
-            <div class="act-missing-warn act-modal-missing-hours" style="display:${showWarnHours ? 'flex' : 'none'};margin-top:8px">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours
             </div>
           </form>
         </div>
@@ -28232,7 +28275,7 @@
       const trainingDescEsc = trainingCode.d.replace(/'/g, "\\'");
 
       return `
-      <div class="activity-card${act.remedyPending && !isDraft ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}${showRedBorder && !isActExpanded ? ' has-warning' : ''}${isDraft && !isActExpanded ? ' is-draft' : ''}" data-act-id="${act.id}">
+      <div class="activity-card${act.remedyPending && !isDraft ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}${showRedBorder ? ' has-warning' : ''}${isDraft ? ' is-draft' : ''}" data-act-id="${act.id}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="getTaskStyle()==='modal'?openTaskModal('${act.id}',${di}):toggleActivityDetails('${act.id}')">
           <div class="task-num">${actIndex + 1}</div>
           <div class="flex-1 min-w-0 act-meta">
@@ -28256,11 +28299,11 @@
           <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
           <div class="act-detail-inner">
             <div data-warn-wrap="${act.id}" class="act-warning-banner" style="display:${showRedBorder ? 'flex' : 'none'}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
               <div class="act-warning-banner-messages" style="flex:1">
-                ${(isMissingCode ? '• Needs a work code assigned.<br>' : '') +
-                  (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
-                  (isMissingLocation ? '• Location is empty.' : '')}
+                ${(isMissingLocation ? '• Location is empty.<br>' : '') +
+                  (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
+                  (isMissingHours ? (act.codes.length > 0 ? '• Work code assigned, but hours are 0.<br>' : '• Hours are 0.<br>') : '')}
               </div>
             </div>
 
@@ -28282,7 +28325,7 @@
             <div class="flex flex-col gap-1.5">
               <span class="act-field-label">Location</span>
               <div class="location-wrap">
-                ${_renderActLocationControl(act, di, _jsStr(act.id))}
+                ${_renderActLocationControl(act, di, _jsStr(act.id), isMissingLocation)}
               </div>
             </div>
 
@@ -28295,7 +28338,7 @@
                   Suggest
                 </button>
               </div>
-              <div class="act-codes-wrap" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${act.id}')" style="cursor:pointer;min-height:42px">
+              <div class="act-codes-wrap${isMissingCode ? ' invalid-field' : ''}" data-act-codes="${act.id}" onclick="openCodeModal(${di},'${act.id}')" style="cursor:pointer;min-height:42px">
                 ${act.codes.length === 0
           ? `<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 10 10" fill="none"><path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add work codes</span>`
           : act.codes.map(c => `
@@ -28304,16 +28347,13 @@
                     <span class="act-code-mono">${c.c}</span>
                   </div>`).join('')}
               </div>
-              <div class="act-missing-warn act-missing-warn-code" style="display:${showWarnCode ? 'flex' : 'none'}">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing work code
-              </div>
               <div id="suggest-wrap-${act.id}"></div>
             </div>
 
             <div class="flex gap-3">
               <div class="hrs-box flex-1">
                 <div class="act-field-label" style="margin-bottom: 8px;">Ordinary HRS</div>
-                <div class="hrs-stepper flex items-center justify-between">
+                <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
                   <input type="tel" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',1)">+</button>
@@ -28321,15 +28361,12 @@
               </div>
               <div class="hrs-box ot-box flex-1">
                 <div class="act-field-label act-field-label-ot" style="margin-bottom: 8px;">Overtime HRS</div>
-                <div class="hrs-stepper flex items-center justify-between">
+                <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
                   <input type="tel" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
-            </div>
-            <div class="act-missing-warn act-missing-warn-hours" style="display:${showWarnHours ? 'flex' : 'none'};margin-top:8px">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Missing hours
             </div>
 
             <div class="act-actions-row" style="gap:8px;border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px;">
@@ -28383,10 +28420,12 @@
       const ot = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
       const actCount = acts.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0).length;
       const remedyCount = acts.filter(a => a.remedyPending && !a._draft).length;
-      const hasMissingCode = acts.some(a => {
+      const hasAnyIssue = acts.some(a => {
         if (a._draft) return false;
         const o = parseFloat(a.ordinary) || 0, v = parseFloat(a.overtime) || 0;
-        return ((o > 0 || v > 0) && a.codes.length === 0) || (a.codes.length > 0 && o === 0 && v === 0);
+        const hasContent = !!(a.description || a.location || a.codes.length > 0 || o > 0 || v > 0);
+        if (!hasContent) return false;
+        return a.codes.length === 0 || (o === 0 && v === 0) || !a.location;
       });
       const isWeekend = di === 1 || di === 2;
       const fmtNum = n => Math.round(n) === n ? n : n.toFixed(1);
@@ -28395,7 +28434,7 @@
         (ord > 0 ? `<span class="pill-hrs">${fmtNum(ord)}h</span>` : '') +
         (ot > 0 ? `<span class="pill-ot">+${fmtNum(ot)} OT</span>` : '') +
         (remedyCount > 0 ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> ${remedyCount} Remedy</span>` : '') +
-        (hasMissingCode ? `<span class="dot-flash animate-pulse" title="Missing work code"></span>` : '');
+        (hasAnyIssue ? `<span class="dot-flash animate-pulse" title="Task has missing fields"></span>` : '');
       elements.forEach(el => {
         el.innerHTML = html;
         if (el.classList.contains('desk-day-empty') && actCount > 0) {
@@ -30512,7 +30551,7 @@
                 _mergeChanged = true; return deepCopy(rn);
               });
               for (const ln of (state.notes || [])) {
-                if (!_timerRemote.notes.find(rn => rn.id === ln.id) && (ln.updatedAt || 0) > Date.now() - 120000) {
+                if (!_timerRemote.notes.find(rn => rn.id === ln.id) && (ln._draft || (ln.updatedAt || 0) > Date.now() - 120000)) {
                   _merged.push(deepCopy(ln)); // keep local-only recent notes
                 }
               }
@@ -30594,8 +30633,12 @@
         });
         // Keep local-only notes that were created very recently (haven't synced yet)
         for (const ln of (state.notes || [])) {
-          if (!remote.notes.find(rn => rn.id === ln.id) && (ln.updatedAt || 0) > Date.now() - 120000) {
-            merged.push(deepCopy(ln)); hadNewerLocal = true;
+          if (!remote.notes.find(rn => rn.id === ln.id)) {
+            if (ln._draft) {
+              merged.push(deepCopy(ln));
+            } else if ((ln.updatedAt || 0) > Date.now() - 120000) {
+              merged.push(deepCopy(ln)); hadNewerLocal = true;
+            }
           }
         }
         state.notes = merged;
@@ -31577,7 +31620,7 @@
             ? '<div class="note-cat-menu ncm-open dnotes-tag-menu" onclick="event.stopPropagation()">' + buildNoteCatMenuHtml(n.id, n.category || '') + '</div>'
             : '';
 
-          var rowCls = 'dnotes-note-row' + (isSel ? ' active' : '') + (n._draft && !isSel ? ' has-warning' : '');
+          var rowCls = 'dnotes-note-row' + (isSel ? ' active' : '') + (n._draft && !isSel ? ' is-draft' : '');
           listHtml += '<div class="' + rowCls + '" onclick="deskSelectNote(\'' + escId + '\')">' +
             '<div class="note-row-top">' +
             '<div class="note-dot ' + dotCls + '" style="flex-shrink:0;margin:0"></div>' +
@@ -31587,6 +31630,7 @@
             (metaHtml ? '<div class="note-row-meta">' + metaHtml + '</div>' : '') +
             '<div class="note-row-meta" style="margin-top:4px;align-items:center">' +
             pinHtml + tagBadgeHtml +
+            (n._draft ? '<span class="pill-draft" style="margin-left: 6px;">Draft</span>' : '') +
             '<span style="flex:1"></span>' +
             dueHtml +
             '</div>' +
@@ -31637,7 +31681,10 @@
 
         editorHtml = '<div class="dnotes-editor-header">' +
           '<div class="dnotes-editor-title">' + esc(selTitle) + '</div>' +
-          '<div style="display:flex;gap:6px;align-items:center">' + selPriBadge + '</div>' +
+          '<div style="display:flex;gap:6px;align-items:center">' +
+          selPriBadge +
+          (selNote._draft ? '<span class="pill-draft">Draft</span>' : '') +
+          '</div>' +
           '</div>' +
           '<div class="dnotes-editor-body">' +
           // Description
@@ -32141,6 +32188,7 @@
             <div class="note-row-meta" style="margin-top:4px;align-items:center">
               <button class="note-pin-btn ${note.pinned ? 'pinned' : ''}" onclick="event.stopPropagation();toggleNotePin('${note.id}')" title="${note.pinned ? 'Unpin' : 'Pin'}" style="margin-right:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="${note.pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg></button>
               ${catBadge}
+              ${note._draft ? `<span class="pill-draft" style="margin-left:6px">Draft</span>` : ''}
               <span style="flex:1"></span>
               ${note.dueDate ? `<span style="color:${isNoteOverdue(note) ? 'var(--priority-high)' : 'var(--text-slate)'};font-weight:500;font-size:12.5px;display:flex;align-items:center;gap:4px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${formatDueStatus(note)}</span>` : ''}
             </div>
@@ -32313,8 +32361,8 @@
       const nonOverdueOpen = visibleOpen.filter(n => !isNoteOverdue(n));
       const pinnedOpen = nonOverdueOpen.filter(n => n.pinned);
       const unpinnedOpen = nonOverdueOpen.filter(n => !n.pinned);
-      const noteCardHtml = n => `<div class="note-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''} ${n.pinned ? 'pinned-card' : ''} ${n._draft && !state.expandedNotes.has(n.id) ? 'has-warning' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`;
-      const overdueCardHtml = n => `<div class="note-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''} ${n._draft && !state.expandedNotes.has(n.id) ? 'has-warning' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`;
+      const noteCardHtml = n => `<div class="note-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''} ${n.pinned ? 'pinned-card' : ''} ${n._draft ? 'is-draft' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`;
+      const overdueCardHtml = n => `<div class="note-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''} ${n._draft ? 'is-draft' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`;
       const CLOCK_SVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
       const overdueSection = overdueNotes.length
         ? `<div class="notes-section-label" style="color:var(--priority-high);display:flex;align-items:center;gap:5px;">${CLOCK_SVG} Overdue (${overdueNotes.length})</div>` + overdueNotes.map(overdueCardHtml).join('')
@@ -32329,7 +32377,7 @@
 
       const doneSection = visibleDone.length
         ? `<div class="notes-section-label">Complete</div>` +
-        visibleDone.map(n => `<div class="note-card done-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''} ${n._draft && !state.expandedNotes.has(n.id) ? 'has-warning' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`).join('')
+        visibleDone.map(n => `<div class="note-card done-card ${state.expandedNotes.has(n.id) ? 'expanded' : ''} ${state.selectedNotes.has(n.id) ? 'selected' : ''} ${n._draft ? 'is-draft' : ''}" data-note-id="${n.id}">${renderNote(n)}</div>`).join('')
         : '';
 
       // Smart bulk action label — context-aware
