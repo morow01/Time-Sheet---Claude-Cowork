@@ -20988,7 +20988,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.90';
+    const VERSION = '6.3.95';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25327,6 +25327,9 @@
               });
             });
           }
+          if (_taskModalState) {
+            _mobUpdateActivityValidation(_taskModalState.di, _taskModalState.actId);
+          }
         }
       }
     }
@@ -25836,7 +25839,7 @@
       const pendingTasks = [];
       weekData.days.forEach(day => {
         day.activities.forEach(act => {
-          if (act.remedyPending) pendingTasks.push({ desc: act.description || 'Unnamed', date: day.date, dayName: day.dayName });
+          if (act.remedyPending && !act._draft) pendingTasks.push({ desc: act.description || 'Unnamed', date: day.date, dayName: day.dayName });
         });
       });
       if (!pendingTasks.length) return '';
@@ -25857,7 +25860,7 @@
       if (weekData) {
         weekData.days.forEach((day, di) => {
           day.activities.forEach(act => {
-            if (act.remedyPending) {
+            if (act.remedyPending && !act._draft) {
               const today = new Date(); const dow = today.getDay();
               const tagSvg = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg>';
               remedyItems.push({ icon: tagSvg, msg: `<strong>${esc(day.dayName)}</strong>: <span>"${esc(act.description || 'Unnamed')}"</span> needs a Remedy ticket`, dayIdx: di, actId: act.id, isRemedy: true, actionLabel: 'Add' });
@@ -26768,19 +26771,20 @@
           var ord = parseFloat(act.ordinary) || 0;
           var ot = parseFloat(act.overtime) || 0;
           var isSel = (act.id === state.deskSelectedAct);
-          var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-          var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-          var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+          var isDraft = !!act._draft;
+          var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
+          var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
+          var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
           var hasIssue = (isMissingCode || isMissingHours || isMissingLocation);
 
           var cls = 'desk-task-card' +
             (isSel ? ' desk-task-selected' : '') +
             (hasIssue && !isSel ? ' desk-task-invalid' : '') +
-            (act.remedyPending && !(hasIssue && !isSel) ? ' desk-task-remedy' : '');
+            (act.remedyPending && !isDraft && !(hasIssue && !isSel) ? ' desk-task-remedy' : '');
 
           var wrapCls = 'desk-card-wrap' + (isSel ? ' desk-sel-wrap' : '') +
             (hasIssue && !isSel ? ' desk-wrap-invalid' : '') +
-            (act.remedyPending && !(hasIssue && !isSel) ? ' desk-wrap-remedy' : '') +
+            (act.remedyPending && !isDraft && !(hasIssue && !isSel) ? ' desk-wrap-remedy' : '') +
             (act._draft && !isSel ? ' desk-wrap-draft' : '');
           cards += '<div class="' + wrapCls + '">';
           cards += '<div class="' + cls + '" onclick="deskSelectAct(\'' + act.id + '\')">' +
@@ -26795,7 +26799,7 @@
             '<div class="act-pill-row">' +
             (ord > 0 ? '<span class="pill-hrs">' + ord + 'h</span>' : '') +
             (ot > 0 ? '<span class="pill-ot">+' + ot + ' OT</span>' : '') +
-            (act.remedyPending ? '<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>' : '') +
+            (act.remedyPending && !isDraft ? '<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>' : '') +
             (act._draft ? '<span class="pill-draft">Draft</span>' : '') +
             '</div>' +
             '</div>' +
@@ -26837,9 +26841,10 @@
 
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
-      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var isDraft = !!act._draft;
+      var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
+      var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
+      var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
       var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
       var showWarnCode = isMissingCode;
       var showWarnHours = isMissingHours;
@@ -26899,7 +26904,7 @@
         '</div>' +
         '</div>' +
         '</div>' +
-        '<div id="desk-warning-banner-wrap"' + (showRedBorder ? '' : ' style="display:none"') + '>' +
+        '<div id="desk-warning-banner-wrap" style="display:' + (showRedBorder ? '' : 'none') + '">' +
         bannerHtml +
         '</div>' +
         '<div class="desk-detail-form">' +
@@ -27040,28 +27045,41 @@
 
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
-      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var isDraft = !!act._draft;
+      var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
+      var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
+      var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
       var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
 
-      // 1. Suppress/hide warning banner in detail panel during active editing
+      // 1. Update warning banner in detail panel
       var bannerWrap = document.getElementById('desk-warning-banner-wrap');
       if (bannerWrap) {
-        bannerWrap.innerHTML = '';
-        bannerWrap.style.display = 'none';
+        if (showRedBorder) {
+          var msg = '';
+          if (isMissingCode) msg += '• Needs a work code assigned.<br>';
+          if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
+          if (isMissingLocation) msg += '• Location is empty.';
+          bannerWrap.innerHTML = '<div class="act-warning-banner">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
+            '</div>';
+          bannerWrap.style.display = '';
+        } else {
+          bannerWrap.innerHTML = '';
+          bannerWrap.style.display = 'none';
+        }
       }
 
-      // 2. Suppress/hide field warnings in detail panel during active editing
+      // 2. Update field warnings in detail panel
       var detailPanel = document.getElementById('desk-detail-panel');
       if (detailPanel) {
         var warnCodeEl = detailPanel.querySelector('.act-missing-warn-code');
         if (warnCodeEl) {
-          warnCodeEl.style.display = 'none';
+          warnCodeEl.style.display = isMissingCode ? 'flex' : 'none';
         }
         var warnHoursEl = detailPanel.querySelector('.act-missing-warn-hours');
         if (warnHoursEl) {
-          warnHoursEl.style.display = 'none';
+          warnHoursEl.style.display = isMissingHours ? 'flex' : 'none';
         }
       }
 
@@ -27081,22 +27099,22 @@
 
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
-      var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-      var isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-      var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+      var isDraft = !!act._draft;
+      var isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
+      var isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
+      var isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
       var showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
 
       var card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
       if (card) {
         var isExpanded = card.classList.contains('expanded');
-        // Suppress warning border on the card header while expanded/editing
+        // Warning border on card header only when collapsed (saves screen real estate/noise when expanded)
         card.classList.toggle('has-warning', showRedBorder && !isExpanded);
 
         // 1. Update warning banner wrap inside the card
         var warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
         if (warnWrap) {
-          // Suppress/hide warning banner if the card is expanded (actively being edited)
-          if (showRedBorder && !isExpanded) {
+          if (showRedBorder) {
             warnWrap.style.display = '';
             var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
             if (msgEl) {
@@ -27112,9 +27130,8 @@
         // 2. Update inline warning labels
         var warnCode = card.querySelector('.act-missing-warn-code');
         var warnHours = card.querySelector('.act-missing-warn-hours');
-        // Suppress inline warnings if the card is expanded (actively being edited)
-        if (warnCode) warnCode.style.display = (isMissingCode && !isExpanded) ? '' : 'none';
-        if (warnHours) warnHours.style.display = (isMissingHours && !isExpanded) ? '' : 'none';
+        if (warnCode) warnCode.style.display = isMissingCode ? 'flex' : 'none';
+        if (warnHours) warnHours.style.display = isMissingHours ? 'flex' : 'none';
       }
       
       // 3. Update task modal warnings if open
@@ -27123,9 +27140,8 @@
         if (ov && ov.style.display !== 'none') {
           var modalWarnCode = ov.querySelector('.act-modal-missing-code');
           var modalWarnHours = ov.querySelector('.act-modal-missing-hours');
-          // Suppress warnings in modal since the user is actively editing in it
-          if (modalWarnCode) modalWarnCode.style.display = 'none';
-          if (modalWarnHours) modalWarnHours.style.display = 'none';
+          if (modalWarnCode) modalWarnCode.style.display = isMissingCode ? 'flex' : 'none';
+          if (modalWarnHours) modalWarnHours.style.display = isMissingHours ? 'flex' : 'none';
           
           // Also update the status pills row in modal header
           var pillRow = ov.querySelector('.task-modal-header .act-pill-row');
@@ -27329,9 +27345,10 @@
         if (act) {
           const ord = parseFloat(act.ordinary) || 0;
           const ot = parseFloat(act.overtime) || 0;
-          const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-          const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-          const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+          const isDraft = !!act._draft;
+          const isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
+          const isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
+          const isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
           otherCard.style.borderColor = '';
           otherCard.style.boxShadow = '';
           if (isMissingCode || isMissingHours || isMissingLocation) {
@@ -27358,9 +27375,10 @@
         if (act) {
           const ord = parseFloat(act.ordinary) || 0;
           const ot = parseFloat(act.overtime) || 0;
-          const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-          const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-          const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+          const isDraft = !!act._draft;
+          const isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
+          const isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
+          const isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
           const hasError = (isMissingCode || isMissingHours || isMissingLocation);
           const showWarnCode = isMissingCode;
           const showWarnHours = isMissingHours;
@@ -27429,9 +27447,10 @@
         if (act) {
           const ord = parseFloat(act.ordinary) || 0;
           const ot = parseFloat(act.overtime) || 0;
-          const isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
-          const isMissingHours = act.codes.length > 0 && ord === 0 && ot === 0;
-          const isMissingLocation = (ord > 0 || ot > 0) && !act.location;
+          const isDraft = !!act._draft;
+          const isMissingCode = !isDraft && (ord > 0 || ot > 0) && act.codes.length === 0;
+          const isMissingHours = !isDraft && act.codes.length > 0 && ord === 0 && ot === 0;
+          const isMissingLocation = !isDraft && (ord > 0 || ot > 0) && !act.location;
           card.style.borderColor = '';
           card.style.boxShadow = '';
           if (isMissingCode || isMissingHours || isMissingLocation) {
@@ -27479,13 +27498,13 @@
       const activeActivities = day.activities.filter(a => a.description || a.codes.length || (parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0));
       const actCount = activeActivities.length;
 
-      // Check for missing codes in any activity with hours
       const hasMissingCode = day.activities.some(a => {
+        if (a._draft) return false;
         const ord = parseFloat(a.ordinary) || 0;
         const ot = parseFloat(a.overtime) || 0;
         return ((ord > 0 || ot > 0) && a.codes.length === 0) || (a.codes.length > 0 && ord === 0 && ot === 0);
       });
-      const remedyCount = day.activities.filter(a => a.remedyPending).length;
+      const remedyCount = day.activities.filter(a => a.remedyPending && !a._draft).length;
       const availabilityBadges = _avDayBadgesHtml(day.date, false);
 
       return `
@@ -27749,6 +27768,7 @@
       if (noAnim) {
         const sheet = ov.querySelector('.task-modal-sheet');
         if (sheet) sheet.style.animation = 'none';
+        _mobUpdateActivityValidation(di, actId);
       }
       ov.style.display = 'flex';
       document.body.style.overflow = 'hidden';
@@ -27795,8 +27815,9 @@
     function _renderTaskModalHtml(act, di) {
       const ordinary = parseFloat(act.ordinary) || 0;
       const overtime = parseFloat(act.overtime) || 0;
-      const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
-      const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
+      const isDraft = !!act._draft;
+      const isMissingCode = !isDraft && (ordinary > 0 || overtime > 0) && act.codes.length === 0;
+      const isMissingHours = !isDraft && act.codes.length > 0 && ordinary === 0 && overtime === 0;
       const showWarnCode = isMissingCode;
       const showWarnHours = isMissingHours;
       const escId = act.id.replace(/'/g, "\\'");
@@ -28162,14 +28183,14 @@
     function renderActivity(act, di, actIndex) {
       const ordinary = parseFloat(act.ordinary) || 0;
       const overtime = parseFloat(act.overtime) || 0;
-      const isMissingCode = (ordinary > 0 || overtime > 0) && act.codes.length === 0;
-      const isMissingHours = act.codes.length > 0 && ordinary === 0 && overtime === 0;
-      const isMissingLocation = (ordinary > 0 || overtime > 0) && !act.location;
+      const isDraft = !!act._draft;
+      const isMissingCode = !isDraft && (ordinary > 0 || overtime > 0) && act.codes.length === 0;
+      const isMissingHours = !isDraft && act.codes.length > 0 && ordinary === 0 && overtime === 0;
+      const isMissingLocation = !isDraft && (ordinary > 0 || overtime > 0) && !act.location;
       const showRedBorder = (isMissingCode || isMissingHours || isMissingLocation);
       const showWarnCode = isMissingCode;
       const showWarnHours = isMissingHours;
       const isActExpanded = state.activitiesExpanded.has(act.id);
-      const isDraft = !!act._draft;
 
       const adminCode = WORK_CODES.find(c => c.c.startsWith('WWO')) || { c: 'WWO0001A99', d: 'General Admin' };
       const leaveCode = WORK_CODES.find(c => c.c.startsWith('UWA')) || { c: 'UWA0001A99', d: 'Annual Leave' };
@@ -28184,7 +28205,7 @@
       const trainingDescEsc = trainingCode.d.replace(/'/g, "\\'");
 
       return `
-      <div class="activity-card${act.remedyPending ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}${showRedBorder && !isActExpanded ? ' has-warning' : ''}${isDraft && !isActExpanded ? ' is-draft' : ''}" data-act-id="${act.id}">
+      <div class="activity-card${act.remedyPending && !isDraft ? ' remedy-flagged' : ''}${isActExpanded ? ' expanded' : ''}${showRedBorder && !isActExpanded ? ' has-warning' : ''}${isDraft && !isActExpanded ? ' is-draft' : ''}" data-act-id="${act.id}">
         <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="getTaskStyle()==='modal'?openTaskModal('${act.id}',${di}):toggleActivityDetails('${act.id}')">
           <div class="task-num">${actIndex + 1}</div>
           <div class="flex-1 min-w-0 act-meta">
@@ -28196,7 +28217,7 @@
               <div class="act-pill-row">
                 ${ordinary > 0 ? `<span data-row-hrs="${act.id}" class="pill-hrs">${ordinary}h</span>` : `<span data-row-hrs="${act.id}" class="pill-hrs" style="display:none"></span>`}
                 ${overtime > 0 ? `<span data-row-ot="${act.id}" class="pill-ot">+${overtime} OT</span>` : `<span data-row-ot="${act.id}" class="pill-ot" style="display:none"></span>`}
-                ${act.remedyPending ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>` : ''}
+                ${act.remedyPending && !isDraft ? `<span class="pill-remedy"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" stroke-width="3"/></svg> Remedy</span>` : ''}
                 ${act._draft ? `<span class="pill-draft">Draft</span>` : ''}
               </div>
             </div>
@@ -28334,8 +28355,9 @@
       const ord = acts.reduce((s, a) => s + (parseFloat(a.ordinary) || 0), 0);
       const ot = acts.reduce((s, a) => s + (parseFloat(a.overtime) || 0), 0);
       const actCount = acts.filter(a => a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0).length;
-      const remedyCount = acts.filter(a => a.remedyPending).length;
+      const remedyCount = acts.filter(a => a.remedyPending && !a._draft).length;
       const hasMissingCode = acts.some(a => {
+        if (a._draft) return false;
         const o = parseFloat(a.ordinary) || 0, v = parseFloat(a.overtime) || 0;
         return ((o > 0 || v > 0) && a.codes.length === 0) || (a.codes.length > 0 && o === 0 && v === 0);
       });
@@ -28547,7 +28569,7 @@
       const act = day.activities.find(a => a.id === actId);
       if (!act) return;
 
-      // Validate before saving
+      // Check validation just to show an informative toast
       var ord = parseFloat(act.ordinary) || 0;
       var ot = parseFloat(act.overtime) || 0;
       var isMissingCode = (ord > 0 || ot > 0) && act.codes.length === 0;
@@ -28555,63 +28577,15 @@
       var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
       var hasError = isMissingCode || isMissingHours || isMissingLocation;
 
-      if (hasError) {
-        if (_isDesktop()) {
-          var bannerWrap = document.getElementById('desk-warning-banner-wrap');
-          if (bannerWrap) {
-            bannerWrap.style.display = '';
-            var msg = '';
-            if (isMissingCode) msg += '• Needs a work code assigned.<br>';
-            if (isMissingHours) msg += '• Work code assigned, but hours are 0.<br>';
-            if (isMissingLocation) msg += '• Location is empty.';
-            bannerWrap.innerHTML = '<div class="act-warning-banner">' +
-              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
-              '<div class="act-warning-banner-messages" style="flex:1">' + msg + '</div>' +
-              '</div>';
-          }
-          var detailPanel = document.getElementById('desk-detail-panel');
-          if (detailPanel) {
-            var warnCodeEl = detailPanel.querySelector('.act-missing-warn-code');
-            if (warnCodeEl) warnCodeEl.style.display = isMissingCode ? '' : 'none';
-            var warnHoursEl = detailPanel.querySelector('.act-missing-warn-hours');
-            if (warnHoursEl) warnHoursEl.style.display = isMissingHours ? '' : 'none';
-          }
-        } else {
-          var card = document.querySelector(`.activity-card[data-act-id="${actId}"]`);
-          if (card) {
-            var warnWrap = card.querySelector(`[data-warn-wrap="${actId}"]`);
-            if (warnWrap) {
-              warnWrap.style.display = '';
-              var msgEl = warnWrap.querySelector('.act-warning-banner-messages');
-              if (msgEl) {
-                msgEl.innerHTML = (isMissingCode ? '• Needs a work code assigned.<br>' : '') +
-                                  (isMissingHours ? '• Work code assigned, but hours are 0.<br>' : '') +
-                                  (isMissingLocation ? '• Location is empty.' : '');
-              }
-            }
-            var warnCode = card.querySelector('.act-missing-warn-code');
-            var warnHours = card.querySelector('.act-missing-warn-hours');
-            if (warnCode) warnCode.style.display = isMissingCode ? '' : 'none';
-            if (warnHours) warnHours.style.display = isMissingHours ? '' : 'none';
-          }
-        }
-        
-        var modal = document.getElementById('task-modal');
-        if (modal && !modal.classList.contains('hidden')) {
-          var modalCodeWarn = modal.querySelector('.act-modal-missing-code');
-          var modalHoursWarn = modal.querySelector('.act-modal-missing-hours');
-          if (modalCodeWarn) modalCodeWarn.style.display = isMissingCode ? 'flex' : 'none';
-          if (modalHoursWarn) modalHoursWarn.style.display = isMissingHours ? 'flex' : 'none';
-        }
-        
-        showToast('Please correct validation errors before saving', 3000);
-        return;
-      }
-
       delete act._draft;
       scheduleAutoSave();
       render();
-      showToast('Task saved');
+
+      if (hasError) {
+        showToast('Task saved with validation warnings', 3000);
+      } else {
+        showToast('Task saved');
+      }
     }
 
     function saveAllDrafts() {
@@ -28630,12 +28604,10 @@
             var isMissingLocation = (ord > 0 || ot > 0) && !act.location;
             var hasError = isMissingCode || isMissingHours || isMissingLocation;
 
+            delete act._draft;
+            savedTasks++;
             if (hasError) {
               errorTasks++;
-              state.activitiesExpanded.add(act.id);
-            } else {
-              delete act._draft;
-              savedTasks++;
             }
           });
         });
@@ -28658,9 +28630,14 @@
       }
 
       let msgs = [];
-      if (savedTasks > 0) msgs.push(`Saved ${savedTasks} task${savedTasks > 1 ? 's' : ''}`);
+      if (savedTasks > 0) {
+        if (errorTasks > 0) {
+          msgs.push(`Saved ${savedTasks} task${savedTasks > 1 ? 's' : ''} (${errorTasks} with warnings)`);
+        } else {
+          msgs.push(`Saved ${savedTasks} task${savedTasks > 1 ? 's' : ''}`);
+        }
+      }
       if (savedNotes > 0) msgs.push(`Saved ${savedNotes} note${savedNotes > 1 ? 's' : ''}`);
-      if (errorTasks > 0) msgs.push(`Could not save ${errorTasks} task${errorTasks > 1 ? 's' : ''} due to validation errors`);
 
       if (msgs.length) {
         showToast(msgs.join(', '), 3000);
