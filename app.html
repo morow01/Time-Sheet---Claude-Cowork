@@ -20988,7 +20988,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.3.89';
+    const VERSION = '6.3.90';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25309,6 +25309,25 @@
             aiQueryInputEvent(el);
           }
         })();
+      }
+
+      // Post-render validation updates to maintain editing grace period (suppress warnings in expanded cards)
+      if (state.view === 'week') {
+        if (_isDesktop()) {
+          if (state.deskSelectedAct !== null && state.deskSelectedAct !== undefined) {
+            _deskUpdateDetailValidation(state.deskSelectedDay, state.deskSelectedAct);
+          }
+        } else {
+          if (state.weekData && state.weekData.days) {
+            state.weekData.days.forEach((day, di) => {
+              (day.activities || []).forEach(act => {
+                if (state.activitiesExpanded.has(act.id)) {
+                  _mobUpdateActivityValidation(di, act.id);
+                }
+              });
+            });
+          }
+        }
       }
     }
 
