@@ -1685,8 +1685,9 @@
       box-shadow: inset 2px 0 0 rgba(var(--purple-rgb), 0.08) !important;
     }
 
-    .activity-card.is-draft:not(.expanded) {
-      box-shadow: 0 2px 8px rgba(var(--purple-rgb), 0.08) !important;
+    .activity-card.is-draft {
+      border-left-color: var(--purple) !important;
+      box-shadow: 0 4px 12px rgba(var(--purple-rgb), 0.12) !important;
     }
 
     .activity-card.is-draft .task-num {
@@ -17770,6 +17771,10 @@
         border-left-color: #7c3aed;
       }
 
+      .desk-card-wrap.is-draft {
+        border-left-color: var(--purple) !important;
+      }
+
       .desk-card-wrap.is-draft .task-num {
         background: var(--purple) !important;
         color: #fff !important;
@@ -20997,7 +21002,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.12';
+    const VERSION = '6.4.13';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
