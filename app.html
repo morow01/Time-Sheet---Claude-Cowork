@@ -21002,7 +21002,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.21';
+    const VERSION = '6.4.22';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47297,17 +47297,40 @@ QUESTION: ${query}`;
               },
               selectNode() {
                 container.classList.add('selected');
-                // Toolbar floats above the image — clear any stale inline position overrides
-                presets.style.bottom = 'calc(100% + 8px)';
-                presets.style.top = 'auto';
+                const adjustPosition = () => {
+                  const rect = container.getBoundingClientRect();
+                  if (rect.top < 130) {
+                    presets.style.bottom = 'auto';
+                    presets.style.top = 'calc(100% + 8px)';
+                  } else {
+                    presets.style.bottom = 'calc(100% + 8px)';
+                    presets.style.top = 'auto';
+                  }
+                };
+                adjustPosition();
+                // Listen to scroll events in capture phase to handle nested container scroll
+                container._imgOnScroll = adjustPosition;
+                window.addEventListener('scroll', container._imgOnScroll, { capture: true, passive: true });
+
                 // Focus the container div (not a text input — won't trigger mobile keyboard)
                 // This lets keydown events (Delete, Enter) reach our handler above
                 const sx = window.scrollX, sy = window.scrollY;
                 container.focus({ preventScroll: true });
                 window.scrollTo(sx, sy);
               },
-              deselectNode() { container.classList.remove('selected'); },
-              destroy() { container._imgGetPos = null; },
+              deselectNode() { 
+                container.classList.remove('selected');
+                if (container._imgOnScroll) {
+                  window.removeEventListener('scroll', container._imgOnScroll, { capture: true });
+                  container._imgOnScroll = null;
+                }
+              },
+              destroy() { 
+                if (container._imgOnScroll) {
+                  window.removeEventListener('scroll', container._imgOnScroll, { capture: true });
+                }
+                container._imgGetPos = null; 
+              },
             };
           };
         },
