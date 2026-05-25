@@ -8524,7 +8524,7 @@
 
     #note-fs-editor .ProseMirror {
       outline: none;
-      padding: 16px;
+      padding: 16px 16px 160px; /* generous bottom padding to allow scrolling elements up past keyboard/edges */
       font-size: 14px;
       line-height: 1.7;
       overflow: clip;
@@ -18903,6 +18903,7 @@
         font-size: 14px;
         line-height: 1.7;
         color: var(--text-primary);
+        padding-bottom: 160px; /* generous bottom padding to allow scrolling elements up past keyboard/edges */
       }
 
       /* Desktop journal compact toolbar */
@@ -21002,7 +21003,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.22';
+    const VERSION = '6.4.23';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
