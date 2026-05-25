@@ -9711,7 +9711,7 @@
 
     .img-resize-presets {
       position: absolute;
-      top: 8px;
+      bottom: calc(100% + 8px);
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -21002,7 +21002,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.16';
+    const VERSION = '6.4.21';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22894,19 +22894,10 @@
           return;
         }
 
-        // Callout HWM guard: reject remote data with too few entries compared to high-water-mark
+        // Callout HWM guard: reject remote data regression check disabled to prevent data loss
         if (snap.exists) {
           const remote = snap.data();
-          const remoteCount = _totalCalloutEntries(remote);
-          const hwm = _getCoHWM();
-          const CO_HWM_THRESHOLD = 2;
-          if (hwm > 0 && remoteCount < hwm - CO_HWM_THRESHOLD) {
-            console.warn('[Rian] Rejecting remote callouts — entry count regression:', remoteCount, '< HWM', hwm);
-            fsSetCallouts(state.callouts).catch(e => console.warn('[Rian]', e));
-            return;
-          }
-          // Raise the HWM as we accept this remote data
-          _raiseCoHWM(remoteCount);
+          _raiseCoHWM(_totalCalloutEntries(remote));
         }
 
         if (!snap.exists) {
@@ -46918,6 +46909,27 @@ QUESTION: ${query}`;
                   <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
                 </svg>
               </button>
+              <span class="preset-divider"></span>
+              <button data-action="cut" title="Cut image">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+                  <line x1="9.8" y1="8.2" x2="21" y2="19.4"/>
+                  <line x1="9.8" y1="15.8" x2="21" y2="4.6"/>
+                </svg>
+              </button>
+              <button data-action="copy" title="Copy image">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+              <button data-action="delete" title="Delete image" style="color: #ff4d4d;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+              </button>
             `;
 
             // Highlight active layout button
@@ -46940,6 +46952,86 @@ QUESTION: ${query}`;
                 return;
               }
               const pos = getPos();
+              if (btn.dataset.action === 'copy') {
+                const html = `<img src="${currentAttrs.src}" width="${currentAttrs.width || '50%'}" data-align="${currentAttrs.align || 'center'}">`;
+                const text = currentAttrs.src;
+                if (navigator.clipboard && navigator.clipboard.write) {
+                  navigator.clipboard.write([
+                    new ClipboardItem({
+                      "text/html": new Blob([html], { type: "text/html" }),
+                      "text/plain": new Blob([text], { type: "text/plain" })
+                    })
+                  ]).then(() => {
+                    showToast("Image copied to clipboard");
+                  }).catch(err => {
+                    if (navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(text).then(() => {
+                        showToast("Copied image link to clipboard");
+                      }).catch(() => {
+                        showToast("Failed to copy image");
+                      });
+                    } else {
+                      showToast("Failed to copy image: " + err);
+                    }
+                  });
+                } else {
+                  const input = document.createElement('input');
+                  input.value = text;
+                  document.body.appendChild(input);
+                  input.select();
+                  try {
+                    document.execCommand('copy');
+                    showToast("Copied image link to clipboard");
+                  } catch {
+                    showToast("Failed to copy image");
+                  }
+                  document.body.removeChild(input);
+                }
+                return;
+              }
+              if (btn.dataset.action === 'cut') {
+                const html = `<img src="${currentAttrs.src}" width="${currentAttrs.width || '50%'}" data-align="${currentAttrs.align || 'center'}">`;
+                const text = currentAttrs.src;
+                if (navigator.clipboard && navigator.clipboard.write) {
+                  navigator.clipboard.write([
+                    new ClipboardItem({
+                      "text/html": new Blob([html], { type: "text/html" }),
+                      "text/plain": new Blob([text], { type: "text/plain" })
+                    })
+                  ]).then(() => {
+                    editor.chain().deleteRange({ from: pos, to: pos + node.nodeSize }).focus().run();
+                    showToast("Image cut to clipboard");
+                  }).catch(err => {
+                    if (navigator.clipboard.writeText) {
+                      navigator.clipboard.writeText(text).then(() => {
+                        editor.chain().deleteRange({ from: pos, to: pos + node.nodeSize }).focus().run();
+                        showToast("Image cut (link copied)");
+                      });
+                    } else {
+                      showToast("Failed to cut image: " + err);
+                    }
+                  });
+                } else {
+                  const input = document.createElement('input');
+                  input.value = text;
+                  document.body.appendChild(input);
+                  input.select();
+                  try {
+                    document.execCommand('copy');
+                    editor.chain().deleteRange({ from: pos, to: pos + node.nodeSize }).focus().run();
+                    showToast("Image cut (link copied)");
+                  } catch {
+                    showToast("Failed to cut image");
+                  }
+                  document.body.removeChild(input);
+                }
+                return;
+              }
+              if (btn.dataset.action === 'delete') {
+                editor.chain().deleteRange({ from: pos, to: pos + node.nodeSize }).focus().run();
+                showToast("Image deleted");
+                return;
+              }
               if (btn.dataset.size) {
                 editor.chain().command(({ tr }) => {
                   tr.setNodeMarkup(pos, undefined, { ...currentAttrs, width: btn.dataset.size });
@@ -47205,9 +47297,9 @@ QUESTION: ${query}`;
               },
               selectNode() {
                 container.classList.add('selected');
-                // Toolbar overlays inside the image — clear any stale inline position overrides
-                presets.style.top = '8px';
-                presets.style.bottom = '';
+                // Toolbar floats above the image — clear any stale inline position overrides
+                presets.style.bottom = 'calc(100% + 8px)';
+                presets.style.top = 'auto';
                 // Focus the container div (not a text input — won't trigger mobile keyboard)
                 // This lets keydown events (Delete, Enter) reach our handler above
                 const sx = window.scrollX, sy = window.scrollY;
@@ -49637,7 +49729,7 @@ function _ttStripDefaultTableWidths() {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SR) {
           const warm = new SR();
-          warm.lang = 'en-IE';
+          warm.lang = navigator.language || 'en-IE';
           warm.continuous = false;
           warm.interimResults = false;
           warm.onstart = () => { try { warm.stop(); } catch { } };
@@ -49944,11 +50036,14 @@ function _ttStripDefaultTableWidths() {
     }
 
     function _batteryStopListening() {
+      if (_batteryChat) {
+        _batteryChat.explicitlyStopped = true;
+      }
       if (_batteryChat?.recognition) {
         try { _batteryChat.recognition.stop(); } catch (e) { }
         _batteryChat.recognition = null;
       }
-      _batteryChat.listening = false;
+      if (_batteryChat) _batteryChat.listening = false;
       const btn = document.getElementById('battery-mic-btn');
       if (btn) btn.classList.remove('listening');
       const hint = document.getElementById('battery-mic-hint');
@@ -49965,7 +50060,7 @@ function _ttStripDefaultTableWidths() {
       _batterySendToAI(text);
     }
 
-    function _batteryMicToggle() {
+    function _batteryMicToggle(isManual) {
       if (!_batteryChat) return;
       if (_batteryChat.listening) { _batteryStopListening(); return; }
       if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -49975,12 +50070,13 @@ function _ttStripDefaultTableWidths() {
       _batteryStopSpeaking();
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       const r = new SR();
-      r.lang = 'en-IE';
+      r.lang = navigator.language || 'en-IE';
       r.interimResults = false;
       r.continuous = false;
       r.maxAlternatives = 1;
       _batteryChat.recognition = r;
       _batteryChat.listening = true;
+      _batteryChat.explicitlyStopped = false;
       document.getElementById('battery-mic-btn').classList.add('listening');
       document.getElementById('battery-mic-hint').textContent = 'Listening…';
       let _gotResult = false;
@@ -49993,7 +50089,9 @@ function _ttStripDefaultTableWidths() {
         if (e.error === 'no-speech') {
           // Mic timed out on silence — auto-restart so user doesn't have to tap again
           setTimeout(() => {
-            if (_batteryChat && !_batteryChat.complete && !_batteryChat.listening) _batteryMicToggle();
+            if (_batteryChat && !_batteryChat.complete && !_batteryChat.listening && !_batteryChat.explicitlyStopped) {
+              _batteryMicToggle(false);
+            }
           }, 300);
           return;
         }
@@ -50006,15 +50104,17 @@ function _ttStripDefaultTableWidths() {
         if (btn) btn.classList.remove('listening');
         const hint = document.getElementById('battery-mic-hint');
         if (hint && hint.textContent === 'Listening…') hint.textContent = 'Tap to talk';
-        // Ended with no speech captured — auto-restart
-        if (!_gotResult && _batteryChat && !_batteryChat.complete) {
+        // Ended with no speech captured — auto-restart ONLY if not explicitly stopped by user
+        if (!_gotResult && _batteryChat && !_batteryChat.complete && !_batteryChat.explicitlyStopped) {
           setTimeout(() => {
-            if (_batteryChat && !_batteryChat.complete && !_batteryChat.listening) _batteryMicToggle();
+            if (_batteryChat && !_batteryChat.complete && !_batteryChat.listening && !_batteryChat.explicitlyStopped) {
+              _batteryMicToggle(false);
+            }
           }, 300);
         }
       };
       try { r.start(); } catch (e) { _batteryStopListening(); showToast('Mic error: ' + e.message); }
-      if (navigator.vibrate) navigator.vibrate(30);
+      if (isManual && navigator.vibrate) navigator.vibrate(30);
     }
 
     async function _batterySendToAI(userText) {
@@ -51333,7 +51433,7 @@ The state block is invisible to the user.`;
             <button onclick="_ttApplyCase('sentence')">Sentence case</button>
           </div>
         </div>
-        <span id="tt-sel-bar-hint" style="font-size:12px;color:var(--text-muted);margin-left:4px;">tap to expand</span>
+        <span id="tt-sel-bar-hint" onclick="_ttExpandSelection()" style="font-size:12px;color:var(--text-muted);margin-left:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;">tap to expand</span>
       </div>
       <!-- AI rephrase preview panel (hidden until AI returns a suggestion) -->
       <div id="tt-ai-preview" style="display:none;">
@@ -51404,7 +51504,7 @@ The state block is invisible to the user.`;
 
       <div id="battery-mic-bar"
         style="padding:12px 14px;border-top:1px solid var(--border);background:var(--bg-card-alt);display:flex;align-items:center;gap:8px;">
-        <button id="battery-mic-btn" onclick="_batteryMicToggle()"
+        <button id="battery-mic-btn" onclick="_batteryMicToggle(true)"
           style="width:44px;height:44px;border-radius:50%;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(var(--accent-rgb), 0.3);flex-shrink:0;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <rect x="9" y="2" width="6" height="12" rx="3" />
