@@ -8524,7 +8524,7 @@
 
     #note-fs-editor .ProseMirror {
       outline: none;
-      padding: 16px 16px 160px; /* generous bottom padding to allow scrolling elements up past keyboard/edges */
+      padding: 16px 16px 40px; /* default bottom padding for desktop */
       font-size: 14px;
       line-height: 1.7;
       overflow: clip;
@@ -8535,6 +8535,12 @@
       /* vertical scroll native; pinch intercepted by JS */
       transform-origin: 0 0;
       /* zoom anchors to top-left */
+    }
+
+    @media (max-width: 1279px) {
+      #note-fs-editor .ProseMirror {
+        padding-bottom: 120px; /* extra bottom padding on mobile for virtual keyboard */
+      }
     }
 
     .tt-prose {
@@ -18903,7 +18909,13 @@
         font-size: 14px;
         line-height: 1.7;
         color: var(--text-primary);
-        padding-bottom: 160px; /* generous bottom padding to allow scrolling elements up past keyboard/edges */
+        padding-bottom: 40px; /* default bottom padding for desktop */
+      }
+
+      @media (max-width: 1279px) {
+        #dj-editor-mount .ProseMirror {
+          padding-bottom: 120px; /* extra bottom padding on mobile for virtual keyboard */
+        }
       }
 
       /* Desktop journal compact toolbar */
@@ -21003,7 +21015,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.23';
+    const VERSION = '6.4.24';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
