@@ -21015,7 +21015,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.25';
+    const VERSION = '6.4.26';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24500,12 +24500,8 @@
           // NO write-back here (the old write-back guard caused sync wars by
           // triggering snapshot→write→snapshot loops). The next user edit will
           // push correct local state via scheduleAutoSave naturally.
-          if (remoteTs > 0 && localTs > 0 && remoteTs < localTs - 10000) {
-            console.warn('[Rian] Stale snapshot rejected — remote:', new Date(remoteTs).toLocaleTimeString(), '/ local:', new Date(localTs).toLocaleTimeString(), '/ delta:', Math.round((localTs - remoteTs) / 1000) + 's');
-            return;
-          }
           if (remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
-            console.info('[Rian] Remote snapshot slightly older than local (' + Math.round((localTs - remoteTs) / 1000) + 's) — accepting (within tolerance)');
+            console.info('[Rian] Remote snapshot is older than local (' + Math.round((localTs - remoteTs) / 1000) + 's) — accepting');
           }
 
           // Raise the HWM as we accept this remote data
