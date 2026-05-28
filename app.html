@@ -7739,7 +7739,7 @@
     /* Callouts column headers — same style as .sum-new-col-head */
     .co-sum-head {
       display: grid;
-      grid-template-columns: 100px 1fr 1fr;
+      grid-template-columns: 45px 100px 1fr 1fr;
       padding: 10px 0 8px;
       background: var(--bg-card-alt);
       border-bottom: 1px solid var(--border);
@@ -7748,7 +7748,7 @@
     /* Callouts data rows — same padding as .sum-new-row */
     .co-sum-row {
       display: grid;
-      grid-template-columns: 100px 1fr 1fr;
+      grid-template-columns: 45px 100px 1fr 1fr;
       border-bottom: 1px solid var(--border);
       background: var(--bg-card);
       align-items: center;
@@ -7781,13 +7781,29 @@
       padding-left: 16px;
     }
 
+    .co-sum-th-index {
+      padding: 0 4px !important;
+      text-align: center;
+    }
+
+    /* Index/Counter cell */
+    .co-sum-index {
+      font-family: var(--font-mono) !important;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 12px 4px !important;
+    }
+
     /* Date */
     .co-sum-date {
-      font-family: var(--font-mono);
+      font-family: var(--font-mono) !important;
       font-size: 12px;
       font-weight: 500;
       color: var(--text-secondary);
       letter-spacing: 0.03em;
+      border-left: 1px solid var(--border);
     }
 
     /* Ticket — matches sum-row-desc mono style */
@@ -21015,7 +21031,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.31';
+    const VERSION = '6.4.33';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26576,10 +26592,11 @@
           var _coEntries = state.callouts && state.callouts.weeks && state.weekData ? (state.callouts.weeks[state.weekData.weekStart] && state.callouts.weeks[state.weekData.weekStart].callouts || []) : [];
           if (!_coEntries.length) return '';
           var _MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          var _coRows = _coEntries.map(function (co) {
+          var _coRows = _coEntries.map(function (co, i) {
             var _dl = co.date ? (function () { var p = co.date.split('-'); return p[2].replace(/^0/, '') + '. ' + _MN[parseInt(p[1], 10) - 1]; })() : '\u2014';
             var _site = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '\u2014';
             return '<div class="co-sum-row">' +
+              '<div class="co-sum-cell co-sum-index">' + (i + 1) + '</div>' +
               '<div class="co-sum-cell co-sum-date">' + esc(_dl) + '</div>' +
               '<div class="co-sum-cell co-sum-ticket">' + esc(co.ticket || '\u2014') + '</div>' +
               '<div class="co-sum-cell co-sum-loc">' + esc(_site) + '</div>' +
@@ -26591,6 +26608,7 @@
             '<div class="sum-section-line"></div>' +
             '</div>' +
             '<div class="co-sum-head">' +
+            '<div class="co-sum-th co-sum-th-index">#</div>' +
             '<div class="co-sum-th">Date</div>' +
             '<div class="co-sum-th">Ticket Number</div>' +
             '<div class="co-sum-th">Location</div>' +
@@ -42602,11 +42620,16 @@
           'autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">' + esc(selCo.ticket || '') + '</textarea></div>';
 
         detailHtml += '<div class="desk-field-group"><span class="act-field-label">Location</span>' +
-          '<div class="location-wrap"><input type="text" class="act-input" id="dco-site" readonly ' +
+          '<div class="act-location-row"><input type="text" class="act-input" id="dco-site" readonly ' +
           'value="' + esc(selCo.site || '') + '" placeholder="Tap to select location" ' +
           'style="cursor:pointer;user-select:none" ' +
           'autocomplete="new-password" data-lpignore="true" data-form-type="other" data-1p-ignore="true" ' +
-          'onclick="_coSiteCallback = function(name) { document.getElementById(\'dco-site\').value = name; dcoUpdateField(\'site\', name); }; openLocationModal();"></div></div>';
+          'onclick="_coSiteCallback = function(name) { document.getElementById(\'dco-site\').value = name; dcoUpdateField(\'site\', name); const btn = document.getElementById(\'dco-map-btn\'); if (btn) { if (name) { btn.href = _activityLocationMapUrl(name); btn.style.display = \'\'; } else { btn.href = \'#\'; btn.style.display = \'none\'; } } }; openLocationModal();">' +
+          '<a id="dco-map-btn" class="act-map-btn" href="' + (_activityLocationMapUrl(selCo.site) || '#') + '" ' +
+          (selCo.site ? '' : 'style="display:none"') +
+          ' title="Open location in Google Maps" aria-label="Open location in Google Maps" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></a>' +
+          '</div></div>';
 
         detailHtml += '<div class="desk-field-group wide"><span class="act-field-label">Fault Description</span>' +
           '<textarea class="act-textarea" rows="2" id="dco-fault" placeholder="e.g. EXTERNAL ALARM: AC MAINS FAIL" ' +
@@ -42719,6 +42742,18 @@
       var co = (wd.callouts || []).find(function (c) { return c.id === state.dcoSelectedCo; });
       if (!co) return;
       co[field] = value;
+      if (field === 'site') {
+        const btn = document.getElementById('dco-map-btn');
+        if (btn) {
+          if (value) {
+            btn.href = _activityLocationMapUrl(value);
+            btn.style.display = '';
+          } else {
+            btn.href = '#';
+            btn.style.display = 'none';
+          }
+        }
+      }
       if (!co._draft) _coScheduleSave();
     }
 
@@ -43132,13 +43167,19 @@
           <!-- Location -->
           <div class="flex flex-col gap-1.5">
             <span class="act-field-label">Location</span>
-            <div class="location-wrap">
+            <div class="act-location-row">
               <input type="text" id="co-site-display" class="act-input" readonly
                 value="${site ? esc(site) : ''}"
                 placeholder="Tap to select location"
                 style="cursor:pointer;user-select:none;"
                 autocomplete="new-password" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
-                onclick="_coSiteCallback = (name) => { const el = document.getElementById('co-site-display'); el.value = name; updateCoField('site', name); }; openLocationModal();">
+                onclick="_coSiteCallback = (name) => { const el = document.getElementById('co-site-display'); el.value = name; updateCoField('site', name); const btn = el.nextElementSibling; if (btn) { if (name) { btn.href = _activityLocationMapUrl(name); btn.style.display = ''; } else { btn.href = '#'; btn.style.display = 'none'; } } }; openLocationModal();">
+              <a class="act-map-btn" href="${_activityLocationMapUrl(site) || '#'}"
+                ${site ? '' : 'style="display:none"'}
+                title="Open location in Google Maps" aria-label="Open location in Google Maps"
+                target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              </a>
             </div>
           </div>
           <!-- Fault -->
@@ -43374,6 +43415,17 @@
           const l = card.querySelector('.act-loc-txt');
           const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
           if (l) l.innerHTML = value ? `${pinSvg}${esc(value)}` : '<span style="opacity:0.4">No site</span>';
+
+          const mapBtn = card.querySelector('.act-map-btn');
+          if (mapBtn) {
+            if (value) {
+              mapBtn.href = _activityLocationMapUrl(value);
+              mapBtn.style.display = '';
+            } else {
+              mapBtn.href = '#';
+              mapBtn.style.display = 'none';
+            }
+          }
         }
         if (field === 'notes') {
           const inline = document.querySelector('[data-co-notes-inline]');
@@ -43381,6 +43433,19 @@
             const wrapper = document.createElement('div');
             wrapper.innerHTML = renderNoteInline(value, `openCoNoteFullscreen()`, `data-co-notes-inline`);
             inline.parentNode.replaceChild(wrapper.firstElementChild, inline);
+          }
+        }
+      }
+
+      if (field === 'site') {
+        const modalMapBtn = document.getElementById('co-modal-map-btn');
+        if (modalMapBtn) {
+          if (value) {
+            modalMapBtn.href = _activityLocationMapUrl(value);
+            modalMapBtn.style.display = '';
+          } else {
+            modalMapBtn.href = '#';
+            modalMapBtn.style.display = 'none';
           }
         }
       }
