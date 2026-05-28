@@ -21015,7 +21015,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.28';
+    const VERSION = '6.4.29';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -49219,8 +49219,13 @@ function _ttStripDefaultTableWidths() {
 
     function _ttSetContent(html) {
       if (!_tiptapEditor) return;
+      let val = html || '';
+      if (val && !val.trim().startsWith('<')) {
+        // Convert plain text to HTML paragraph tags for TipTap so formatting is preserved
+        val = val.split('\n').map(line => `<p>${esc(line)}</p>`).join('');
+      }
       // Strip target="_blank" from stored links, then clean table sizing
-      const cleaned = _ttCleanTableHtml(_stripVisibleActivityNoteRecovery(html || '').replace(/\s+target="_blank"/g, ''));
+      const cleaned = _ttCleanTableHtml(_stripVisibleActivityNoteRecovery(val).replace(/\s+target="_blank"/g, ''));
       try {
         // Parse HTML via ProseMirror's DOMParser, then dispatch with addToHistory:false
         // so the initial page load NEVER enters the undo stack. This prevents undo from
