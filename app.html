@@ -7303,8 +7303,28 @@
     }
 
     .sum-table-wrap.open {
-      max-height: 1400px;
+      max-height: 380px;
+      overflow-y: auto;
       opacity: 1;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(var(--accent-rgb), 0.25) transparent;
+    }
+
+    .sum-table-wrap.open::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sum-table-wrap.open::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sum-table-wrap.open::-webkit-scrollbar-thumb {
+      background: rgba(var(--accent-rgb), 0.25);
+      border-radius: 3px;
+    }
+
+    .sum-table-wrap.open::-webkit-scrollbar-thumb:hover {
+      background: rgba(var(--accent-rgb), 0.4);
     }
 
     /* ── Responsive grid rows ── */
@@ -17640,6 +17660,15 @@
         padding: 12px;
       }
 
+      .desk-panel-summary.is-open {
+        margin-top: 20px;
+      }
+
+      .desk-panel-summary .sum-table-wrap.open {
+        max-height: calc(100vh - 610px);
+        min-height: 250px;
+      }
+
       .desk-summary-bar {
         background: var(--bg-card);
         border: 1px solid var(--border);
@@ -21027,7 +21056,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.39';
+    const VERSION = '6.4.43';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26590,42 +26619,6 @@
     </button>
     <div class="sum-table-wrap${state.showSummary ? ' open' : ''}" data-sum-table-content>
       ${_buildSummaryTableContentHtml(summary, totalOrd, totalOT)}
-      ${(function () {
-          var _coEntries = state.callouts && state.callouts.weeks && state.weekData ? (state.callouts.weeks[state.weekData.weekStart] && state.callouts.weeks[state.weekData.weekStart].callouts || []) : [];
-          if (!_coEntries.length) return '';
-          var _MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          var _coRows = _coEntries.map(function (co, i) {
-            var _dl = co.date ? (function () { var p = co.date.split('-'); return p[2].replace(/^0/, '') + '. ' + _MN[parseInt(p[1], 10) - 1]; })() : '\u2014';
-            var _site = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '\u2014';
-            return '<div class="co-sum-row">' +
-              '<div class="co-sum-cell co-sum-index">' + (i + 1) + '</div>' +
-              '<div class="co-sum-cell co-sum-date">' + esc(_dl) + '</div>' +
-              '<div class="co-sum-cell co-sum-ticket">' + esc(co.ticket || '\u2014') + '</div>' +
-              '<div class="co-sum-cell co-sum-loc">' + esc(_site) + '</div>' +
-              '</div>';
-          }).join('');
-          return '<div class="co-sum-divider">' +
-            '<div class="sum-section-line"></div>' +
-            '<div class="sum-section-label" style="font-size:9px;">Callouts</div>' +
-            '<div class="sum-section-line"></div>' +
-            '</div>' +
-            '<div class="co-sum-head">' +
-            '<div class="co-sum-th co-sum-th-index">#</div>' +
-            '<div class="co-sum-th">Date</div>' +
-            '<div class="co-sum-th">Ticket Number</div>' +
-            '<div class="co-sum-th">Location</div>' +
-            '</div>' +
-            _coRows +
-            '<div class="sum-new-footer">' +
-            '<div class="sum-footer-label">Total</div>' +
-            '<div class="sum-footer-totals">' +
-            '<div class="sum-footer-item" style="text-align:center;">' +
-            '<div class="sum-footer-lbl">Callouts</div>' +
-            '<div class="sum-footer-val">' + _coEntries.length + '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>';
-        })()}
     </div>
   </div>`;
 
@@ -26756,7 +26749,7 @@
       var daysPanel = '<div class="desk-panel-days" style="width:' + _deskDaysWidth + 'px">' +
         renderDesktopWeekDaysHeader() +
         daysHtml +
-        '<div class="desk-panel-summary">' +
+        '<div class="desk-panel-summary' + (deskSumOpen ? ' is-open' : '') + '">' +
         '<div class="sum-section-hdr"><div class="sum-section-line"></div><div class="sum-section-label">Weekly Summary</div><div class="sum-section-line"></div></div>' +
         deskSummaryHtml + '</div>' +
         '</div>';
@@ -30208,6 +30201,46 @@
       </div>`;
       }).join('');
 
+      const _coEntries = state.callouts && state.callouts.weeks && state.weekData ? (state.callouts.weeks[state.weekData.weekStart] && state.callouts.weeks[state.weekData.weekStart].callouts || []) : [];
+      let calloutsHtml = '';
+      if (_coEntries.length) {
+        const _MN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const _coRows = _coEntries.map((co, i) => {
+          const _dl = co.date ? (() => { const p = co.date.split('-'); return p[2].replace(/^0/, '') + '. ' + _MN[parseInt(p[1], 10) - 1]; })() : '—';
+          const _site = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '—';
+          return `
+          <div class="co-sum-row">
+            <div class="co-sum-cell co-sum-index">${i + 1}</div>
+            <div class="co-sum-cell co-sum-date">${esc(_dl)}</div>
+            <div class="co-sum-cell co-sum-ticket">${esc(co.ticket || '—')}</div>
+            <div class="co-sum-cell co-sum-loc">${esc(_site)}</div>
+          </div>`;
+        }).join('');
+
+        calloutsHtml = `
+        <div class="co-sum-divider">
+          <div class="sum-section-line"></div>
+          <div class="sum-section-label" style="font-size:9px;">Callouts</div>
+          <div class="sum-section-line"></div>
+        </div>
+        <div class="co-sum-head">
+          <div class="co-sum-th co-sum-th-index">#</div>
+          <div class="co-sum-th">Date</div>
+          <div class="co-sum-th">Ticket Number</div>
+          <div class="co-sum-th">Location</div>
+        </div>
+        ${_coRows}
+        <div class="sum-new-footer">
+          <div class="sum-footer-label">Total</div>
+          <div class="sum-footer-totals">
+            <div class="sum-footer-item" style="text-align:center;">
+              <div class="sum-footer-lbl">Callouts</div>
+              <div class="sum-footer-val">${_coEntries.length}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+
       return `
       <div class="sum-new-col-head">
         <div class="sum-new-col-th">Code / Description</div>
@@ -30228,7 +30261,8 @@
             <div class="sum-footer-val ot">${totalOT > 0 ? Math.round(totalOT) : 0}</div>
           </div>
         </div>
-      </div>`;
+      </div>
+      ${calloutsHtml}`;
     }
 
     function updateSummaryDisplay() {
