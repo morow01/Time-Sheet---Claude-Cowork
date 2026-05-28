@@ -21015,7 +21015,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.29';
+    const VERSION = '6.4.30';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44087,7 +44087,22 @@
       previewEl.innerHTML =
         row('Ticket Number', p.ticket, 'ticket') +
         row('Fault / Description', p.fault, 'fault') +
-        row('Site', p.site || (p.siteCode ? p.siteCode + ' (not matched)' : ''), 'site') +
+        `<div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:3px">Location</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="pt-site" type="text" value="${escAttr(p.site || (p.siteCode ? p.siteCode + ' (not matched)' : ''))}" class="act-input"
+              style="flex:1;min-width:0;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary)">
+            <button type="button"
+              onclick="_coSiteCallback=(name)=>{document.getElementById('pt-site').value=name;}; openLocationModal();"
+              style="flex-shrink:0;height:38px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+                style="display:inline-block;vertical-align:-2px;margin-right:4px;color:#e8453c">
+                <path
+                  d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
+              </svg>Site
+            </button>
+          </div>
+        </div>` +
         `<div>
           <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:3px">Date</div>
           <input id="pt-date" type="date" value="${p.date}" class="act-input"
