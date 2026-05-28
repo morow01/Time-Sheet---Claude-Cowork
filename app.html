@@ -21056,7 +21056,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.43';
+    const VERSION = '6.4.44';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -42933,9 +42933,10 @@
     }
 
     function _ocIsPast(weekStart) {
+      if (weekStart === dateToStr(getCurrentFriday())) return false;
       const end = strToDate(weekStart);
-      end.setDate(end.getDate() + 6);
-      return end < new Date();
+      end.setDate(end.getDate() + 7);
+      return end <= new Date();
     }
 
     function renderCalloutsList() {
