@@ -21027,7 +21027,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.38';
+    const VERSION = '6.4.39';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24888,8 +24888,7 @@
         '</tr></thead>' +
         '<tbody>' + calloutRows + '</tbody>' +
         '<tfoot><tr style="background:' + C.totalBg + ';">' +
-        '<td colspan="3" style="' + td + 'font-weight:850;border-bottom:none;">Total Callouts</td>' +
-        '<td style="' + td + num + 'font-size:15px;font-weight:850;text-align:right;border-bottom:none;">' + calloutEntries.length + '</td>' +
+        '<td colspan="4" style="' + td + 'font-weight:850;border-bottom:none;text-align:left;">Total Callouts: <strong style="font-weight:850;margin-left:10px;color:' + C.txt + ';">' + calloutEntries.length + '</strong></td>' +
         '</tr></tfoot>' +
         '</table>' +
         '</td></tr>'
@@ -25104,8 +25103,7 @@
               </tr></thead>
               <tbody>${_pCoRows}</tbody>
               <tfoot><tr style="background:${C.totalBg};">
-                <td colspan="3" style="padding:10px 14px;font-size:10px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Total</td>
-                <td style="padding:10px 14px;font-family:monospace;font-size:15px;font-weight:700;color:${C.ord};text-align:left;">${_pCoEntries.length}</td>
+                <td colspan="4" style="padding:10px 14px;font-size:10px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;text-align:left;">Total Callouts: <strong style="font-size:15px;font-weight:700;color:${C.ord};margin-left:10px;font-family:monospace;">${_pCoEntries.length}</strong></td>
               </tr></tfoot>
             </table>
           </div>`;
@@ -26203,11 +26201,11 @@
       }).join('');
       const calloutsHtml = calloutEntries.length ? (
         '<div class="ew3-label">Callouts <span class="ew3-section-count">' + calloutEntries.length + '</span></div>' +
-        '<div class="ew3-card"><table class="ew3-table ew3-callout-table"><colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th class="ew3-c">#</th><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="3">Total Callouts</td><td class="ew3-num">' + calloutEntries.length + '</td></tr></tfoot></table></div>'
+        '<div class="ew3-card"><table class="ew3-table ew3-callout-table"><colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th class="ew3-c">#</th><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="4" style="text-align:left;"><span class="ew3-callout-total-inline">Total Callouts: <strong>' + calloutEntries.length + '</strong></span></td></tr></tfoot></table></div>'
       ) : '';
       const desktopCalloutsHtml = calloutEntries.length ? (
         '<div class="ew3-desk-section ew3-callouts-section">Callouts <span class="ew3-section-count">' + calloutEntries.length + '</span></div>' +
-        '<table class="ew3-table ew3-callout-table"><colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th class="ew3-c">#</th><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="4"><span class="ew3-callout-total-inline">Total Callouts <strong>' + calloutEntries.length + '</strong></span></td></tr></tfoot></table>'
+        '<table class="ew3-table ew3-callout-table"><colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th class="ew3-c">#</th><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="4" style="text-align:left;"><span class="ew3-callout-total-inline">Total Callouts: <strong>' + calloutEntries.length + '</strong></span></td></tr></tfoot></table>'
       ) : '';
       if (_isDesktop()) {
         const weekStart = state.weekStart || dateToStr(getCurrentFriday());
