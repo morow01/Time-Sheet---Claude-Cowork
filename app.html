@@ -7198,7 +7198,7 @@
     }
 
     .sum-num.ot {
-      color: #C07800;
+      color: var(--pill-amber-color);
     }
 
     .sum-lbl {
@@ -7441,7 +7441,7 @@
     }
 
     .sum-td-num.ot {
-      color: #C07800;
+      color: var(--pill-amber-color);
     }
 
     .sum-td-num.dash {
@@ -7488,7 +7488,7 @@
     }
 
     .sum-total-val.ot {
-      color: #C07800;
+      color: var(--pill-amber-color);
     }
 
     /* ── NEW Summary card — light header ── */
@@ -7707,7 +7707,7 @@
     }
 
     .sum-footer-val.ot {
-      color: var(--text-ot);
+      color: var(--pill-amber-color);
     }
 
     .sum-footer-div {
@@ -7777,7 +7777,6 @@
     }
 
     .co-sum-head .co-sum-th+.co-sum-th {
-      border-left: 1px solid var(--border);
       padding-left: 16px;
     }
 
@@ -7803,7 +7802,6 @@
       font-weight: 500;
       color: var(--text-secondary);
       letter-spacing: 0.03em;
-      border-left: 1px solid var(--border);
     }
 
     /* Ticket — matches sum-row-desc mono style */
@@ -7812,14 +7810,12 @@
       font-size: 12px;
       font-weight: 500;
       color: var(--accent);
-      border-left: 1px solid var(--border);
     }
 
     /* Location — matches sum-row-desc muted style */
     .co-sum-loc {
       font-size: 12px;
       color: var(--text-secondary);
-      border-left: 1px solid var(--border);
     }
 
     input[type=number]::-webkit-inner-spin-button {
@@ -21031,7 +21027,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.33';
+    const VERSION = '6.4.38';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24867,11 +24863,12 @@
           '</tr>';
       }).join('');
 
-      const calloutRows = calloutEntries.map(co => {
+      const calloutRows = calloutEntries.map((co, idx) => {
         const dateLabel = formatCalloutDate(co.date);
         const ticket = String(co.ticket || '').trim();
         const location = stripLoc(co.site || co.location || '');
         return '<tr>' +
+          '<td style="' + td + num + 'text-align:center;">' + (idx + 1) + '</td>' +
           '<td style="' + td + 'text-align:left;">' + (dateLabel ? esc(dateLabel) : dash) + '</td>' +
           '<td style="' + td + num + 'text-align:left;">' + (ticket ? esc(ticket) : dash) + '</td>' +
           '<td style="' + td + 'color:' + C.txtSec + ';">' + (location ? esc(location) : dash) + '</td>' +
@@ -24882,15 +24879,16 @@
         '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Callouts</td></tr>' +
         '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;table-layout:fixed;">' +
-        '<colgroup><col style="width:24%"><col style="width:34%"><col style="width:42%"></colgroup>' +
+        '<colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup>' +
         '<thead><tr>' +
+        '<th style="' + th + 'text-align:center;">#</th>' +
         '<th style="' + th + 'text-align:left;">Date</th>' +
         '<th style="' + th + 'text-align:left;">Ticket Number</th>' +
         '<th style="' + th + 'text-align:left;">Location</th>' +
         '</tr></thead>' +
         '<tbody>' + calloutRows + '</tbody>' +
         '<tfoot><tr style="background:' + C.totalBg + ';">' +
-        '<td colspan="2" style="' + td + 'font-weight:850;border-bottom:none;">Total Callouts</td>' +
+        '<td colspan="3" style="' + td + 'font-weight:850;border-bottom:none;">Total Callouts</td>' +
         '<td style="' + td + num + 'font-size:15px;font-weight:850;text-align:right;border-bottom:none;">' + calloutEntries.length + '</td>' +
         '</tr></tfoot>' +
         '</table>' +
@@ -24924,7 +24922,6 @@
         '</tr></tfoot>' +
         '</table>' +
         '</td></tr>' +
-        calloutsHtml +
         '<tr><td style="height:18px;line-height:18px;">&nbsp;</td></tr>' +
         '<tr><td style="padding:0 0 8px;font-size:11px;font-weight:850;letter-spacing:0.13em;text-transform:uppercase;color:' + C.label + ';">Appropriation Codes</td></tr>' +
         '<tr><td style="border:1px solid ' + C.border + ';border-radius:14px;overflow:hidden;background:' + C.cardBg + ';">' +
@@ -24944,6 +24941,7 @@
         '</tr></tfoot>' +
         '</table>' +
         '</td></tr>' +
+        calloutsHtml +
         '<tr><td style="padding:16px 4px 0;text-align:center;font-size:12px;line-height:1.45;color:' + C.label + ';">Hours auto-calculated. Per-day cap: Mon-Thu 8h · Fri 7h · Sat/Sun 0h. Anything over goes to OT.</td></tr>' +
         '<tr><td style="padding:12px 4px 0;text-align:center;font-size:11px;color:' + C.footTxt + ';">Rian &mdash; v' + esc(VERSION) + '</td></tr>' +
         '</table>' +
@@ -25083,11 +25081,12 @@
       const _pCoEntries = state.callouts?.weeks?.[_pCoWeekKey]?.callouts || [];
       let calloutsPreviewHtml = '';
       if (_pCoEntries.length > 0) {
-        const _pCoRows = _pCoEntries.map(co => {
+        const _pCoRows = _pCoEntries.map((co, idx) => {
           const _dateLabel = co.date ? (() => { const _mn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; const p = co.date.split('-'); return p[2].replace(/^0/, '') + '. ' + _mn[parseInt(p[1], 10) - 1]; })() : '—';
           const _ticket = co.ticket || '—';
           const _loc = co.site ? co.site.replace(/\s*\([^)]+\)$/, '') : '—';
           return `<tr>
+            <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:500;color:${C.txt};text-align:center;vertical-align:middle;">${idx + 1}</td>
             <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:500;color:${C.txt};vertical-align:middle;">${cpSpan(_dateLabel, `font-family:monospace;font-weight:500;`)}</td>
             <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-family:monospace;font-size:13px;font-weight:500;color:${C.txt};vertical-align:middle;">${co.ticket ? cpSpan(_ticket, `font-family:monospace;font-weight:500;`) : '—'}</td>
             <td style="padding:8px 14px;border-bottom:1px solid ${C.rowBorder};font-size:13px;color:${C.txtSec};vertical-align:middle;">${co.site ? cpSpan(_loc) : '—'}</td>
@@ -25098,13 +25097,14 @@
           <div style="border-radius:12px;overflow:hidden;border:1px solid ${C.border};background:${C.cardBg};margin-bottom:20px;">
             <table width="100%" cellpadding="0" cellspacing="0">
               <thead><tr style="background:${C.headBg};">
-                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Date</th>
-                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Ticket Number</th>
-                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Location</th>
+                <th style="padding:8px 14px;text-align:center;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;width:10%;">#</th>
+                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;width:24%;">Date</th>
+                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;width:30%;">Ticket Number</th>
+                <th style="padding:8px 14px;text-align:left;font-size:9px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;width:36%;">Location</th>
               </tr></thead>
               <tbody>${_pCoRows}</tbody>
               <tfoot><tr style="background:${C.totalBg};">
-                <td colspan="2" style="padding:10px 14px;font-size:10px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Total</td>
+                <td colspan="3" style="padding:10px 14px;font-size:10px;font-weight:700;color:${C.label};text-transform:uppercase;letter-spacing:0.1em;">Total</td>
                 <td style="padding:10px 14px;font-family:monospace;font-size:15px;font-weight:700;color:${C.ord};text-align:left;">${_pCoEntries.length}</td>
               </tr></tfoot>
             </table>
@@ -25117,6 +25117,8 @@
           <div style="font-size:22px;font-weight:800;color:${C.dayTxt};">${esc(range)}</div>
         </div>
         <div style="padding:16px 0;">
+          <div style="padding:0 4px 8px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};">Daily Breakdown</div>
+          ${daysHtml}
           <div style="padding:0 4px 8px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};">Summary by Code</div>
           <div style="border-radius:12px;overflow:hidden;border:1px solid ${C.border};background:${C.cardBg};margin-bottom:20px;">
             <table width="100%" cellpadding="0" cellspacing="0">
@@ -25135,8 +25137,6 @@
             </table>
           </div>
           ${calloutsPreviewHtml}
-          <div style="padding:0 4px 8px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${C.label};">Daily Breakdown</div>
-          ${daysHtml}
         </div>
       </div>`;
     }
@@ -26195,6 +26195,7 @@
         const ticket = String(co.ticket || '').trim();
         const location = stripLoc(co.site || co.location || '');
         return '<tr>' +
+          '<td class="ew3-callout-index">' + (i + 1) + '</td>' +
           '<td class="ew3-callout-date">' + plain(dateLabel) + '</td>' +
           '<td class="ew3-code-cell">' + copy(ticket, 'co-' + i + '-ticket') + '</td>' +
           '<td class="ew3-desc-cell">' + copy(location, 'co-' + i + '-location') + '</td>' +
@@ -26202,11 +26203,11 @@
       }).join('');
       const calloutsHtml = calloutEntries.length ? (
         '<div class="ew3-label">Callouts <span class="ew3-section-count">' + calloutEntries.length + '</span></div>' +
-        '<div class="ew3-card"><table class="ew3-table ew3-callout-table"><colgroup><col style="width:24%"><col style="width:34%"><col style="width:42%"></colgroup><thead><tr><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="2">Total Callouts</td><td class="ew3-num">' + calloutEntries.length + '</td></tr></tfoot></table></div>'
+        '<div class="ew3-card"><table class="ew3-table ew3-callout-table"><colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th class="ew3-c">#</th><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="3">Total Callouts</td><td class="ew3-num">' + calloutEntries.length + '</td></tr></tfoot></table></div>'
       ) : '';
       const desktopCalloutsHtml = calloutEntries.length ? (
         '<div class="ew3-desk-section ew3-callouts-section">Callouts <span class="ew3-section-count">' + calloutEntries.length + '</span></div>' +
-        '<table class="ew3-table ew3-callout-table"><colgroup><col style="width:24%"><col style="width:34%"><col style="width:42%"></colgroup><thead><tr><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="3"><span class="ew3-callout-total-inline">Total Callouts <strong>' + calloutEntries.length + '</strong></span></td></tr></tfoot></table>'
+        '<table class="ew3-table ew3-callout-table"><colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th class="ew3-c">#</th><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="4"><span class="ew3-callout-total-inline">Total Callouts <strong>' + calloutEntries.length + '</strong></span></td></tr></tfoot></table>'
       ) : '';
       if (_isDesktop()) {
         const weekStart = state.weekStart || dateToStr(getCurrentFriday());
@@ -26267,10 +26268,10 @@
           .ew3-copy{cursor:pointer;user-select:none;color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong);text-decoration-thickness:1px;text-underline-offset:3px;transition:color .12s,text-decoration-color .12s,opacity .12s;display:inline}
           .ew3-copy:hover{color:var(--accent);text-decoration-color:var(--accent)}
           .ew3-copy.copied{color:var(--text-dim);text-decoration:none;opacity:.7}
-          .ew3-ot,.ew3-ot .ew3-copy,.ew3-copy.ew3-ot-text{color:var(--text-ot)}
-          .ew3-ot .ew3-copy{text-decoration-color:var(--text-ot)}
+          .ew3-ot,.ew3-ot .ew3-copy,.ew3-copy.ew3-ot-text{color:var(--pill-amber-color)}
+          .ew3-ot .ew3-copy{text-decoration-color:var(--pill-amber-color)}
           .ew3-empty{color:var(--text-dim);cursor:default;text-decoration:none;pointer-events:none}
-          .ew3-ot .ew3-empty,.ew3-empty.ew3-ot-text{color:var(--text-ot);opacity:1}
+          .ew3-ot .ew3-empty,.ew3-empty.ew3-ot-text{color:var(--pill-amber-color);opacity:1}
           .ew3-num{font-variant-numeric:tabular-nums}
           .ew3-table tbody .ew3-num,.ew3-table tbody .ew3-code-cell{font-weight:400}
           .ew3-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
@@ -26284,6 +26285,7 @@
           .ew3-day-cell{font-weight:700;white-space:nowrap}
           .ew3-empty-row td{color:var(--text-dim)}
           .ew3-code-cell{font-family:'DM Mono',monospace;font-size:13px}
+          .ew3-callout-index{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-muted);text-align:center;font-weight:500}
           .ew3-callout-date{font-size:13px;color:var(--text-primary)}
           .ew3-desc-cell{color:var(--text-secondary);font-size:13px}
           .ew3-callout-table .ew3-code-cell{font-weight:400}
@@ -26364,10 +26366,10 @@
           .ew3-copy:hover{color:var(--accent);text-decoration-color:var(--accent)}
           .ew3-copy.copied{color:var(--text-dim);text-decoration:none;opacity:.7}
           .ew3-copy.copied:hover{color:var(--text-secondary);opacity:.9}
-          .ew3-ot,.ew3-ot .ew3-copy,.ew3-copy.ew3-ot-text{color:var(--text-ot)}
-          .ew3-ot .ew3-copy{text-decoration-color:var(--text-ot)}
+          .ew3-ot,.ew3-ot .ew3-copy,.ew3-copy.ew3-ot-text{color:var(--pill-amber-color)}
+          .ew3-ot .ew3-copy{text-decoration-color:var(--pill-amber-color)}
           .ew3-empty{color:var(--text-dim);cursor:default;text-decoration:none;pointer-events:none}
-          .ew3-ot .ew3-empty,.ew3-empty.ew3-ot-text{color:var(--text-ot);opacity:1}
+          .ew3-ot .ew3-empty,.ew3-empty.ew3-ot-text{color:var(--pill-amber-color);opacity:1}
           .ew3-ot .ew3-copy.copied,.ew3-copy.ew3-ot-text.copied{color:var(--text-dim);text-decoration:none;opacity:.7}
           .ew3-num{font-variant-numeric:tabular-nums}
           .ew3-table tbody .ew3-num,.ew3-table tbody .ew3-code-cell{font-weight:400}
@@ -26389,6 +26391,7 @@
           .ew3-mobile-day-name{font-size:13px;font-weight:850;color:var(--text-primary)}
           .ew3-mobile-detail-row td{padding-top:2px;padding-bottom:12px}
           .ew3-code-cell{font-family:'DM Mono',monospace;font-size:13px}
+          .ew3-callout-index{font-family:'DM Mono',monospace;font-size:13px;color:var(--text-muted);text-align:center;font-weight:500}
           .ew3-callout-date{font-size:13px;color:var(--text-primary)}
           .ew3-desc-cell{color:var(--text-secondary);font-size:13px}
           .ew3-callout-table .ew3-code-cell{font-weight:400}
@@ -26415,13 +26418,14 @@
             </div>
             <div class="ew3-progress"><div class="ew3-track"><div id="ew3-progress-fill" class="ew3-fill"></div></div><div id="ew3-progress-count" class="ew3-count">0 / 0</div></div>
           </div>
+
           <div class="ew3-label">Daily Log</div>
           <div class="ew3-card ew3-mobile-table"><table class="ew3-table ew3-mobile-daily"><colgroup><col><col><col><col><col></colgroup><thead><tr><th>Work</th><th>Site</th><th class="ew3-c">D</th><th class="ew3-c">R</th><th class="ew3-c">OT</th></tr></thead><tbody>${dailyMobileRows}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td class="ew3-c ew3-num">${fmtWhole(totalOrd)}</td><td class="ew3-c ew3-num ew3-ot">${fmtWhole(totalOT)}</td></tr></tfoot></table></div>
           <div class="ew3-card ew3-desktop-table"><table class="ew3-table"><colgroup><col style="width:15%"><col style="width:28%"><col style="width:30%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup><thead><tr><th>Day</th><th>Work</th><th>Site</th><th class="ew3-c">Depart</th><th class="ew3-c">Return</th><th class="ew3-c">OT</th></tr></thead><tbody>${dailyRows}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td></td><td class="ew3-c ew3-num">${fmtWhole(totalOrd)}</td><td class="ew3-c ew3-num ew3-ot">${fmtWhole(totalOT)}</td></tr></tfoot></table></div>
-          ${calloutsHtml}
           <div class="ew3-label">Appropriation Codes</div>
           <div class="ew3-card ew3-mobile-table"><table class="ew3-table ew3-mobile-code-table"><colgroup><col><col><col><col></colgroup><thead><tr><th class="ew3-c">Ord</th><th class="ew3-c">OT</th><th class="ew3-c">Code</th><th>Description</th></tr></thead><tbody>${codeMobileRows}</tbody><tfoot><tr><td class="ew3-c ew3-num">${fmtCode(Math.round(totalOrd))}</td><td class="ew3-c ew3-num ew3-ot">${fmtCode(totalOT)}</td><td colspan="2"></td></tr></tfoot></table></div>
           <div class="ew3-card ew3-desktop-table"><table class="ew3-table ew3-code-table"><colgroup><col style="width:10%"><col style="width:10%"><col style="width:24%"><col style="width:56%"></colgroup><thead><tr><th class="ew3-c">Ord</th><th class="ew3-c">OT</th><th class="ew3-c">Code</th><th>Description</th></tr></thead><tbody>${codeRows}</tbody><tfoot><tr><td class="ew3-c ew3-num">${fmtCode(Math.round(totalOrd))}</td><td class="ew3-c ew3-num ew3-ot">${fmtCode(totalOT)}</td><td colspan="2"></td></tr></tfoot></table></div>
+          ${calloutsHtml}
           <p class="ew3-foot">Hours auto-calculated. Per-day cap: Mon–Thu 8h · Fri 7h · Sat/Sun 0h. Anything over → OT (you place the band).</p>
         </div>`;
     }
