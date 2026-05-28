@@ -7303,11 +7303,9 @@
     }
 
     .sum-table-wrap.open {
-      max-height: 380px;
-      overflow-y: auto;
+      max-height: 1000px;
+      overflow-y: visible;
       opacity: 1;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(var(--accent-rgb), 0.25) transparent;
     }
 
     .sum-table-wrap.open::-webkit-scrollbar {
@@ -17667,6 +17665,9 @@
       .desk-panel-summary .sum-table-wrap.open {
         max-height: calc(100vh - 610px);
         min-height: 250px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(var(--accent-rgb), 0.25) transparent;
       }
 
       .desk-summary-bar {
@@ -21056,7 +21057,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.44';
+    const VERSION = '6.4.45';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
