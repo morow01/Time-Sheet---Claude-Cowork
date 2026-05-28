@@ -7303,8 +7303,8 @@
     }
 
     .sum-table-wrap.open {
-      max-height: 1000px;
-      overflow-y: visible;
+      max-height: 3000px;
+      overflow: visible;
       opacity: 1;
     }
 
@@ -17666,6 +17666,7 @@
         max-height: calc(100vh - 610px);
         min-height: 250px;
         overflow-y: auto;
+        overflow-x: hidden;
         scrollbar-width: thin;
         scrollbar-color: rgba(var(--accent-rgb), 0.25) transparent;
       }
@@ -21057,7 +21058,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.45';
+    const VERSION = '6.4.46';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
