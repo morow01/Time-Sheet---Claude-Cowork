@@ -21015,7 +21015,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.30';
+    const VERSION = '6.4.31';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -43084,7 +43084,8 @@
 
       // No timeline connectors — use co-card class to suppress ::before/::after
       const isSel = state.coSelectionMode && state.selectedCallouts.has(id);
-      let cardHtml = `<div class="activity-card co-card ${isExpanded ? 'expanded' : ''} ${state.coSelectionMode && !isNew ? 'co-selectable' : ''} ${isSel ? 'co-selected' : ''}" data-co-id="${esc(id)}" style="margin:0 0 8px;position:relative;${isNew && !isExpanded ? 'border-style:dashed;' : ''}">`;
+      const isDraft = isNew || (co && co._draft);
+      let cardHtml = `<div class="activity-card co-card ${isExpanded ? 'expanded' : ''} ${state.coSelectionMode && !isNew ? 'co-selectable' : ''} ${isSel ? 'co-selected' : ''} ${isDraft ? 'is-draft' : ''}" data-co-id="${esc(id)}" style="margin:0 0 8px;position:relative;${isNew && !isExpanded ? 'border-style:dashed;' : ''}">`;
       // Collapsed header — fault (description) is large, site (location) is small below
       cardHtml += `<div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer"
           ${!isNew ? `onpointerdown="coPressStart(event,'${esc(id)}')" onpointerup="coPressEnd(event)" onpointercancel="coPressEnd(event)" oncontextmenu="event.preventDefault()"` : ''}
@@ -43098,6 +43099,7 @@
               <div class="act-pill-row">
                 ${ticket ? `<span class="pill-hrs" style="font-family:var(--font-mono)">${esc(ticket)}</span>` : ''}
                 ${timeStr ? `<span class="pill-hrs" style="background:var(--bg-code-group)">${clockSvg}${esc(timeStr)}</span>` : ''}
+                ${isDraft ? `<span class="pill-draft">Draft</span>` : ''}
               </div>
             </div>
           </div>
@@ -43333,16 +43335,22 @@
         weekData.callouts.push(co);
         state.calloutsExpandedId = id;
         state.calloutsEditId = id;
-        // Update the DOM card's data-co-id, onclick handler, and button label
+        // Update the DOM card's data-co-id, onclick handler, class, and style
         const card = document.querySelector('[data-co-id="__new__"]');
         if (card) {
           card.setAttribute('data-co-id', id);
+          card.classList.add('is-draft');
           card.style.borderStyle = 'solid'; // remove dashed border
           const header = card.querySelector('[onclick*="coToggleCard"]');
           if (header) header.setAttribute('onclick', `coToggleCard('${id}')`);
-          // Update button label from "Discard" to "Delete Callout"
-          const delBtn = card.querySelector('.act-action-delete');
-          if (delBtn) delBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout`;
+          // Add the Draft pill to the collapsed header's badge row immediately
+          const pillRow = card.querySelector('.act-pill-row');
+          if (pillRow && !pillRow.querySelector('.pill-draft')) {
+            const draftPill = document.createElement('span');
+            draftPill.className = 'pill-draft';
+            draftPill.textContent = 'Draft';
+            pillRow.appendChild(draftPill);
+          }
         }
         return co;
       }
@@ -43549,6 +43557,27 @@
         render();
         return;
       }
+
+      const weekData = state.callouts.weeks[state.calloutsSelectedWeek];
+      if (weekData) {
+        const co = (weekData.callouts || []).find(c => c.id === deleteId);
+        if (co && co._draft) {
+          // Discard draft immediately without confirmation (since it was never synced/saved to DB)
+          const idx = weekData.callouts.indexOf(co);
+          if (idx >= 0) {
+            weekData.callouts.splice(idx, 1);
+            saveCallouts();
+            showToast('Draft discarded');
+            state.calloutsExpandedId = null;
+            state.calloutsEditId = null;
+            state.calloutsNotesOpen = false;
+            if (_coModalState) { _coModalState = null; const ov = document.getElementById('co-modal-overlay'); if (ov) ov.style.display = 'none'; document.body.style.overflow = ''; }
+            render();
+          }
+          return;
+        }
+      }
+
       showConfirm(
         'Delete Callout?',
         'This cannot be undone.',
