@@ -21046,7 +21046,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.48';
+    const VERSION = '6.4.49';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -49347,7 +49347,7 @@ var _ttEnsureTrailingGuard = false;
       var doc = editor.state.doc;
       var last = doc.lastChild;
       if (!last) return;
-      var blockingTypes = { table: 1, collapsible: 1 };
+      var blockingTypes = { table: 1, collapsible: 1, image: 1 };
       if (!blockingTypes[last.type.name]) return;
       _ttEnsureTrailingGuard = true;
       try {
