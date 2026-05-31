@@ -21046,7 +21046,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.49';
+    const VERSION = '6.4.50';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -46917,9 +46917,9 @@ QUESTION: ${query}`;
               },
             },
             align: {
-              default: 'center',
-              parseHTML: el => el.getAttribute('data-align') || 'center',
-              renderHTML: attrs => attrs.align && attrs.align !== 'center'
+              default: 'left',
+              parseHTML: el => el.getAttribute('data-align') || 'left',
+              renderHTML: attrs => attrs.align && attrs.align !== 'left'
                 ? { 'data-align': attrs.align }
                 : {},
             },
@@ -46946,7 +46946,7 @@ QUESTION: ${query}`;
             // left / center / right: block layout, no wrap.
             const applyAttrs = (attrs) => {
               const width = attrs.width || '50%';
-              const align = attrs.align || 'center';
+              const align = attrs.align || 'left';
               if (align === 'wrap-left' || align === 'wrap-right') {
                 const side = align === 'wrap-left' ? 'left' : 'right';
                 container.style.float = side;
