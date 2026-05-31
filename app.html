@@ -9712,17 +9712,7 @@
       -webkit-user-drag: none;
     }
 
-    /* Anchor toolbar to the near edge when image is floated, so it never clips off-screen */
-    .img-resize-wrap[data-float="left"] .img-resize-presets {
-      left: 0;
-      transform: none;
-    }
-
-    .img-resize-wrap[data-float="right"] .img-resize-presets {
-      left: auto;
-      right: 0;
-      transform: none;
-    }
+    /* Float-specific toolbar anchoring removed — JS now handles all positioning via position:fixed */
 
     .img-resize-presets .preset-divider {
       width: 1px;
@@ -9746,10 +9736,9 @@
     }
 
     .img-resize-presets {
-      position: absolute;
-      bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
+      /* position:fixed so it escapes any overflow:hidden/auto parent (e.g. note-inline-scroll).
+         top/left are set in viewport coords by selectNode()→adjustPosition(). */
+      position: fixed;
       display: flex;
       flex-wrap: nowrap;
       align-items: center;
@@ -9762,10 +9751,9 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.15s;
-      z-index: 10;
+      z-index: 99990;
       white-space: nowrap;
       box-shadow: 0 2px 12px rgba(var(--shadow-rgb), 0.25);
-      /* Prevent clipping on narrow screens */
       max-width: calc(100vw - 16px);
       overflow-x: auto;
       scrollbar-width: none;
@@ -21058,7 +21046,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.46';
+    const VERSION = '6.4.48';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47429,7 +47417,10 @@ QUESTION: ${query}`;
               }
             });
 
-            container.append(img, presets, handle);
+            // Toolbar lives on document.body so it escapes the ProseMirror
+            // transform:scale() containing block (pinch-zoom) which traps position:fixed.
+            document.body.appendChild(presets);
+            container.append(img, handle);
 
             return {
               dom: container,
@@ -47443,18 +47434,32 @@ QUESTION: ${query}`;
               },
               selectNode() {
                 container.classList.add('selected');
+                // Ensure toolbar is in body (re-append in case it was removed)
+                if (!presets.parentNode || presets.parentNode !== document.body) {
+                  document.body.appendChild(presets);
+                }
+                presets.style.opacity = '1';
+                presets.style.pointerEvents = 'auto';
                 const adjustPosition = () => {
+                  // Toolbar is on document.body with position:fixed — pure viewport coords.
+                  // getBoundingClientRect() on the container is unaffected by its ancestors'
+                  // transforms because it returns the visual (post-transform) rect.
                   const rect = container.getBoundingClientRect();
-                  if (rect.top < 130) {
-                    presets.style.bottom = 'auto';
-                    presets.style.top = 'calc(100% + 8px)';
-                  } else {
-                    presets.style.bottom = 'calc(100% + 8px)';
-                    presets.style.top = 'auto';
-                  }
+                  const toolW = presets.offsetWidth || 300;
+                  const toolH = presets.offsetHeight || 44;
+                  const gap = 8;
+                  // Prefer above the image; flip below if too close to top
+                  const top = rect.top - toolH - gap >= gap
+                    ? rect.top - toolH - gap
+                    : rect.bottom + gap;
+                  // Centre on image, then clamp within viewport
+                  const naturalLeft = rect.left + rect.width / 2 - toolW / 2;
+                  const left = Math.max(gap, Math.min(window.innerWidth - toolW - gap, naturalLeft));
+                  presets.style.top = top + 'px';
+                  presets.style.left = left + 'px';
                 };
-                adjustPosition();
-                // Listen to scroll events in capture phase to handle nested container scroll
+                // rAF so offsetWidth is measured after the browser paints the toolbar
+                requestAnimationFrame(adjustPosition);
                 container._imgOnScroll = adjustPosition;
                 window.addEventListener('scroll', container._imgOnScroll, { capture: true, passive: true });
 
@@ -47466,6 +47471,8 @@ QUESTION: ${query}`;
               },
               deselectNode() { 
                 container.classList.remove('selected');
+                presets.style.opacity = '0';
+                presets.style.pointerEvents = 'none';
                 if (container._imgOnScroll) {
                   window.removeEventListener('scroll', container._imgOnScroll, { capture: true });
                   container._imgOnScroll = null;
@@ -47475,6 +47482,8 @@ QUESTION: ${query}`;
                 if (container._imgOnScroll) {
                   window.removeEventListener('scroll', container._imgOnScroll, { capture: true });
                 }
+                // Remove toolbar from body since it no longer lives in the ProseMirror DOM
+                if (presets.parentNode) presets.parentNode.removeChild(presets);
                 container._imgGetPos = null; 
               },
             };
