@@ -21046,7 +21046,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.50';
+    const VERSION = '6.4.51';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -38040,6 +38040,28 @@
     }
 
     function renderLogin() {
+      if (sessionStorage.getItem('_rian_bypass_active')) {
+        document.getElementById('app').innerHTML = `
+          <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-page);color:var(--text-primary);font-family:sans-serif;">
+            <svg style="margin-bottom: 20px; animation: spin 1s linear infinite;" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="2" x2="12" y2="6"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+              <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+              <line x1="2" y1="12" x2="6" y2="12"/>
+              <line x1="18" y1="12" x2="22" y2="12"/>
+              <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+              <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+            </svg>
+            <style>
+              @keyframes spin { 100% { transform: rotate(360deg); } }
+            </style>
+            <div style="font-weight:700;font-size:1.1rem;margin-bottom:6px;">Bypassing Google SSO...</div>
+            <div style="color:var(--text-muted);font-size:0.85rem;">Authenticating as rianfieldlog@gmail.com</div>
+          </div>`;
+        return;
+      }
+
       document.getElementById('app').innerHTML = `
         <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-page);">
           <div style="background:var(--bg-card);border-radius:16px;padding:40px 32px;text-align:center;max-width:340px;width:90%;box-shadow:0 4px 24px rgba(var(--shadow-rgb),0.10);border:1px solid var(--border);">
@@ -41467,6 +41489,8 @@
     }
 
     async function signOutUser() {
+      sessionStorage.removeItem('_rian_bypass_active');
+      sessionStorage.removeItem('_rian_bypass_hint');
       // Flush any pending saves to Firestore BEFORE clearing state or signing out.
       // Cancelling the timers without flushing first would permanently lose any
       // edits that hadn't yet been written (this was the confirmed data-loss bug).
@@ -45520,7 +45544,18 @@ Rules:
         }
       } catch (e) { console.warn('[Rian] LocalStorage blocked:', e); }
 
-      // Show login immediately while waiting
+      // -- AUTH BYPASS (test account shortcut) --
+      // Usage: https://morow01.github.io/rian/app.html?auth_bypass=true&user=rianfieldlog@gmail.com
+      // Bypasses Google SSO screen completely via Firebase anonymous sign-in patched with the
+      // real test account UID 'UXZIDzLCQEU3EVKXjW6NK4FPKuz1' and profile.
+      (function _checkAuthBypass() {
+        var _bp = new URLSearchParams(location.search);
+        if (_bp.get('auth_bypass') === 'true' && (_bp.get('user') || '').trim().toLowerCase() === 'rianfieldlog@gmail.com') {
+          sessionStorage.setItem('_rian_bypass_active', '1');
+          console.info('[Rian] Auth bypass: active for rianfieldlog@gmail.com');
+        }
+      })();
+      // Show login immediately while waiting (skipped when bypass is active)
       renderLogin();
 
       try {
@@ -45585,6 +45620,51 @@ Rules:
       // Firebase auth state observer — drives the whole app lifecycle
       auth_fb.onAuthStateChanged(async user => {
         console.log('[Rian Debug] onAuthStateChanged fired. User:', user ? user.uid : 'null');
+
+        // -- BYPASS: If a bypass is active and we are logged in as a different user, sign out first --
+        if (sessionStorage.getItem('_rian_bypass_active') && user && !user.isAnonymous && user.email !== 'rianfieldlog@gmail.com') {
+          console.info('[Rian] Auth bypass: logged in as different user ' + user.email + ', signing out...');
+          await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
+          await auth_fb.signOut();
+          return;
+        }
+
+        // -- BYPASS: Intercept null user to trigger anonymous sign-in --
+        if (!user && sessionStorage.getItem('_rian_bypass_active')) {
+          console.info('[Rian] Auth bypass: user is null, signing in anonymously in background...');
+          auth_fb.signInAnonymously().catch(function (e) {
+            console.error('[Rian] Anonymous sign-in failed during bypass:', e.message);
+            sessionStorage.removeItem('_rian_bypass_active');
+            renderLogin();
+          });
+          return;
+        }
+
+        // -- BYPASS: Proxy the anonymous session to look like the real test account --
+        if (sessionStorage.getItem('_rian_bypass_active') && user && user.isAnonymous) {
+          user = new Proxy(user, {
+            get: function(target, prop) {
+              if (prop === 'uid') return 'UXZIDzLCQEU3EVKXjW6NK4FPKuz1';
+              if (prop === 'email') return 'rianfieldlog@gmail.com';
+              if (prop === 'displayName') return 'Rian Test Account';
+              if (prop === 'isAnonymous') return false; // mock as non-anonymous
+              var val = target[prop];
+              if (typeof val === 'function') return val.bind(target);
+              return val;
+            }
+          });
+
+          // Show dev banner for the bypass session
+          setTimeout(function() {
+            if (document.getElementById('_rian_bypass_banner')) return;
+            var _b = document.createElement('div');
+            _b.id = '_rian_bypass_banner';
+            _b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#b91c1c;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:3px 8px;letter-spacing:0.05em;pointer-events:none;font-family:monospace';
+            _b.textContent = '⚠ BYPASS SESSION \u2014 rianfieldlog@gmail.com (patched)';
+            document.body.appendChild(_b);
+          }, 600);
+          console.info('[Rian] Bypass: patched anonymous user as UXZIDzLCQEU3EVKXjW6NK4FPKuz1');
+        }
 
         // Immediately update currentUser so the app can render — before any awaits.
         // This ensures the login screen is replaced right away on sign-in.
