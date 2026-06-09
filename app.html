@@ -21046,7 +21046,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.51';
+    const VERSION = '6.4.57';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21154,9 +21154,157 @@
     }
 
     let db_fs, auth_fb, storage_fb;
+    let firebaseMockActive = false;
+    if (typeof firebase === 'undefined' || !firebase.initializeApp || !firebase.auth || !firebase.firestore || !firebase.storage) {
+      firebaseMockActive = true;
+      const mockFirebase = {
+        initializeApp: () => {},
+        auth: function() {
+          return {
+            onAuthStateChanged: function(callback) {
+              setTimeout(() => {
+                if (localStorage.getItem('rian_local_only') !== '0') {
+                  localStorage.setItem('rian_local_only', '1');
+                }
+                callback(null);
+              }, 100);
+              return () => {};
+            },
+            signOut: async () => {
+              localStorage.removeItem('rian_local_only');
+              location.reload();
+            },
+            signInAnonymously: async () => {
+              throw new Error('Cloud features are unavailable without Firebase SDK');
+            },
+            get currentUser() {
+              if (localStorage.getItem('rian_local_only') === '1') {
+                return {
+                  uid: 'local_technician',
+                  isLocalOnly: true,
+                  displayName: 'Local Technician',
+                  email: 'offline@rian.local'
+                };
+              }
+              return null;
+            }
+          };
+        },
+        firestore: function() {
+          return {
+            doc: () => ({
+              set: async () => {},
+              get: async () => ({ exists: false, data: () => ({}) }),
+              delete: async () => {},
+              update: async () => {},
+              onSnapshot: () => () => {},
+              collection: () => ({
+                get: async () => ({ size: 0, docs: [] }),
+                doc: () => ({ set: async () => {}, get: async () => ({ exists: false, data: () => ({}) }) })
+              })
+            }),
+            collection: () => ({
+              get: async () => ({ size: 0, docs: [] }),
+              doc: () => ({
+                set: async () => {},
+                get: async () => ({ exists: false, data: () => ({}) }),
+                delete: async () => {},
+                update: async () => {},
+                collection: () => ({
+                  get: async () => ({ size: 0, docs: [] }),
+                  doc: () => ({ set: async () => {}, get: async () => ({ exists: false, data: () => ({}) }) })
+                })
+              })
+            }),
+            batch: () => ({
+              set: () => {},
+              delete: () => {},
+              commit: async () => {}
+            }),
+            enablePersistence: function() { return Promise.resolve(); }
+          };
+        },
+        storage: function() {
+          return {
+            ref: () => ({
+              child: () => ({
+                put: async () => { throw new Error('Storage unavailable'); },
+                getDownloadURL: async () => { throw new Error('Storage unavailable'); }
+              })
+            })
+          };
+        }
+      };
+      mockFirebase.auth.GoogleAuthProvider = class {
+        constructor() { this.parameters = {}; }
+        setCustomParameters(params) { Object.assign(this.parameters, params); }
+      };
+      mockFirebase.auth.GoogleAuthProvider.credential = () => ({});
+      try {
+        window.firebase = mockFirebase;
+      } catch (e) {
+        Object.assign(window.firebase, mockFirebase);
+      }
+    }
+
     try {
       firebase.initializeApp(firebaseConfig);
-      db_fs = firebase.firestore();
+      const real_db_fs = firebase.firestore();
+      db_fs = new Proxy(real_db_fs, {
+        get: function(target, prop) {
+          if (localStorage.getItem('rian_local_only') === '1') {
+            if (prop === 'collection') {
+              return function(path) {
+                return {
+                  get: async () => ({ size: 0, docs: [] }),
+                  doc: function() {
+                    return {
+                      set: async () => {},
+                      get: async () => ({ exists: false, data: () => ({}) }),
+                      delete: async () => {},
+                      update: async () => {},
+                      collection: () => ({
+                        get: async () => ({ size: 0, docs: [] }),
+                        doc: () => ({ set: async () => {}, get: async () => ({ exists: false, data: () => ({}) }) })
+                      })
+                    };
+                  },
+                  orderBy: function() { return this; },
+                  limit: function() { return this; },
+                  add: async () => ({ id: 'mock-id' })
+                };
+              };
+            }
+            if (prop === 'doc') {
+              return function(path) {
+                return {
+                  set: async () => {},
+                  get: async () => ({ exists: false, data: () => ({}) }),
+                  delete: async () => {},
+                  update: async () => {},
+                  onSnapshot: () => () => {},
+                  collection: () => ({
+                    get: async () => ({ size: 0, docs: [] }),
+                    doc: () => ({ set: async () => {}, get: async () => ({ exists: false, data: () => ({}) }) })
+                  })
+                };
+              };
+            }
+            if (prop === 'batch') {
+              return function() {
+                return {
+                  set: () => {},
+                  delete: () => {},
+                  commit: async () => {}
+                };
+              };
+            }
+          }
+          const val = target[prop];
+          if (typeof val === 'function') return val.bind(target);
+          return val;
+        }
+      });
       auth_fb = firebase.auth();
       storage_fb = firebase.storage();
       // FCM removed — using raw Web Push API
@@ -22268,7 +22416,7 @@
 
     async function _uploadTipTapImage(dataUrl) {
       const key = _currentTipTapImageKey();
-      if (!key || !state.currentUser || !storage_fb) return { src: dataUrl, uploaded: false, key: null };
+      if (!key || !state.currentUser || state.currentUser.isLocalOnly || !storage_fb) return { src: dataUrl, uploaded: false, key: null };
       const src = await _uploadNoteImage(dataUrl, key);
       return { src: src, uploaded: true, key: key };
     }
@@ -22494,7 +22642,7 @@
     }
 
     async function _migrateActivityNoteImagesToStorage(weekData, weekStart) {
-      if (!weekData || !weekData.days || !state.currentUser || !storage_fb) return 0;
+      if (!weekData || !weekData.days || !state.currentUser || state.currentUser.isLocalOnly || !storage_fb) return 0;
       let migrated = 0;
       for (let di = 0; di < weekData.days.length; di++) {
         const day = weekData.days[di];
@@ -22716,10 +22864,306 @@
     }
 
     // ============================================================
+    // LOCAL MODE / OFFLINE HELPERS
+    // ============================================================
+    async function startLocalMode() {
+      try {
+        localStorage.setItem('rian_local_only', '1');
+      } catch (e) {}
+      
+      const mockUser = {
+        uid: 'local_technician',
+        email: 'local@technician.offline',
+        displayName: 'Offline Technician',
+        photoURL: '',
+        isLocalOnly: true
+      };
+      
+      state.currentUser = mockUser;
+      localStorage.setItem('rian_last_uid', mockUser.uid);
+      localStorage.setItem('rian_user_name', mockUser.displayName);
+      localStorage.setItem('rian_user_email', mockUser.email);
+      localStorage.setItem('rian_user_photo', mockUser.photoURL);
+      
+      // Load local data and render
+      const friday = getCurrentFriday();
+      const ws = dateToStr(friday);
+      
+      await loadWeek(ws);
+      
+      const storedNotes = await dbGet('notes', 'notes_all');
+      if (storedNotes && storedNotes.data && (!storedNotes.userId || storedNotes.userId === mockUser.uid)) {
+        state.notes = storedNotes.data;
+      }
+      
+      await loadNotes();
+      await loadCallouts();
+      await loadJournal();
+      await loadAvailability();
+      await loadRoutines();
+      
+      render();
+      showToast('✓ Local Mode active');
+    }
+
+    function exitLocalMode() {
+      closeThemeMenu();
+      document.getElementById('local-exit-modal').classList.remove('hidden');
+    }
+
+    function cancelExitLocalMode() {
+      document.getElementById('local-exit-modal').classList.add('hidden');
+    }
+
+    async function commitExitLocalMode(keepData) {
+      document.getElementById('local-exit-modal').classList.add('hidden');
+      try {
+        localStorage.removeItem('rian_local_only');
+      } catch (e) {}
+      
+      if (!keepData) {
+        await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
+      }
+      
+      state.currentUser = null;
+      state.weekData = null;
+      state.notes = [];
+      remindersData = [];
+      state.routines = null;
+      
+      if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
+      if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
+      if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
+      if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
+      if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
+      
+      if (_reminderPollId) { clearInterval(_reminderPollId); _reminderPollId = null; }
+      
+      renderLogin();
+    }
+
+    function disconnectCloudGoOffline() {
+      closeThemeMenu();
+      document.getElementById('local-disconnect-modal').classList.remove('hidden');
+    }
+
+    function cancelDisconnect() {
+      document.getElementById('local-disconnect-modal').classList.add('hidden');
+    }
+
+    async function commitDisconnect(copyData) {
+      document.getElementById('local-disconnect-modal').classList.add('hidden');
+      showToast('Going offline…', 10000);
+      try {
+        if (saveTimer && state.weekStart && state.weekData && state.currentUser) {
+          clearTimeout(saveTimer);
+          saveTimer = null;
+          await dbPut('weeks', { weekStart: state.weekStart, userId: state.currentUser.uid, data: state.weekData, updatedAt: state.weekData._updatedAt || Date.now() });
+          await fsSetWeek(state.weekStart, state.weekData).catch(e => console.warn('[Rian]', e));
+        }
+        if (notesSaveTimer && state.notes && state.currentUser) {
+          clearTimeout(notesSaveTimer);
+          notesSaveTimer = null;
+          const ts = Date.now();
+          await dbPut('notes', { id: 'notes_all', userId: state.currentUser.uid, data: state.notes, updatedAt: ts });
+          await fsSetNotes(state.notes).catch(e => console.warn('[Rian]', e));
+        }
+        
+        const cloudUid = state.currentUser.uid;
+        
+        if (copyData) {
+          await migrateCloudToLocal(cloudUid);
+        } else {
+          await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
+        }
+        
+        localStorage.setItem('rian_local_only', '1');
+        
+        if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
+        if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
+        if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
+        if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
+        if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
+        if (_jUnsubNb) { _jUnsubNb(); _jUnsubNb = null; }
+        if (_jUnsubSec) { _jUnsubSec(); _jUnsubSec = null; }
+        if (_jUnsubPg) { _jUnsubPg(); _jUnsubPg = null; }
+        
+        await auth_fb.signOut();
+        await startLocalMode();
+      } catch (e) {
+        showToast('Disconnect failed: ' + e.message);
+      }
+    }
+
+    async function migrateCloudToLocal(cloudUid) {
+      const allWeeks = await dbGetAll('weeks');
+      for (const w of allWeeks) {
+        if (w.userId === cloudUid) {
+          await dbPut('weeks', {
+            ...w,
+            userId: 'local_technician',
+            updatedAt: w.updatedAt || Date.now()
+          });
+        }
+      }
+      const allNotes = await dbGetAll('notes');
+      for (const n of allNotes) {
+        if (n.userId === cloudUid) {
+          await dbPut('notes', {
+            ...n,
+            userId: 'local_technician',
+            updatedAt: n.updatedAt || Date.now()
+          });
+        }
+      }
+    }
+
+    let _pendingCloudUid = null;
+    let _pendingLocalUid = null;
+    
+    function promptMergeLocalToCloud(cloudUid, localUid) {
+      _pendingCloudUid = cloudUid;
+      _pendingLocalUid = localUid;
+      document.getElementById('local-merge-modal').classList.remove('hidden');
+    }
+    
+    async function commitLocalMerge() {
+      if (!_pendingCloudUid || !_pendingLocalUid) return;
+      document.getElementById('local-merge-modal').classList.add('hidden');
+      showToast('Merging offline data to Google Account…', 10000);
+      try {
+        await migrateLocalToCloud(_pendingCloudUid, _pendingLocalUid);
+        const friday = getCurrentFriday();
+        await loadWeek(dateToStr(friday));
+        await loadNotes();
+        await loadCallouts();
+        await loadJournal();
+        await loadAvailability();
+        await loadRoutines();
+        showToast('✓ Data merged successfully');
+      } catch (e) {
+        showToast('Merge failed: ' + e.message);
+      } finally {
+        _pendingCloudUid = null;
+        _pendingLocalUid = null;
+      }
+    }
+    
+    function discardLocalMerge() {
+      if (!_pendingLocalUid) return;
+      showConfirm(
+        'Discard offline data?',
+        'Are you sure you want to permanently delete your offline timesheets and notes? This cannot be undone.',
+        async () => {
+          showToast('Cleaning up offline data…');
+          try {
+            await Promise.all([dbClear('weeks'), dbClear('notes')]);
+            document.getElementById('local-merge-modal').classList.add('hidden');
+            const friday = getCurrentFriday();
+            await loadWeek(dateToStr(friday));
+            await loadNotes();
+            await loadCallouts();
+            await loadJournal();
+            await loadAvailability();
+            await loadRoutines();
+            showToast('✓ Offline data discarded');
+          } catch (e) {
+            showToast('Error: ' + e.message);
+          } finally {
+            _pendingCloudUid = null;
+            _pendingLocalUid = null;
+          }
+        }
+      );
+    }
+
+    async function cancelLocalMerge() {
+      try {
+        localStorage.setItem('rian_local_only', '1');
+      } catch (e) {}
+      document.getElementById('local-merge-modal').classList.add('hidden');
+      if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
+      if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
+      if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
+      if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
+      if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
+      await auth_fb.signOut();
+      await startLocalMode();
+    }
+
+    async function migrateLocalToCloud(cloudUid, localUid) {
+      const allWeeks = await dbGetAll('weeks');
+      for (const w of allWeeks) {
+        if (w.userId === localUid) {
+          const updatedWeek = {
+            ...w,
+            userId: cloudUid,
+            updatedAt: w.updatedAt || Date.now()
+          };
+          await dbPut('weeks', updatedWeek);
+          if (updatedWeek.data) {
+            await fsSetWeek(w.weekStart, updatedWeek.data).catch(e => console.warn('[Rian] Merge upload failed for week ' + w.weekStart, e));
+          }
+        }
+      }
+      const allNotes = await dbGetAll('notes');
+      for (const n of allNotes) {
+        if (n.userId === localUid) {
+          const updatedNote = {
+            ...n,
+            userId: cloudUid,
+            updatedAt: n.updatedAt || Date.now()
+          };
+          await dbPut('notes', updatedNote);
+          
+          try {
+            if (n.id === 'notes_all' && n.data) {
+              await fsSetNotes(n.data);
+            } else if (n.id === 'reminders_all' && n.data) {
+              await fsSetReminders(n.data);
+            } else if (n.id === 'callouts_all' && n.data) {
+              await fsSetCallouts(n.data);
+            } else if (n.id === 'j_notebooks' && n.data) {
+              await fsSetJNotebooks(n.data);
+            } else if (n.id === 'j_sections' && n.data) {
+              await fsSetJSections(n.data);
+            } else if (n.id === 'j_pages' && n.data) {
+              await fsSetJPages(n.data);
+            } else if (n.id === 'routines_all' && n.data) {
+              const ref = userDoc('data/routines');
+              if (ref) await ref.set({ ...n.data, _updatedAt: Date.now() });
+            } else if (n.id === 'categories_custom' && n.data) {
+              const ref = userDoc('data/categories');
+              if (ref) await ref.set({ categories: n.data, disabledCats: state.disabledCats || [], _updatedAt: Date.now() });
+            }
+          } catch (e) {
+            console.warn('[Rian] Merge upload failed for notes key ' + n.id, e);
+          }
+        }
+      }
+    }
+
+    function connectGoogleAccount() {
+      closeThemeMenu();
+      signInWithGoogle();
+    }
+
+    // ============================================================
     // FIREBASE SYNC HELPERS
     // ============================================================
     function userDoc(path) {
       if (!state.currentUser) return null;
+      if (state.currentUser.isLocalOnly) {
+        return {
+          get: async () => ({ exists: false, data: () => ({}) }),
+          set: async () => {},
+          update: async () => {},
+          delete: async () => {},
+          onSnapshot: () => {
+            return () => {}; // dummy unsubscribe function
+          }
+        };
+      }
       return db_fs.doc(`users/${state.currentUser.uid}/${path}`);
     }
 
@@ -25165,6 +25609,7 @@
     async function sendWeeklyEmail(fromPreview) {
       if (!state.weekData) { showToast('No week data to send.'); return; }
       if (!state.currentUser) { showToast('Please sign in to send email.'); return; }
+      if (state.currentUser.isLocalOnly) { showToast('Email requires a connected Google Account.'); return; }
       const _email = state.currentUser.email || state.currentUser._rian_email || localStorage.getItem('rian_user_email') || '';
       if (!_email) { showToast('No email address on this account — sign out and sign in with your Google account.'); return; }
       showConfirm(
@@ -25488,6 +25933,19 @@
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
                 <div class="menu-avatar-wrap">${avatarHtml}</div>
+                ${u && u.isLocalOnly ? `
+                <div class="menu-signed-in-label" style="color:var(--text-ot);font-weight:700;">Local Mode</div>
+                <div class="menu-display-name">${esc(displayName)}</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:2px;">Offline logs only</div>
+                <button class="menu-signout-btn" onclick="connectGoogleAccount()" style="background:var(--accent);color:#fff;border:none;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                  Connect Google (Sync)
+                </button>
+                <button class="menu-signout-btn" onclick="exitLocalMode()" style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--text-secondary)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Exit Local Mode
+                </button>
+                ` : `
                 <div class="menu-signed-in-label">Signed in as</div>
                 <div class="menu-display-name">${esc(displayName)}</div>
                 ${_rEmail ? '<div style="font-size:11px;color:var(--text-dim);margin-top:2px;word-break:break-all;">' + esc(_rEmail) + '</div>' : ''}
@@ -25495,6 +25953,7 @@
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                   Sign Out
                 </button>
+                `}
               </div>
 
               <!-- Navigation section -->
@@ -25632,6 +26091,7 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Data Management</div>
                 <div class="menu-card">
+                  ${!state.currentUser.isLocalOnly ? `
                   <button class="menu-row" onclick="openSnapshotModal()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Snapshots / Recover</span><span class="menu-row-sub">Browse and restore saved versions</span></span>
@@ -25642,6 +26102,12 @@
                     <span class="menu-row-body"><span class="menu-row-label">Cloud Backups</span><span class="menu-row-sub">View &amp; restore daily snapshots</span></span>
                     ${chev}
                   </button>
+                  <button class="menu-row" onclick="disconnectCloudGoOffline();closeThemeMenu()">
+                    <span class="menu-row-icon" style="color:var(--text-ot)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Disconnect Cloud (Go Offline)</span><span class="menu-row-sub">Switch to local-only offline mode</span></span>
+                    ${chev}
+                  </button>
+                  ` : ''}
                   <button class="menu-row" onclick="exportAllData();closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Export All Data</span><span class="menu-row-sub">Download as JSON</span></span>
@@ -25662,11 +26128,13 @@
                     <span class="menu-row-body"><span class="menu-row-label">Clear All My Data</span></span>
                     ${chev}
                   </button>
+                  ${!state.currentUser.isLocalOnly ? `
                   <button class="menu-row danger" onclick="deleteAccount();closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="17" y1="11" x2="23" y2="17"/><line x1="23" y1="11" x2="17" y2="17"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Delete Account</span><span class="menu-row-sub">Permanently removes all data</span></span>
                     ${chev}
                   </button>
+                  ` : ''}
                 </div>
               </div>
 
@@ -36799,12 +37267,31 @@
     async function _loadAllWeeks() {
       if (!state.currentUser) return [];
       const uid = state.currentUser.uid;
-      const snap = await db_fs.collection('users/' + uid + '/weeks').get().catch(() => null);
-      if (!snap) return [];
+      let dataList = [];
+      if (state.currentUser.isLocalOnly) {
+        try {
+          const localWeeks = await dbGetAll('weeks');
+          for (const w of localWeeks) {
+            if (w.userId === uid && w.data) {
+              dataList.push({ id: w.weekStart, data: w.data });
+            }
+          }
+        } catch (e) {
+          console.warn('[Rian] Failed to load local weeks for history:', e);
+        }
+      } else {
+        const snap = await db_fs.collection('users/' + uid + '/weeks').get().catch(() => null);
+        if (snap) {
+          snap.forEach(function (doc) {
+            dataList.push({ id: doc.id, data: doc.data() });
+          });
+        }
+      }
+      if (dataList.length === 0) return [];
       const results = [];
-      snap.forEach(function (doc) {
-        const weekStart = doc.id;
-        const data = doc.data();
+      dataList.forEach(function (item) {
+        const weekStart = item.id;
+        const data = item.data;
         let totalOrd = 0, totalOT = 0, taskCount = 0;
         const sites = new Set();
         const tasks = [];
@@ -36814,6 +37301,7 @@
             totalOT += parseFloat(act.overtime || 0);
             taskCount++;
             if (act.location) sites.add(act.location);
+            const bytesStr = act.notes || '';
             tasks.push({
               id: act.id || '',
               dayIdx: di,
@@ -36821,7 +37309,7 @@
               dayName: day.dayName || '',
               description: act.description || '',
               location: act.location || '',
-              notes: act.notes || '',
+              notes: bytesStr,
               codes: act.codes || []
             });
           });
@@ -38068,6 +38556,14 @@
             <div style="font-size:2.5rem;margin-bottom:12px;color:var(--accent);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
             <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);margin-bottom:6px;">Rian</h1>
             <p style="color:var(--text-secondary);margin-bottom:28px;font-size:0.88rem;">Sign in to sync your timesheet across all devices.</p>
+            
+            ${firebaseMockActive ? `
+            <div style="background:rgba(var(--priority-high-rgb), 0.1);border:1px solid rgba(var(--priority-high-rgb), 0.4);border-radius:10px;padding:11px 14px;margin-bottom:18px;text-align:left;">
+              <div style="font-size:12px;font-weight:700;color:var(--priority-high);margin-bottom:5px;">⚠️ Brave Shields is ON</div>
+              <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;font-family:sans-serif;">Brave is blocking connection to Google Firebase.<br><strong style="color:var(--accent)">You can run the app offline in Local Mode using the button below.</strong></div>
+            </div>
+            ` : ''}
+
             <div id="brave-login-note" style="display:none;background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.4);border-radius:10px;padding:11px 14px;margin-bottom:18px;text-align:left;">
               <div style="font-size:12px;font-weight:700;color:#ea8c1e;margin-bottom:5px;">⚠ Brave is blocking sign-in</div>
               <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">Turning off Shields isn't enough. Fix:<br>
@@ -38077,9 +38573,18 @@
               4. Tick <strong>Including third-party cookies</strong><br>
               5. Reload and sign in again.</div>
             </div>
-            <button onclick="signInWithGoogle()" style="background:#1e3a8a;color:#fff;border:none;border-radius:10px;padding:13px 20px;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <button onclick="signInWithGoogle()" style="background:#1e3a8a;color:#fff;border:none;border-radius:10px;padding:13px 20px;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;${firebaseMockActive ? 'opacity:0.4;cursor:not-allowed;' : ''}">
               <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
               Sign in with Google
+            </button>
+            <div style="margin: 14px 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <hr style="flex: 1; border: none; border-top: 1px solid var(--border);" />
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">or</span>
+              <hr style="flex: 1; border: none; border-top: 1px solid var(--border);" />
+            </div>
+            <button onclick="startLocalMode()" style="background:transparent;color:var(--accent);border:1px solid var(--accent);border-radius:10px;padding:13px 20px;font-size:0.95rem;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+              Use Offline (Local Mode)
             </button>
             <div id="login-error-msg" style="display:none;margin-top:14px;padding:10px 12px;background:rgba(var(--priority-high-rgb), 0.1);border:1px solid rgba(var(--priority-high-rgb), 0.3);border-radius:8px;font-size:11px;color:var(--priority-high);text-align:left;word-break:break-all;"></div>
             <p style="margin-top:18px;font-size:11px;color:var(--text-muted);line-height:1.5;">By signing in you agree to our <a href="privacy.html" target="_blank" style="color:var(--accent);text-decoration:none;">Privacy Policy</a>. We store your work data in Firebase to sync across your devices. No ads, no data sharing.</p>
@@ -40282,6 +40787,7 @@
     }
 
     async function _writeSnapshot(weekStart, weekData, label) {
+      if (!state.currentUser || state.currentUser.isLocalOnly) return;
       try {
         const uid = state.currentUser.uid;
         const ts = Date.now();
@@ -40353,7 +40859,7 @@
     }
 
     async function listSnapshots(weekStart) {
-      if (!state.currentUser || !weekStart) return [];
+      if (!state.currentUser || state.currentUser.isLocalOnly || !weekStart) return [];
       try {
         const uid = state.currentUser.uid;
         const snap = await db_fs
@@ -40618,6 +41124,7 @@
     }
 
     async function _deleteAllFirestoreData(currentWeekStart) {
+      if (!state.currentUser || state.currentUser.isLocalOnly) return;
       const uid = state.currentUser.uid;
       const weeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
       if (weeksSnap) {
@@ -40669,28 +41176,35 @@
       // Fetch all counts from Firestore (fall back to IndexedDB/state)
       let weekCount = 0, noteCount = 0, remCount = 0, coFaultCount = 0, coScheduleCount = 0, rtnCount = 0;
       let tagCount = 0, pageCount = 0;
-      try {
-        const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc, catsDoc, jpDoc] = await Promise.all([
-          db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
-          userDoc('data/notes')?.get().catch(() => null),
-          userDoc('data/reminders')?.get().catch(() => null),
-          userDoc('data/callouts')?.get().catch(() => null),
-          userDoc('data/routines')?.get({ source: 'server' }).catch(() => null),
-          userDoc('data/categories')?.get().catch(() => null),
-          userDoc('data/jPages')?.get().catch(() => null)
-        ]);
-        weekCount = weeksSnap?.size || 0;
-        noteCount = notesDoc?.exists ? (notesDoc.data()?.notes?.length || 0) : 0;
-        remCount = remDoc?.exists ? (remDoc.data()?.reminders?.length || 0) : 0;
-        if (coDoc?.exists) {
-          const weeks = coDoc.data()?.weeks || {};
-          coFaultCount = Object.values(weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
-          coScheduleCount = Object.keys(coDoc.data()?.onCall || {}).length;
-        }
-        if (rtnDoc?.exists) rtnCount = rtnDoc.data()?.selectedSites?.length || 0;
-        if (catsDoc?.exists) tagCount = catsDoc.data()?.categories?.length || 0;
-        if (jpDoc?.exists) pageCount = jpDoc.data()?.pages?.length || 0;
-      } catch (e) { /* offline — use in-memory state */ }
+      if (state.currentUser.isLocalOnly) {
+        try {
+          const allWeeks = await dbGetAll('weeks');
+          weekCount = allWeeks.filter(w => w.userId === uid).length;
+        } catch (e) {}
+      } else {
+        try {
+          const [weeksSnap, notesDoc, remDoc, coDoc, rtnDoc, catsDoc, jpDoc] = await Promise.all([
+            db_fs.collection(`users/${uid}/weeks`).get().catch(() => null),
+            userDoc('data/notes')?.get().catch(() => null),
+            userDoc('data/reminders')?.get().catch(() => null),
+            userDoc('data/callouts')?.get().catch(() => null),
+            userDoc('data/routines')?.get({ source: 'server' }).catch(() => null),
+            userDoc('data/categories')?.get().catch(() => null),
+            userDoc('data/jPages')?.get().catch(() => null)
+          ]);
+          weekCount = weeksSnap?.size || 0;
+          noteCount = notesDoc?.exists ? (notesDoc.data()?.notes?.length || 0) : 0;
+          remCount = remDoc?.exists ? (remDoc.data()?.reminders?.length || 0) : 0;
+          if (coDoc?.exists) {
+            const weeks = coDoc.data()?.weeks || {};
+            coFaultCount = Object.values(weeks).reduce((s, w) => s + (w.callouts?.length || 0), 0);
+            coScheduleCount = Object.keys(coDoc.data()?.onCall || {}).length;
+          }
+          if (rtnDoc?.exists) rtnCount = rtnDoc.data()?.selectedSites?.length || 0;
+          if (catsDoc?.exists) tagCount = catsDoc.data()?.categories?.length || 0;
+          if (jpDoc?.exists) pageCount = jpDoc.data()?.pages?.length || 0;
+        } catch (e) { /* offline — use in-memory state */ }
+      }
       if (!noteCount) noteCount = state.notes?.length || 0;
       if (!remCount) remCount = remindersData?.length || 0;
       if (!coFaultCount && state.callouts?.weeks)
@@ -40741,44 +41255,69 @@
           _sourceEmail: state.currentUser.email || state.currentUser._rian_email || localStorage.getItem('rian_user_email') || '',
           _version: VERSION
         };
-        if (incWeeks) {
-          const weeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
-          exp.weeks = {};
-          if (weeksSnap) weeksSnap.docs.forEach(d => { exp.weeks[d.id] = d.data(); });
-        }
-        if (incNotes) {
-          const notesDoc = await userDoc('data/notes')?.get().catch(() => null);
-          exp.notes = notesDoc?.exists ? notesDoc.data() : null;
-        }
-        if (incTags) {
-          const catsDoc = await userDoc('data/categories')?.get().catch(() => null);
-          exp.categories = catsDoc?.exists ? catsDoc.data() : null;
-        }
-        if (incNotebooks) {
-          const [jnDoc, jsDoc, jpDoc] = await Promise.all([
-            userDoc('data/jNotebooks')?.get().catch(() => null),
-            userDoc('data/jSections')?.get().catch(() => null),
-            userDoc('data/jPages')?.get().catch(() => null)
-          ]);
-          exp.jNotebooks = jnDoc?.exists ? jnDoc.data() : null;
-          exp.jSections = jsDoc?.exists ? jsDoc.data() : null;
-          exp.jPages = jpDoc?.exists ? jpDoc.data() : null;
-        }
-        if (incReminders) {
-          const remDoc = await userDoc('data/reminders')?.get().catch(() => null);
-          exp.reminders = remDoc?.exists ? remDoc.data() : null;
-        }
-        if (incCoFaults || incCoSchedule) {
-          const calloutsDoc = await userDoc('data/callouts')?.get().catch(() => null);
-          const coData = calloutsDoc?.exists ? calloutsDoc.data() : {};
-          exp.callouts = {
-            weeks: incCoFaults ? (coData.weeks || {}) : {},
-            onCall: incCoSchedule ? (coData.onCall || {}) : {}
-          };
-        }
-        if (incRoutines) {
-          const rtnDoc = await userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null));
-          exp.routines = rtnDoc?.exists ? rtnDoc.data() : null;
+        if (state.currentUser.isLocalOnly) {
+          if (incWeeks) {
+            exp.weeks = {};
+            const allW = await dbGetAll('weeks');
+            allW.forEach(w => {
+              if (w.userId === uid && w.data) exp.weeks[w.weekStart] = w.data;
+            });
+          }
+          if (incNotes) exp.notes = state.notes ? { notes: state.notes, _updatedAt: Date.now() } : null;
+          if (incTags) exp.categories = { categories: state.customCategories, disabledCats: state.disabledCats || [], _updatedAt: Date.now() };
+          if (incNotebooks) {
+            exp.jNotebooks = { notebooks: state.jNotebooks, _updatedAt: Date.now() };
+            exp.jSections = { sections: state.jSections, _updatedAt: Date.now() };
+            exp.jPages = { pages: state.jPages, _updatedAt: Date.now() };
+          }
+          if (incReminders) exp.reminders = { reminders: remindersData, _updatedAt: Date.now() };
+          if (incCoFaults || incCoSchedule) {
+            exp.callouts = {
+              weeks: incCoFaults ? (state.callouts?.weeks || {}) : {},
+              onCall: incCoSchedule ? (state.callouts?.onCall || {}) : {}
+            };
+          }
+          if (incRoutines) exp.routines = state.routines || null;
+        } else {
+          if (incWeeks) {
+            const weeksSnap = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
+            exp.weeks = {};
+            if (weeksSnap) weeksSnap.docs.forEach(d => { exp.weeks[d.id] = d.data(); });
+          }
+          if (incNotes) {
+            const notesDoc = await userDoc('data/notes')?.get().catch(() => null);
+            exp.notes = notesDoc?.exists ? notesDoc.data() : null;
+          }
+          if (incTags) {
+            const catsDoc = await userDoc('data/categories')?.get().catch(() => null);
+            exp.categories = catsDoc?.exists ? catsDoc.data() : null;
+          }
+          if (incNotebooks) {
+            const [jnDoc, jsDoc, jpDoc] = await Promise.all([
+              userDoc('data/jNotebooks')?.get().catch(() => null),
+              userDoc('data/jSections')?.get().catch(() => null),
+              userDoc('data/jPages')?.get().catch(() => null)
+            ]);
+            exp.jNotebooks = jnDoc?.exists ? jnDoc.data() : null;
+            exp.jSections = jsDoc?.exists ? jsDoc.data() : null;
+            exp.jPages = jpDoc?.exists ? jpDoc.data() : null;
+          }
+          if (incReminders) {
+            const remDoc = await userDoc('data/reminders')?.get().catch(() => null);
+            exp.reminders = remDoc?.exists ? remDoc.data() : null;
+          }
+          if (incCoFaults || incCoSchedule) {
+            const calloutsDoc = await userDoc('data/callouts')?.get().catch(() => null);
+            const coData = calloutsDoc?.exists ? calloutsDoc.data() : {};
+            exp.callouts = {
+              weeks: incCoFaults ? (coData.weeks || {}) : {},
+              onCall: incCoSchedule ? (coData.onCall || {}) : {}
+            };
+          }
+          if (incRoutines) {
+            const rtnDoc = await userDoc('data/routines')?.get({ source: 'server' }).catch(() => userDoc('data/routines')?.get().catch(() => null));
+            exp.routines = rtnDoc?.exists ? rtnDoc.data() : null;
+          }
         }
         if (incSettings) {
           const lsKeys = ['geminiKey', 'geminiModel', 'theme', 'headerExpanded',
@@ -40810,7 +41349,7 @@
 
     // Called at startup after sign-in — silently runs once per day
     function checkAndRunDailyBackup(uid) {
-      if (!uid) return;
+      if (!uid || state.currentUser?.isLocalOnly) return;
       const today = dateToStr(new Date());
       if (localStorage.getItem(_backupThrottleKey(uid)) === today) return;
       // Delay 8 seconds so the main app load completes first
@@ -41550,6 +42089,21 @@
     // Load routines from Firestore and scan timesheet for auto-visits
     async function loadRoutines(forceServer) {
       if (!state.currentUser) { render(); return; }
+      if (state.currentUser.isLocalOnly) {
+        try {
+          const stored = await dbGet('notes', 'routines_all').catch(() => null);
+          if (stored?.data) {
+            state.routines = stored.data;
+          } else {
+            state.routines = { selectedSites: [], visits: {} };
+          }
+        } catch (e) {
+          state.routines = { selectedSites: [], visits: {} };
+        }
+        render();
+        scanWeeksForRoutines().catch(e => console.warn('[Rian]', e));
+        return;
+      }
       const ref = userDoc('data/routines');
       try {
         // Always try server first when online to avoid stale offline cache
@@ -41591,6 +42145,10 @@
 
     async function fsSetRoutines() {
       if (!state.currentUser || !state.routines) return;
+      if (state.currentUser.isLocalOnly) {
+        await dbPut('notes', { id: 'routines_all', userId: state.currentUser.uid, data: state.routines, updatedAt: Date.now() });
+        return;
+      }
       const ref = userDoc('data/routines');
       await ref.set({ ...state.routines, _updatedAt: Date.now() });
     }
@@ -45619,6 +46177,14 @@ Rules:
 
       // Firebase auth state observer — drives the whole app lifecycle
       auth_fb.onAuthStateChanged(async user => {
+        if (localStorage.getItem('rian_local_only') === '1' && !user) {
+          user = {
+            uid: 'local_technician',
+            isLocalOnly: true,
+            displayName: 'Local Technician',
+            email: 'offline@rian.local'
+          };
+        }
         console.log('[Rian Debug] onAuthStateChanged fired. User:', user ? user.uid : 'null');
 
         // -- BYPASS: If a bypass is active and we are logged in as a different user, sign out first --
@@ -45695,7 +46261,7 @@ Rules:
         // Firebase can restore a cached session with null email/displayName/photoURL.
         // Read the Firestore user profile (written on every real sign-in) to patch
         // the stale user object so the rest of the app always sees a full profile.
-        if (!user.email || !user.photoURL) {
+        if (!user.isLocalOnly && (!user.email || !user.photoURL)) {
           try {
             const profSnap = await Promise.race([
               db_fs.doc(`users/${user.uid}`).get(),
@@ -45738,11 +46304,13 @@ Rules:
         }
 
         // Store user profile in Firestore so admin can identify users by name
-        const _prof = { lastSeen: Date.now() };
-        if (user.displayName) _prof.displayName = user.displayName;
-        if (user.email) _prof.email = user.email;
-        if (user.photoURL) _prof.photoURL = user.photoURL;
-        db_fs.doc(`users/${user.uid}`).set(_prof, { merge: true }).catch(e => console.warn('[Rian]', e));
+        if (!user.isLocalOnly) {
+          const _prof = { lastSeen: Date.now() };
+          if (user.displayName) _prof.displayName = user.displayName;
+          if (user.email) _prof.email = user.email;
+          if (user.photoURL) _prof.photoURL = user.photoURL;
+          db_fs.doc(`users/${user.uid}`).set(_prof, { merge: true }).catch(e => console.warn('[Rian]', e));
+        }
 
         // Show one-time privacy notice to existing users who bypassed login screen
         setTimeout(maybeShowPrivacyBanner, 1500);
