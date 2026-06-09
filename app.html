@@ -21046,7 +21046,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.57';
+    const VERSION = '6.4.58';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -41844,21 +41844,25 @@
         // 1. Import weeks — clear existing first, then batch write
         const weekEntries = Object.entries(data.weeks || {});
         if (weekEntries.length > 0) {
-          const existingWeeks = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
-          if (existingWeeks && existingWeeks.docs.length) {
-            const delBatch = db_fs.batch();
-            existingWeeks.docs.forEach(d => delBatch.delete(d.ref));
-            await delBatch.commit();
+          if (!state.currentUser.isLocalOnly) {
+            const existingWeeks = await db_fs.collection(`users/${uid}/weeks`).get().catch(() => null);
+            if (existingWeeks && existingWeeks.docs.length) {
+              const delBatch = db_fs.batch();
+              existingWeeks.docs.forEach(d => delBatch.delete(d.ref));
+              await delBatch.commit();
+            }
           }
           await dbClear('weeks');
-          for (let i = 0; i < weekEntries.length; i += 400) {
-            const chunk = weekEntries.slice(i, i + 400);
-            const batch = db_fs.batch();
-            chunk.forEach(([ws, wData]) => {
-              const ref = db_fs.doc(`users/${uid}/weeks/${ws}`);
-              batch.set(ref, { ...wData, _updatedAt: Date.now() });
-            });
-            await batch.commit();
+          if (!state.currentUser.isLocalOnly) {
+            for (let i = 0; i < weekEntries.length; i += 400) {
+              const chunk = weekEntries.slice(i, i + 400);
+              const batch = db_fs.batch();
+              chunk.forEach(([ws, wData]) => {
+                const ref = db_fs.doc(`users/${uid}/weeks/${ws}`);
+                batch.set(ref, { ...wData, _updatedAt: Date.now() });
+              });
+              await batch.commit();
+            }
           }
           for (const [ws, wData] of weekEntries) {
             await dbPut('weeks', { weekStart: ws, userId: uid, data: wData, updatedAt: Date.now() });
@@ -41903,6 +41907,7 @@
           const ref = userDoc('data/routines');
           if (ref) await ref.set({ ...data.routines, _updatedAt: Date.now() });
           state.routines = { ...data.routines };
+          await dbPut('notes', { id: 'routines_all', userId: uid, data: state.routines, updatedAt: Date.now() }).catch(() => {});
           parts.push(data.routines.selectedSites.length + ' routine sites');
           render();
         }
@@ -41912,6 +41917,7 @@
           if (ref) await ref.set({ ...data.categories, _updatedAt: Date.now() });
           state.customCategories = data.categories.categories;
           state.disabledCats = data.categories.disabledCats || [];
+          await dbPut('notes', { id: 'categories_custom', userId: uid, data: { categories: state.customCategories, disabledCats: state.disabledCats }, updatedAt: Date.now() }).catch(() => {});
           parts.push(data.categories.categories.length + ' tags');
         }
         // 5c. Import notebooks (jNotebooks/jSections/jPages)
