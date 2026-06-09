@@ -20908,6 +20908,29 @@
     </div>
   </div>
 
+  <!-- Local Merge Modal -->
+  <div id="local-merge-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
+    style="background:var(--overlay)">
+    <div class="w-full max-w-md shadow-2xl"
+      style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
+      <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Merge Offline Data?</h2>
+      <p class="text-sm" style="color:var(--text-secondary);margin:0 0 16px">
+        We found timesheets and notes from your offline Local Mode session. Would you like to merge them into your Google Account?
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <button onclick="commitLocalMerge()" class="w-full py-3 rounded-xl font-bold text-white" style="background:var(--accent)">
+          Merge Data (Recommended)
+        </button>
+        <button onclick="discardLocalMerge()" class="w-full py-3 rounded-xl font-medium" style="border:1px solid var(--border);color:var(--priority-high);background:transparent;">
+          Discard Offline Data
+        </button>
+        <button onclick="cancelLocalMerge()" class="w-full py-3 rounded-xl font-medium" style="border:1px solid var(--border);color:var(--text-secondary);background:transparent;">
+          Cancel & Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Exit Local Mode Modal -->
   <div id="local-exit-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
     style="background:var(--overlay)">
@@ -21117,7 +21140,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.59';
+    const VERSION = '6.4.60';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37111,6 +37134,7 @@
         ['import-modal', () => { const el = document.getElementById('import-modal'); if (el) el.classList.add('hidden'); }],
         ['local-exit-modal', () => { const el = document.getElementById('local-exit-modal'); if (el) el.classList.add('hidden'); }],
         ['local-disconnect-modal', () => { const el = document.getElementById('local-disconnect-modal'); if (el) el.classList.add('hidden'); }],
+        ['local-merge-modal', () => { const el = document.getElementById('local-merge-modal'); if (el) el.classList.add('hidden'); }],
         ['paste-ticket-modal', () => typeof closePasteTicket === 'function' && closePasteTicket()],
         ['rtn-picker-modal', () => typeof closeRoutinesSitePicker === 'function' && closeRoutinesSitePicker()],
         ['rtn-log-modal', () => typeof closeRoutinesLogModal === 'function' && closeRoutinesLogModal()],
@@ -46325,6 +46349,28 @@ Rules:
           if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
           renderLogin();
           return;
+        }
+
+        // Check if we just transitioned from local mode and have data to merge
+        if (user && !user.isLocalOnly && localStorage.getItem('rian_local_only') === '1') {
+          localStorage.removeItem('rian_local_only');
+          let hasOfflineData = false;
+          try {
+            const weeks = await dbGetAll('weeks');
+            const notes = await dbGetAll('notes');
+            const hasLocalWeek = weeks.some(w => w.userId === 'local_technician');
+            const hasLocalNote = notes.some(n => n.userId === 'local_technician');
+            if (hasLocalWeek || hasLocalNote) {
+              hasOfflineData = true;
+            }
+          } catch (e) {
+            console.warn('[Rian] Error checking for offline data:', e);
+          }
+
+          if (hasOfflineData) {
+            promptMergeLocalToCloud(user.uid, 'local_technician');
+            return; // STOP initialization, wait for user merge choice
+          }
         }
 
         // Save uid + display info immediately (pre-patch values — good enough for render)
