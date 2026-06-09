@@ -20908,6 +20908,77 @@
     </div>
   </div>
 
+  <!-- Exit Local Mode Modal -->
+  <div id="local-exit-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
+    style="background:var(--overlay)">
+    <div class="w-full max-w-md shadow-2xl"
+      style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
+      <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Exit Local Mode?</h2>
+      <p class="text-sm" style="color:var(--text-secondary);margin:0 0 16px">
+        Choose what to do with your offline data before returning to the login screen:
+      </p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+        <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;">
+          <input type="radio" name="exit-data-choice" id="exit-keep-data" checked style="accent-color:var(--accent);">
+          <div>
+            <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">Keep my offline data</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Saves data in IndexedDB for the next Local Mode session</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;">
+          <input type="radio" name="exit-data-choice" id="exit-wipe-data" style="accent-color:var(--accent);">
+          <div>
+            <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">Wipe all offline data</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Deletes all local timesheets, notes, and routines from this browser</div>
+          </div>
+        </label>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="cancelExitLocalMode()"
+          class="flex-1 py-3 rounded-xl font-medium"
+          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+        <button onclick="commitExitLocalMode(document.getElementById('exit-keep-data').checked)" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold">
+          Exit Local Mode
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disconnect Cloud Modal -->
+  <div id="local-disconnect-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
+    style="background:var(--overlay)">
+    <div class="w-full max-w-md shadow-2xl"
+      style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
+      <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Disconnect Cloud?</h2>
+      <p class="text-sm" style="color:var(--text-secondary);margin:0 0 16px">
+        Your Google account session will end and you will switch to Local Mode.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+        <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;">
+          <input type="radio" name="disconnect-data-choice" id="disconnect-keep-data" checked style="accent-color:var(--accent);">
+          <div>
+            <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">Keep a copy offline (Recommended)</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Copies your current cloud timesheets and notes to your offline session</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;">
+          <input type="radio" name="disconnect-data-choice" id="disconnect-wipe-data" style="accent-color:var(--accent);">
+          <div>
+            <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">Start with a clean slate offline</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Goes offline without copying any of your current data</div>
+          </div>
+        </label>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="cancelDisconnect()"
+          class="flex-1 py-3 rounded-xl font-medium"
+          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+        <button onclick="commitDisconnect(document.getElementById('disconnect-keep-data').checked)" class="flex-1 py-3 rounded-xl font-bold text-white" style="background:var(--accent)">
+          Go Offline
+        </button>
+      </div>
+    </div>
+
   <!-- Availability Import dialog -->
   <div id="av-import-modal" class="hidden fixed inset-0 flex items-center justify-center p-4" style="z-index:9999;background:rgba(var(--shadow-rgb),0.55)">
     <div style="background:var(--bg-modal);border-radius:18px;padding:22px 22px 20px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.22)">
@@ -21046,7 +21117,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.58';
+    const VERSION = '6.4.59';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37038,6 +37109,8 @@
         ['date-modal', () => typeof closeDateModal === 'function' && closeDateModal()],
         ['export-modal', () => { const el = document.getElementById('export-modal'); if (el) el.classList.add('hidden'); }],
         ['import-modal', () => { const el = document.getElementById('import-modal'); if (el) el.classList.add('hidden'); }],
+        ['local-exit-modal', () => { const el = document.getElementById('local-exit-modal'); if (el) el.classList.add('hidden'); }],
+        ['local-disconnect-modal', () => { const el = document.getElementById('local-disconnect-modal'); if (el) el.classList.add('hidden'); }],
         ['paste-ticket-modal', () => typeof closePasteTicket === 'function' && closePasteTicket()],
         ['rtn-picker-modal', () => typeof closeRoutinesSitePicker === 'function' && closeRoutinesSitePicker()],
         ['rtn-log-modal', () => typeof closeRoutinesLogModal === 'function' && closeRoutinesLogModal()],
