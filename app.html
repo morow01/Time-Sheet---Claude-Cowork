@@ -21140,7 +21140,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.61';
+    const VERSION = '6.4.62';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23009,16 +23009,7 @@
       document.getElementById('local-exit-modal').classList.add('hidden');
     }
 
-    async function commitExitLocalMode(keepData) {
-      document.getElementById('local-exit-modal').classList.add('hidden');
-      try {
-        localStorage.removeItem('rian_local_only');
-      } catch (e) {}
-      
-      if (!keepData) {
-        await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
-      }
-      
+    function resetAppState() {
       state.currentUser = null;
       state.weekData = null;
       state.notes = [];
@@ -23030,6 +23021,10 @@
       state.jSections = [];
       state.jPages = [];
       state.conflicts = [];
+      state.historyWeeks = null;
+      state.historySearch = '';
+      state.historySearchScope = 'all';
+      state.historyFilter = 'all';
       
       if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
       if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
@@ -23041,7 +23036,19 @@
       if (_jUnsubPg) { _jUnsubPg(); _jUnsubPg = null; }
       
       if (_reminderPollId) { clearInterval(_reminderPollId); _reminderPollId = null; }
+    }
+
+    async function commitExitLocalMode(keepData) {
+      document.getElementById('local-exit-modal').classList.add('hidden');
+      try {
+        localStorage.removeItem('rian_local_only');
+      } catch (e) {}
       
+      if (!keepData) {
+        await Promise.allSettled([dbClear('weeks'), dbClear('notes')]);
+      }
+      
+      resetAppState();
       renderLogin();
     }
 
@@ -23081,16 +23088,7 @@
         }
         
         localStorage.setItem('rian_local_only', '1');
-        
-        if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
-        if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
-        if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
-        if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
-        if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
-        if (_jUnsubNb) { _jUnsubNb(); _jUnsubNb = null; }
-        if (_jUnsubSec) { _jUnsubSec(); _jUnsubSec = null; }
-        if (_jUnsubPg) { _jUnsubPg(); _jUnsubPg = null; }
-        
+        resetAppState();
         await auth_fb.signOut();
         await startLocalMode();
       } catch (e) {
@@ -46356,12 +46354,7 @@ Rules:
 
         if (!user) {
           localStorage.removeItem('rian_last_uid');
-          // Signed out — tear down listeners and show login
-          if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
-          if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
-          if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
-          if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
-          if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
+          resetAppState();
           renderLogin();
           return;
         }
