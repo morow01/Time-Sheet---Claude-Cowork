@@ -21140,7 +21140,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.4.60';
+    const VERSION = '6.4.61';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23024,12 +23024,21 @@
       state.notes = [];
       remindersData = [];
       state.routines = null;
+      state.customCategories = [];
+      state.disabledCats = [];
+      state.jNotebooks = [];
+      state.jSections = [];
+      state.jPages = [];
+      state.conflicts = [];
       
       if (weekUnsubscribe) { weekUnsubscribe(); weekUnsubscribe = null; }
       if (notesUnsubscribe) { notesUnsubscribe(); notesUnsubscribe = null; }
       if (remindersUnsubscribe) { remindersUnsubscribe(); remindersUnsubscribe = null; }
       if (calloutsUnsubscribe) { calloutsUnsubscribe(); calloutsUnsubscribe = null; }
       if (availabilityUnsubscribe) { availabilityUnsubscribe(); availabilityUnsubscribe = null; }
+      if (_jUnsubNb) { _jUnsubNb(); _jUnsubNb = null; }
+      if (_jUnsubSec) { _jUnsubSec(); _jUnsubSec = null; }
+      if (_jUnsubPg) { _jUnsubPg(); _jUnsubPg = null; }
       
       if (_reminderPollId) { clearInterval(_reminderPollId); _reminderPollId = null; }
       
@@ -27121,6 +27130,9 @@
     }
 
     function renderCardView() {
+      if (!state.weekData) {
+        return '<div class="p-8 text-center" style="color:var(--text-muted)">Loading…</div>';
+      }
       const summary = calcSummary(state.weekData);
       const totalOrd = summary.reduce((s, r) => s + r.ordinary, 0);
       const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
@@ -27182,6 +27194,9 @@
     // DESKTOP THREE-PANEL TIMESHEET (v5.8.0)
     // ================================================================
     function _renderDesktopTimesheet() {
+      if (!state.weekData) {
+        return '<div class="p-8 text-center" style="color:var(--text-muted)">Loading…</div>';
+      }
       const summary = calcSummary(state.weekData);
       const totalOrd = summary.reduce(function (s, r) { return s + r.ordinary; }, 0);
       const totalOT = summary.reduce(function (s, r) { return s + r.overtime; }, 0);
