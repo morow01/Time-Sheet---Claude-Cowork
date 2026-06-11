@@ -21140,7 +21140,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.1';
+    const VERSION = '6.5.2';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50524,7 +50524,7 @@ function _ttStripDefaultTableWidths() {
             const mirroredAct = _syncOpenActivityNoteDraft(html);
             const noteChanged = window._actNoteDirty || html !== (window._actNoteOpenContent || '');
             if (!noteChanged) {
-              _tiptapEditor.destroy(); _tiptapEditor = null;
+              // No-op: no changes to save, editor stays alive as singleton
             } else {
               const foundAct = _findActivityById(_noteFsActId);
               const _clAct = mirroredAct || foundAct?.act;
@@ -50544,7 +50544,6 @@ function _ttStripDefaultTableWidths() {
                     danger: true
                   });
                   if (!keepLocal) {
-                    _tiptapEditor.destroy(); _tiptapEditor = null;
                     window._actNoteOpenTs = 0;
                     window._actNoteDirty = false;
                     render();
@@ -50559,13 +50558,21 @@ function _ttStripDefaultTableWidths() {
               }
             }
           } else {
-            // Restore original content if cancelled
+            // CANCEL — revert in-memory state and editor content back to original.
+            // Do NOT destroy the editor: TipTap is a long-lived singleton mounted on
+            // a static DOM element. Calling destroy() removes its ProseMirror child
+            // from the DOM, leaving the host element empty so the next open silently
+            // fails to mount and the editor appears broken.
             const foundAct = _findActivityById(_noteFsActId);
             if (foundAct && foundAct.act) {
               foundAct.act.notes = window._actNoteOpenContent || '';
             }
+            // Reset editor display silently — null out onUpdate first so the content
+            // restore doesn't trigger a dirty-flag re-set or a spurious auto-save.
+            _tiptapOnUpdate = null;
+            _ttSetContent(window._actNoteOpenContent || '');
           }
-          if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+          // Editor intentionally kept alive as a singleton — do not destroy here
         }
         window._actNoteOpenTs = 0;
         window._actNoteOpenContent = '';
