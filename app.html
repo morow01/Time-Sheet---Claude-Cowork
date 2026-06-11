@@ -21159,7 +21159,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.6';
+    const VERSION = '6.5.7';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -35318,36 +35318,43 @@
       document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
       _ttResetDraftState();
       setTimeout(async () => {
-        await _ensureTipTap();
-        _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
-        _ttSetContent(note.noteContent || '');
-        _ttResetHistory(_ttGetHTML());
-        // Restore last scroll + cursor position, or fall back to end
-        let _restored = false;
         try {
-          const _sp = localStorage.getItem('rian_tt_pos_n_' + noteId);
-          if (_sp && _tiptapEditor) {
-            const { cursor, scroll } = JSON.parse(_sp);
-            const _sz = _tiptapEditor.state.doc.content.size;
-            _tiptapEditor.commands.setTextSelection(Math.min(cursor, Math.max(0, _sz - 1)));
-            requestAnimationFrame(() => {
-              const _el = document.getElementById('note-fs-editor');
-              if (_el) _el.scrollTop = scroll || 0;
-            });
-            _restored = true;
-          }
-        } catch(e) {}
-        if (!_restored && _tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
-        _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
-        _tiptapLastSavedNoteId = noteId;
-        window._tiptapOpenedEmpty = !(note.noteContent || '').trim(); // was editor empty at open?
-        _tiptapOnUpdate = (editor) => {
-          const html = _ttGetHTML();
-          const hasContent = html && html.replace(/<[^>]*>/g, '').trim().length > 0;
-          if (hasContent) window._tiptapOpenedEmpty = false; // user typed → safe to save now
-          _ttMarkDraftDirty();
-        };
-        _ttUpdateToolbar(_tiptapEditor);
+          await _ensureTipTap();
+          _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
+          _ttSetContent(note.noteContent || '');
+          _ttResetHistory(_ttGetHTML());
+          // Restore last scroll + cursor position, or fall back to end
+          let _restored = false;
+          try {
+            const _sp = localStorage.getItem('rian_tt_pos_n_' + noteId);
+            if (_sp && _tiptapEditor) {
+              const { cursor, scroll } = JSON.parse(_sp);
+              const _sz = _tiptapEditor.state.doc.content.size;
+              _tiptapEditor.commands.setTextSelection(Math.min(cursor, Math.max(0, _sz - 1)));
+              requestAnimationFrame(() => {
+                const _el = document.getElementById('note-fs-editor');
+                if (_el) _el.scrollTop = scroll || 0;
+              });
+              _restored = true;
+            }
+          } catch(e) {}
+          if (!_restored && _tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
+          _tiptapLastSaveAt = Date.now(); // keep echo protection active from moment of open
+          _tiptapLastSavedNoteId = noteId;
+          window._tiptapOpenedEmpty = !(note.noteContent || '').trim(); // was editor empty at open?
+          _tiptapOnUpdate = (editor) => {
+            const html = _ttGetHTML();
+            const hasContent = html && html.replace(/<[^>]*>/g, '').trim().length > 0;
+            if (hasContent) window._tiptapOpenedEmpty = false; // user typed → safe to save now
+            _ttMarkDraftDirty();
+          };
+          _ttUpdateToolbar(_tiptapEditor);
+        } catch (err) {
+          console.error("TipTap load error:", err);
+          showToast("⚠️ TipTap error: " + err.message);
+          const edEl = document.getElementById('note-fs-editor');
+          if (edEl) edEl.innerHTML = `<div style="padding:20px;color:red;font-family:monospace;font-size:12px;">TipTap failed to load:<br>${err.stack || err}</div>`;
+        }
       }, 80);
     }
 
@@ -44256,16 +44263,23 @@
       document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
       _ttResetDraftState();
       setTimeout(async () => {
-        await _ensureTipTap();
-        _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
-        _ttSetContent(currentValue);
-        _ttResetHistory(_ttGetHTML());
-        // Blur so cursor isn't visible at top — user taps to edit
-        if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
-        _tiptapOnUpdate = (editor) => {
-          _ttMarkDraftDirty();
-        };
-        _ttUpdateToolbar(_tiptapEditor);
+        try {
+          await _ensureTipTap();
+          _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
+          _ttSetContent(currentValue);
+          _ttResetHistory(_ttGetHTML());
+          // Blur so cursor isn't visible at top — user taps to edit
+          if (_tiptapEditor) try { _tiptapEditor.commands.blur(); } catch (e) { }
+          _tiptapOnUpdate = (editor) => {
+            _ttMarkDraftDirty();
+          };
+          _ttUpdateToolbar(_tiptapEditor);
+        } catch (err) {
+          console.error("TipTap load error:", err);
+          showToast("⚠️ TipTap error: " + err.message);
+          const edEl = document.getElementById('note-fs-editor');
+          if (edEl) edEl.innerHTML = `<div style="padding:20px;color:red;font-family:monospace;font-size:12px;">TipTap failed to load:<br>${err.stack || err}</div>`;
+        }
       }, 80);
     }
 
@@ -50348,33 +50362,40 @@ function _ttStripDefaultTableWidths() {
       document.body.style.overflow = 'hidden'; // prevent body scroll behind fullscreen editor
       _ttResetDraftState();
       setTimeout(async () => {
-        await _ensureTipTap();
-        _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
-        _ttSetContent(currentValue);
-        _ttResetHistory(_ttGetHTML());
-        // Restore last scroll + cursor position, or fall back to end
-        let _restoredAct = false;
         try {
-          const _sp = localStorage.getItem('rian_tt_pos_a_' + actId);
-          if (_sp && _tiptapEditor) {
-            const { cursor, scroll } = JSON.parse(_sp);
-            const _sz = _tiptapEditor.state.doc.content.size;
-            _tiptapEditor.commands.setTextSelection(Math.min(cursor, Math.max(0, _sz - 1)));
-            requestAnimationFrame(() => {
-              const _el = document.getElementById('note-fs-editor');
-              if (_el) _el.scrollTop = scroll || 0;
-            });
-            _restoredAct = true;
-          }
-        } catch(e) {}
-        if (!_restoredAct && _tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
-        _tiptapOnUpdate = (editor) => {
-          _ttMarkDraftDirty();
-          if (_noteFsActId != null) {
-            _syncOpenActivityNoteDraft(_ttGetHTML());
-          }
-        };
-        _ttUpdateToolbar(_tiptapEditor);
+          await _ensureTipTap();
+          _tiptapOnUpdate = null; // prevent stale handler firing during setContent below
+          _ttSetContent(currentValue);
+          _ttResetHistory(_ttGetHTML());
+          // Restore last scroll + cursor position, or fall back to end
+          let _restoredAct = false;
+          try {
+            const _sp = localStorage.getItem('rian_tt_pos_a_' + actId);
+            if (_sp && _tiptapEditor) {
+              const { cursor, scroll } = JSON.parse(_sp);
+              const _sz = _tiptapEditor.state.doc.content.size;
+              _tiptapEditor.commands.setTextSelection(Math.min(cursor, Math.max(0, _sz - 1)));
+              requestAnimationFrame(() => {
+                const _el = document.getElementById('note-fs-editor');
+                if (_el) _el.scrollTop = scroll || 0;
+              });
+              _restoredAct = true;
+            }
+          } catch(e) {}
+          if (!_restoredAct && _tiptapEditor) try { _tiptapEditor.commands.focus('end'); } catch (e) { }
+          _tiptapOnUpdate = (editor) => {
+            _ttMarkDraftDirty();
+            if (_noteFsActId != null) {
+              _syncOpenActivityNoteDraft(_ttGetHTML());
+            }
+          };
+          _ttUpdateToolbar(_tiptapEditor);
+        } catch (err) {
+          console.error("TipTap load error:", err);
+          showToast("⚠️ TipTap error: " + err.message);
+          const edEl = document.getElementById('note-fs-editor');
+          if (edEl) edEl.innerHTML = `<div style="padding:20px;color:red;font-family:monospace;font-size:12px;">TipTap failed to load:<br>${err.stack || err}</div>`;
+        }
       }, 80);
     }
     async function closeNoteFullscreen(action) {
