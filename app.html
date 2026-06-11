@@ -20547,7 +20547,6 @@
     }
 
     /* ── Tailwind utility class fallbacks for offline/Local Mode ── */
-    .hidden { display: none !important; }
     .fixed { position: fixed !important; }
     .inset-0 { top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; }
     .flex { display: flex !important; }
@@ -20564,6 +20563,7 @@
     .py-3 { padding-top: 12px !important; padding-bottom: 12px !important; }
     .p-1 { padding: 4px !important; }
     .gap-3 { gap: 12px !important; }
+    .hidden { display: none !important; }
   </style>
 </head>
 
@@ -21159,7 +21159,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.4';
+    const VERSION = '6.5.5';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -30091,6 +30091,7 @@
       }
       // Primary method: read from SW cache (reliable on Android PWA)
       try {
+        if (typeof caches === 'undefined') return;
         const cache = await caches.open('rian-pending-note');
         const resp = await cache.match('/__pending_note__');
         if (resp) {
