@@ -21140,7 +21140,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.0';
+    const VERSION = '6.5.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50557,6 +50557,12 @@ function _ttStripDefaultTableWidths() {
                 _stampActivityNotes(_clAct, window._actNoteBaseUpdatedAt || 0, window._actNoteBaseHash || _noteContentHash(window._actNoteOpenContent || ''));
                 await saveWeekNow({ forceActivityNoteId: _noteFsActId });
               }
+            }
+          } else {
+            // Restore original content if cancelled
+            const foundAct = _findActivityById(_noteFsActId);
+            if (foundAct && foundAct.act) {
+              foundAct.act.notes = window._actNoteOpenContent || '';
             }
           }
           if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
