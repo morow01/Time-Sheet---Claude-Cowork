@@ -21140,7 +21140,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.2';
+    const VERSION = '6.5.3';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50419,8 +50419,8 @@ function _ttStripDefaultTableWidths() {
             ? (coTa.value.trim().startsWith('<') ? sanitizeHtml(coTa.value) : esc(coTa.value).replace(/\n/g, '<br>'))
             : '<span class="notes-rich-placeholder">Tap to add a note…</span>';
         }
-        // Destroy editor AFTER content is handled
-        if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+        // Editor kept alive as singleton — do not destroy
+        _tiptapOnUpdate = null;
         window._ttFsDirty = false;
         _ttResetDraftState();
         return;
@@ -50455,7 +50455,9 @@ function _ttStripDefaultTableWidths() {
                 window._tiptapNoteEdited = false;
                 const _discardNoteId = _fnFsNoteId;
                 _fnFsNoteId = null;
-                if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+                // Editor kept alive as singleton — clear handler, reset content silently
+                _tiptapOnUpdate = null;
+                if (_tiptapEditor) _ttSetContent(window._tiptapNoteOpenContent || '');
                 if (_noteModalState && _noteModalState === _discardNoteId) {
                   _showNoteModal(true);
                 } else {
@@ -50507,8 +50509,8 @@ function _ttStripDefaultTableWidths() {
         window._ttFsDirty = false;
         const _closedNoteId = _fnFsNoteId;
         _fnFsNoteId = null;
-        // Destroy editor AFTER content is saved
-        if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+        // Editor kept alive as singleton — clear handler only
+        _tiptapOnUpdate = null;
         // Refresh note modal (modal mode) or notes view (card/timeline mode)
         if (_noteModalState && _noteModalState === _closedNoteId) {
           _showNoteModal(true);
@@ -50584,8 +50586,8 @@ function _ttStripDefaultTableWidths() {
         // Refresh task modal if it's open for this activity (card style mode)
         if (_taskModalState && _taskModalState.actId === _noteFsActId) _showTaskModal(true);
       } else {
-        // No note context — still destroy to free memory
-        if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+        // No note context — editor is a singleton, do not destroy
+        _tiptapOnUpdate = null;
       }
       window._ttFsDirty = false;
       _ttResetDraftState();
