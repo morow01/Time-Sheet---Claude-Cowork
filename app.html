@@ -21160,7 +21160,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.18';
+    const VERSION = '6.5.19';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25069,19 +25069,12 @@
 
           const localTs = state.weekData._updatedAt || 0;
 
-          // Skip stale snapshots — if the remote data is older than our local
-          // state, ignore it AND push our newer data back to Firestore to
-          // restore the correct version (otherwise Firestore stays poisoned
-          // with the stale data and other devices will receive it).
-          // EXCEPTION (v5.1.91): if this is the first snapshot for a freshly
-          // scaffolded week, local is just the empty scaffold — never push
-          // it back, even if its _updatedAt is newer.
-          // Stale snapshot guard (v5.8.95): if remote is more than 10s older than
-          // local state, reject it — something (old session, cached write) pushed
-          // stale data and we must not let it overwrite newer local edits.
-          // NO write-back here (the old write-back guard caused sync wars by
-          // triggering snapshot→write→snapshot loops). The next user edit will
-          // push correct local state via scheduleAutoSave naturally.
+          // Stale snapshot handling (Refined v6.4.26): If the remote snapshot
+          // has an older timestamp than our local state, we still accept and
+          // merge it (using _mergeWeekActivityNotesNoLoss) rather than rejecting it.
+          // This prevents multi-device desyncs caused by client clock skews.
+          // No remote write-back is triggered here to avoid infinite snapshot→write loops;
+          // any newer local edits will naturally save to the cloud on the next user action.
           if (remoteTs > 0 && localTs > 0 && remoteTs < localTs) {
             console.info('[Rian] Remote snapshot is older than local (' + Math.round((localTs - remoteTs) / 1000) + 's) — accepting');
           }
