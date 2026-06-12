@@ -21160,7 +21160,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.9';
+    const VERSION = '6.5.10';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23571,10 +23571,9 @@
     }
 
     function _avSeedSchedule(name) {
-      var n = (name || '').trim() || 'Robert Kamenicky';
       return {
-        days: _avExpandCtoRanges(),
-        source: 'CTO Resource Availability Tracker.xlsx · 2026 Tracker · ' + n,
+        days: {},
+        source: '',
         _seedVersion: '2026-v1',
         _updatedAt: Date.now()
       };
