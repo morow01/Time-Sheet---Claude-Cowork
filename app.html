@@ -21160,7 +21160,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.14';
+    const VERSION = '6.5.15';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26794,7 +26794,7 @@
           '<td class="ew3-c">' + plain(fmtCode(adjOrd[i]), 'ew3-num') + '</td>' +
           '<td class="ew3-c ew3-ot">' + plain(fmtCode(row.overtime), 'ew3-num ew3-ot-text') + '</td>' +
           '<td class="ew3-code-cell ew3-c">' + copy(row.code, 'c-' + i + '-code') + '</td>' +
-          '<td class="ew3-desc-cell">' + copy(row.description, 'c-' + i + '-desc') + '</td>' +
+          '<td class="ew3-desc-cell">' + plain(row.description) + '</td>' +
           '</tr>';
       }).join('');
       const codeMobileRows = summary.map((row, i) => {
@@ -26802,7 +26802,7 @@
           '<td class="ew3-c ew3-num">' + plain(fmtCode(adjOrd[i]), 'ew3-num') + '</td>' +
           '<td class="ew3-c ew3-num ew3-ot">' + plain(fmtCode(row.overtime), 'ew3-num ew3-ot-text') + '</td>' +
           '<td class="ew3-code-cell ew3-c">' + copy(row.code, 'm-c-' + i + '-code') + '</td>' +
-          '<td class="ew3-desc-cell">' + copy(row.description, 'm-c-' + i + '-desc') + '</td>' +
+          '<td class="ew3-desc-cell">' + plain(row.description) + '</td>' +
           '</tr>';
       }).join('');
       const calloutRows = calloutEntries.map((co, i) => {
@@ -26812,8 +26812,8 @@
         return '<tr>' +
           '<td class="ew3-callout-index">' + (i + 1) + '</td>' +
           '<td class="ew3-callout-date">' + plain(dateLabel) + '</td>' +
-          '<td class="ew3-code-cell">' + copy(ticket, 'co-' + i + '-ticket') + '</td>' +
-          '<td class="ew3-desc-cell">' + copy(location, 'co-' + i + '-location') + '</td>' +
+          '<td class="ew3-code-cell">' + plain(ticket) + '</td>' +
+          '<td class="ew3-desc-cell">' + plain(location) + '</td>' +
           '</tr>';
       }).join('');
       const calloutsHtml = calloutEntries.length ? (
