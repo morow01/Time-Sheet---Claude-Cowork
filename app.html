@@ -21160,7 +21160,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.11';
+    const VERSION = '6.5.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25535,7 +25535,10 @@
     function showEmailPreview() {
       if (!state.weekData) { showToast('No week data.'); return; }
       const body = document.getElementById('email-preview-body');
-      if (body) body.innerHTML = buildPreviewHtml(state.weekData);
+      if (body) {
+        window._lastActiveCopyEl = null;
+        body.innerHTML = buildPreviewHtml(state.weekData);
+      }
       document.getElementById('email-preview-modal').classList.remove('hidden');
     }
 
@@ -25567,10 +25570,17 @@
       document.body.removeChild(ta);
     }
 
-    function cpv(val) {
+    function cpv(el, val) {
       // inline-friendly wrapper called by onclick in preview HTML
       const finish = () => {
         showToast('Copied: ' + val, 1800);
+        if (window._lastActiveCopyEl && window._lastActiveCopyEl !== el) {
+          window._lastActiveCopyEl.style.background = '#e2e8f0'; // Revert previous active to gray
+          window._lastActiveCopyEl.style.borderRadius = '3px';
+        }
+        el.style.background = '#d1fae5'; // Set current active to light green
+        el.style.borderRadius = '3px';
+        window._lastActiveCopyEl = el;
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(val).then(finish).catch(() => { legacyCopy(val); finish(); });
@@ -25596,7 +25606,7 @@
       function cpSpan(val, extraStyle) {
         const safe = val || '';
         const v = safe.replace(/'/g, "\\'");
-        return `<span style="${cpStyle}${extraStyle || ''}" onclick="cpv('${v}')" title="Tap to copy">${esc(safe)}</span>`;
+        return `<span style="${cpStyle}${extraStyle || ''}" onclick="cpv(this, '${v}')" title="Tap to copy">${esc(safe)}</span>`;
       }
 
       // Summary table rows
