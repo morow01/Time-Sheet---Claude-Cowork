@@ -81,12 +81,27 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+const ALLOWED_CDN_HOSTS = [
+  'www.gstatic.com',
+  'cdn.tailwindcss.com',
+  'cdn.jsdelivr.net',
+  'esm.sh',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com'
+];
+
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  if (url.origin !== self.location.origin) return;
+  const isSameOrigin = url.origin === self.location.origin;
+  const isAllowedCDN = ALLOWED_CDN_HOSTS.includes(url.hostname);
 
-  // Network-first for all same-origin requests: always serve latest when online,
-  // fall back to cache when offline. Fixes stale /app serving old cached version.
+  if (!isSameOrigin && !isAllowedCDN) return;
+
+  // Cache GET requests; ignore Firestore WebSocket, analytics, or Google Auth POSTs
+  if (e.request.method !== 'GET' || !url.protocol.startsWith('http')) return;
+
+  // Network-first for all whitelisted same-origin & CDN requests: always serve latest when online,
+  // fall back to cache when offline. Fixes stale /app and handles offline CDN resources.
   e.respondWith(
     fetch(e.request)
       .then(res => {
