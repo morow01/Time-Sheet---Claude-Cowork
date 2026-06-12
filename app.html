@@ -21160,7 +21160,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.16';
+    const VERSION = '6.5.17';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -51108,6 +51108,10 @@ function _ttStripDefaultTableWidths() {
         return;
       }
       _batteryStopSpeaking();
+      if (_batteryChat.recognition) {
+        try { _batteryChat.recognition.abort(); } catch (e) { }
+        _batteryChat.recognition = null;
+      }
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       const r = new SR();
       r.lang = navigator.language || 'en-IE';
@@ -51127,12 +51131,7 @@ function _ttStripDefaultTableWidths() {
       };
       r.onerror = (e) => {
         if (e.error === 'no-speech') {
-          // Mic timed out on silence — auto-restart so user doesn't have to tap again
-          setTimeout(() => {
-            if (_batteryChat && !_batteryChat.complete && !_batteryChat.listening && !_batteryChat.explicitlyStopped) {
-              _batteryMicToggle(false);
-            }
-          }, 300);
+          // Silence timeout — do nothing here; onend will naturally trigger next
           return;
         }
         if (e.error !== 'aborted') showToast('Speech error: ' + e.error);
