@@ -21160,7 +21160,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.12';
+    const VERSION = '6.5.13';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26883,6 +26883,7 @@
           .ew3-copy{cursor:pointer;user-select:none;color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong);text-decoration-thickness:1px;text-underline-offset:3px;transition:color .12s,text-decoration-color .12s,opacity .12s;display:inline}
           .ew3-copy:hover{color:var(--accent);text-decoration-color:var(--accent)}
           .ew3-copy.copied{color:var(--text-dim);text-decoration:none;opacity:.7}
+          .ew3-copy.ew3-active{background:#d1fae5!important;color:#065f46!important;border-radius:3px;text-decoration:none;opacity:1!important;padding:1px 2px}
           .ew3-ot,.ew3-ot .ew3-copy,.ew3-copy.ew3-ot-text{color:var(--pill-amber-color)}
           .ew3-ot .ew3-copy{text-decoration-color:var(--pill-amber-color)}
           .ew3-empty{color:var(--text-dim);cursor:default;text-decoration:none;pointer-events:none}
@@ -26980,6 +26981,7 @@
           .ew3-copy{cursor:pointer;user-select:none;color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong);text-decoration-thickness:1px;text-underline-offset:3px;transition:color .12s,text-decoration-color .12s,opacity .12s;display:inline}
           .ew3-copy:hover{color:var(--accent);text-decoration-color:var(--accent)}
           .ew3-copy.copied{color:var(--text-dim);text-decoration:none;opacity:.7}
+          .ew3-copy.ew3-active{background:#d1fae5!important;color:#065f46!important;border-radius:3px;text-decoration:none;opacity:1!important;padding:1px 2px}
           .ew3-copy.copied:hover{color:var(--text-secondary);opacity:.9}
           .ew3-ot,.ew3-ot .ew3-copy,.ew3-copy.ew3-ot-text{color:var(--pill-amber-color)}
           .ew3-ot .ew3-copy{text-decoration-color:var(--pill-amber-color)}
@@ -27068,21 +27070,30 @@
       if (!el || el.classList.contains('ew3-empty')) return;
       const key = el.getAttribute('data-key');
       const value = el.getAttribute('data-value') || el.textContent.trim();
-      const next = !el.classList.contains('copied');
-      document.querySelectorAll('.ew3-copy[data-key="' + key + '"]').forEach(x => x.classList.toggle('copied', next));
-      if (next) {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(value).then(() => showToast('Copied: ' + value, 1200)).catch(() => { legacyCopy(value); showToast('Copied: ' + value, 1200); });
-        } else {
-          legacyCopy(value);
-          showToast('Copied: ' + value, 1200);
-        }
+      
+      // Remove active class from any previously active copy element(s)
+      document.querySelectorAll('.ew3-copy.ew3-active').forEach(x => {
+        x.classList.remove('ew3-active');
+      });
+      
+      // Add active class and copied class to the currently clicked item(s)
+      document.querySelectorAll('.ew3-copy[data-key="' + key + '"]').forEach(x => {
+        x.classList.add('ew3-active');
+        x.classList.add('copied');
+      });
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(() => showToast('Copied: ' + value, 1200)).catch(() => { legacyCopy(value); showToast('Copied: ' + value, 1200); });
+      } else {
+        legacyCopy(value);
+        showToast('Copied: ' + value, 1200);
       }
       ew3UpdateProgress();
     }
 
     function ew3Reset() {
       document.querySelectorAll('.ew3-copy.copied').forEach(el => el.classList.remove('copied'));
+      document.querySelectorAll('.ew3-copy.ew3-active').forEach(el => el.classList.remove('ew3-active'));
       ew3UpdateProgress();
     }
 
