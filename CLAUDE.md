@@ -9,14 +9,14 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 - `Code.gs` — Google Apps Script backend
 - `manifest.json` — PWA manifest
 - `functions/` — Firebase Cloud Functions (reminders)
-- `.git/hooks/pre-commit` — integrity check for 31 critical element IDs (blocks commit if any are missing)
+- `.git/hooks/pre-commit` — local-only integrity check for 31 critical element IDs (not committed, create locally if needed)
 - `capacitor.config.ts` — Capacitor Android wrapper config
 - `android/` — Android project (Capacitor-generated, do not hand-edit except resources)
 - `scripts/build-www.js` — copies app files into `android/app/src/main/assets/public/`
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.0.79**
+Current version: **6.5.19**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
