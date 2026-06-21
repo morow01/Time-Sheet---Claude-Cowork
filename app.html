@@ -16355,6 +16355,263 @@
       border: 1px solid var(--border);
     }
 
+    /* ===== TETRA ROUTINE INSPECTION MODAL ===== */
+    #tetra-inspection-modal {
+      transition: opacity 0.15s ease-in-out;
+    }
+    #tetra-inspection-modal.hidden {
+      display: none !important;
+    }
+    #tetra-inspection-modal .workspace {
+      height: calc(100vh - 58px);
+    }
+    #tetra-inspection-modal .hotspot {
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.95);
+      background: rgba(219,0,117,0.28);
+      border-radius: 12px;
+      cursor: pointer;
+      outline: none;
+      transition: background 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
+      will-change: transform, background;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #tetra-inspection-modal .hotspot:hover,
+    #tetra-inspection-modal .hotspot.active {
+      transform: scale(1.02);
+      background: rgba(255,255,255,0.18);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.55), 0 0 14px 4px rgba(255,255,255,0.25);
+    }
+    #tetra-inspection-modal .hotspots-hidden .hotspot {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #tetra-inspection-modal .hotspot span {
+      background: #101d31;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+    #tetra-inspection-modal .h-mts span {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-50%, 4px);
+    }
+    #tetra-inspection-modal .h-preselector-a { left: 12.5%; top: 4.7%; width: 13.0%; height: 13.3%; background: rgba(34, 197, 94, 0.24); }
+    #tetra-inspection-modal .h-preselector-b { left: 33.0%; top: 4.7%; width: 13.0%; height: 13.3%; background: rgba(34, 197, 94, 0.24); }
+    #tetra-inspection-modal .h-duplexer { left: 53.5%; top: 4.7%; width: 13.0%; height: 26.6%; background: rgba(59, 130, 246, 0.24); }
+    #tetra-inspection-modal .h-br1 { left: 9.6%; top: 38.8%; width: 26.2%; height: 36.7%; background: rgba(234, 179, 8, 0.24); }
+    #tetra-inspection-modal .h-psu { left: 38.0%; top: 38.8%; width: 16.6%; height: 36.7%; background: rgba(234, 179, 8, 0.24); }
+    #tetra-inspection-modal .h-tsc { left: 79.0%; top: 38.8%; width: 12.8%; height: 36.7%; background: rgba(234, 179, 8, 0.24); }
+    #tetra-inspection-modal .h-fans-1 { left: 9.6%; top: 76.2%; width: 26.2%; height: 6.4%; background: rgba(168, 85, 247, 0.24); }
+    #tetra-inspection-modal .h-fans-2 { left: 38.0%; top: 76.2%; width: 26.2%; height: 6.4%; background: rgba(168, 85, 247, 0.24); }
+    #tetra-inspection-modal .h-fans-3 { left: 66.2%; top: 76.2%; width: 26.2%; height: 6.4%; background: rgba(168, 85, 247, 0.24); }
+    #tetra-inspection-modal .h-mts { left: 44.0%; top: 88.5%; width: 10.2%; height: 2.0%; background: rgba(236, 72, 153, 0.24); }
+    
+    #tetra-inspection-modal .component-list {
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+    }
+    #tetra-inspection-modal .component {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-card);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    #tetra-inspection-modal .component.active {
+      border-color: rgba(var(--accent-rgb), 0.6);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+    }
+    #tetra-inspection-modal .component-top {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer;
+    }
+    #tetra-inspection-modal .badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    #tetra-inspection-modal .badge.pink { background: #db0075; }
+    #tetra-inspection-modal .badge.orange { background: #f97316; }
+    #tetra-inspection-modal .badge.teal { background: #188c98; }
+    #tetra-inspection-modal .badge.red { background: #b91c1c; }
+    
+    #tetra-inspection-modal .comp-title {
+      min-width: 0;
+    }
+    #tetra-inspection-modal .comp-title strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.15;
+      color: var(--text-primary);
+    }
+    #tetra-inspection-modal .comp-title span {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 12px;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    #tetra-inspection-modal .status {
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: var(--bg-card-alt);
+      color: var(--text-secondary);
+    }
+    #tetra-inspection-modal .status.review { background: #fff7ed; color: #d97706; }
+    #tetra-inspection-modal .status.done { background: #dcfce7; color: #16a34a; }
+    
+    #tetra-inspection-modal .component-body {
+      border-top: 1px solid var(--border);
+      padding: 12px;
+      display: none;
+      gap: 10px;
+      background: var(--bg-card-alt);
+    }
+    #tetra-inspection-modal .component.active .component-body {
+      display: grid;
+    }
+    #tetra-inspection-modal .field {
+      display: grid;
+      gap: 5px;
+    }
+    #tetra-inspection-modal .field label {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    #tetra-inspection-modal .field input, #tetra-inspection-modal .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg-card);
+      padding: 9px 10px;
+      color: var(--text-primary);
+      outline: none;
+      min-width: 0;
+    }
+    #tetra-inspection-modal .photo-box {
+      border: 1px dashed var(--border);
+      border-radius: 9px;
+      background: var(--bg-card);
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+    #tetra-inspection-modal .photo-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    #tetra-inspection-modal .ocr-hint {
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    #tetra-inspection-modal .btn {
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 9px;
+      padding: 9px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    #tetra-inspection-modal .btn.secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    #tetra-inspection-modal .btn.ok {
+      background: #16a34a;
+    }
+    
+    @media (max-width: 1100px) {
+      #tetra-inspection-modal .workspace {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+        height: calc(100vh - 58px);
+      }
+      #tetra-inspection-modal .component-list {
+        max-height: none;
+        overflow: visible;
+      }
+    }
+    
+    /* Crop & Lightbox Modals */
+    .tetra-crop-modal, .tetra-lightbox-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 11000;
+      background: rgba(15, 22, 36, 0.97);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    .tetra-crop-modal.hidden, .tetra-lightbox-modal.hidden {
+      display: none !important;
+    }
+    .tetra-crop-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: #000;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      touch-action: none;
+    }
+    .tetra-crop-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+    .tetra-crop-box {
+      position: absolute;
+      border: 2px dashed var(--accent);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+      display: none;
+      pointer-events: none;
+    }
+
     /* ===== CALLOUTS (minimal — reuses existing card/form classes) ===== */
     .co-page {
       padding: 0 0 80px;
@@ -20804,6 +21061,138 @@
     </div>
   </div>
 
+  <!-- ===== TETRA ROUTINE INSPECTION MODAL ===== -->
+  <div id="tetra-inspection-modal" class="hidden" style="position: fixed; inset: 0; z-index: 80; background: var(--bg-page); display: flex; flex-direction: column;">
+    <!-- Topbar -->
+    <header class="topbar" style="background: var(--bg-header, #0F1C2E); color: var(--text-header, #fff); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 58px; flex-shrink: 0;">
+      <div class="brand" style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+        <button onclick="closeTetraInspection()" style="background: transparent; border: none; color: inherit; cursor: pointer; padding: 4px; display: grid; place-items: center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="title" style="min-width: 0;">
+          <strong id="tetra-modal-title" style="display: block; font-size: 15px; line-height: 1.1; display: flex; align-items: center; gap: 6px;">TETRA Routine Inspection</strong>
+          <span id="tetra-modal-subtitle" style="display: block; color: var(--text-header-sub, rgba(255,255,255,0.55)); font-size: 12px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Mountmellick Tetra</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div id="tetra-keyIndicator" style="display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px 10px; border-radius: 6px; background: rgba(22, 163, 74, 0.15); border: 1px solid rgba(22, 163, 74, 0.3); color: #4ade80;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: inline-block; vertical-align: -1px; margin-right: 3px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5l-3-3"/></svg>
+          AI Active
+        </div>
+        <button class="btn ok" onclick="saveTetraInspection()" style="font-size:12px; padding: 6px 12px; font-weight:700;">Save & Close</button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace" style="width: 100%; max-width: 100%; margin: 0; padding: 16px; display: grid; grid-template-columns: minmax(0, 1.18fr) 420px; gap: 16px; flex: 1; overflow: hidden; background: var(--bg-page);">
+      <!-- Left Panel: Visual Guide -->
+      <section class="panel" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;">
+        <div class="panel-head" style="padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-card);">
+          <div>
+            <div class="panel-kicker" style="color: var(--text-muted); font-size: 11px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;">Visual Guide</div>
+            <h1 style="margin: 2px 0 0; font-size: 16px; font-weight: 700; color: var(--text-primary);">Cabinet Hotspots</h1>
+          </div>
+          <div class="seg" aria-label="Guide image mode" style="display: flex; align-items: center; gap: 3px; padding: 3px; border-radius: 10px; background: var(--bg-card-alt); border: 1px solid var(--border);">
+            <button id="tetra-btnClean" class="active" onclick="setTetraGuideMode('clean')" style="border: 0; background: transparent; color: var(--text-secondary); border-radius: 7px; padding: 5px 8px; cursor: pointer; font-size: 11px; font-weight: 700;">Clean</button>
+            <button id="tetra-btnLabels" onclick="setTetraGuideMode('labels')" style="border: 0; background: transparent; color: var(--text-secondary); border-radius: 7px; padding: 5px 8px; cursor: pointer; font-size: 11px; font-weight: 700;">Labels</button>
+          </div>
+        </div>
+        
+        <div style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center;">
+          <div id="tetra-img-wrap" class="image-frame" style="background: #111827; border-radius: 10px; overflow: hidden; position: relative; width: 100%; max-width: 560px; aspect-ratio: 2432/3128; display: grid; place-items: center; isolation: isolate;">
+            <img id="tetra-guideImg" src="tetra-layout-no-labels.jpg" alt="Tetra cabinet visual guide" style="width: 100%; display: block;">
+            <!-- Hotspots -->
+            <button class="hotspot h-preselector-a active" data-target="preselector-a" onclick="selectTetraComponent('preselector-a')"><span>Preselector 1</span></button>
+            <button class="hotspot h-preselector-b" data-target="preselector-b" onclick="selectTetraComponent('preselector-b')"><span>Preselector 2</span></button>
+            <button class="hotspot h-duplexer" data-target="duplexer" onclick="selectTetraComponent('duplexer')"><span>Duplexer</span></button>
+            <button class="hotspot h-br1" data-target="br1" onclick="selectTetraComponent('br1')"><span>BR1</span></button>
+            <button class="hotspot h-psu" data-target="psu" onclick="selectTetraComponent('psu')"><span>PSU</span></button>
+            <button class="hotspot h-tsc" data-target="tsc" onclick="selectTetraComponent('tsc')"><span>TSC</span></button>
+            <button class="hotspot h-fans-1" data-target="fans" onclick="selectTetraComponent('fans')"><span>Fan 1</span></button>
+            <button class="hotspot h-fans-2" data-target="fans" onclick="selectTetraComponent('fans')"><span>Fan 2</span></button>
+            <button class="hotspot h-fans-3" data-target="fans" onclick="selectTetraComponent('fans')"><span>Fan 3</span></button>
+            <button class="hotspot h-mts" data-target="mts" onclick="selectTetraComponent('mts')"><span>MTS</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Capture Checklist -->
+      <section class="panel" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden;">
+        <div class="panel-head" style="padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg-card);">
+          <div>
+            <div class="panel-kicker" style="color: var(--text-muted); font-size: 11px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;">Checklist</div>
+            <h2 style="margin: 2px 0 0; font-size: 16px; font-weight: 700; color: var(--text-primary);">Modules Checklist</h2>
+          </div>
+        </div>
+        
+        <div class="component-list" id="tetra-componentList" style="flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+          <!-- Rendered dynamically -->
+        </div>
+        
+        <!-- Summary Bar -->
+        <div class="summary-bar" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: var(--bg-card-alt);">
+          <div class="summary" style="border: 1px solid var(--border); background: var(--bg-card); border-radius: 8px; padding: 8px; text-align: center;">
+            <span style="display: block; color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase;">Confirmed</span>
+            <strong id="tetra-sumCaptured" style="display: block; font-size: 18px; margin-top: 2px; color: var(--text-primary);">0</strong>
+          </div>
+          <div class="summary" style="border: 1px solid var(--border); background: var(--bg-card); border-radius: 8px; padding: 8px; text-align: center;">
+            <span style="display: block; color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase;">Review</span>
+            <strong id="tetra-sumReview" style="display: block; font-size: 18px; margin-top: 2px; color: var(--text-primary);">0</strong>
+          </div>
+          <div class="summary" style="border: 1px solid var(--border); background: var(--bg-card); border-radius: 8px; padding: 8px; text-align: center;">
+            <span style="display: block; color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase;">Missing</span>
+            <strong id="tetra-sumMissing" style="display: block; font-size: 18px; margin-top: 2px; color: var(--text-primary);">8</strong>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- TETRA Image Crop Modal -->
+  <div id="tetra-crop-modal" class="tetra-crop-modal hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="margin: 0; color: #fff; font-size: 16px; font-weight: 700;">Crop Label Photo</h3>
+      <button onclick="closeTetraCropModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div style="color: #cbd5e1; font-size: 13px; margin-bottom: 12px; text-align: center;">
+      Drag/swipe across the image to select the label area.
+    </div>
+    <div id="tetra-crop-container" class="tetra-crop-container">
+      <img id="tetra-crop-img" class="tetra-crop-img">
+      <div id="tetra-crop-box" class="tetra-crop-box"></div>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 16px; justify-content: center; align-items: center; flex-wrap: wrap;">
+      <button class="btn secondary" onclick="rotateTetraCropImage()" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 9px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Rotate 90°
+      </button>
+      <button class="btn secondary" onclick="resetTetraCrop()" style="padding: 8px 16px; font-size: 13px; cursor: pointer; border-radius: 9px;">
+        Reset Selection
+      </button>
+      <button class="btn ok" onclick="submitTetraCrop()" style="padding: 8px 20px; font-size: 13px; background: var(--accent); color: #fff; border: none; cursor: pointer; border-radius: 9px;">
+        Crop & Analyze
+      </button>
+    </div>
+  </div>
+
+  <!-- TETRA Image Lightbox Modal -->
+  <div id="tetra-lightbox-modal" class="tetra-lightbox-modal hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 id="tetra-lightbox-title" style="margin: 0; color: #fff; font-size: 16px; font-weight: 700;">Label Photo</h3>
+      <button onclick="closeTetraLightboxModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="tetra-crop-container">
+      <img id="tetra-lightbox-img" class="tetra-crop-img" style="pointer-events: auto;">
+    </div>
+    <div style="display: flex; justify-content: center; margin-top: 16px;">
+      <button class="btn ok" onclick="closeTetraLightboxModal()" style="padding: 8px 24px; font-size: 13px; background: var(--accent); color: #fff; border: none; cursor: pointer; border-radius: 9px;">Close</button>
+    </div>
+  </div>
+
   <!-- ===== CONFIRM MODAL ===== -->
   <!-- Export options modal -->
   <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
@@ -21112,7 +21501,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.29';
+    const VERSION = '6.6.30';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37222,6 +37611,8 @@
       }
       // Priority order: topmost layer first. First match wins.
       const stack = [
+        ['tetra-crop-modal', () => typeof closeTetraCropModal === 'function' && closeTetraCropModal()],
+        ['tetra-lightbox-modal', () => typeof closeTetraLightboxModal === 'function' && closeTetraLightboxModal()],
         ['task-modal-overlay', () => typeof closeTaskModal === 'function' && closeTaskModal()],
         ['note-modal-overlay', () => typeof closeNoteModal === 'function' && closeNoteModal()],
         ['co-modal-overlay', () => typeof closeCoModal === 'function' && closeCoModal()],
@@ -38480,6 +38871,23 @@
       const noteFsOpen = !document.getElementById('note-fs-modal')?.classList.contains('hidden');
       if (noteFsOpen) {
         closeNoteFullscreen();
+        return;
+      }
+      // 2a. TETRA Routine Inspection crop / lightbox overlays
+      const cropOpen = !document.getElementById('tetra-crop-modal')?.classList.contains('hidden');
+      if (cropOpen) {
+        closeTetraCropModal();
+        return;
+      }
+      const lightboxOpen = !document.getElementById('tetra-lightbox-modal')?.classList.contains('hidden');
+      if (lightboxOpen) {
+        closeTetraLightboxModal();
+        return;
+      }
+      // 2b. TETRA Routine Inspection fullscreen modal
+      const tetraFsOpen = !document.getElementById('tetra-inspection-modal')?.classList.contains('hidden');
+      if (tetraFsOpen) {
+        closeTetraInspection();
         return;
       }
       // 3. Hamburger menu open
@@ -43105,6 +43513,20 @@
       titleEl.textContent = site;
       subEl.textContent = MONTHS_FULL[month - 1] + ' ' + year;
 
+      let tetraHtml = '';
+      if (site.toLowerCase().includes('tetra')) {
+        let confirmedCount = 0;
+        if (existing && existing.tetraChecklist) {
+          confirmedCount = existing.tetraChecklist.filter(c => c.status === 'confirmed').length;
+        }
+        tetraHtml = `
+          <button class="rtn-log-btn primary" onclick="openTetraInspection()" style="margin-top: 4px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: 0; color: #fff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            TETRA Visual Inspection (${confirmedCount}/8)
+          </button>
+        `;
+      }
+
       if (isAuto && auto) {
         srcEl.style.display = '';
         srcEl.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>Auto-filled from timesheet';
@@ -43120,6 +43542,7 @@
               <button class="rtn-log-btn danger" onclick="removeRoutinesVisit()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,7 18,7"/><path d="M8,7V5a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1v2"/><path d="M7,7l1,11h6l1-11"/></svg>Remove</button>
               <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="16" y2="16"/><line x1="16" y1="6" x2="6" y2="16"/></svg>Cancel</button>
             </div>
+            ${tetraHtml}
           </div>`;
       } else if (manual) {
         srcEl.style.display = 'none';
@@ -43135,6 +43558,7 @@
               <button class="rtn-log-btn danger" onclick="removeRoutinesVisit()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4,7 18,7"/><path d="M8,7V5a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1v2"/><path d="M7,7l1,11h6l1-11"/></svg>Remove</button>
               <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="16" y2="16"/><line x1="16" y1="6" x2="6" y2="16"/></svg>Cancel</button>
             </div>
+            ${tetraHtml}
           </div>`;
       } else {
         srcEl.style.display = 'none';
@@ -43144,8 +43568,13 @@
         const defaultDay = (today.getFullYear() === year && today.getMonth() + 1 === month) ? today.getDate() : 1;
         dateEl.value = year + '-' + String(month).padStart(2, '0') + '-' + String(defaultDay).padStart(2, '0');
         btnsEl.innerHTML = `
-          <button class="rtn-log-btn primary" onclick="saveRoutinesVisit()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,11 9,17 19,5"/></svg>Log visit</button>
-          <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="16" y2="16"/><line x1="16" y1="6" x2="6" y2="16"/></svg>Cancel</button>`;
+          <div style="display:flex;flex-direction:column;gap:8px;width:100%">
+            <div style="display:flex;gap:8px">
+              <button class="rtn-log-btn primary" onclick="saveRoutinesVisit()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,11 9,17 19,5"/></svg>Log visit</button>
+              <button class="rtn-log-btn cancel" onclick="closeRoutinesLogModal()"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="16" y2="16"/><line x1="6" y1="16" x2="16" y2="6"/></svg>Cancel</button>
+            </div>
+            ${tetraHtml}
+          </div>`;
       }
 
       document.getElementById('rtn-log-modal').classList.add('open');
@@ -43188,6 +43617,665 @@
       closeRoutinesLogModal();
       render();
       await fsSetRoutines().catch(e => console.warn('[Rian]', e));
+    }
+
+    // ── TETRA Visual Inspection Checklist Controller ────────────────
+    const TETRA_COMPONENTS_META = [
+      { id: 'preselector-a', label: 'Preselector 1', short: 'PRE 1', colour: 'pink', instruction: 'Photograph the white barcode label on the left Preselector module at the top of the cabinet.' },
+      { id: 'preselector-b', label: 'Preselector 2', short: 'PRE 2', colour: 'pink', instruction: 'Photograph the white barcode label on the second Preselector module at the top centre of the cabinet.' },
+      { id: 'duplexer', label: 'Duplexer', short: 'DUP', colour: 'pink', instruction: 'Photograph the barcode label on the Duplexer module at the top right. Avoid glare from the metal faceplate.' },
+      { id: 'br1', label: 'BR1 Base Radio', short: 'BR1', colour: 'orange', instruction: 'Photograph the base radio serial label near the lower front label area. Confirm which Rx port set is in use.' },
+      { id: 'psu', label: 'Power Supply', short: 'PSU', colour: 'orange', instruction: 'Photograph the PSU label on the centre power module. Include the power switch area if possible.' },
+      { id: 'tsc', label: 'TSC Site Controller', short: 'TSC', colour: 'orange', instruction: 'Photograph the TSC label at the lower right and capture LED state in the notes if any alarm is active.' },
+      { id: 'fans', label: 'Fan Trays', short: 'FAN', colour: 'teal', instruction: 'Photograph each fan tray label. If there are three fans, record all three serials separated by commas.' },
+      { id: 'mts', label: 'MTS', short: 'MTS', colour: 'red', instruction: 'Photograph the MTS label at the bottom rail. This label may be partly obscured by loose cables.' }
+    ];
+
+    let _tetraActiveCompId = 'preselector-a';
+    let _tetraGuideMode = 'clean'; // 'clean' or 'labels'
+    let _tetraComponents = [];
+
+    function openTetraInspection() {
+      if (!_rtnLogCtx) return;
+      
+      const titleEl = document.getElementById('tetra-modal-title');
+      const subEl = document.getElementById('tetra-modal-subtitle');
+      if (titleEl) {
+        titleEl.innerHTML = esc(_rtnLogCtx.site) + ` <span style="font-size: 10px; font-weight: normal; background: rgba(255, 255, 255, 0.12); color: var(--text-header-sub, rgba(255,255,255,0.7)); padding: 1px 5px; border: 1px solid rgba(255,255,255,0.18); border-radius: 4px; margin-left: 2px; vertical-align: middle; display: inline-block;">v${VERSION}-T1</span>`;
+      }
+      if (subEl) subEl.textContent = MONTHS_FULL[_rtnLogCtx.month - 1] + ' ' + _rtnLogCtx.year;
+
+      const keyIndicator = document.getElementById('tetra-keyIndicator');
+      const geminiKey = localStorage.getItem('geminiKey') || '';
+      if (keyIndicator) {
+        if (geminiKey) {
+          keyIndicator.innerHTML = `
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: inline-block; vertical-align: -1px; margin-right: 3px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5l-3-3"/></svg>
+            AI Active
+          `;
+          keyIndicator.style.background = 'rgba(22, 163, 74, 0.15)';
+          keyIndicator.style.border = '1px solid rgba(22, 163, 74, 0.3)';
+          keyIndicator.style.color = '#4ade80';
+        } else {
+          keyIndicator.innerHTML = `
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: inline-block; vertical-align: -1px; margin-right: 3px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            No API Key
+          `;
+          keyIndicator.style.background = 'rgba(239, 68, 68, 0.15)';
+          keyIndicator.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+          keyIndicator.style.color = '#f87171';
+        }
+      }
+
+      const existingVisit = state.routines && state.routines.visits ? state.routines.visits[_rtnLogCtx.key] : null;
+      let loadedChecklist = [];
+      if (existingVisit && existingVisit.tetraChecklist) {
+        loadedChecklist = JSON.parse(JSON.stringify(existingVisit.tetraChecklist));
+      }
+      _tetraComponents = TETRA_COMPONENTS_META.map(meta => {
+        const loaded = loadedChecklist.find(item => item.id === meta.id) || {};
+        return {
+          id: meta.id,
+          name: meta.label,
+          serial: loaded.serial || '',
+          photo: loaded.photo || null,
+          photoData: loaded.photoData || null,
+          photoMime: loaded.photoMime || null,
+          photoUrl: loaded.photoUrl || null,
+          status: loaded.status || 'missing',
+          ocrRunning: loaded.ocrRunning || false,
+          ocrError: loaded.ocrError || null,
+          note: loaded.note || ''
+        };
+      });
+
+      _tetraActiveCompId = 'preselector-a';
+      _tetraGuideMode = 'clean';
+      
+      const btnClean = document.getElementById('tetra-btnClean');
+      const btnLabels = document.getElementById('tetra-btnLabels');
+      if (btnClean) btnClean.classList.add('active');
+      if (btnLabels) btnLabels.classList.remove('active');
+      
+      const img = document.getElementById('tetra-guideImg');
+      if (img) img.src = 'tetra-layout-no-labels.jpg';
+
+      renderTetraComponents();
+      
+      const modal = document.getElementById('tetra-inspection-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    async function saveTetraInspection() {
+      if (!_rtnLogCtx || !state.routines) return;
+      const { key, site, year, month } = _rtnLogCtx;
+      
+      const dateEl = document.getElementById('rtn-log-date');
+      let day = 1;
+      if (dateEl && dateEl.value) {
+        const parts = dateEl.value.split('-');
+        day = parseInt(parts[2]) || 1;
+      } else {
+        const today = new Date();
+        day = (today.getFullYear() === year && today.getMonth() + 1 === month) ? today.getDate() : 1;
+      }
+
+      if (!state.routines.visits) state.routines.visits = {};
+      state.routines.visits[key] = {
+        day: day,
+        tetraChecklist: _tetraComponents
+      };
+
+      closeTetraInspection();
+      closeRoutinesLogModal();
+      render();
+      
+      await fsSetRoutines().catch(e => console.warn('[Rian]', e));
+    }
+
+    function closeTetraInspection() {
+      const modal = document.getElementById('tetra-inspection-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setTetraGuideMode(mode) {
+      _tetraGuideMode = mode;
+      const btnClean = document.getElementById('tetra-btnClean');
+      const btnLabels = document.getElementById('tetra-btnLabels');
+      const img = document.getElementById('tetra-guideImg');
+      const imgWrap = document.getElementById('tetra-img-wrap');
+
+      if (mode === 'clean') {
+        if (btnClean) btnClean.classList.add('active');
+        if (btnLabels) btnLabels.classList.remove('active');
+        if (img) img.src = 'tetra-layout-no-labels.jpg';
+        if (imgWrap) imgWrap.classList.remove('hotspots-hidden');
+      } else {
+        if (btnClean) btnClean.classList.remove('active');
+        if (btnLabels) btnLabels.classList.add('active');
+        if (img) img.src = 'tetra-layout-labels.jpg';
+        if (imgWrap) imgWrap.classList.add('hotspots-hidden');
+      }
+    }
+
+    function selectTetraComponent(id) {
+      _tetraActiveCompId = id;
+      
+      const hotspots = document.querySelectorAll('.hotspot');
+      hotspots.forEach(el => {
+        if (el.classList.contains('h-' + id) || el.getAttribute('data-target') === id) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+
+      renderTetraComponents();
+      
+      setTimeout(() => {
+        const activeCard = document.querySelector(`.checklist-card[data-id="${id}"]`);
+        if (activeCard) {
+          activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 50);
+    }
+
+    function setTetraSerial(id, value) {
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (comp) {
+        comp.serial = value.trim();
+        if (!comp.serial && !comp.photo) {
+          comp.status = 'missing';
+        } else if (comp.status === 'confirmed' && !comp.serial) {
+          comp.status = 'missing';
+        } else if (comp.status !== 'confirmed') {
+          comp.status = 'review';
+        }
+        updateTetraSummary();
+      }
+    }
+
+    function setTetraNote(id, value) {
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (comp) {
+        comp.note = value;
+      }
+    }
+
+    function confirmTetraSerial(id) {
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (comp) {
+        if (!comp.serial.trim()) {
+          showToast('Please enter a serial number before confirming.');
+          return;
+        }
+        // Capture any unsaved note text directly from the DOM before re-rendering.
+        // On mobile, tapping the button can dismiss the keyboard without firing oninput.
+        const noteEl = document.getElementById('notes-' + id);
+        if (noteEl) comp.note = noteEl.value;
+        comp.status = 'confirmed';
+        renderTetraComponents();
+      }
+    }
+
+    function clearTetraComponent(id) {
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (comp) {
+        comp.serial = '';
+        comp.status = 'missing';
+        comp.photo = null;
+        comp.photoData = null;
+        comp.photoMime = null;
+        comp.photoUrl = null;
+        comp.ocrRunning = false;
+        comp.ocrError = null;
+        comp.note = '';
+        renderTetraComponents();
+      }
+    }
+
+    function updateTetraSummary() {
+      const confirmed = _tetraComponents.filter(c => c.status === 'confirmed').length;
+      const review = _tetraComponents.filter(c => c.status === 'review').length;
+      const missing = _tetraComponents.filter(c => c.status === 'missing').length;
+
+      const sumCapturedEl = document.getElementById('tetra-sumCaptured');
+      const sumReviewEl = document.getElementById('tetra-sumReview');
+      const sumMissingEl = document.getElementById('tetra-sumMissing');
+
+      if (sumCapturedEl) sumCapturedEl.textContent = confirmed;
+      if (sumReviewEl) sumReviewEl.textContent = review;
+      if (sumMissingEl) sumMissingEl.textContent = missing;
+    }
+
+    function renderTetraComponents() {
+      const list = document.getElementById('tetra-componentList');
+      if (!list) return;
+
+      list.innerHTML = TETRA_COMPONENTS_META.map(c => {
+        const item = _tetraComponents.find(comp => comp.id === c.id) || {
+          serial: '', status: 'missing', photo: null, ocrRunning: false, ocrError: null, note: ''
+        };
+        const statusClass = item.status === 'confirmed' ? 'done' : item.status === 'review' ? 'review' : '';
+        const statusLabelText = item.status === 'confirmed' ? 'Confirmed' : item.status === 'review' ? 'Needs Review' : 'Missing';
+        const isActive = _tetraActiveCompId === c.id;
+
+        return `
+          <article class="checklist-card component ${isActive ? 'active' : ''}" data-id="${c.id}">
+            <div class="component-top" onclick="selectTetraComponent('${c.id}')" style="padding: 12px; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; cursor: pointer;">
+              <div class="badge ${c.colour}" style="width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 900; background: var(--priority-${c.colour === 'pink' ? 'low' : c.colour === 'orange' ? 'medium' : c.colour === 'teal' ? 'low' : 'high'});">${c.short}</div>
+              <div class="comp-title" style="min-width: 0;">
+                <strong style="display: block; font-size: 14px; line-height: 1.15; color: var(--text-primary);">${c.label}</strong>
+                <span style="display: block; color: var(--text-secondary); font-size: 12px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.serial || c.instruction}</span>
+              </div>
+              <div class="status ${statusClass}" style="border-radius: 999px; padding: 5px 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em;">${statusLabelText}</div>
+            </div>
+            <div class="component-body" style="${isActive ? 'display: grid; border-top: 1px solid var(--border); padding: 12px; gap: 10px; background: var(--bg-card-alt);' : 'display: none;'}">
+              <div class="ocr-hint" style="font-size: 11px; color: var(--text-muted); line-height: 1.3;">${c.instruction}</div>
+              <div class="photo-box" style="border: 1px dashed var(--border); border-radius: 9px; background: var(--bg-input); padding: 10px; display: grid; gap: 8px;">
+                ${(item.photoData || item.photoUrl) ? `
+                <div style="position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); max-width: 120px; aspect-ratio: 16/9; background: #000; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="viewTetraPhoto('${c.id}')">
+                  <img src="${item.photoData ? `data:${item.photoMime || 'image/jpeg'};base64,${item.photoData}` : item.photoUrl}" style="max-width: 100%; max-height: 100%; display: block; object-fit: contain;">
+                  <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 8px; padding: 2px; text-align: center; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em;">Click to view</div>
+                </div>
+                ` : ''}
+                <div class="photo-row" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button class="btn ok" ${item.ocrRunning ? 'disabled' : ''} onclick="document.getElementById('file-${c.id}').click()" style="padding: 6px 12px; font-size: 12px;">
+                    ${item.photo ? 'Change photo' : 'Take / choose photo'}
+                  </button>
+                  <button class="btn secondary" ${item.ocrRunning || (!item.photoData && !item.photoUrl) ? 'disabled' : ''} onclick="runTetraOcr('${c.id}')" style="padding: 6px 12px; font-size: 12px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border);">
+                    ${item.ocrRunning ? 'Running OCR...' : 'Run OCR'}
+                  </button>
+                  <input id="file-${c.id}" type="file" accept="image/*" capture="environment" style="display:none" onchange="attachTetraPhoto('${c.id}', this)">
+                </div>
+                <div class="ocr-hint" style="margin-top: 4px; font-size: 11px; color: var(--text-secondary);">
+                  ${item.ocrRunning ? '<span style="color:var(--accent);font-weight:700;">Analyzing label image...</span>' : (item.photo || 'No label photo attached yet.')}
+                </div>
+                ${item.ocrError ? `<div style="color:var(--priority-high);font-size:11px;margin-top:4px;font-weight:700;">⚠️ ${esc(item.ocrError)}</div>` : ''}
+              </div>
+              <div class="field" style="display: grid; gap: 5px;">
+                <label style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);">Serial number</label>
+                <input id="serial-${c.id}" value="${item.serial}" ${item.ocrRunning ? 'disabled placeholder="Extracting serial..."' : 'placeholder="OCR result will appear here, or type manually"'} oninput="setTetraSerial('${c.id}', this.value)" style="border: 1px solid var(--border); border-radius: 9px; background: var(--bg-card); padding: 9px 10px; color: var(--text-primary); outline: none;">
+              </div>
+              <div class="field" style="display: grid; gap: 5px;">
+                <label style="font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted);">Technician note</label>
+                <textarea id="notes-${c.id}" placeholder="Optional note: damaged label, unreadable, alarm LED, second module, etc." oninput="setTetraNote('${c.id}', this.value)" style="border: 1px solid var(--border); border-radius: 9px; background: var(--bg-card); padding: 9px 10px; color: var(--text-primary); outline: none; min-height: 66px; resize: vertical;">${esc(item.note || '')}</textarea>
+              </div>
+              <div class="photo-row" style="display: flex; gap: 8px;">
+                <button class="btn ok" onclick="confirmTetraSerial('${c.id}')" style="padding: 6px 12px; font-size: 12px; background: var(--accent); color: #fff;">Confirm serial</button>
+                <button class="btn secondary" onclick="clearTetraComponent('${c.id}')" style="padding: 6px 12px; font-size: 12px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border);">Clear</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+      updateTetraSummary();
+    }
+
+    // ── Cropping, Rotation, Lightbox, and Firebase Storage for TETRA Routine Inspection ──
+    let _cropState = {
+      compId: null,
+      rawBase64: null,
+      rawMime: null,
+      eventsInitialized: false
+    };
+
+    function rotateBase64(base64, mime, callback) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.naturalHeight;
+        canvas.height = img.naturalWidth;
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((90 * Math.PI) / 180);
+        ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+        const rotated = canvas.toDataURL(mime || 'image/jpeg').split(',')[1];
+        callback(rotated);
+      };
+      img.src = `data:${mime || 'image/jpeg'};base64,${base64}`;
+    }
+
+    function initTetraCropEvents() {
+      const container = document.getElementById('tetra-crop-container');
+      const box = document.getElementById('tetra-crop-box');
+      if (!container || !box) return;
+
+      let startX = 0, startY = 0;
+      let isDragging = false;
+
+      function getPos(e) {
+        const rect = container.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: Math.max(0, Math.min(clientX - rect.left, rect.width)),
+          y: Math.max(0, Math.min(clientY - rect.top, rect.height))
+        };
+      }
+
+      function onStart(e) {
+        if (e.touches) e.preventDefault();
+        isDragging = true;
+        const pos = getPos(e);
+        startX = pos.x;
+        startY = pos.y;
+        box.style.left = startX + 'px';
+        box.style.top = startY + 'px';
+        box.style.width = '0px';
+        box.style.height = '0px';
+        box.style.display = 'block';
+      }
+
+      function onMove(e) {
+        if (!isDragging) return;
+        if (e.touches) e.preventDefault();
+        const pos = getPos(e);
+        const x = Math.min(startX, pos.x);
+        const y = Math.min(startY, pos.y);
+        const w = Math.abs(startX - pos.x);
+        const h = Math.abs(startY - pos.y);
+        
+        box.style.left = x + 'px';
+        box.style.top = y + 'px';
+        box.style.width = w + 'px';
+        box.style.height = h + 'px';
+      }
+
+      function onEnd() {
+        isDragging = false;
+      }
+
+      container.addEventListener('mousedown', onStart);
+      container.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
+
+      container.addEventListener('touchstart', onStart, { passive: false });
+      container.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onEnd);
+    }
+
+    function openTetraCropModal(id, base64, mime) {
+      _cropState.compId = id;
+      _cropState.rawBase64 = base64;
+      _cropState.rawMime = mime;
+
+      const modal = document.getElementById('tetra-crop-modal');
+      const img = document.getElementById('tetra-crop-img');
+      const box = document.getElementById('tetra-crop-box');
+
+      if (img) img.src = `data:${mime};base64,${base64}`;
+      if (box) {
+        box.style.display = 'none';
+        box.style.width = '0px';
+        box.style.height = '0px';
+      }
+
+      if (modal) modal.classList.remove('hidden');
+      if (!_cropState.eventsInitialized) {
+        initTetraCropEvents();
+        _cropState.eventsInitialized = true;
+      }
+    }
+
+    function closeTetraCropModal() {
+      const modal = document.getElementById('tetra-crop-modal');
+      if (modal) modal.classList.add('hidden');
+      const comp = _tetraComponents.find(c => c.id === _cropState.compId);
+      if (comp && comp.ocrRunning) {
+        comp.ocrRunning = false;
+        renderTetraComponents();
+      }
+    }
+
+    function rotateTetraCropImage() {
+      const compId = _cropState.compId;
+      const comp = _tetraComponents.find(c => c.id === compId);
+      if (!comp || !comp.photoData) return;
+
+      rotateBase64(comp.photoData, comp.photoMime, (rotatedBase64) => {
+        comp.photoData = rotatedBase64;
+        const img = document.getElementById('tetra-crop-img');
+        if (img) img.src = `data:${comp.photoMime};base64,${rotatedBase64}`;
+        resetTetraCrop();
+      });
+    }
+
+    function resetTetraCrop() {
+      const box = document.getElementById('tetra-crop-box');
+      if (box) {
+        box.style.display = 'none';
+        box.style.width = '0px';
+        box.style.height = '0px';
+      }
+    }
+
+    function submitTetraCrop() {
+      const box = document.getElementById('tetra-crop-box');
+      const container = document.getElementById('tetra-crop-container');
+      const compId = _cropState.compId;
+      const comp = _tetraComponents.find(c => c.id === compId);
+      
+      if (!comp) {
+        closeTetraCropModal();
+        return;
+      }
+
+      const boxVisible = box && box.style.display !== 'none' && parseInt(box.style.width) > 10;
+      
+      if (boxVisible && container) {
+        const rect = container.getBoundingClientRect();
+        const boxLeft = parseInt(box.style.left) || 0;
+        const boxTop = parseInt(box.style.top) || 0;
+        const boxWidth = parseInt(box.style.width) || 0;
+        const boxHeight = parseInt(box.style.height) || 0;
+
+        const norm = {
+          x: boxLeft / rect.width,
+          y: boxTop / rect.height,
+          w: boxWidth / rect.width,
+          h: boxHeight / rect.height
+        };
+
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          const cw = norm.w * img.naturalWidth;
+          const ch = norm.h * img.naturalHeight;
+          const cx = norm.x * img.naturalWidth;
+          const cy = norm.y * img.naturalHeight;
+          
+          canvas.width = cw;
+          canvas.height = ch;
+          ctx.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
+          
+          const croppedBase64 = canvas.toDataURL(comp.photoMime || 'image/jpeg').split(',')[1];
+          comp.photoData = croppedBase64;
+          
+          closeTetraCropModal();
+          runTetraOcr(compId);
+          uploadTetraPhotoToFirebase(compId);
+        };
+        img.src = `data:${comp.photoMime};base64,${comp.photoData}`;
+      } else {
+        closeTetraCropModal();
+        runTetraOcr(compId);
+        uploadTetraPhotoToFirebase(compId);
+      }
+    }
+
+    function viewTetraPhoto(id) {
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (!comp || (!comp.photoData && !comp.photoUrl)) return;
+
+      const meta = TETRA_COMPONENTS_META.find(m => m.id === id);
+      const label = meta ? meta.label : id;
+
+      const lightboxTitle = document.getElementById('tetra-lightbox-title');
+      const lightboxImg = document.getElementById('tetra-lightbox-img');
+      const modal = document.getElementById('tetra-lightbox-modal');
+
+      if (lightboxTitle) lightboxTitle.textContent = label + ' Label Photo';
+      if (lightboxImg) {
+        lightboxImg.src = comp.photoData ? `data:${comp.photoMime || 'image/jpeg'};base64,${comp.photoData}` : comp.photoUrl;
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeTetraLightboxModal() {
+      const modal = document.getElementById('tetra-lightbox-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function uploadTetraPhotoToFirebase(id) {
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (!comp || !comp.photoData) return;
+
+      if (!state.currentUser) return;
+      
+      const uid = state.currentUser.uid;
+      const weekStart = state.weekData?.weekStart || 'unknown-week';
+      
+      try {
+        const byteCharacters = atob(comp.photoData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const fileBlob = new Blob([byteArray], { type: comp.photoMime || 'image/jpeg' });
+        
+        const activeSiteId = window._tetraActiveSiteId || 'unknown-site';
+        const storagePath = `routines/${uid}/${weekStart}/${activeSiteId}/${id}.jpg`;
+        
+        const storageRef = firebase.storage().ref(storagePath);
+        const uploadTask = await storageRef.put(fileBlob);
+        const downloadUrl = await uploadTask.ref.getDownloadURL();
+        
+        comp.photoUrl = downloadUrl;
+        console.log(`[Rian] Uploaded TETRA label photo successfully to ${storagePath}. URL:`, downloadUrl);
+      } catch (err) {
+        console.error('[Rian] Failed to upload TETRA photo to Firebase Storage:', err);
+      }
+    }
+
+    window.closeTetraCropModal = closeTetraCropModal;
+    window.rotateTetraCropImage = rotateTetraCropImage;
+    window.resetTetraCrop = resetTetraCrop;
+    window.submitTetraCrop = submitTetraCrop;
+    window.closeTetraLightboxModal = closeTetraLightboxModal;
+    window.viewTetraPhoto = viewTetraPhoto;
+    window.openTetraInspection = openTetraInspection;
+    window.saveTetraInspection = saveTetraInspection;
+    window.closeTetraInspection = closeTetraInspection;
+    window.setTetraGuideMode = setTetraGuideMode;
+    window.selectTetraComponent = selectTetraComponent;
+    window.setTetraSerial = setTetraSerial;
+    window.setTetraNote = setTetraNote;
+    window.confirmTetraSerial = confirmTetraSerial;
+    window.clearTetraComponent = clearTetraComponent;
+    window.attachTetraPhoto = attachTetraPhoto;
+    window.runTetraOcr = runTetraOcr;
+
+    function attachTetraPhoto(id, input) {
+      const file = input && input.files && input.files[0];
+      if (!file) return;
+
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (!comp) return;
+
+      comp.photo = file.name;
+      comp.status = 'review';
+      comp.ocrError = null;
+      comp.ocrRunning = true;
+      renderTetraComponents();
+
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        const dataUrl = reader.result;
+        const parts = dataUrl.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        const base64 = parts[1];
+
+        comp.photoData = base64;
+        comp.photoMime = mime;
+
+        openTetraCropModal(id, base64, mime);
+      };
+      reader.onerror = function () {
+        comp.ocrError = 'Failed to read image file.';
+        comp.ocrRunning = false;
+        renderTetraComponents();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function runTetraOcr(id) {
+      const comp = _tetraComponents.find(c => c.id === id);
+      if (!comp) return;
+
+      const key = localStorage.getItem('geminiKey') || '';
+      if (!key) {
+        comp.ocrError = 'Gemini API key missing. Please save it in Rian\'s settings.';
+        comp.ocrRunning = false;
+        renderTetraComponents();
+        return;
+      }
+      if (!comp.photoData) {
+        comp.ocrError = 'Please select a label photo first.';
+        comp.ocrRunning = false;
+        renderTetraComponents();
+        return;
+      }
+
+      comp.ocrRunning = true;
+      comp.ocrError = null;
+      comp.status = 'review';
+      renderTetraComponents();
+
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: "This is a close-up photo of an equipment label on telecom/electrical equipment. Perform OCR and extract the SERIAL NUMBER of this component. Output ONLY the clean alphanumeric serial number code with no spaces, with no label prefix like 'S/N', 'Serial', 'No', or explanations. Just return the raw code. If no serial number exists, return 'NOT_FOUND'." },
+                { inlineData: { mimeType: comp.photoMime, data: comp.photoData } }
+              ]
+            }]
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          let msg = 'API Error: ' + response.status;
+          try {
+            const errObj = JSON.parse(errText);
+            msg = errObj.error?.message || msg;
+          } catch(e) {}
+          throw new Error(msg);
+        }
+
+        const data = await response.json();
+        const extracted = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const cleaned = extracted.trim().replace(/`/g, '');
+        
+        if (cleaned.includes('NOT_FOUND')) {
+          comp.ocrError = 'Serial number not detected in photo. Please type it manually.';
+        } else {
+          comp.serial = cleaned;
+          comp.status = 'review';
+        }
+      } catch (err) {
+        comp.ocrError = err.message || 'OCR failed.';
+      } finally {
+        comp.ocrRunning = false;
+        renderTetraComponents();
+      }
     }
 
     // ============================================================
@@ -47134,7 +48222,7 @@ Work week = Friday to Thursday.
     async function askGemini(query, timesheetContext, faultSources, noteMatches) {
       const apiKey = state.geminiKey;
       if (!apiKey) throw new Error('No API key. Add your Gemini key in ☰ Menu → AI Settings.');
-      const model = state.geminiModel || 'gemini-2.0-flash';
+      const model = state.geminiModel || 'gemini-2.5-flash';
       const matchingTaskNotesSection = faultSources?.length
         ? `\nMATCHING TASK NOTES (field notes written inside timesheet work entries that match the query):\n${faultSources.slice(0, 10).map(n => `Date: ${fmtDateAI(n.date)} | Task: ${n.description || '(no description)'}\nField note: ${n.notes}`).join('\n---\n')}\n`
         : '';
@@ -51237,7 +52325,7 @@ When nextAsk is "complete", your visible message MUST be exactly "All done!" (no
 The state block is invisible to the user.`;
 
       try {
-        const model = state.geminiModel || 'gemini-2.0-flash';
+        const model = state.geminiModel || 'gemini-2.5-flash';
         const resp = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${state.geminiKey}`,
           {
