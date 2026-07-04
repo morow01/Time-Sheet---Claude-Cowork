@@ -28,6 +28,8 @@
     :root {
       --font-body: 'DM Sans', sans-serif;
       --font-mono: 'DM Mono', monospace;
+      --bg-elevated: var(--bg-card-alt);
+      --recording: var(--priority-high);
       --bg-page: #E8EEF5;
       --bg-header: #0F1C2E;
       --bg-header-tab: #162438;
@@ -654,11 +656,11 @@
 
     .act-dictate-bar.listening {
       background: var(--accent-light);
-      color: #e53935;
+      color: var(--recording);
     }
 
     .act-dictate-bar.listening svg {
-      color: #e53935;
+      color: var(--recording);
       animation: voiceFabPulse 1s ease-in-out infinite;
     }
 
@@ -669,7 +671,7 @@
     }
 
     #fs-mic-btn.fs-mic-listening svg {
-      stroke: #e53935;
+      stroke: var(--recording);
       animation: voiceFabPulse 1s ease-in-out infinite;
     }
 
@@ -834,6 +836,11 @@
       font-family: inherit;
       color: var(--text-primary);
       outline: none;
+    }
+
+    .act-textarea:focus,
+    .act-input:focus {
+      border-color: var(--accent);
     }
 
 
@@ -1149,11 +1156,11 @@
       gap: 8px;
     }
 
-    .note-confirm-actions .btn-cancel {
+    .btn-cancel {
       flex: 1;
       padding: 12px;
       border-radius: 10px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border);
       background: var(--bg-card);
       font-size: 13px;
       font-weight: 700;
@@ -1365,7 +1372,7 @@
       justify-content: space-between;
       padding: 6px 12px;
       margin: 0 12px 6px;
-      background: #f1f5f9;
+      background: var(--bg-card-alt);
       border-radius: 10px;
     }
 
@@ -1384,8 +1391,8 @@
     }
 
     .copy-picker-weeknav button:hover {
-      background: #eff6ff;
-      border-color: #93c5fd;
+      background: rgba(var(--accent-rgb), 0.06);
+      border-color: rgba(var(--accent-rgb), 0.4);
     }
 
     .copy-picker-weeknav-label {
@@ -1397,8 +1404,8 @@
     .copy-picker-weeknav-badge {
       font-size: 10px;
       font-weight: 600;
-      color: #3b82f6;
-      background: #dbeafe;
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.15);
       padding: 1px 6px;
       border-radius: 4px;
       margin-left: 6px;
@@ -1416,20 +1423,20 @@
       gap: 10px;
       padding: 10px 12px;
       border-radius: 10px;
-      border: 1px solid #e8eef5;
+      border: 1px solid var(--border);
       margin-bottom: 6px;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .copy-picker-day:hover {
-      background: #eff6ff;
-      border-color: #93c5fd;
+      background: rgba(var(--accent-rgb), 0.06);
+      border-color: rgba(var(--accent-rgb), 0.4);
     }
 
     .copy-picker-day.selected {
-      background: #dbeafe;
-      border-color: #3b82f6;
+      background: rgba(var(--accent-rgb), 0.15);
+      border-color: var(--accent);
     }
 
     .copy-picker-day.disabled {
@@ -1441,7 +1448,7 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      border: 2px solid #cbd5e1;
+      border: 2px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1449,8 +1456,8 @@
     }
 
     .copy-picker-day-check.checked {
-      background: #3b82f6;
-      border-color: #3b82f6;
+      background: var(--accent);
+      border-color: var(--accent);
     }
 
     .copy-picker-day-name {
@@ -1469,19 +1476,6 @@
       display: flex;
       gap: 8px;
       padding: 8px 12px 14px;
-    }
-
-    .copy-picker-actions .btn-cancel {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
-      background: var(--bg-card);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-slate);
-      cursor: pointer;
-      font-family: inherit;
     }
 
     .copy-picker-actions .btn-copy {
@@ -8032,7 +8026,7 @@
 
       .finder-mic-btn.listening,
       #location-mic-btn.listening {
-        background: #e53935;
+        background: var(--recording);
         animation: voiceFabPulse 1s ease-in-out infinite;
       }
 
@@ -10307,7 +10301,7 @@
 
     @media (hover: hover) {
       .ai-source-card:hover {
-        border-color: #3b82f6;
+        border-color: var(--accent);
         box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.05);
       }
     }
@@ -10345,7 +10339,7 @@
     .ai-source-card-footer {
       font-size: 11px;
       font-weight: 700;
-      color: #3b82f6;
+      color: var(--accent);
       padding-top: 10px;
       border-top: 1px solid #d9d9d9;
       display: flex;
@@ -13337,29 +13331,30 @@
       line-height: 1.6;
     }
 
-    .add-note-dashed {
+    /* Unified "add" affordance — dashed pill; callers own their own margin */
+    .btn--add {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       padding: 12px;
-      margin: 0 16px 8px;
       border: 1px dashed var(--border);
       border-radius: 10px;
       background: var(--bg-card);
       color: var(--accent);
       font-size: 13px;
       font-weight: 700;
+      font-family: var(--font-body);
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
 
-    .add-note-dashed:hover {
-      background: rgba(var(--accent-rgb), 0.04);
+    .btn--add:hover {
+      background: rgba(var(--accent-rgb), 0.06);
       border-color: var(--accent);
     }
 
-    .add-note-dashed:active {
+    .btn--add:active {
       background: rgba(var(--accent-rgb), 0.08);
       border-color: var(--accent);
     }
@@ -14339,19 +14334,6 @@
       padding: 0 12px 16px;
     }
 
-    .remind-actions .btn-cancel {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
-      background: var(--bg-card);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-slate);
-      cursor: pointer;
-      font-family: inherit;
-    }
-
     .remind-actions .btn-remind {
       flex: 1;
       padding: 12px;
@@ -14409,7 +14391,7 @@
       max-height: 80vh;
       display: flex;
       flex-direction: column;
-      animation: slideUp 0.2s ease;
+      animation: cpSlideUp 0.2s ease;
     }
 
     .task-picker-handle {
@@ -14438,7 +14420,7 @@
       border-radius: 12px;
       padding: 14px 16px;
       margin: 0 12px 12px;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--border);
     }
 
     .task-picker-preview-label {
@@ -14478,7 +14460,7 @@
       gap: 10px;
       padding: 10px 12px;
       border-radius: 10px;
-      border: 1px solid #e8eef5;
+      border: 1px solid var(--border);
       margin-bottom: 6px;
       cursor: pointer;
       transition: all 0.15s;
@@ -14495,7 +14477,7 @@
     }
 
     .task-picker-day.today {
-      border-color: #3b82f6;
+      border-color: var(--accent);
     }
 
     .task-picker-day.today.selected {
@@ -14533,7 +14515,7 @@
     .task-picker-day-today {
       font-size: 9px;
       font-weight: 800;
-      background: #3b82f6;
+      background: var(--accent);
       color: #fff;
       padding: 2px 6px;
       border-radius: 4px;
@@ -14545,19 +14527,6 @@
       display: flex;
       gap: 8px;
       padding: 8px 12px 14px;
-    }
-
-    .task-picker-actions .btn-cancel {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
-      background: var(--bg-card);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-slate);
-      cursor: pointer;
-      font-family: inherit;
     }
 
     .task-picker-actions .btn-add-task {
@@ -15035,8 +15004,8 @@
     }
 
     .snap-row-icon.snap-auto {
-      background: rgba(59, 130, 246, 0.08);
-      color: #3b82f6;
+      background: rgba(var(--accent-rgb), 0.08);
+      color: var(--accent);
     }
 
     .snap-row-icon.snap-manual {
@@ -15112,7 +15081,7 @@
       padding: 6px 14px;
       border-radius: 10px;
       border: none;
-      background: #3b82f6;
+      background: var(--accent);
       color: #fff;
       font-size: 12px;
       font-weight: 600;
@@ -15157,8 +15126,8 @@
       font-weight: 700;
       padding: 2px 7px;
       border-radius: 6px;
-      background: rgba(59, 130, 246, 0.15);
-      color: #3b82f6;
+      background: rgba(var(--accent-rgb), 0.15);
+      color: var(--accent);
       margin-left: 6px;
       text-transform: uppercase;
       letter-spacing: 0.03em;
@@ -15644,22 +15613,34 @@
       margin: 10px 16px 10px;
     }
 
+    /* Shared segmented control — Notes tabs, Finder tabs, Routines mobile tabs, History scope, etc.
+       Container: .seg-bar   Buttons: .seg-btn (+ .active for the highlighted pill).
+       Per CLAUDE.md: 14px container radius / 3px padding / 2px gap; 11px button radius / 7px 4px padding / 12px 700 weight. */
+    .seg-bar {
+      display: flex;
+      padding: 3px;
+      gap: 2px;
+      border-radius: 14px;
+      background: var(--bg-code-group);
+    }
+
+    .seg-btn,
     .rtn-tab-btn {
       flex: 1;
-      min-height: 36px;
-      padding: 0 4px;
+      padding: 7px 4px;
       text-align: center;
       font-size: 12px;
       font-weight: 700;
       color: var(--text-muted);
       border: none;
-      background: none;
+      background: transparent;
       border-radius: 11px;
       cursor: pointer;
       font-family: var(--font-body);
       transition: all 0.18s;
     }
 
+    .seg-btn.active,
     .rtn-tab-btn.active {
       background: var(--bg-segment-active);
       color: var(--text-primary);
@@ -16671,6 +16652,98 @@
       box-shadow: 0 0 0 3.5px rgba(59, 130, 246, 0.3);
     }
 
+    /* Edit-mode pending change indicator */
+    .oc-cell.oc-pending {
+      outline: 1px dashed var(--accent);
+      outline-offset: 2px;
+    }
+
+    .oc-cell.oc-pending.oc-extra {
+      outline-color: #F59E0B;
+    }
+
+    /* Schedule colour legend */
+    .oc-legend {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 10px 24px 0;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .oc-legend span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .oc-lg-swatch {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* Schedule edit bar */
+    .oc-edit-bar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 24px 2px;
+    }
+
+    .oc-edit-start {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: var(--bg-card);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .oc-edit-save {
+      flex: 1;
+      padding: 9px;
+      border-radius: 10px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .oc-edit-save:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .oc-edit-cancel {
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
     .oc-cell:active {
       transform: scale(0.92);
     }
@@ -17115,7 +17188,7 @@
     }
 
     .voice-fab.listening {
-      background: #e53935;
+      background: var(--recording);
       animation: voiceFabPulse 1s ease-in-out infinite;
     }
 
@@ -17149,7 +17222,7 @@
     }
 
     .note-voice-fab.listening {
-      background: #e53935;
+      background: var(--recording);
       animation: voiceFabPulse 1s ease-in-out infinite;
     }
 
@@ -17828,32 +17901,7 @@
 
       /* Task cards reuse mobile .act-desc-txt, .act-row2, .act-loc-txt, .act-pill-row, .pill-hrs, .pill-ot */
 
-      .desk-add-task-btn {
-        width: 100%;
-        padding: 12px;
-        margin: 12px 0;
-        border: 1px dashed var(--accent);
-        border-radius: 10px;
-        background: rgba(var(--accent-rgb), 0.06);
-        color: var(--accent);
-        font-weight: 700;
-        font-size: 13px;
-        cursor: pointer;
-        font-family: var(--font-body);
-        transition: background 0.12s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-      }
-
-      .desk-add-task-btn:hover {
-        background: rgba(var(--accent-rgb), 0.12);
-      }
-
-      .desk-add-task-btn:hover {
-        background: var(--accent-light);
-      }
+      /* Desktop "add" affordance uses the shared .btn--add class (see line ~13333). */
 
       /* ── Panel: Detail (right) ── */
       .desk-panel-detail {
@@ -18090,7 +18138,7 @@
         flex-shrink: 0;
       }
 
-      /* New Note button reuses .desk-add-task-btn */
+      /* New Note button reuses the shared .btn--add class */
 
       /* Notes list panel */
       .dnotes-list {
@@ -19491,32 +19539,9 @@
       flex-shrink: 0;
     }
 
+    /* History mobile scope — uses shared .seg-bar / .seg-btn; only keeps margin-top override here. */
     .hist-mobile-scope {
       margin-top: 9px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-      padding: 3px;
-      border: none;
-      border-radius: 14px;
-      background: var(--bg-code-group);
-    }
-
-    .hist-mobile-scope button {
-      height: 38px;
-      border: 0;
-      border-radius: 11px;
-      background: transparent;
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 800;
-      font-family: var(--font-body);
-    }
-
-    .hist-mobile-scope button.active {
-      background: var(--bg-segment-active);
-      color: var(--text-primary);
-      box-shadow: 0 1px 3px rgba(var(--shadow-rgb), 0.12);
     }
 
     .hist-stats {
@@ -20731,7 +20756,7 @@
         style="border:2px solid var(--border-input);background:var(--bg-input)">
       <div class="flex gap-3">
         <button onclick="closeDateModal()" class="flex-1 py-3 rounded-xl font-medium"
-          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+          style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
         <button onclick="confirmDateSelection()" class="flex-1 py-3 text-white rounded-xl font-bold"
           style="background:var(--accent)">Set Week</button>
       </div>
@@ -20847,7 +20872,7 @@
       <p id="confirm-msg" class="mb-6 text-sm" style="color:var(--text-secondary)"></p>
       <div class="flex gap-3">
         <button onclick="closeConfirm()" class="flex-1 py-3 rounded-xl font-medium"
-          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+          style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
         <button id="confirm-ok" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold">Confirm</button>
       </div>
     </div>
@@ -20865,7 +20890,7 @@
       <div class="flex gap-3" style="margin-top:16px">
         <button onclick="document.getElementById('export-modal').classList.add('hidden')"
           class="flex-1 py-3 rounded-xl font-medium"
-          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+          style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
         <button onclick="doExportWithOptions()" id="exp-btn" class="flex-1 py-3 rounded-xl font-bold text-white"
           style="background:var(--text-ot)">Export</button>
       </div>
@@ -20890,7 +20915,7 @@
         <div class="flex gap-3" style="margin-top:16px">
           <button onclick="document.getElementById('import-modal').classList.add('hidden')"
             class="flex-1 py-3 rounded-xl font-medium"
-            style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+            style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
         </div>
       </div>
       <div id="import-step-preview" style="display:none">
@@ -20919,7 +20944,7 @@
         <div class="flex gap-3" style="margin-top:16px">
           <button onclick="document.getElementById('import-modal').classList.add('hidden')"
             class="flex-1 py-3 rounded-xl font-medium"
-            style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+            style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
           <button onclick="doImportWithOptions()" id="imp-btn" class="flex-1 py-3 rounded-xl font-bold text-white"
             style="background:var(--priority-low-dark)">Import</button>
         </div>
@@ -20978,7 +21003,7 @@
       <div class="flex gap-3">
         <button onclick="cancelExitLocalMode()"
           class="flex-1 py-3 rounded-xl font-medium"
-          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+          style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
         <button onclick="commitExitLocalMode(document.getElementById('exit-keep-data').checked)" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold">
           Exit Local Mode
         </button>
@@ -21014,7 +21039,7 @@
       <div class="flex gap-3">
         <button onclick="cancelDisconnect()"
           class="flex-1 py-3 rounded-xl font-medium"
-          style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+          style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
         <button onclick="commitDisconnect(document.getElementById('disconnect-keep-data').checked)" class="flex-1 py-3 rounded-xl font-bold text-white" style="background:var(--accent)">
           Go Offline
         </button>
@@ -21128,7 +21153,7 @@
           style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:vertical;background:var(--bg-card);color:var(--text-primary);font-family:inherit"></textarea>
         <div class="flex gap-3" style="margin-top:16px">
           <button onclick="closePasteTicket()" class="flex-1 py-3 rounded-xl font-medium"
-            style="border:2px solid var(--border);color:var(--text-secondary)">Cancel</button>
+            style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
           <button onclick="parsePasteTicket()" class="flex-1 py-3 rounded-xl font-bold text-white"
             style="background:var(--accent)">Parse</button>
         </div>
@@ -21138,7 +21163,7 @@
         <div id="paste-ticket-preview" style="display:flex;flex-direction:column;gap:10px"></div>
         <div class="flex gap-3" style="margin-top:16px">
           <button onclick="pasteTicketBack()" class="flex-1 py-3 rounded-xl font-medium"
-            style="border:2px solid var(--border);color:var(--text-secondary)">Back</button>
+            style="border:1px solid var(--border);color:var(--text-secondary)">Back</button>
           <button onclick="pasteTicketCreate()" class="flex-1 py-3 rounded-xl font-bold text-white"
             style="background:var(--accent)">Create Callout</button>
         </div>
@@ -21160,7 +21185,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.5.19';
+    const VERSION = '6.6.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26282,7 +26307,7 @@
       </button>
       <button onclick="setView('notes')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'notes' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'notes' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>Notes</span>
-        ${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.notesSyncStatus]}"></span>` : ''}
+        ${{ pending: 'var(--priority-medium)', syncing: 'var(--accent)', error: 'var(--priority-high)' }[state.notesSyncStatus] ? `<span class="notes-sync-dot" style="background:${{ pending: 'var(--priority-medium)', syncing: 'var(--accent)', error: 'var(--priority-high)' }[state.notesSyncStatus]}"></span>` : ''}
       </button>
       <button onclick="setView('journal')" class="flex-1 py-2.5 text-[11px] font-bold tracking-widest uppercase relative" style="color:${state.view === 'journal' ? 'var(--tab-active)' : 'var(--text-header-sub)'};${state.view === 'journal' ? 'border-bottom:3px solid var(--tab-active)' : ''}">
         <span style="display:inline-flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Journal</span>
@@ -27429,7 +27454,7 @@
         });
       }
 
-      var addBtn = '<button class="desk-add-task-btn" onclick="deskAddTask(' + di + ')">' +
+      var addBtn = '<button class="btn--add" style="width:100%;margin:12px 0" onclick="deskAddTask(' + di + ')">' +
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
         'Add Task' +
         '</button>';
@@ -32977,24 +33002,22 @@
       const activeCount = openNotes.length + doneNotes.length;
       const binCount = binNotes.length;
       const notesTab = state.notesTab || 'notes';
-      const _ntActive = 'background:var(--notes-tab-active-bg,var(--bg-segment-active));color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.12)';
-      const _ntInactive = 'color:var(--notes-tab-inactive-text,var(--text-muted))';
       const tabBar = `
   <div style="padding:10px 16px 2px">
-    <div style="display:flex;padding:3px;border-radius:14px;background:var(--notes-tab-seg-bg,var(--bg-code-group));gap:2px">
-      <button onclick="switchNotesTab('notes')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;${notesTab === 'notes' ? _ntActive : _ntInactive}">
+    <div class="seg-bar">
+      <button onclick="switchNotesTab('notes')" class="seg-btn${notesTab === 'notes' ? ' active' : ''}">
         <span style="display:inline-flex;align-items:center;gap:5px">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
           Active${activeCount > 0 ? ` <span style="background:var(--accent);color:#fff;border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${activeCount}</span>` : ''}
         </span>
       </button>
-      <button onclick="switchNotesTab('archive')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;${notesTab === 'archive' ? _ntActive : _ntInactive}">
+      <button onclick="switchNotesTab('archive')" class="seg-btn${notesTab === 'archive' ? ' active' : ''}">
         <span style="display:inline-flex;align-items:center;gap:5px">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
           Archive${archiveNotes.length > 0 ? ` <span style="background:#f59e0b;color:#fff;border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${archiveNotes.length}</span>` : ''}
         </span>
       </button>
-      <button onclick="switchNotesTab('bin')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.18s;${notesTab === 'bin' ? _ntActive : _ntInactive}">
+      <button onclick="switchNotesTab('bin')" class="seg-btn${notesTab === 'bin' ? ' active' : ''}">
         <span style="display:inline-flex;align-items:center;gap:5px">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           Bin <span style="background:${binCount > 0 ? '#ef4444' : 'rgba(var(--shadow-rgb),0.08)'};color:${binCount > 0 ? '#fff' : 'var(--text-muted)'};border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${binCount}</span>
@@ -33064,7 +33087,7 @@
             </div>
             <button onclick="toggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">Cancel</button>
           </div>`
-        : `<div class="add-note-dashed" onclick="addNote()">
+        : `<div class="btn--add" style="margin:0 16px 8px" onclick="addNote()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Note
           </div>`;
@@ -33156,7 +33179,7 @@
       return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
     }
     function _jSyncDot() {
-      const c = { pending: 'var(--priority-medium)', syncing: '#3b82f6', error: 'var(--priority-high)' }[state.jSyncStatus];
+      const c = { pending: 'var(--priority-medium)', syncing: 'var(--accent)', error: 'var(--priority-high)' }[state.jSyncStatus];
       return c ? '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + c + ';margin-left:6px;vertical-align:middle"></span>' : '';
     }
     // onClickTpl: string with __C__ replaced by each color, e.g. "state.jAddColor='__C__';render()"
@@ -36382,12 +36405,10 @@
       // ── Left panel: tabs + search + results list ──
       var listHtml = '<div class="dfnd-panel-hdr">Finder</div>';
       // Tabs
-      listHtml += '<div style="display:flex;margin:10px 10px 0;background:var(--bg-code-group);border-radius:14px;padding:3px;gap:2px">' +
-        '<button onclick="dfndSetTab(\'exchanges\')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;text-transform:capitalize;' +
-        (isEx ? 'background:var(--bg-segment-active);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.12)' : 'background:transparent;color:var(--text-muted)') + '">' +
+      listHtml += '<div class="seg-bar" style="margin:10px 10px 0">' +
+        '<button onclick="dfndSetTab(\'exchanges\')" class="seg-btn' + (isEx ? ' active' : '') + '" style="text-transform:capitalize">' +
         '<span style="display:inline-flex;align-items:center;gap:4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg> Exchanges</span></button>' +
-        '<button onclick="dfndSetTab(\'cabinets\')" style="flex:1;padding:7px 4px;border-radius:11px;border:none;font-size:12px;font-weight:700;cursor:pointer;text-transform:capitalize;' +
-        (!isEx ? 'background:var(--bg-segment-active);color:var(--text-primary);box-shadow:0 1px 3px rgba(var(--shadow-rgb),0.12)' : 'background:transparent;color:var(--text-muted)') + '">' +
+        '<button onclick="dfndSetTab(\'cabinets\')" class="seg-btn' + (!isEx ? ' active' : '') + '" style="text-transform:capitalize">' +
         '<span style="display:inline-flex;align-items:center;gap:4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"></rect><rect width="20" height="8" x="2" y="14" rx="2" ry="2"></rect><line x1="6" x2="6.01" y1="6" y2="6"></line><line x1="6" x2="6.01" y1="18" y2="18"></line></svg> Cabinets</span></button>' +
         '</div>';
 
@@ -37575,7 +37596,7 @@
 
       // Search
       var scopeButtons = [['all', 'All'], ['tasks', 'Tasks'], ['callouts', 'Callouts']].map(function (s) {
-        return '<button class="' + (searchScope === s[0] ? 'active' : '') + '" onclick="historySearchScope(\'' + s[0] + '\')">' + s[1] + '</button>';
+        return '<button class="seg-btn' + (searchScope === s[0] ? ' active' : '') + '" onclick="historySearchScope(\'' + s[0] + '\')">' + s[1] + '</button>';
       }).join('');
       var clearBtn = searchQ ? '<button class="hist-mobile-search-clear" onclick="historySearchInput(\'\')" aria-label="Clear search">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' : '';
@@ -37585,7 +37606,7 @@
         '<input type="search" placeholder="Search tasks and callouts..." value="' + escAttr(searchQ) + '" oninput="historySearchInput(this.value)">' +
         clearBtn +
         '</div>' +
-        '<div class="hist-mobile-scope">' + scopeButtons + '</div>' +
+        '<div class="hist-mobile-scope seg-bar">' + scopeButtons + '</div>' +
         '</div>';
 
       // Stats
@@ -40174,7 +40195,7 @@
           const lById = Object.fromEntries(lEntries.map(e => [e.id, e]));
           // All entry IDs across both sides
           const allIds = [...new Set([...lEntries.map(e => e.id), ...rEntries.map(e => e.id)])];
-          const coFields = ['date', 'site', 'fault', 'ticket', 'hours', 'overtime', 'engineerOnSite', 'notes'];
+          const coFields = ['date', 'site', 'fault', 'ticket', 'hours', 'overtime', 'notes'];
           const entryRows = allIds.map((eid, ei) => {
             const l = lById[eid], r = rById[eid];
             let badge = '';
@@ -40333,12 +40354,10 @@
         </div>`;
       };
       const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
-      const clockSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-1px;margin-right:2px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
       const dateLabel = co.date ? (() => { try { return new Date(co.date + 'T00:00:00').toLocaleDateString('en-IE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return co.date; } })() : '';
       const fault = co.fault || '';
       const site = co.site || '';
       const ticket = co.ticket || '';
-      const timeStr = co.engineerOnSite || '';
       const hours = co.hours || 0;
       const overtime = co.overtime || 0;
       const notes = (co.notes || '').trim();
@@ -40371,7 +40390,6 @@
               </div>
               <div class="notes-panel-body open"><div class="notes-ta-wrap"><div class="act-notes-rich-preview">${notesBody}</div></div></div>
             </div>` : ''}
-            ${fld('engineerOnSite', 'Engineer On Site', timeStr)}
           </div>
         </div>
       </div>`;
@@ -40383,7 +40401,7 @@
       if (!c) return;
       const lEntry = (c.localData?.weeks?.[weekKey]?.callouts || []).find(e => e.id === entryId) || null;
       const rEntry = (c.remoteData?.weeks?.[weekKey]?.callouts || []).find(e => e.id === entryId) || null;
-      const coFields = ['date', 'site', 'fault', 'ticket', 'engineerOnSite', 'notes'];
+      const coFields = ['date', 'site', 'fault', 'ticket', 'notes'];
       const diffFields = new Set();
       if (lEntry && rEntry) coFields.forEach(f => { if ((lEntry[f] || '') !== (rEntry[f] || '')) diffFields.add(f); });
       const deviceIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-2px;margin-right:4px"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
@@ -43228,10 +43246,10 @@
 
       // Stats 2x2 grid
       weeksHtml += '<div class="dco-stats">' +
-        '<div class="dco-stat"><div class="dco-stat-val" style="color:var(--accent)">' + (totalOnCall + totalExtra) + '</div><div class="dco-stat-label">On-Call Weeks</div></div>' +
+        '<div class="dco-stat"><div class="dco-stat-val" style="color:var(--accent)">' + (totalOnCall + totalExtra) + '</div><div class="dco-stat-label">Total Weeks</div></div>' +
         '<div class="dco-stat"><div class="dco-stat-val" style="color:#F59E0B">' + totalExtra + '</div><div class="dco-stat-label">Extra Shifts</div></div>' +
-        '<div class="dco-stat"><div class="dco-stat-val" style="color:var(--priority-high, #ef4444)">' + totalIncidents + '</div><div class="dco-stat-label">Total Incidents</div></div>' +
-        '<div class="dco-stat"><div class="dco-stat-val" style="color:#8B5CF6">' + avgPerWeek + '</div><div class="dco-stat-label">Avg / Week</div></div>' +
+        '<div class="dco-stat"><div class="dco-stat-val" style="color:var(--text-primary)">' + totalIncidents + '</div><div class="dco-stat-label">Total Incidents</div></div>' +
+        '<div class="dco-stat"><div class="dco-stat-val" style="color:#818cf8">' + avgPerWeek + '</div><div class="dco-stat-label">Avg / Week</div></div>' +
         '</div>';
 
       // Week rows — render current week first, then previous (newest-first)
@@ -43241,9 +43259,9 @@
         var ocType = onCall[wk];
         var isExtra = ocType === 'extra';
         var cls = 'dco-week-row' + (isSel ? ' dco-selected' : '') + (isCurrent ? ' dco-current' : '');
-        var badgeBg = isExtra ? '#FEF3C7' : 'var(--accent-light)';
+        var badgeBg = isExtra ? 'rgba(var(--amber-rgb), 0.15)' : 'var(--accent-light)';
         var badgeColor = isExtra ? '#F59E0B' : 'var(--accent)';
-        var extraBadge = isExtra ? ' <span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B">EXTRA</span>' : '';
+        var extraBadge = isExtra ? ' <span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(var(--amber-rgb), 0.15);color:#F59E0B">EXTRA</span>' : '';
         return '<div class="' + cls + '" onclick="dcoSelectWeek(\'' + wk + '\')">' +
           '<div class="task-num" style="background:' + badgeBg + ';color:' + badgeColor + '">' + cnt + '</div>' +
           '<div style="flex:1;min-width:0">' +
@@ -43296,7 +43314,6 @@
 
         var globalIdx = 0;
         var pinSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>';
-        var clockSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
 
         sortedDates.forEach(function (dateStr) {
           var d = strToDate(dateStr);
@@ -43306,7 +43323,7 @@
           var items = byDate[dateStr];
           calloutsHtml += '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px">' +
             '<span style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">' + dayName + ' ' + dayNum + ' ' + monthShort + '</span>' +
-            '<span style="font-size:11px;color:var(--text-muted);font-weight:100">' + items.length + ' callout' + (items.length !== 1 ? 's' : '') + '</span>' +
+            '<span style="font-size:11px;color:var(--text-muted);font-weight:500">' + items.length + ' callout' + (items.length !== 1 ? 's' : '') + '</span>' +
             '</div>';
 
           byDate[dateStr].forEach(function (co) {
@@ -43315,7 +43332,6 @@
             var fault = co.fault || '';
             var site = co.site || '';
             var ticket = co.ticket || '';
-            var timeStr = co.engineerOnSite || '';
             calloutsHtml += '<div class="dco-co-row' + (isSel ? ' dco-co-selected' : '') + '" onclick="dcoSelectCo(\'' + co.id + '\')">' +
               '<div class="task-num">' + globalIdx + '</div>' +
               '<div style="flex:1;min-width:0">' +
@@ -43324,16 +43340,15 @@
               '<span style="display:flex;align-items:center;gap:2px;flex:1;min-width:0">' + (site ? pinSvg + esc(site) : '<span style="opacity:0.4">No site</span>') + '</span>' +
               '<span style="display:flex;align-items:center;gap:4px;margin-left:auto">' +
               (ticket ? '<span class="pill-hrs" style="font-family:var(--font-mono)">' + esc(ticket) + '</span>' : '') +
-              (timeStr ? '<span class="pill-hrs" style="background:var(--bg-code-group)">' + clockSvg + esc(timeStr) + '</span>' : '') +
               '</span></div></div></div>';
           });
         });
 
         if (allCo.length === 0) {
           calloutsHtml += '<div style="text-align:center;padding:40px 16px">' +
-            '<div style="font-size:40px;margin-bottom:10px">📋</div>' +
+            '<div style="display:flex;justify-content:center;margin-bottom:10px;color:var(--text-muted)"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></div>' +
             '<div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:4px">No callouts this week</div>' +
-            '<div style="font-size:12px;color:var(--text-muted)">Tap "+ Add Callout" to log an incident.</div></div>';
+            '<div style="font-size:12px;color:var(--text-muted)">Click "+ Add Callout" to log an incident.</div></div>';
         }
 
         // Add callout button
@@ -43375,16 +43390,13 @@
         detailHtml += '<div class="desk-field-group"><span class="act-field-label">Date</span>' +
           '<input type="date" class="act-input" id="dco-date" value="' + (selCo.date || '') + '" onchange="dcoUpdateField(\'date\',this.value)" style="cursor:pointer"></div>';
 
-        detailHtml += '<div class="desk-field-group"><span class="act-field-label">Engineer On Site</span>' +
-          '<input type="time" class="act-input" id="dco-time" value="' + (selCo.engineerOnSite || '') + '" onchange="dcoUpdateField(\'engineerOnSite\',this.value)"></div>';
-
         detailHtml += '<div class="desk-field-group"><span class="act-field-label">Ticket Number</span>' +
           '<textarea class="act-textarea" rows="1" id="dco-ticket" style="resize:none;overflow:hidden;font-family:var(--font-mono)" placeholder="e.g. R23482335" ' +
           'oninput="this.value=this.value.replace(/\\n/g,\'\');dcoUpdateField(\'ticket\',this.value.trim())" ' +
           'onkeydown="if(event.key===\'Enter\')event.preventDefault()" ' +
           'autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true">' + esc(selCo.ticket || '') + '</textarea></div>';
 
-        detailHtml += '<div class="desk-field-group"><span class="act-field-label">Location</span>' +
+        detailHtml += '<div class="desk-field-group wide"><span class="act-field-label">Location</span>' +
           '<div class="act-location-row"><input type="text" class="act-input" id="dco-site" readonly ' +
           'value="' + esc(selCo.site || '') + '" placeholder="Tap to select location" ' +
           'style="cursor:pointer;user-select:none" ' +
@@ -43486,7 +43498,7 @@
       if (!wd.callouts) wd.callouts = [];
       var newCo = {
         id: 'co_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-        date: wk,
+        date: dateToStr(new Date()),
         site: '',
         fault: '',
         ticket: '',
@@ -43562,7 +43574,9 @@
     }
 
     function renderOcScheduleOverlay() {
-      const onCall = state.callouts.onCall || {};
+      const committed = state.callouts.onCall || {};
+      const editing = !!state.ocScheduleEditing;
+      const onCall = (editing && state.ocScheduleDraft) ? state.ocScheduleDraft : committed;
       const year = state.coScheduleYear;
       const fridays = _ocGetFridays(year);
       const curWeekStart = dateToStr(getCurrentFriday());
@@ -43570,9 +43584,9 @@
       const yearOnCall = Object.entries(onCall).filter(([wk, v]) => fridaySet.has(wk) && v === 'oncall').length;
       const yearExtra = Object.entries(onCall).filter(([wk, v]) => fridaySet.has(wk) && v === 'extra').length;
 
-      const weeksStr = yearOnCall === 1 ? '1 week' : `${yearOnCall} weeks`;
-      const extraStr = yearExtra > 0 ? ` · <span style="color:#F59E0B;font-weight:600">${yearExtra} extra</span>` : '';
-      const subtitleStr = yearOnCall === 0 && yearExtra === 0 ? 'No weeks scheduled' : `${weeksStr}${extraStr}`;
+      const statLine = (yearOnCall === 0 && yearExtra === 0)
+        ? 'No weeks scheduled'
+        : `${yearOnCall} on-call week${yearOnCall !== 1 ? 's' : ''} · ${yearExtra} extra shift${yearExtra !== 1 ? 's' : ''}`;
 
       let html = `<div class="oc-overlay${state.coScheduleOpen ? ' open' : ''}" id="oc-schedule-overlay" onclick="if(event.target===this)ocCloseSchedule()">`;
 
@@ -43589,16 +43603,7 @@
         </div>
         <div style="flex:1;min-width:0">
           <div style="font-size:17px;font-weight:800;color:var(--text-primary);line-height:1.2">On-Call Schedule</div>
-          <div style="display:flex;gap:12px;align-items:center;font-size:13px;margin-top:3px">
-            <span style="display:flex;align-items:center;gap:4px">
-              <span style="width:9px;height:9px;border-radius:27%;background:var(--accent);display:inline-block"></span>
-              <span style="color:var(--accent);font-size:11px;font-weight:500">${yearOnCall} On-Call Weeks</span>
-            </span>
-            <span style="display:flex;align-items:center;gap:4px">
-              <span style="width:9px;height:9px;border-radius:27%;background:#F59E0B;display:inline-block"></span>
-              <span style="color:#F59E0B;font-size:11px;font-weight:500">${yearExtra} Extra Shifts</span>
-            </span>
-          </div>
+          <div id="oc-stat-line" style="font-size:12px;color:var(--text-muted);font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${statLine}</div>
         </div>
         <button class="modal-close-x" onclick="ocCloseSchedule()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -43611,6 +43616,30 @@
         <div class="oc-year-label">${year}</div>
         <button onclick="ocChangeYear(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 6 15 12 9 18"/></svg></button>
       </div>`;
+
+      // Colour legend
+      html += `<div class="oc-legend">
+        <span><span class="oc-lg-swatch" style="background:var(--accent);border-color:var(--accent)"></span>On-call</span>
+        <span><span class="oc-lg-swatch" style="background:#F59E0B;border-color:#F59E0B"></span>Extra shift</span>
+        <span><span class="oc-lg-swatch" style="opacity:0.5"></span>Past</span>
+        <span><span class="oc-lg-swatch" style="box-shadow:0 0 0 2.5px rgba(59,130,246,0.35)"></span>This week</span>
+      </div>`;
+
+      // Edit / Save / Cancel bar
+      if (editing) {
+        const nCh = _ocCountChanges();
+        html += `<div class="oc-edit-bar">
+          <button class="oc-edit-save" onclick="ocSaveEdit()" ${nCh === 0 ? 'disabled' : ''}>Save changes${nCh ? ' (' + nCh + ')' : ''}</button>
+          <button class="oc-edit-cancel" onclick="ocCancelEdit()">Cancel</button>
+        </div>`;
+      } else {
+        html += `<div class="oc-edit-bar">
+          <button class="oc-edit-start" onclick="ocStartEdit()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            Edit Schedule
+          </button>
+        </div>`;
+      }
       const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
       const byMonth = {};
       fridays.forEach(f => {
@@ -43633,15 +43662,14 @@
           if (type === 'oncall') cls += ' oc-oncall';
           if (type === 'extra') cls += ' oc-extra';
           if (isCur) cls += ' oc-current';
-          html += `<button class="${cls}" onclick="ocToggle('${f}')"
-            oncontextmenu="event.preventDefault()"
-            ontouchstart="ocCellTouchStart(event,'${f}')" ontouchmove="ocCellTouchMove(event)" ontouchend="ocCellTouchEnd(event)" ontouchcancel="ocCellTouchCancel(event)"
-            onmousedown="ocCellMouseDown(event,'${f}')" onmouseup="ocCellMouseUp(event)"
-            title="${formatWeekRange(f)}">${dayNum}</button>`;
+          if (editing && (onCall[f] || '') !== (committed[f] || '')) cls += ' oc-pending';
+          html += `<button class="${cls}" onclick="ocCellTap('${f}', this)" title="${formatWeekRange(f)}">${dayNum}</button>`;
         });
         html += `</div></div>`;
       });
-      html += `<div style="padding:10px 24px 14px;border-top:1px dashed var(--border);font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap = on-call · Long-press = extra shift</div>`;
+      html += `<div style="padding:10px 24px 14px;border-top:1px dashed var(--border);font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">${editing
+        ? (_isDesktop() ? 'Click' : 'Tap') + ' to cycle: off → on-call → extra'
+        : (_isDesktop() ? 'Click' : 'Tap') + ' "Edit Schedule" to make changes'}</div>`;
       html += `</div>`; // close white card
       html += `</div>`; // close padding wrapper
 
@@ -43701,10 +43729,10 @@
         const cnt = wd ? (wd.callouts || []).length : 0;
         const isExtra = onCall[curWeekStart] === 'extra';
         const ocType = onCall[curWeekStart];
-        const badgeBg = isExtra ? '#FEF3C7' : 'var(--accent-light)';
+        const badgeBg = isExtra ? 'rgba(var(--amber-rgb), 0.15)' : 'var(--accent-light)';
         const badgeColor = isExtra ? '#F59E0B' : 'var(--accent)';
         const badgeHtml = ocType === 'extra'
-          ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
+          ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(var(--amber-rgb), 0.15);color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
           : '';
         html += `<div style="margin:14px 14px 10px;background:var(--bg-card);border-radius:14px;border:1px solid var(--accent);cursor:pointer" onclick="coSelectWeek('${wk}')">
           <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
@@ -43720,9 +43748,9 @@
 
       if (weeks.length === 0) {
         html += `<div style="text-align:center;padding:60px 24px">
-          <div style="font-size:48px;margin-bottom:12px">📞</div>
+          <div style="display:flex;justify-content:center;margin-bottom:12px;color:var(--text-muted)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
           <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px">No on-call weeks yet</div>
-          <div style="font-size:13px;color:var(--text-muted);line-height:1.5">Tap the <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" style="vertical-align:middle;margin:0 2px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> icon to set your on-call schedule.</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.5">Tap the <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" style="display:inline-block;vertical-align:middle;margin:0 2px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> icon to set your on-call schedule.</div>
         </div>`;
       }
 
@@ -43738,10 +43766,10 @@
         // Stats bar
         html += `<div style="margin:14px 14px 8px">`;
         html += `<div class="oc-stats">
-          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--accent)">${totalOnCall + totalExtra}</div><div class="oc-stat-label">On-Call<br>Weeks</div></div>
+          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--accent)">${totalOnCall + totalExtra}</div><div class="oc-stat-label">Total<br>Weeks</div></div>
           <div class="oc-stat"><div class="oc-stat-val" style="color:#F59E0B">${totalExtra}</div><div class="oc-stat-label">Extra<br>Shifts</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--priority-high)">${totalIncidents}</div><div class="oc-stat-label">Total<br>Incidents</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:#8B5CF6">${avgPerWeek}</div><div class="oc-stat-label">Avg /<br>Week</div></div>
+          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--text-primary)">${totalIncidents}</div><div class="oc-stat-label">Total<br>Incidents</div></div>
+          <div class="oc-stat"><div class="oc-stat-val" style="color:#818cf8">${avgPerWeek}</div><div class="oc-stat-label">Avg /<br>Week</div></div>
         </div>`;
         html += `</div>`;
 
@@ -43751,9 +43779,9 @@
           const calloutCount = wd ? (wd.callouts || []).length : 0;
           const ocType = onCall[weekKey];
           const badgeHtml = ocType === 'extra'
-            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:#FEF3C7;color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
+            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(var(--amber-rgb), 0.15);color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
             : '';
-          const badgeBg = ocType === 'extra' ? '#FEF3C7' : 'var(--accent-light)';
+          const badgeBg = ocType === 'extra' ? 'rgba(var(--amber-rgb), 0.15)' : 'var(--accent-light)';
           const badgeColor = ocType === 'extra' ? '#F59E0B' : 'var(--accent)';
           html += `<div style="margin:0 14px 8px;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);cursor:pointer" onclick="coSelectWeek('${weekKey}')">
             <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
@@ -43816,9 +43844,9 @@
 
       if (sortedDates.length === 0 && state.calloutsExpandedId !== '__new__') {
         html += `<div style="text-align:center;padding:40px 24px">
-          <div style="font-size:48px;margin-bottom:12px">📋</div>
+          <div style="display:flex;justify-content:center;margin-bottom:12px;color:var(--text-muted)"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></div>
           <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px">No callouts this week</div>
-          <div style="font-size:13px;color:var(--text-muted)">Tap "+ Add" to log your first incident.</div>
+          <div style="font-size:13px;color:var(--text-muted)">Tap "+ Add Callout" to log your first incident.</div>
         </div>`;
       } else {
         html += `<div style="padding:8px 14px 0">`;
@@ -43833,7 +43861,7 @@
           // Subtle day label
           html += `<div style="display:flex;align-items:center;gap:8px;padding:10px 2px 6px">
             <span style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">${dayName} ${dayNum} ${monthShort}</span>
-            <span style="font-size:11px;color:var(--text-muted);font-weight:100">${items.length} callout${items.length !== 1 ? 's' : ''}</span>
+            <span style="font-size:11px;color:var(--text-muted);font-weight:500">${items.length} callout${items.length !== 1 ? 's' : ''}</span>
           </div>`;
           items.forEach(co => {
             globalIdx++;
@@ -43876,12 +43904,10 @@
       const site = isNew ? '' : (co.site || '');
       const fault = isNew ? '' : (co.fault || '');
       const ticket = isNew ? '' : (co.ticket || '');
-      const timeStr = isNew ? '' : (co.engineerOnSite || '');
       const notes = isNew ? '' : (co.notes || '');
-      const date = isNew ? (state.calloutsSelectedWeek || dateToStr(getCurrentFriday())) : (co.date || '');
+      const date = isNew ? dateToStr(new Date()) : (co.date || '');
       const notesOpen = state.calloutsNotesOpen && isExpanded;
       const pinSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
-      const clockSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-1px;margin-right:2px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
 
       // No timeline connectors — use co-card class to suppress ::before/::after
       const isSel = state.coSelectionMode && state.selectedCallouts.has(id);
@@ -43899,7 +43925,6 @@
               <div class="act-loc-txt">${site ? `${pinSvg}${esc(site)}` : '<span style="opacity:0.4">No site</span>'}</div>
               <div class="act-pill-row">
                 ${ticket ? `<span class="pill-hrs" style="font-family:var(--font-mono)">${esc(ticket)}</span>` : ''}
-                ${timeStr ? `<span class="pill-hrs" style="background:var(--bg-code-group)">${clockSvg}${esc(timeStr)}</span>` : ''}
                 ${isDraft ? `<span class="pill-draft">Draft</span>` : ''}
               </div>
             </div>
@@ -43962,12 +43987,6 @@
           </div>
           <textarea class="act-notes-area" id="co-notes-ta" style="display:none" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true"
             oninput="coAutoSave()">${esc(notes)}</textarea>
-          <!-- On-Site Time -->
-          <div class="flex flex-col gap-1.5">
-            <label for="co-time-input" class="act-field-label" style="cursor:pointer">Engineer On Site</label>
-            <input type="time" id="co-time-input" class="act-input" value="${timeStr}"
-              onchange="updateCoField('engineerOnSite', this.value)">
-          </div>
           <div class="note-bottom-actions">
             ${isNew || co._draft ? `
             <button class="act-action-btn act-action-note" style="flex:1" onclick="event.stopPropagation(); coSaveDraft()">
@@ -44138,7 +44157,7 @@
         const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
         const co = {
           id,
-          date: document.getElementById('co-date-input')?.value || weekStart,
+          date: document.getElementById('co-date-input')?.value || dateToStr(new Date()),
           ticket: '', site: '', fault: '', engineerOnSite: '', notes: '',
           _draft: true
         };
@@ -44337,7 +44356,7 @@
         if (!wd.callouts) wd.callouts = [];
         const newCo = {
           id: 'co_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-          date: wk, site: '', fault: '', ticket: '', engineerOnSite: '', notes: '', _draft: true
+          date: dateToStr(new Date()), site: '', fault: '', ticket: '', engineerOnSite: '', notes: '', _draft: true
         };
         wd.callouts.push(newCo);
         state.calloutsExpandedId = newCo.id;
@@ -44455,7 +44474,23 @@
     }
 
     function ocCloseSchedule() {
+      if (state.ocScheduleEditing && _ocCountChanges() > 0) {
+        showConfirm('Discard schedule changes?', 'You have unsaved schedule changes. Discard them?', () => {
+          state.ocScheduleEditing = false;
+          state.ocScheduleDraft = null;
+          state.coScheduleOpen = false;
+          render();
+        });
+        return;
+      }
       state.coScheduleOpen = false;
+      if (state.ocScheduleEditing) {
+        // Editing with no changes — reset and rebuild DOM in locked state
+        state.ocScheduleEditing = false;
+        state.ocScheduleDraft = null;
+        render();
+        return;
+      }
       const el = document.getElementById('oc-schedule-overlay');
       if (el) {
         el.classList.remove('open');
@@ -44472,114 +44507,115 @@
       });
     }
 
-    // ---- On-Call schedule toggle handlers ----
-    let _ocCellTimer = null;
-    let _ocCellLocked = false;
-
+    // ---- On-Call schedule edit mode (v6.6.12) ----
+    // Grid is locked by default. "Edit Schedule" unlocks; taps cycle
+    // blank → on-call → extra → blank on a draft copy. Save commits with a
+    // single confirmation summarising all changes; Cancel discards.
     function _ocSave() {
       // Debounced save — prevents race conditions when toggling quickly
       _coScheduleSave();
     }
 
-    function ocToggle(weekKey) {
-      if (_ocCellLocked) { _ocCellLocked = false; return; }
+    function _ocCountChanges() {
+      const base = (state.callouts && state.callouts.onCall) || {};
+      const draft = state.ocScheduleDraft || {};
+      const keys = new Set([...Object.keys(base), ...Object.keys(draft)]);
+      let n = 0;
+      keys.forEach(k => { if ((base[k] || '') !== (draft[k] || '')) n++; });
+      return n;
+    }
+
+    // Re-render while preserving the overlay's scroll position.
+    // Mobile scrolls the overlay itself; desktop scrolls the inner dialog card.
+    function _ocRerender() {
+      const el = document.getElementById('oc-schedule-overlay');
+      const s1 = el ? el.scrollTop : 0;
+      const s2 = (el && el.firstElementChild) ? el.firstElementChild.scrollTop : 0;
+      render();
+      const el2 = document.getElementById('oc-schedule-overlay');
+      if (el2) {
+        el2.scrollTop = s1;
+        if (el2.firstElementChild) el2.firstElementChild.scrollTop = s2;
+      }
+    }
+
+    function ocStartEdit() {
       if (!state.callouts) return;
-      if (!state.callouts.onCall) state.callouts.onCall = {};
-      const cur = state.callouts.onCall[weekKey];
-      const range = formatWeekRange(weekKey);
-      if (cur === 'oncall' || cur === 'extra') {
-        showConfirm('Remove on-call?', `Remove on-call${cur === 'extra' ? ' (extra)' : ''} for ${range}?`, () => {
-          delete state.callouts.onCall[weekKey];
-          _ocSave();
-          render();
-        });
+      state.ocScheduleEditing = true;
+      state.ocScheduleDraft = Object.assign({}, state.callouts.onCall || {});
+      _ocRerender();
+    }
+
+    function ocCancelEdit() {
+      state.ocScheduleEditing = false;
+      state.ocScheduleDraft = null;
+      _ocRerender();
+    }
+
+    function ocCellTap(weekKey, btn) {
+      if (!state.ocScheduleEditing) {
+        showToast((_isDesktop() ? 'Click' : 'Tap') + ' "Edit Schedule" to make changes');
+        return;
+      }
+      const d = state.ocScheduleDraft;
+      const cur = d[weekKey];
+      if (!cur) d[weekKey] = 'oncall';
+      else if (cur === 'oncall') d[weekKey] = 'extra';
+      else delete d[weekKey];
+      // Update in place — no re-render, so the overlay doesn't scroll or flash
+      if (btn) {
+        const committed = (state.callouts && state.callouts.onCall) || {};
+        const type = d[weekKey];
+        btn.classList.toggle('oc-oncall', type === 'oncall');
+        btn.classList.toggle('oc-extra', type === 'extra');
+        btn.classList.toggle('oc-pending', (d[weekKey] || '') !== (committed[weekKey] || ''));
+        _ocRefreshEditUi();
       } else {
-        showConfirm('Mark as on-call?', `Mark ${range} as on-call week?`, () => {
-          state.callouts.onCall[weekKey] = 'oncall';
-          _ocSave();
-          render();
-        });
+        _ocRerender();
       }
     }
 
-    function ocToggleExtra(weekKey) {
-      if (!state.callouts) return;
-      if (!state.callouts.onCall) state.callouts.onCall = {};
-      const cur = state.callouts.onCall[weekKey];
-      const range = formatWeekRange(weekKey);
-      if (cur === 'extra') {
-        showConfirm('Remove extra shift?', `Remove extra shift for ${range}?`, () => {
-          delete state.callouts.onCall[weekKey];
-          _ocSave();
-          render();
-        });
-      } else {
-        showConfirm('Mark as extra shift?', `Mark ${range} as extra shift?`, () => {
-          state.callouts.onCall[weekKey] = 'extra';
-          _ocSave();
-          render();
-        });
+    // Update Save button + header year counts without a full render
+    function _ocRefreshEditUi() {
+      const saveBtn = document.querySelector('.oc-edit-save');
+      if (saveBtn) {
+        const n = _ocCountChanges();
+        saveBtn.textContent = 'Save changes' + (n ? ' (' + n + ')' : '');
+        saveBtn.disabled = n === 0;
       }
+      const fset = new Set(_ocGetFridays(state.coScheduleYear));
+      const oc = state.ocScheduleDraft || {};
+      const nOn = Object.entries(oc).filter(([wk, v]) => fset.has(wk) && v === 'oncall').length;
+      const nEx = Object.entries(oc).filter(([wk, v]) => fset.has(wk) && v === 'extra').length;
+      const elLine = document.getElementById('oc-stat-line');
+      if (elLine) elLine.textContent = (nOn === 0 && nEx === 0)
+        ? 'No weeks scheduled'
+        : nOn + ' on-call week' + (nOn !== 1 ? 's' : '') + ' · ' + nEx + ' extra shift' + (nEx !== 1 ? 's' : '');
     }
 
-    // Mobile: touchstart/touchmove/touchend
-    let _ocTouchStartX = 0, _ocTouchStartY = 0, _ocTouchScrolled = false;
-
-    function ocCellTouchStart(e, weekKey) {
-      const t = e.touches[0];
-      _ocTouchStartX = t.clientX;
-      _ocTouchStartY = t.clientY;
-      _ocTouchScrolled = false;
-      _ocCellLocked = false;
-      _ocCellTimer = setTimeout(() => {
-        if (_ocTouchScrolled) return; // user is scrolling — ignore
-        _ocCellTimer = null;
-        _ocCellLocked = true;
-        if (navigator.vibrate) navigator.vibrate(30);
-        ocToggleExtra(weekKey);
-      }, 500);
-    }
-
-    function ocCellTouchMove(e) {
-      if (_ocTouchScrolled) return;
-      const t = e.touches[0];
-      const dx = Math.abs(t.clientX - _ocTouchStartX);
-      const dy = Math.abs(t.clientY - _ocTouchStartY);
-      if (dx > 8 || dy > 8) {
-        _ocTouchScrolled = true;
-        if (_ocCellTimer) { clearTimeout(_ocCellTimer); _ocCellTimer = null; }
-      }
-    }
-
-    function ocCellTouchEnd(e) {
-      if (_ocCellTimer) { clearTimeout(_ocCellTimer); _ocCellTimer = null; }
-      if (!_ocCellLocked && !_ocTouchScrolled) {
-        const btn = e.target.closest('.oc-cell');
-        if (btn) btn.click();
-      }
-      _ocTouchScrolled = false;
-    }
-
-    function ocCellTouchCancel(e) {
-      if (_ocCellTimer) { clearTimeout(_ocCellTimer); _ocCellTimer = null; }
-      _ocCellLocked = false;
-      _ocTouchScrolled = false;
-    }
-
-    // Desktop: mousedown/mouseup for right-click long-press alternative
-    function ocCellMouseDown(e, weekKey) {
-      if (e.button !== 0) return;
-      _ocCellLocked = false;
-      _ocCellTimer = setTimeout(() => {
-        _ocCellTimer = null;
-        _ocCellLocked = true;
-        if (navigator.vibrate) navigator.vibrate(30);
-        ocToggleExtra(weekKey);
-      }, 500);
-    }
-
-    function ocCellMouseUp(e) {
-      if (_ocCellTimer) { clearTimeout(_ocCellTimer); _ocCellTimer = null; }
+    function ocSaveEdit() {
+      const base = (state.callouts && state.callouts.onCall) || {};
+      const draft = state.ocScheduleDraft || {};
+      let added = 0, removed = 0, changed = 0;
+      const keys = new Set([...Object.keys(base), ...Object.keys(draft)]);
+      keys.forEach(k => {
+        const b = base[k] || '', n = draft[k] || '';
+        if (b === n) return;
+        if (!b) added++; else if (!n) removed++; else changed++;
+      });
+      if (added + removed + changed === 0) { ocCancelEdit(); return; }
+      const parts = [];
+      if (added) parts.push(added + ' week' + (added !== 1 ? 's' : '') + ' added');
+      if (removed) parts.push(removed + ' removed');
+      if (changed) parts.push(changed + ' changed');
+      showConfirm('Save schedule changes?', parts.join(', ') + '.', () => {
+        state.callouts.onCall = Object.assign({}, state.ocScheduleDraft);
+        state.ocScheduleEditing = false;
+        state.ocScheduleDraft = null;
+        _ocSave();
+        _ocRerender();
+        showToast('Schedule saved');
+      });
     }
 
     // ---- Callout selection / bulk delete ----
@@ -44682,7 +44718,6 @@
 
     function _renderCoModalHtml(co, idx) {
       const pinSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:3px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>`;
-      const clockSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:-1px;margin-right:2px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
       const fault = co.fault || '';
       const isDraft = !!co._draft;
       const actionsHtml = isDraft
@@ -44713,7 +44748,6 @@
             </div>
             <div class="act-pill-row" style="flex-shrink:0">
               ${co.ticket ? `<span class="pill-hrs" style="font-family:var(--font-mono)">${esc(co.ticket)}</span>` : ''}
-              ${co.engineerOnSite ? `<span class="pill-hrs" style="background:var(--bg-code-group)">${clockSvg}${esc(co.engineerOnSite)}</span>` : ''}
             </div>
           </div>
         </div>
@@ -44744,11 +44778,6 @@
           ${renderNoteInline(co.notes || '', `openCoNoteFullscreen()`, `data-co-notes-inline`)}
           <textarea class="act-notes-area" id="co-notes-ta" style="display:none" autocomplete="off" data-lpignore="true"
             oninput="coAutoSave()">${esc(co.notes || '')}</textarea>
-          <div class="flex flex-col gap-1.5">
-            <span class="act-field-label">Engineer On Site</span>
-            <input type="time" id="co-time-input" class="act-input" value="${esc(co.engineerOnSite || '')}"
-              onchange="updateCoField('engineerOnSite',this.value);_coModalFlashSaved()">
-          </div>
         </div>
         <div class="task-modal-actions">${actionsHtml}</div>
       </div>`;
@@ -46039,7 +46068,7 @@ Rules:
       try {
         const model = await discoverGeminiModel(key);
         if (!model) {
-          if (status) { status.textContent = '❌ Could not list models — check your key'; status.style.color = '#e53935'; }
+          if (status) { status.textContent = '❌ Could not list models — check your key'; status.style.color = 'var(--recording)'; }
           return;
         }
         if (status) status.textContent = `⏳ Testing ${model}…`;
@@ -46054,7 +46083,7 @@ Rules:
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           const msg = err?.error?.message || ('HTTP ' + res.status);
-          if (status) { status.textContent = `❌ [${res.status}] ${msg.substring(0, 100)}`; status.style.color = '#e53935'; }
+          if (status) { status.textContent = `❌ [${res.status}] ${msg.substring(0, 100)}`; status.style.color = 'var(--recording)'; }
         } else {
           state.geminiKey = key;
           state.geminiModel = model;
@@ -46063,7 +46092,7 @@ Rules:
           if (status) { status.textContent = `✅ Working — using ${model}`; status.style.color = '#43a047'; }
         }
       } catch (e) {
-        if (status) { status.textContent = '❌ Network error: ' + (e.message || e); status.style.color = '#e53935'; }
+        if (status) { status.textContent = '❌ Network error: ' + (e.message || e); status.style.color = 'var(--recording)'; }
       }
     }
 

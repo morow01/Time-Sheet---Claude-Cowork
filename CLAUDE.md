@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.5.19**
+Current version: **6.6.12**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -232,7 +232,7 @@ Three-panel layout (Weeks → Callouts → Detail) matching Timesheet pattern. A
 
 - **Left panel (280px)**: Stats 2×2 grid (On-Call Weeks, Extra Shifts, Total Incidents, Avg/Week), "Schedule" button, Current/Previous week rows
 - **Middle panel (360px)**: Callouts list grouped by date, "Paste Fault" button, "+ Add Callout" dashed button
-- **Detail panel (flex)**: "CALLOUT DETAILS" header, callout header (blue badge + fault + location/ticket), form fields (Date, Ticket Number, Location, Fault Description, Notes, Engineer On Site), action buttons
+- **Detail panel (flex)**: "CALLOUT DETAILS" header, callout header (blue badge + fault + location/ticket), form fields (Date, Ticket Number, Location, Fault Description, Notes), action buttons. "Engineer On Site" field removed from all callout UIs in v6.6.10 (`engineerOnSite` kept in the data model for old records, no longer displayed or editable)
 
 Detail panel reuses Timesheet CSS classes: `desk-detail-body`, `desk-detail-header`, `desk-detail-form`, `desk-field-group`, `desk-detail-actions`, `desk-detail-btn`.
 
@@ -249,6 +249,8 @@ CSS: `.dco-wrap`, `.dco-panel-weeks`, `.dco-panel-callouts`, `.dco-panel-detail`
 `renderCalloutsView()` intercept: `if (_isDesktop()) return _renderDesktopCallouts();`
 
 `pasteTicketCreate()` sets `state.dcoSelectedWeek` and `state.dcoSelectedCo` on desktop so pasted callouts appear in the detail panel immediately.
+
+**On-Call Schedule edit mode (v6.6.12+):** The schedule grid is locked by default — tapping a cell shows a toast. "Edit Schedule" (`ocStartEdit()`) copies `state.callouts.onCall` into `state.ocScheduleDraft`; `ocCellTap()` cycles blank → oncall → extra → blank on the draft. Changed cells get `.oc-pending` (1px dashed outline). `ocSaveEdit()` shows ONE confirm summarising adds/removes/changes, then commits + `_ocSave()`. `ocCancelEdit()` discards. `ocCloseSchedule()` confirms discard if unsaved changes exist. The old tap-confirm + long-press-for-extra handlers (`ocToggle`, `ocToggleExtra`, `ocCellTouch*`, `ocCellMouse*`) were deleted. Colour legend row (`.oc-legend`) sits under the year nav. State keys: `ocScheduleEditing`, `ocScheduleDraft`.
 
 ### Finder — Desktop Two-Panel Layout (v5.8.77+)
 Two-panel layout: search list (left, 320px) + wide detail (right, flex).
