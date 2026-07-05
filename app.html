@@ -21192,7 +21192,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.15';
+    const VERSION = '6.6.17';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27127,14 +27127,29 @@
       const range = weekStart ? formatWeekRange(weekStart) : '—';
       const label = 'Timesheet week';
       // Off-current weeks: subtitle becomes the "Back to this week" tap target.
-      // On the current week: subtitle keeps the existing "Tap to open week history" affordance.
+      // On the current week: subtitle shows week totals + "History ›" affordance (v6.6.17).
       const isCurrentWeek = weekStart === dateToStr(getCurrentFriday());
-      const hint = isCurrentWeek ? 'Tap to open week history' : 'Back to this week';
       const mainAction = isCurrentWeek ? `setView('history')` : `goToCurrentWeek()`;
       const subClass = isCurrentWeek ? 'page-week-selector-sub' : 'page-week-selector-sub is-back';
-      const subInner = isCurrentWeek
-        ? esc(hint)
-        : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>${esc(hint)}`;
+      let subInner;
+      if (isCurrentWeek) {
+        // Current week: show totals + compact History affordance (v6.6.17)
+        let tOrd = 0, tOt = 0;
+        (state.weekData?.days || []).forEach(d => d.activities.forEach(a => {
+          tOrd += parseFloat(a.ordinary) || 0;
+          tOt += parseFloat(a.overtime) || 0;
+        }));
+        const fmtN = n => Math.round(n) === n ? n : n.toFixed(1);
+        const histHtml = '<span style="display:inline-flex;align-items:center;gap:3px">' +
+          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History &rsaquo;</span>';
+        const parts = [];
+        if (tOrd > 0) parts.push('<span style="color:var(--accent);font-weight:700">' + fmtN(tOrd) + 'h</span>');
+        if (tOt > 0) parts.push('<span style="color:#F59E0B;font-weight:700">+' + fmtN(tOt) + ' OT</span>');
+        parts.push(histHtml);
+        subInner = parts.join('<span style="opacity:0.5;margin:0 4px">·</span>');
+      } else {
+        subInner = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to this week`;
+      }
       // Surface on-call / extra-shift status from state.callouts.onCall[weekStart].
       // 'oncall' = scheduled on-call week (red pill). 'extra' = extra shift (amber pill).
       const ocStatus = state.callouts && state.callouts.onCall && state.callouts.onCall[weekStart];
@@ -27165,12 +27180,27 @@
       // Mirror the mobile chooser: surface on-call / extra pills and the
       // back-to-current-week affordance on desktop too.
       const isCurrentWeek = state.weekStart === dateToStr(getCurrentFriday());
-      const hint = isCurrentWeek ? 'Click to open Week History' : 'Back to this week';
       const mainAction = isCurrentWeek ? 'setView(\'history\')' : 'goToCurrentWeek()';
       const subClass = isCurrentWeek ? 'desk-week-nav-hint' : 'desk-week-nav-hint is-back';
-      const subInner = isCurrentWeek
-        ? esc(hint)
-        : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>' + esc(hint);
+      let subInner;
+      if (isCurrentWeek) {
+        // Current week: totals + History affordance (v6.6.17, matches mobile)
+        let tOrd = 0, tOt = 0;
+        (state.weekData?.days || []).forEach(d => d.activities.forEach(a => {
+          tOrd += parseFloat(a.ordinary) || 0;
+          tOt += parseFloat(a.overtime) || 0;
+        }));
+        const fmtN = n => Math.round(n) === n ? n : n.toFixed(1);
+        const histHtml = '<span style="display:inline-flex;align-items:center;gap:3px">' +
+          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History &rsaquo;</span>';
+        const parts = [];
+        if (tOrd > 0) parts.push('<span style="color:var(--accent);font-weight:700">' + fmtN(tOrd) + 'h</span>');
+        if (tOt > 0) parts.push('<span style="color:#F59E0B;font-weight:700">+' + fmtN(tOt) + ' OT</span>');
+        parts.push(histHtml);
+        subInner = parts.join('<span style="opacity:0.5;margin:0 4px">·</span>');
+      } else {
+        subInner = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to this week';
+      }
       const ocStatus = state.callouts && state.callouts.onCall && state.callouts.onCall[weekStart];
       const phoneSvg = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
       const statusPill = ocStatus === 'oncall'
@@ -27408,7 +27438,8 @@
       }).length;
       var allCount = day.activities.length;
 
-      var hdr = '<div class="desk-panel-days-hdr">Tasks</div>';
+      var monthShort = strToDate(day.date).toLocaleDateString('en-IE', { month: 'short' });
+      var hdr = '<div class="desk-panel-days-hdr">Tasks — ' + esc(day.dayName) + ' ' + dom + ' ' + monthShort + '</div>';
 
       var cards = '';
       if (day.activities.length === 0) {
@@ -27590,7 +27621,7 @@
         '<div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>' +
         '<div class="hrs-stepper' + (isMissingHours ? ' invalid-field' : '') + ' flex items-center justify-between">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',-1)">&#8722;</button>' +
-        '<input type="tel" class="val" data-step-val="' + act.id + '-ordinary" value="' + (act.ordinary || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'ordinary\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}">' +
+        '<input type="tel" class="val" data-step-val="' + act.id + '-ordinary" value="' + (act.ordinary || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'ordinary\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}else if(event.key===\'ArrowUp\'){event.preventDefault();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',1)}else if(event.key===\'ArrowDown\'){event.preventDefault();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',-1)}">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'ordinary\',1)">+</button>' +
         '</div>' +
         '</div>' +
@@ -27598,7 +27629,7 @@
         '<div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>' +
         '<div class="hrs-stepper' + (isMissingHours ? ' invalid-field' : '') + ' flex items-center justify-between">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',-1)">&#8722;</button>' +
-        '<input type="tel" class="val" data-step-val="' + act.id + '-overtime" value="' + (act.overtime || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'overtime\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}">' +
+        '<input type="tel" class="val" data-step-val="' + act.id + '-overtime" value="' + (act.overtime || 0) + '" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation();deskSetHrs(\'' + escId + '\',' + di + ',\'overtime\',this.value)" onkeydown="if(event.key===\'Enter\'){this.blur()}else if(event.key===\'ArrowUp\'){event.preventDefault();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',1)}else if(event.key===\'ArrowDown\'){event.preventDefault();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',-1)}">' +
         '<button onclick="event.stopPropagation();deskStepHrs(\'' + escId + '\',' + di + ',\'overtime\',1)">+</button>' +
         '</div>' +
         '</div>' +
@@ -28603,7 +28634,7 @@
                 <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>
                 <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'ordinary',-1)">−</button>
-                  <input type="tel" class="val" data-step-val="${act.id}-ordinary" value="${ordinary}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" onclick="event.stopPropagation()" onchange="event.stopPropagation();setHrs('${escId}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="tel" class="val" data-step-val="${act.id}-ordinary" value="${ordinary}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" onclick="event.stopPropagation()" onchange="event.stopPropagation();setHrs('${escId}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='ArrowUp'){event.preventDefault();stepHrs('${escId}',${di},'ordinary',1)}else if(event.key==='ArrowDown'){event.preventDefault();stepHrs('${escId}',${di},'ordinary',-1)}">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
@@ -28611,7 +28642,7 @@
                 <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>
                 <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'overtime',-1)">−</button>
-                  <input type="tel" class="val" data-step-val="${act.id}-overtime" value="${overtime}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" onclick="event.stopPropagation()" onchange="event.stopPropagation();setHrs('${escId}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="tel" class="val" data-step-val="${act.id}-overtime" value="${overtime}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" onclick="event.stopPropagation()" onchange="event.stopPropagation();setHrs('${escId}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='ArrowUp'){event.preventDefault();stepHrs('${escId}',${di},'overtime',1)}else if(event.key==='ArrowDown'){event.preventDefault();stepHrs('${escId}',${di},'overtime',-1)}">
                   <button onclick="event.stopPropagation();stepHrs('${escId}',${di},'overtime',1)">+</button>
                 </div>
               </div>
@@ -28965,7 +28996,7 @@
                 <div class="act-field-label" style="margin-bottom: 8px;">Ordinary HRS</div>
                 <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',-1)">−</button>
-                  <input type="tel" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="tel" class="val" data-step-val="${act.id}-ordinary" value="${act.ordinary || 0}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'ordinary',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='ArrowUp'){event.preventDefault();stepHrs('${act.id}',${di},'ordinary',1)}else if(event.key==='ArrowDown'){event.preventDefault();stepHrs('${act.id}',${di},'ordinary',-1)}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'ordinary',1)">+</button>
                 </div>
               </div>
@@ -28973,7 +29004,7 @@
                 <div class="act-field-label act-field-label-ot" style="margin-bottom: 8px;">Overtime HRS</div>
                 <div class="hrs-stepper${isMissingHours ? ' invalid-field' : ''} flex items-center justify-between">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',-1)">−</button>
-                  <input type="tel" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+                  <input type="tel" class="val" data-step-val="${act.id}-overtime" value="${act.overtime || 0}" inputmode="decimal" pattern="[0-9.]*" autocomplete="off" data-lpignore="true" data-form-type="other" data-1p-ignore="true" onclick="event.stopPropagation()" onchange="event.stopPropagation(); setHrs('${act.id}',${di},'overtime',this.value)" onkeydown="if(event.key==='Enter'){this.blur()}else if(event.key==='ArrowUp'){event.preventDefault();stepHrs('${act.id}',${di},'overtime',1)}else if(event.key==='ArrowDown'){event.preventDefault();stepHrs('${act.id}',${di},'overtime',-1)}">
                   <button onclick="event.stopPropagation(); stepHrs('${act.id}',${di},'overtime',1)">+</button>
                 </div>
               </div>
