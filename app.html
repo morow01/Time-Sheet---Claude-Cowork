@@ -21192,7 +21192,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.17';
+    const VERSION = '6.6.18';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -28819,7 +28819,7 @@
       const _remActiveM = hasActiveReminder(note.id);
       const _remPassedM = !_remActiveM && getReminders().some(r => r.noteId === note.id && r.fired);
       const bellSvgM = _remActiveM
-        ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
+        ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-ot)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
         : _remPassedM
           ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
           : '';
@@ -32132,7 +32132,7 @@
       var q = (state.notesSearch || '').trim().toLowerCase();
       if (q) {
         listNotes = listNotes.filter(function (n) {
-          var hay = [n.description || '', n.location || '', n.noteContent || '', n.category || ''].join(' ').toLowerCase();
+          var hay = [n.description || '', n.location || '', stripHtml(n.noteContent || ''), n.category || ''].join(' ').toLowerCase();
           return hay.includes(q);
         });
       }
@@ -32227,7 +32227,9 @@
         '</div>';
       listHtml += '<div class="dnotes-list-scroll" id="dnotes-list-scroll">';
       if (listNotes.length === 0) {
-        listHtml += '<div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px">No ' + notesTab + ' notes</div>';
+        listHtml += '<div style="padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13px">' +
+          (q ? 'No notes match "' + esc(state.notesSearch) + '"'
+            : (notesTab === 'archive' ? 'Archive is empty' : notesTab === 'bin' ? 'Bin is empty' : 'No notes yet')) + '</div>';
       } else {
         var _overdueIds = notesTab === 'notes' ? listNotes.filter(function (n) { return isNoteOverdue(n); }).map(function (n) { return n.id; }) : [];
         var _pinnedIds = notesTab === 'notes' ? listNotes.filter(function (n) { return n.status !== 'done' && !isNoteOverdue(n) && n.pinned; }).map(function (n) { return n.id; }) : [];
@@ -32292,7 +32294,7 @@
           var _remActive = hasActiveReminder(n.id);
           var _remPassed = !_remActive && getReminders().some(function (r) { return r.noteId === n.id && r.fired; });
           var bellHtml = _remActive
-            ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+            ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-ot)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
             : _remPassed
               ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
               : '';
@@ -32586,7 +32588,7 @@
         else if (cf) { if ((n.category || '') !== cf) return false; }
         // Search query
         if (!q) return true;
-        const haystack = [n.description || '', n.location || '', n.noteContent || '', n.category || ''].join(' ').toLowerCase();
+        const haystack = [n.description || '', n.location || '', stripHtml(n.noteContent || ''), n.category || ''].join(' ').toLowerCase();
         return haystack.includes(q);
       }).sort((a, b) => {
         if (b.pinned && !a.pinned) return 1;
@@ -32745,7 +32747,7 @@
         if (n.isSection) return false;
         if (!n.archived || n.deleted) return false;
         if (!_archiveQ) return true;
-        const hay = [n.description || '', n.location || '', n.noteContent || '', n.category || ''].join(' ').toLowerCase();
+        const hay = [n.description || '', n.location || '', stripHtml(n.noteContent || ''), n.category || ''].join(' ').toLowerCase();
         return hay.includes(_archiveQ);
       }).sort((a, b) => (b.archivedAt || 0) - (a.archivedAt || 0));
       const _binQ = (state.notesSearch || '').trim().toLowerCase();
@@ -32753,7 +32755,7 @@
         if (n.isSection) return false;
         if (!n.deleted) return false;
         if (!_binQ) return true;
-        const hay = [n.description || '', n.location || '', n.noteContent || '', n.category || ''].join(' ').toLowerCase();
+        const hay = [n.description || '', n.location || '', stripHtml(n.noteContent || ''), n.category || ''].join(' ').toLowerCase();
         return hay.includes(_binQ);
       }).sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
       const counts = { high: openNotes.filter(n => n.priority === 'high').length, medium: openNotes.filter(n => n.priority === 'medium').length, low: openNotes.filter(n => n.priority === 'low').length, reminders: state.notes.filter(n => !n.isSection && !n.deleted && hasActiveReminder(n.id)).length, pastReminders: state.notes.filter(n => !n.isSection && !n.deleted && hasPastReminder(n.id)).length, overdue: openNotes.filter(n => isNoteOverdue(n)).length, hasDueDate: openNotes.filter(n => !!n.dueDate).length };
@@ -32855,7 +32857,7 @@
         const _remActive = hasActiveReminder(note.id);
         const _remPassed = !_remActive && getReminders().some(r => r.noteId === note.id && r.fired);
         const bellSvg = _remActive
-          ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
+          ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-ot)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
           : _remPassed
             ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`
             : '';
@@ -32870,10 +32872,6 @@
         // bell inline, immediately after date
         if (bellSvg) metaHtml += bellSvg;
         metaHtml += '</div>';
-
-        const priChips = ['low', 'medium', 'high'].map(p =>
-          `<div class="note-pri-chip ${note.priority === p ? 'sel-' + p : ''}" onclick="setNotePriority('${note.id}', '${p}')">${p[0].toUpperCase() + p.slice(1)}</div>`
-        ).join('');
 
         const header = `
           <div class="note-row ${state.selectionMode ? 'selectable' : ''}"
@@ -33007,7 +33005,7 @@
         if (state.notesHasDueDateFilter) d = d.filter(n => !!n.dueDate);
         return d;
       })();
-      const visibleDone = f !== 'done' ? filteredDone : filteredDone;
+      const visibleDone = filteredDone;
 
       const allIds = [...visibleOpen, ...visibleDone].map(n => n.id);
       const isAllSelected = allIds.length > 0 && allIds.every(id => state.selectedNotes.has(id));
@@ -33075,7 +33073,7 @@
         : '';
       const openSection = visibleOpen.length
         ? overdueSection + pinnedSection + (unpinnedOpen.length ? `<div class="notes-section-label">Open</div>` + unpinnedOpen.map(noteCardHtml).join('') : '')
-        : (f !== 'done' ? `<div class="notes-empty">No ${state.notesOverdueFilter ? 'overdue' : (f === 'all' ? 'open' : f)} notes yet.</div>` : '');
+        : (f !== 'done' ? `<div class="notes-empty">No ${state.notesOverdueFilter ? 'overdue' : (f === 'all' ? 'open' : f + '-priority')} notes yet.</div>` : '');
 
       const doneSection = visibleDone.length
         ? `<div class="notes-section-label">Complete</div>` +
@@ -33143,7 +33141,7 @@
                     ${metaBits.length ? `<div style="display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:var(--text-muted);">${metaBits.join('')}</div>` : ''}
                     ${ago ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Archived ${ago}</div>` : ''}
                   </div>
-                  <button onclick="unarchiveNote('${n.id}')" title="Restore" style="flex-shrink:0;background:rgba(var(--priority-low-rgb), 0.1);border:1px solid rgba(var(--priority-low-rgb), 0.3);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-low);display:flex;align-items:center;justify-content:center;" title="Restore to notes"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+                  <button onclick="unarchiveNote('${n.id}')" title="Restore to notes" style="flex-shrink:0;background:rgba(var(--priority-low-rgb), 0.1);border:1px solid rgba(var(--priority-low-rgb), 0.3);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-low);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
                   <button onclick="deleteNote('${n.id}')" title="Delete" style="flex-shrink:0;background:rgba(var(--priority-high-rgb), 0.08);border:1px solid rgba(var(--priority-high-rgb), 0.25);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-high);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
                 </div>`;
           }).join('')
