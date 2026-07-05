@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.6.20**
+Current version: **6.6.21**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -557,21 +557,4 @@ cd android
 ```
 APK output: `android\app\build\outputs\apk\debug\app-debug.apk`
 
-If Gradle fails with file-lock errors (OneDrive or Android Studio locking files):
-```powershell
-# Close Android Studio first, then:
-Remove-Item -Recurse -Force "app\build"
-.\gradlew assembleDebug
-```
-
-If `build-www.js` fails with "not a regular file" — a file listed in the script is an OneDrive placeholder (not downloaded). Either download it or remove it from the script's file list.
-
-### Live Update Flow (no APK rebuild needed)
-1. Edit `app.html`, bump VERSION
-2. `git add app.html && git commit -m "vX.Y.Z — ..."  && git push`
-3. GitHub Pages updates in ~1 minute
-4. On phone: pull down to refresh (or relaunch app)
-
-### Pending / Known Issues
-- **Offline mode**: Service worker is disabled in native mode (`IS_NATIVE` check). App requires internet since it loads from GitHub Pages. Need to implement offline caching for Android separately.
-- **Play Store**: Not published, sideloaded via USB or direct APK install.
+If Gradle fails with file-lock errors (On
