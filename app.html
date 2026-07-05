@@ -13415,6 +13415,11 @@
       border-color: rgba(var(--amber-rgb), 0.35);
     }
 
+    /* Selection outline wins over the pinned amber border */
+    .note-card.pinned-card.selected {
+      border-color: var(--accent);
+    }
+
     .note-pin-btn {
       background: none;
       border: none;
@@ -21192,7 +21197,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.18';
+    const VERSION = '6.6.20';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -32458,7 +32463,10 @@
               '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> Restore</button>' : '') +
             (notesTab !== 'bin' ? '<div style="width:1px;background:var(--border);align-self:stretch;margin:0 2px;flex-shrink:0"></div>' +
               '<button class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" onclick="deleteNote(\'' + selEscId + '\')">' +
-              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>' : '')) +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>'
+              : '<div style="width:1px;background:var(--border);align-self:stretch;margin:0 2px;flex-shrink:0"></div>' +
+              '<button class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" title="Delete forever" onclick="permanentDeleteNote(\'' + selEscId + '\')">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Forever</button>')) +
           '</div>' +
           '</div>';
       }
@@ -32466,7 +32474,11 @@
       return '<div class="dnotes-wrap">' +
         '<div class="dnotes-sidebar" style="width:' + _dnotesSidebarWidth + 'px">' + sidebarHtml + '</div>' +
         '<div class="dj-resize-handle dj-rh-invis" onmousedown="deskNotesResizeStart(event,1)"></div>' +
-        '<div class="dnotes-list" style="width:' + _dnotesListWidth + 'px"><div class="desk-panel-days-hdr dj-hdr-with-btn"><span>Notes</span>' + (notesTab === 'notes' ? '<button class="dj-hdr-add-btn" onclick="deskNotesNew()" title="New note">+</button>' : '') + '</div>' + listHtml + '</div>' +
+        '<div class="dnotes-list" style="width:' + _dnotesListWidth + 'px"><div class="desk-panel-days-hdr dj-hdr-with-btn"><span>Notes</span>' +
+        (notesTab === 'notes' ? '<button class="dj-hdr-add-btn" onclick="deskNotesNew()" title="New note">+</button>' : '') +
+        (notesTab === 'bin' && binNotes.length > 1 ? '<button onclick="emptyBin()" title="Permanently delete all notes in the bin" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:8px;border:1px solid rgba(var(--priority-high-rgb),0.35);background:rgba(var(--priority-high-rgb),0.08);color:var(--priority-high);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;text-transform:none;letter-spacing:normal">' +
+          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Empty Bin</button>' : '') +
+        '</div>' + listHtml + '</div>' +
         '<div class="dj-resize-handle dj-rh-invis" onmousedown="deskNotesResizeStart(event,2)"></div>' +
         '<div class="dnotes-editor"><div class="desk-panel-days-hdr" style="' + (state.deskTagManagerOpen ? 'display:flex;align-items:center;gap:10px' : '') + '">' + (state.deskTagManagerOpen ? '<button onclick="deskCloseTagManager()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;display:flex;align-items:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg><span style="font-weight:700">Notes Tag Manager</span>' : 'Details') + '</div>' + editorHtml + '</div>' +
         '</div>';
@@ -33008,7 +33020,11 @@
       const visibleDone = filteredDone;
 
       const allIds = [...visibleOpen, ...visibleDone].map(n => n.id);
-      const isAllSelected = allIds.length > 0 && allIds.every(id => state.selectedNotes.has(id));
+      const _tabForSel = state.notesTab || 'notes';
+      const selectableIds = _tabForSel === 'archive' ? archiveNotes.map(n => n.id)
+        : _tabForSel === 'bin' ? binNotes.map(n => n.id)
+          : allIds;
+      const isAllSelected = selectableIds.length > 0 && selectableIds.every(id => state.selectedNotes.has(id));
 
 
       const activeCount = openNotes.length + doneNotes.length;
@@ -33090,31 +33106,40 @@
         ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>`
         : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
-      // Add Note card (normal mode) OR selection banner (selection mode)
+      // Add Note card — hidden in selection mode (selection meta lives in the bottom bar, v6.6.20)
       const addCard = state.selectionMode
-        ? `<div class="notes-selection-banner">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:14px;font-weight:700;color:var(--text-primary);">${state.selectedNotes.size} selected</span>
-              <button onclick="toggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">${isAllSelected ? 'Deselect all' : 'Select all'}</button>
-            </div>
-            <button onclick="toggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">Cancel</button>
-          </div>`
+        ? ''
         : `<div class="btn--add" style="margin:0 16px 8px" onclick="addNote()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Note
           </div>`;
 
       const noSel = state.selectedNotes.size === 0;
+      const RESTORE_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>`;
+      const TRASH_SVG_SM = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
+      let bulkBtnsHtml;
+      if (notesTab === 'archive') {
+        bulkBtnsHtml = `
+            <button class="bulk-btn done" onclick="bulkUnarchiveSelected()" ${noSel ? 'disabled' : ''}>${RESTORE_SVG}Restore</button>
+            <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete</button>`;
+      } else if (notesTab === 'bin') {
+        bulkBtnsHtml = `
+            <button class="bulk-btn done" onclick="bulkRestoreSelected()" ${noSel ? 'disabled' : ''}>${RESTORE_SVG}Restore</button>
+            <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete Forever</button>`;
+      } else {
+        bulkBtnsHtml = `
+            <button class="bulk-btn done" onclick="toggleStatusSelected()" ${noSel ? 'disabled' : ''}>${bulkStatusIcon}${bulkStatusLabel}</button>
+            <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete</button>`;
+      }
       const bulkBar = `
         <div class="bulk-action-bar ${state.selectionMode ? 'show' : ''}">
-          <div class="bulk-action-btns" style="width:100%;">
-            <button class="bulk-btn done" onclick="toggleStatusSelected()" ${noSel ? 'disabled' : ''}>
-              ${bulkStatusIcon}${bulkStatusLabel}
-            </button>
-            <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-              Delete
-            </button>
+          <div style="display:flex;align-items:center;gap:12px;padding:0 4px 10px">
+            <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${state.selectedNotes.size} selected</span>
+            <button onclick="toggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">${isAllSelected ? 'Deselect all' : 'Select all'}</button>
+            <span style="flex:1"></span>
+            <button onclick="toggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;display:flex;align-items:center;gap:4px;">Cancel <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+          <div class="bulk-action-btns" style="width:100%;">${bulkBtnsHtml}
           </div>
         </div>`;
 
@@ -33135,14 +33160,17 @@
             const metaBits = [];
             if (loc) metaBits.push(`<span style="display:inline-flex;align-items:center;gap:3px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(loc)}</span>`);
             if (dt) metaBits.push(`<span style="display:inline-flex;align-items:center;gap:3px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${dt}</span>`);
-            return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
-                  <div style="flex:1;min-width:0;cursor:pointer;" onclick="openNotePreview('${n.id}')">
+            const isSel = state.selectionMode && state.selectedNotes.has(n.id);
+            return `<div style="background:${isSel ? 'rgba(var(--accent-rgb),0.06)' : 'var(--bg-card)'};border:1px solid ${isSel ? 'var(--accent)' : 'var(--border)'};border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;"
+                  onpointerdown="notePressStart(event,'${n.id}')" onpointerup="notePressEnd(event)" onpointercancel="notePressEnd(event)" oncontextmenu="event.preventDefault()"
+                  onclick="notePreviewClick(event,'${n.id}')">
+                  <div style="flex:1;min-width:0;">
                     <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}</div>
                     ${metaBits.length ? `<div style="display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:var(--text-muted);">${metaBits.join('')}</div>` : ''}
                     ${ago ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Archived ${ago}</div>` : ''}
                   </div>
-                  <button onclick="unarchiveNote('${n.id}')" title="Restore to notes" style="flex-shrink:0;background:rgba(var(--priority-low-rgb), 0.1);border:1px solid rgba(var(--priority-low-rgb), 0.3);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-low);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
-                  <button onclick="deleteNote('${n.id}')" title="Delete" style="flex-shrink:0;background:rgba(var(--priority-high-rgb), 0.08);border:1px solid rgba(var(--priority-high-rgb), 0.25);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-high);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+                  ${state.selectionMode ? '' : `<button onclick="event.stopPropagation();unarchiveNote('${n.id}')" title="Restore to notes" style="flex-shrink:0;background:rgba(var(--priority-low-rgb), 0.1);border:1px solid rgba(var(--priority-low-rgb), 0.3);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-low);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+                  <button onclick="event.stopPropagation();deleteNote('${n.id}')" title="Delete" style="flex-shrink:0;background:rgba(var(--priority-high-rgb), 0.08);border:1px solid rgba(var(--priority-high-rgb), 0.25);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-high);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>`}
                 </div>`;
           }).join('')
         }
@@ -33150,6 +33178,7 @@
 
       const binView = (notesTab === 'bin') ? `
         <div style="padding:0 16px 24px;">
+          ${binNotes.length > 1 ? `<button onclick="emptyBin()" class="note-btn-delete" style="width:100%;margin-bottom:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Empty Bin</button>` : ''}
           ${binNotes.length === 0
           ? `<div class="notes-empty" style="margin-top:32px;">${_binQ ? `No deleted notes match "<strong>${esc(_binQ)}</strong>"` : 'Bin is empty'}</div>`
           : binNotes.map(n => {
@@ -33160,22 +33189,24 @@
             const metaBits = [];
             if (loc) metaBits.push(`<span style="display:inline-flex;align-items:center;gap:3px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>${esc(loc)}</span>`);
             if (dt) metaBits.push(`<span style="display:inline-flex;align-items:center;gap:3px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${dt}</span>`);
-            return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
-                  <div style="flex:1;min-width:0;cursor:pointer;" onclick="openNotePreview('${n.id}')">
+            const isSel = state.selectionMode && state.selectedNotes.has(n.id);
+            return `<div style="background:${isSel ? 'rgba(var(--accent-rgb),0.06)' : 'var(--bg-card)'};border:1px solid ${isSel ? 'var(--accent)' : 'var(--border)'};border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;"
+                  onpointerdown="notePressStart(event,'${n.id}')" onpointerup="notePressEnd(event)" onpointercancel="notePressEnd(event)" oncontextmenu="event.preventDefault()"
+                  onclick="notePreviewClick(event,'${n.id}')">
+                  <div style="flex:1;min-width:0;">
                     <div style="font-size:14px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}</div>
                     ${metaBits.length ? `<div style="display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:var(--text-muted);">${metaBits.join('')}</div>` : ''}
                     ${ago ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Deleted ${ago}</div>` : ''}
                   </div>
-                  <button onclick="restoreNote('${n.id}')" title="Restore" style="flex-shrink:0;background:rgba(var(--priority-low-rgb), 0.1);border:1px solid rgba(var(--priority-low-rgb), 0.3);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-low);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
-                  <button onclick="permanentDeleteNote('${n.id}')" title="Delete forever" style="flex-shrink:0;background:rgba(var(--priority-high-rgb), 0.08);border:1px solid rgba(var(--priority-high-rgb), 0.25);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-high);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+                  ${state.selectionMode ? '' : `<button onclick="event.stopPropagation();restoreNote('${n.id}')" title="Restore" style="flex-shrink:0;background:rgba(var(--priority-low-rgb), 0.1);border:1px solid rgba(var(--priority-low-rgb), 0.3);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-low);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+                  <button onclick="event.stopPropagation();permanentDeleteNote('${n.id}')" title="Delete forever" style="flex-shrink:0;background:rgba(var(--priority-high-rgb), 0.08);border:1px solid rgba(var(--priority-high-rgb), 0.25);border-radius:8px;padding:7px;cursor:pointer;color:var(--priority-high);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>`}
                 </div>`;
           }).join('')
         }
-          ${binNotes.length > 1 ? `<button onclick="emptyBin()" class="note-btn-delete" style="width:100%;margin-top:8px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Empty Bin</button>` : ''}
         </div>` : '';
 
       const previewSheet = renderNotePreviewSheet();
-      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:120px' : ''}">${headerRow}${searchBar}${notesTab === 'bin' ? binView : notesTab === 'archive' ? archiveView : `<div class="nf-wrap">${chips}</div>${addCard}${searchEmpty}${openSection}${doneSection}${notesHint}${bulkBar}`}${previewSheet}</div>`;
+      return `<div class="notes-view" style="${state.selectionMode ? 'padding-bottom:140px' : ''}">${headerRow}${searchBar}${notesTab === 'bin' ? binView : notesTab === 'archive' ? archiveView : `<div class="nf-wrap">${chips}</div>${addCard}${searchEmpty}${openSection}${doneSection}${notesHint}`}${bulkBar}${previewSheet}</div>`;
     }
 
     // ============================================================
@@ -35174,7 +35205,27 @@
       render();
     }
 
+    // Row click in Archive/Bin lists — respects selection mode + long-press lock
+    function notePreviewClick(e, id) {
+      if (_notePressLocked) { _notePressLocked = false; return; }
+      if (state.selectionMode) { toggleNoteSelection(id); }
+      else { openNotePreview(id); }
+    }
+
     function toggleSelectAll() {
+      const tab = state.notesTab || 'notes';
+      if (tab === 'archive' || tab === 'bin') {
+        const q = (state.notesSearch || '').trim().toLowerCase();
+        const hayOf = n => [n.description || '', n.location || '', stripHtml(n.noteContent || ''), n.category || ''].join(' ').toLowerCase();
+        const ids = state.notes.filter(n => !n.isSection &&
+          (tab === 'bin' ? n.deleted : (n.archived && !n.deleted)) &&
+          (!q || hayOf(n).includes(q))).map(n => n.id);
+        const allSel = ids.length > 0 && ids.every(id => state.selectedNotes.has(id));
+        if (allSel) ids.forEach(id => state.selectedNotes.delete(id));
+        else ids.forEach(id => state.selectedNotes.add(id));
+        render();
+        return;
+      }
       // Build visible sets matching exactly what renderNotesView shows
       const f = state.notesFilter;
       const cf = state.notesCategoryFilter || '';
@@ -35201,16 +35252,70 @@
     function deleteSelected() {
       if (state.selectedNotes.size === 0) return;
       const count = state.selectedNotes.size;
-      showConfirm('Delete notes?', `Delete ${count} selected ${count === 1 ? 'note' : 'notes'}?`, () => {
-        const toDelete = Array.from(state.selectedNotes);
-        state.notes = state.notes.filter(n => !toDelete.includes(n.id));
-        toDelete.forEach(id => { state.expandedNotes.delete(id); _deleteNoteImages(id); });
-        state.selectedNotes.clear();
-        state.selectionMode = false;
-        scheduleNotesSave();
-        render();
-        showToast(`${toDelete.length} ${toDelete.length === 1 ? 'note' : 'notes'} deleted`);
+      const plural = count === 1 ? 'note' : 'notes';
+      const tab = state.notesTab || 'notes';
+      if (tab === 'bin') {
+        // Bin: permanent delete
+        showConfirm('Delete forever?', `Permanently delete ${count} selected ${plural}? This cannot be undone.`, () => {
+          const toDelete = Array.from(state.selectedNotes);
+          toDelete.forEach(id => { _purgeRemindersForNote(id); _deleteNoteImages(id); state.expandedNotes.delete(id); });
+          state.notes = state.notes.filter(n => !toDelete.includes(n.id));
+          state.selectedNotes.clear();
+          state.selectionMode = false;
+          scheduleNotesSave();
+          render();
+          showToast(`${toDelete.length} ${plural} deleted forever`);
+        });
+      } else {
+        // Active / Archive: soft delete → bin (matches single-note deleteNote)
+        showConfirm('Move to bin?', `Move ${count} selected ${plural} to the bin?`, () => {
+          const toDelete = Array.from(state.selectedNotes);
+          state.notes.forEach(n => {
+            if (!toDelete.includes(n.id)) return;
+            n.deleted = true;
+            n.deletedAt = Date.now();
+            _purgeRemindersForNote(n.id);
+            state.expandedNotes.delete(n.id);
+          });
+          state.selectedNotes.clear();
+          state.selectionMode = false;
+          scheduleNotesSave();
+          render();
+          showToast(`${toDelete.length} ${plural} moved to bin`);
+        });
+      }
+    }
+
+    function bulkUnarchiveSelected() {
+      if (state.selectedNotes.size === 0) return;
+      const ids = Array.from(state.selectedNotes);
+      state.notes.forEach(n => {
+        if (!ids.includes(n.id)) return;
+        n.archived = false;
+        delete n.archivedAt;
+        n.status = 'open';
+        n.updatedAt = Date.now();
       });
+      state.selectedNotes.clear();
+      state.selectionMode = false;
+      scheduleNotesSave();
+      render();
+      showToast(`${ids.length} ${ids.length === 1 ? 'note' : 'notes'} restored to notes`);
+    }
+
+    function bulkRestoreSelected() {
+      if (state.selectedNotes.size === 0) return;
+      const ids = Array.from(state.selectedNotes);
+      state.notes.forEach(n => {
+        if (!ids.includes(n.id)) return;
+        n.deleted = false;
+        delete n.deletedAt;
+      });
+      state.selectedNotes.clear();
+      state.selectionMode = false;
+      scheduleNotesSave();
+      render();
+      showToast(`${ids.length} ${ids.length === 1 ? 'note' : 'notes'} restored`);
     }
 
     async function toggleStatusSelected() {
@@ -36129,6 +36234,9 @@
     function switchNotesTab(tab) {
       state.notesTab = tab;
       state.notePreviewId = null;
+      // Selection doesn't carry across tabs
+      state.selectionMode = false;
+      state.selectedNotes.clear();
       // Keep legacy state in sync
       state.notesArchiveOpen = (tab === 'archive');
       state.notesBinOpen = (tab === 'bin');
@@ -37246,6 +37354,17 @@
       if (ocOv && ocOv.classList.contains('open')) {
         e.preventDefault();
         if (typeof ocCloseSchedule === 'function') ocCloseSchedule();
+        return;
+      }
+      // Selection modes — ESC exits (v6.6.20)
+      if (state && state.selectionMode) {
+        e.preventDefault();
+        if (typeof toggleSelectionMode === 'function') toggleSelectionMode();
+        return;
+      }
+      if (state && state.coSelectionMode) {
+        e.preventDefault();
+        if (typeof coToggleSelectionMode === 'function') coToggleSelectionMode();
         return;
       }
       if (state && state.isMenuOpen) {
