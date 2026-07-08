@@ -20854,19 +20854,6 @@
   </div>
 
   <!-- ===== CONFIRM MODAL ===== -->
-  <div id="confirm-modal" class="hidden fixed inset-0 flex items-center justify-center p-4" style="z-index:9999"
-    style="background:var(--overlay)">
-    <div class="rounded-2xl p-6 w-full max-w-sm shadow-2xl" style="background:var(--bg-modal)">
-      <h2 id="confirm-title" class="text-lg font-bold mb-2" style="color:var(--text-primary)"></h2>
-      <p id="confirm-msg" class="mb-6 text-sm" style="color:var(--text-secondary)"></p>
-      <div class="flex gap-3">
-        <button onclick="closeConfirm()" class="flex-1 py-3 rounded-xl font-medium"
-          style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
-        <button id="confirm-ok" class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold">Confirm</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Export options modal -->
   <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
     style="background:var(--overlay)">
@@ -21174,7 +21161,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.21';
+    const VERSION = '6.6.22';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37184,7 +37171,6 @@
     function closeConfirmModal() {
       document.getElementById('confirm-modal').classList.add('hidden');
       _confirmAction = null;
-      confirmCallback = null;
     }
     function executeConfirmAction() {
       if (_confirmAction) _confirmAction();
@@ -38318,27 +38304,14 @@
     // ============================================================
     // CONFIRM MODAL
     // ============================================================
-    let confirmCallback = null;
 
     function showConfirm(title, msg, onOk, okColor) {
-      document.querySelectorAll('#confirm-title').forEach(el => el.textContent = title);
-      document.querySelectorAll('#confirm-msg, #confirm-message').forEach(el => el.textContent = msg);
-      const color = okColor || '#dc2626';
-      document.querySelectorAll('#confirm-ok, #confirm-btn').forEach(el => el.style.background = color);
-      confirmCallback = onOk;
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = msg;
+      document.getElementById('confirm-btn').style.background = okColor || '#dc2626';
       _confirmAction = onOk;
       document.getElementById('confirm-modal').classList.remove('hidden');
     }
-
-    function closeConfirm() {
-      document.getElementById('confirm-modal').classList.add('hidden');
-      confirmCallback = null;
-    }
-
-    document.getElementById('confirm-ok').addEventListener('click', () => {
-      if (confirmCallback) confirmCallback();
-      closeConfirm();
-    });
 
     // ============================================================
     // EVENT DELEGATION
