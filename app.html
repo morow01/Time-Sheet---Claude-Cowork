@@ -15703,32 +15703,7 @@
     }
 
     /* Mobile stats cards */
-    .rtn-mob-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .rtn-mob-stat {
-      background: var(--bg-card);
-      border-radius: 10px;
-      padding: 12px 8px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-
-    .rtn-mob-stat-val {
-      font-size: 20px;
-      font-weight: 800;
-    }
-
-    .rtn-mob-stat-lbl {
-      font-size: 10px;
-      color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 2px;
-    }
+    /* Routines mobile stats now use the shared .stat-grid / .stat-cell family (see line ~19574). */
 
     .rtn-mob-card {
       background: var(--bg-card);
@@ -16775,39 +16750,7 @@
       transform: scale(0.92);
     }
 
-    .oc-stats {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .oc-stat {
-      flex: 1;
-      background: var(--bg-card);
-      border-radius: 10px;
-      padding: 10px 6px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-
-    .oc-stat-val {
-      font-size: 18px;
-      font-weight: 800;
-    }
-
-    .oc-stat-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 2px;
-      line-height: 1.2;
-    }
-
-    @media (min-width: 600px) {
-      .oc-stat-label br {
-        display: none;
-      }
-    }
+    /* Callouts mobile stats now use the shared .stat-grid.four-col family (see line ~19574). */
 
     .oc-legend {
       display: flex;
@@ -19241,39 +19184,7 @@
         line-height: 1.4;
       }
 
-      .dco-stats {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .dco-stat {
-        text-align: center;
-        padding: 10px 8px;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .dco-stat:nth-child(odd) {
-        border-right: 1px solid var(--border);
-      }
-
-      .dco-stat:nth-child(n+3) {
-        border-bottom: none;
-      }
-
-      .dco-stat-val {
-        font-size: 20px;
-        font-weight: 800;
-        line-height: 1.2;
-      }
-
-      .dco-stat-label {
-        font-size: 9px;
-        font-weight: 600;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        margin-top: 2px;
-      }
+      /* Callouts desktop stats now use the shared .stat-grid / .stat-cell family (see line ~19574). */
 
       .dco-week-row {
         display: flex;
@@ -19571,7 +19482,15 @@
       margin-top: 9px;
     }
 
-    .hist-stats {
+    /* ═══════════════════════════════════════════════════════════
+       Shared stats-card family — Week History, Callouts, Routines.
+       Use .stat-grid (container) + .stat-cell (each cell), with
+       .stat-cell-label / .stat-cell-value / .stat-cell-note inside.
+       Add .four-col modifier for a single horizontal row of 4.
+       Value defaults to accent; individual cells can override via
+       inline color style for semantic (green/red/amber) treatments.
+       ═══════════════════════════════════════════════════════════ */
+    .stat-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       background: var(--bg-card);
@@ -19581,47 +19500,41 @@
       margin-bottom: 14px;
       box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.06);
     }
-
-    .hist-stat-card {
+    .stat-cell {
       min-height: 74px;
       background: var(--bg-card);
       padding: 12px;
       border-bottom: 1px solid var(--border);
     }
-
-    .hist-stat-card:nth-child(odd) {
-      border-right: 1px solid var(--border);
-    }
-
-    .hist-stat-card:nth-child(n+3) {
-      border-bottom: 0;
-    }
-
-    .hist-stat-card.wide {
-      grid-column: auto;
-    }
-
-    .hist-stat-label {
+    .stat-cell:nth-child(odd) { border-right: 1px solid var(--border); }
+    .stat-cell:nth-child(n+3) { border-bottom: 0; }
+    .stat-cell-label {
       font-size: 10px;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
-
-    .hist-stat-val {
+    .stat-cell-value {
       font-size: 22px;
       font-weight: 800;
       color: var(--accent);
       line-height: 1;
       margin-top: 6px;
     }
-
-    .hist-stat-note {
+    .stat-cell-note {
       font-size: 11px;
       color: var(--text-muted);
-      margin-top: 5px;
+      margin-top: 4px;
     }
+    /* Single-row 4-column variant for narrow panels. Cells stack side-by-side. */
+    .stat-grid.four-col { grid-template-columns: repeat(4, 1fr); }
+    .stat-grid.four-col .stat-cell {
+      min-height: 0;
+      border-bottom: 0;
+      border-right: 1px solid var(--border);
+    }
+    .stat-grid.four-col .stat-cell:last-child { border-right: 0; }
 
     .hist-chips {
       display: flex;
@@ -21199,7 +21112,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.27';
+    const VERSION = '6.6.29';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37741,11 +37654,11 @@
         '</div>';
 
       // Stats
-      var statsHtml = '<div class="hist-stats">' +
-        '<div class="hist-stat-card"><div class="hist-stat-label">' + curYear + ' so far</div><div class="hist-stat-val">' + (isLoading ? '…' : workedWeeks.length) + '</div><div class="hist-stat-note">Weeks worked</div></div>' +
-        '<div class="hist-stat-card"><div class="hist-stat-label">Ordinary hrs</div><div class="hist-stat-val">' + (isLoading ? '…' : yearOrd) + 'h</div><div class="hist-stat-note">' + (isLoading ? '…' : (yearOT > 0 ? yearOT + 'h OT' : 'No OT') + ' · avg ' + avgHrs + 'h/wk') + '</div></div>' +
-        '<div class="hist-stat-card"><div class="hist-stat-label">On-call wks</div><div class="hist-stat-val">' + yearOnCall + '</div><div class="hist-stat-note">On-call / extra</div></div>' +
-        '<div class="hist-stat-card"><div class="hist-stat-label">Callouts</div><div class="hist-stat-val">' + yearCallouts + '</div><div class="hist-stat-note">incidents</div></div>' +
+      var statsHtml = '<div class="stat-grid">' +
+        '<div class="stat-cell"><div class="stat-cell-label">' + curYear + ' so far</div><div class="stat-cell-value">' + (isLoading ? '…' : workedWeeks.length) + '</div><div class="stat-cell-note">Weeks worked</div></div>' +
+        '<div class="stat-cell"><div class="stat-cell-label">Ordinary hrs</div><div class="stat-cell-value">' + (isLoading ? '…' : yearOrd) + 'h</div><div class="stat-cell-note">' + (isLoading ? '…' : (yearOT > 0 ? yearOT + 'h OT' : 'No OT') + ' · avg ' + avgHrs + 'h/wk') + '</div></div>' +
+        '<div class="stat-cell"><div class="stat-cell-label">On-call wks</div><div class="stat-cell-value">' + yearOnCall + '</div><div class="stat-cell-note">On-call / extra</div></div>' +
+        '<div class="stat-cell"><div class="stat-cell-label">Callouts</div><div class="stat-cell-value">' + yearCallouts + '</div><div class="stat-cell-note">incidents</div></div>' +
         '</div>';
 
       // Filter chips
@@ -42723,11 +42636,11 @@
         + '</div>'
         // Tab: Stats (includes Due Visits + Never Visited below)
         + '<div class="rtn-tab-content' + (state.rtnMobTab === 'stats' ? ' active' : '') + '" id="rtn-tab-stats">'
-        + '<div class="rtn-mob-stats">'
-        + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:var(--accent)">' + sortedSites.length + '</div><div class="rtn-mob-stat-lbl">Sites</div></div>'
-        + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#15803d">' + visitCount + '</div><div class="rtn-mob-stat-lbl">Visits</div></div>'
-        + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#16a34a">' + cntUpToDate + '</div><div class="rtn-mob-stat-lbl">Up to date</div></div>'
-        + '<div class="rtn-mob-stat"><div class="rtn-mob-stat-val" style="color:#ef4444">' + cntOverdue + '</div><div class="rtn-mob-stat-lbl">Overdue</div></div>'
+        + '<div class="stat-grid four-col">'
+        + '<div class="stat-cell"><div class="stat-cell-label">Sites</div><div class="stat-cell-value" style="color:var(--accent)">' + sortedSites.length + '</div></div>'
+        + '<div class="stat-cell"><div class="stat-cell-label">Visits</div><div class="stat-cell-value" style="color:#15803d">' + visitCount + '</div></div>'
+        + '<div class="stat-cell"><div class="stat-cell-label">Up to date</div><div class="stat-cell-value" style="color:#16a34a">' + cntUpToDate + '</div></div>'
+        + '<div class="stat-cell"><div class="stat-cell-label">Overdue</div><div class="stat-cell-value" style="color:#ef4444">' + cntOverdue + '</div></div>'
         + '</div>'
         + '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px"><div style="flex:1;height:1px;background:var(--border)"></div><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Action Items</div><div style="flex:1;height:1px;background:var(--border)"></div></div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Due Visits <span class="rtn-mob-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b">' + dueVisits.length + '</span></div>' + dueHtml + '</div>'
@@ -43347,11 +43260,11 @@
         'Schedule</button></div>';
 
       // Stats 2x2 grid
-      weeksHtml += '<div class="dco-stats">' +
-        '<div class="dco-stat"><div class="dco-stat-val" style="color:var(--accent)">' + (totalOnCall + totalExtra) + '</div><div class="dco-stat-label">Total Weeks</div></div>' +
-        '<div class="dco-stat"><div class="dco-stat-val" style="color:#F59E0B">' + totalExtra + '</div><div class="dco-stat-label">Extra Shifts</div></div>' +
-        '<div class="dco-stat"><div class="dco-stat-val" style="color:var(--text-primary)">' + totalIncidents + '</div><div class="dco-stat-label">Total Incidents</div></div>' +
-        '<div class="dco-stat"><div class="dco-stat-val" style="color:#818cf8">' + avgPerWeek + '</div><div class="dco-stat-label">Avg / Week</div></div>' +
+      weeksHtml += '<div class="stat-grid">' +
+        '<div class="stat-cell"><div class="stat-cell-label">Total Weeks</div><div class="stat-cell-value" style="color:var(--accent)">' + (totalOnCall + totalExtra) + '</div></div>' +
+        '<div class="stat-cell"><div class="stat-cell-label">Extra Shifts</div><div class="stat-cell-value" style="color:#F59E0B">' + totalExtra + '</div></div>' +
+        '<div class="stat-cell"><div class="stat-cell-label">Total Incidents</div><div class="stat-cell-value" style="color:var(--text-primary)">' + totalIncidents + '</div></div>' +
+        '<div class="stat-cell"><div class="stat-cell-label">Avg / Week</div><div class="stat-cell-value" style="color:#818cf8">' + avgPerWeek + '</div></div>' +
         '</div>';
 
       // Week rows — render current week first, then previous (newest-first)
@@ -43867,11 +43780,11 @@
       if (sortedPast.length > 0) {
         // Stats bar
         html += `<div style="margin:14px 14px 8px">`;
-        html += `<div class="oc-stats">
-          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--accent)">${totalOnCall + totalExtra}</div><div class="oc-stat-label">Total<br>Weeks</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:#F59E0B">${totalExtra}</div><div class="oc-stat-label">Extra<br>Shifts</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:var(--text-primary)">${totalIncidents}</div><div class="oc-stat-label">Total<br>Incidents</div></div>
-          <div class="oc-stat"><div class="oc-stat-val" style="color:#818cf8">${avgPerWeek}</div><div class="oc-stat-label">Avg /<br>Week</div></div>
+        html += `<div class="stat-grid four-col">
+          <div class="stat-cell"><div class="stat-cell-label">Total<br>Weeks</div><div class="stat-cell-value" style="color:var(--accent)">${totalOnCall + totalExtra}</div></div>
+          <div class="stat-cell"><div class="stat-cell-label">Extra<br>Shifts</div><div class="stat-cell-value" style="color:#F59E0B">${totalExtra}</div></div>
+          <div class="stat-cell"><div class="stat-cell-label">Total<br>Incidents</div><div class="stat-cell-value" style="color:var(--text-primary)">${totalIncidents}</div></div>
+          <div class="stat-cell"><div class="stat-cell-label">Avg /<br>Week</div><div class="stat-cell-value" style="color:#818cf8">${avgPerWeek}</div></div>
         </div>`;
         html += `</div>`;
 
