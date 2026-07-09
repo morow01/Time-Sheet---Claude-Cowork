@@ -21199,7 +21199,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.25';
+    const VERSION = '6.6.26';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37558,7 +37558,6 @@
       state.historyJumpOpen = false;
       state.historyJumpQuick = 1;
       state.historyJumpDate = null;
-      state.histSelectedWeek = null;
       await setView('history');
       if (!state.historyWeeks || state.historyWeeks === 'loading') {
         state.historyWeeks = 'loading';
@@ -37675,7 +37674,7 @@
 
         var badges = '';
         if (!isFuture) {
-          if (ord > 0 || ot > 0 || isCurrent) badges += '<span class="hist-badge blue">' + Math.round(ord + ot) + 'h</span>';
+          if (ord > 0 || ot > 0 || isCurrent) badges += '<span class="hist-badge blue">' + Math.round(ord) + 'h</span>';
           else badges += '<span class="hist-badge muted">0h</span>';
           if (ot > 0) badges += '<span class="hist-badge amber">' + Math.round(ot) + ' OT</span>';
           if (coCount > 0) badges += '<span class="hist-badge red">' + phoneSvg + ' ' + coCount + '</span>';
@@ -37743,8 +37742,8 @@
 
       // Stats
       var statsHtml = '<div class="hist-stats">' +
-        '<div class="hist-stat-card"><div class="hist-stat-label">' + curYear + ' so far</div><div class="hist-stat-val">' + (isLoading ? '…' : curYearWeeks.length) + '</div><div class="hist-stat-note">Weeks worked</div></div>' +
-        '<div class="hist-stat-card"><div class="hist-stat-label">Ordinary hrs</div><div class="hist-stat-val">' + (isLoading ? '…' : yearOrd) + 'h</div><div class="hist-stat-note">' + (yearOT > 0 ? yearOT + 'h OT' : 'No OT') + '</div></div>' +
+        '<div class="hist-stat-card"><div class="hist-stat-label">' + curYear + ' so far</div><div class="hist-stat-val">' + (isLoading ? '…' : workedWeeks.length) + '</div><div class="hist-stat-note">Weeks worked</div></div>' +
+        '<div class="hist-stat-card"><div class="hist-stat-label">Ordinary hrs</div><div class="hist-stat-val">' + (isLoading ? '…' : yearOrd) + 'h</div><div class="hist-stat-note">' + (isLoading ? '…' : (yearOT > 0 ? yearOT + 'h OT' : 'No OT') + ' · avg ' + avgHrs + 'h/wk') + '</div></div>' +
         '<div class="hist-stat-card"><div class="hist-stat-label">On-call wks</div><div class="hist-stat-val">' + yearOnCall + '</div><div class="hist-stat-note">On-call / extra</div></div>' +
         '<div class="hist-stat-card"><div class="hist-stat-label">Callouts</div><div class="hist-stat-val">' + yearCallouts + '</div><div class="hist-stat-note">incidents</div></div>' +
         '</div>';
@@ -37797,11 +37796,6 @@
         '<div class="hist-body">' + searchHtml + (searchQ ? _histBuildMobileResultsHtml(searchResults, searchQ) : (statsHtml + chipsHtml + listHtml)) + '</div>' +
         jumpHtml +
         '</div>';
-    }
-
-    function histSelectWeek(ws) {
-      state.histSelectedWeek = ws;
-      render();
     }
 
     function _histSearchTokens(q) {
@@ -38033,13 +38027,6 @@
       var searchQ = (state.historySearch || '').trim();
       var searchScope = state.historySearchScope || 'all';
 
-      // Auto-select most recent past week if none selected
-      if (!state.histSelectedWeek) {
-        var firstPast = weeks.find(function (w) { return w.weekStart < curWeekStart; });
-        state.histSelectedWeek = firstPast ? firstPast.weekStart : curWeekStart;
-      }
-      var selWs = state.histSelectedWeek;
-
       // Year summary
       var curYearWeeks = weeks.filter(function (w) { return w.weekStart.startsWith(String(curYear)); });
       var workedWeeks = curYearWeeks.filter(function (w) { return w.taskCount > 0 || w.totalOrd > 0; });
@@ -38060,10 +38047,10 @@
       var sidebarHtml = '<div class="hist-desk-sidebar" style="width:' + _histSidebarWidth() + 'px">' +
         '<div class="hist-desk-sidebar-hdr">' + curYear + ' so far</div>' +
         '<div class="hist-desk-sb-stats">' +
-        '<div class="hist-desk-sb-stat"><div class="hist-desk-sb-stat-val" style="color:var(--accent)">' + (isLoading ? '…' : curYearWeeks.length) + '</div><div class="hist-desk-sb-stat-lbl">Weeks worked</div></div>' +
+        '<div class="hist-desk-sb-stat"><div class="hist-desk-sb-stat-val" style="color:var(--accent)">' + (isLoading ? '…' : workedWeeks.length) + '</div><div class="hist-desk-sb-stat-lbl">Weeks worked</div></div>' +
         '<div class="hist-desk-sb-stat"><div class="hist-desk-sb-stat-val" style="color:var(--accent)">' + (isLoading ? '…' : yearOrd) + 'h</div><div class="hist-desk-sb-stat-lbl">Ordinary hrs</div></div>' +
         '<div class="hist-desk-sb-stat"><div class="hist-desk-sb-stat-val" style="color:#F59E0B">' + yearOnCall + '</div><div class="hist-desk-sb-stat-lbl">On-call wks</div></div>' +
-        '<div class="hist-desk-sb-stat"><div class="hist-desk-sb-stat-val" style="color:#8B5CF6">' + yearCallouts + '</div><div class="hist-desk-sb-stat-lbl">Callouts</div></div>' +
+        '<div class="hist-desk-sb-stat"><div class="hist-desk-sb-stat-val" style="color:#818cf8">' + yearCallouts + '</div><div class="hist-desk-sb-stat-lbl">Callouts</div></div>' +
         '</div>' +
         '<div class="hist-desk-sidebar-hdr">Filter</div>' +
         '<div style="padding:0 4px 10px">' +
@@ -38099,11 +38086,10 @@
         var tasks = wData ? wData.taskCount : 0;
         var sites = wData ? wData.siteCount : 0;
         var matches = searchQ ? _histResultMatchesForWeek(searchResults, ws) : 0;
-        var fn = isFuture ? 'histGoToWeek' : 'histGoToWeek';
         var trClass = isFuture ? 'hdt-future' : (isCurrent ? 'hdt-current' : '');
 
         var onCallCell = '';
-        if (isOnCall) onCallCell = '<span class="hdt-status"><span class="hist-badge amber">On-Call</span></span>';
+        if (isOnCall) onCallCell = '<span class="hdt-status"><span class="hist-badge blue">On-Call</span></span>';
         else if (isExtra) onCallCell = '<span class="hdt-status"><span class="hist-badge amber">Extra</span></span>';
 
         var coCell = coCount > 0 ? '<span class="hist-badge red">' + phoneSvg + ' ' + coCount + '</span>' : '';
@@ -38113,7 +38099,6 @@
         var totalCell = isFuture ? '<span class="hdt-muted">—</span>' : '<span style="color:' + (total > 0 ? 'var(--text-primary)' : 'var(--text-muted)') + '">' + (total > 0 ? total + 'h' : '0h') + '</span>';
         var taskCell = isFuture ? '<span class="hdt-muted">—</span>' : (tasks > 0 ? tasks : '<span class="hdt-muted">0</span>');
         var siteCell = isFuture ? '<span class="hdt-muted">—</span>' : (sites > 0 ? sites : '<span class="hdt-muted">0</span>');
-        var addCell = '';
         var subText = isFuture ? 'Ready for planning' : (isCurrent ? 'Current week' : (tasks > 0 || sites > 0 ? tasks + ' task' + (tasks === 1 ? '' : 's') + ' · ' + sites + ' site' + (sites === 1 ? '' : 's') : 'No recorded work'));
         if (matches > 0) subText += ' · ' + matches + ' match' + (matches === 1 ? '' : 'es');
 
@@ -38125,7 +38110,7 @@
           '<td style="text-align:center"><div class="hdt-n">' + taskCell + '</div></td>' +
           '<td style="text-align:center"><div class="hdt-n">' + siteCell + '</div></td>' +
           '<td>' + onCallCell + '</td>' +
-          '<td>' + coCell + addCell + '</td>' +
+          '<td>' + coCell + '</td>' +
           '</tr>';
       }
 
