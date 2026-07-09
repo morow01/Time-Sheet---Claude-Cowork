@@ -21161,7 +21161,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.22';
+    const VERSION = '6.6.23';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -43910,18 +43910,8 @@
           </button>
       </div>`;
 
-      // Selection banner (replaces normal view controls when in selection mode)
-      if (state.coSelectionMode) {
-        const allIds = allCallouts.map(c => c.id);
-        const isAllSel = allIds.length > 0 && allIds.every(id => state.selectedCallouts.has(id));
-        html += `<div class="notes-selection-banner">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:14px;font-weight:700;color:var(--text-primary);">${state.selectedCallouts.size} selected</span>
-              <button onclick="coToggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">${isAllSel ? 'Deselect all' : 'Select all'}</button>
-            </div>
-            <button onclick="coToggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">Cancel</button>
-          </div>`;
-      }
+      // Note: selection controls (count, select-all, cancel, delete) are now
+      // unified in the bottom .bulk-action-bar below, matching the Notes pattern.
 
       if (sortedDates.length === 0 && state.calloutsExpandedId !== '__new__') {
         html += `<div style="text-align:center;padding:40px 24px">
@@ -43967,10 +43957,19 @@
       if (!state.coSelectionMode && allCallouts.length > 0) {
         html += `<div style="margin:0 14px 8px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap = open · Long-press = select</div>`;
       }
-      // Bulk action bar
+      // Bulk action bar — matches Notes: top row shows count + select-all + cancel;
+      // bottom row holds action buttons.
       const noCoSel = state.selectedCallouts.size === 0;
+      const coAllIds = allCallouts.map(c => c.id);
+      const coAllSel = coAllIds.length > 0 && coAllIds.every(id => state.selectedCallouts.has(id));
       html += `
         <div class="bulk-action-bar ${state.coSelectionMode ? 'show' : ''}">
+          <div style="display:flex;align-items:center;gap:12px;padding:0 4px 10px">
+            <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${state.selectedCallouts.size} selected</span>
+            <button onclick="coToggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">${coAllSel ? 'Deselect all' : 'Select all'}</button>
+            <span style="flex:1"></span>
+            <button onclick="coToggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;display:flex;align-items:center;gap:4px;">Cancel <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
           <div class="bulk-action-btns" style="width:100%;">
             <button class="bulk-btn delete" onclick="coDeleteSelected()" ${noCoSel ? 'disabled' : ''}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
