@@ -1167,6 +1167,10 @@
       color: var(--text-slate);
       cursor: pointer;
       font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
     }
 
     .note-confirm-actions .btn-add {
@@ -11209,6 +11213,40 @@
       transform: scale(0.97);
     }
 
+    /* Prominent count pill for bulk-action-bar top row */
+    .bulk-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: rgba(var(--accent-rgb), 0.12);
+      color: var(--accent);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      font-family: inherit;
+    }
+    .bulk-count .n { font-size: 14px; }
+
+    /* Icon-only Cancel button for bulk-action-bar top row */
+    .bulk-cancel {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-slate);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+    .bulk-cancel:hover, .bulk-cancel:active { color: var(--text-primary); }
+
     .notes-chip.active {
       background: var(--accent);
       color: #fff;
@@ -21161,7 +21199,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.23';
+    const VERSION = '6.6.24';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -33084,24 +33122,24 @@
       let bulkBtnsHtml;
       if (notesTab === 'archive') {
         bulkBtnsHtml = `
-            <button class="bulk-btn done" onclick="bulkUnarchiveSelected()" ${noSel ? 'disabled' : ''}>${RESTORE_SVG}Restore</button>
-            <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete</button>`;
+            <button class="btn-cancel" style="flex:0 0 42%" onclick="bulkUnarchiveSelected()" ${noSel ? 'disabled' : ''}>${RESTORE_SVG}Restore</button>
+            <button class="bulk-btn delete" style="flex:1" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete</button>`;
       } else if (notesTab === 'bin') {
         bulkBtnsHtml = `
-            <button class="bulk-btn done" onclick="bulkRestoreSelected()" ${noSel ? 'disabled' : ''}>${RESTORE_SVG}Restore</button>
-            <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete Forever</button>`;
+            <button class="btn-cancel" style="flex:0 0 42%" onclick="bulkRestoreSelected()" ${noSel ? 'disabled' : ''}>${RESTORE_SVG}Restore</button>
+            <button class="bulk-btn delete" style="flex:1" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete Forever</button>`;
       } else {
         bulkBtnsHtml = `
-            <button class="bulk-btn done" onclick="toggleStatusSelected()" ${noSel ? 'disabled' : ''}>${bulkStatusIcon}${bulkStatusLabel}</button>
-            <button class="bulk-btn delete" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete</button>`;
+            <button class="btn-cancel" style="flex:0 0 42%" onclick="toggleStatusSelected()" ${noSel ? 'disabled' : ''}>${bulkStatusIcon}${bulkStatusLabel}</button>
+            <button class="bulk-btn delete" style="flex:1" onclick="deleteSelected()" ${noSel ? 'disabled' : ''}>${TRASH_SVG_SM}Delete</button>`;
       }
       const bulkBar = `
         <div class="bulk-action-bar ${state.selectionMode ? 'show' : ''}">
           <div style="display:flex;align-items:center;gap:12px;padding:0 4px 10px">
-            <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${state.selectedNotes.size} selected</span>
+            <span class="bulk-count"><span class="n">${state.selectedNotes.size}</span> selected</span>
             <button onclick="toggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">${isAllSelected ? 'Deselect all' : 'Select all'}</button>
             <span style="flex:1"></span>
-            <button onclick="toggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;display:flex;align-items:center;gap:4px;">Cancel <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            <button class="bulk-cancel" onclick="toggleSelectionMode()" title="Cancel selection"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div class="bulk-action-btns" style="width:100%;">${bulkBtnsHtml}
           </div>
@@ -43957,18 +43995,18 @@
       if (!state.coSelectionMode && allCallouts.length > 0) {
         html += `<div style="margin:0 14px 8px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap = open · Long-press = select</div>`;
       }
-      // Bulk action bar — matches Notes: top row shows count + select-all + cancel;
-      // bottom row holds action buttons.
+      // Bulk action bar — matches Notes (Option D): pill count + icon cancel top row;
+      // full-width Delete on bottom (Callouts has no Complete equivalent).
       const noCoSel = state.selectedCallouts.size === 0;
       const coAllIds = allCallouts.map(c => c.id);
       const coAllSel = coAllIds.length > 0 && coAllIds.every(id => state.selectedCallouts.has(id));
       html += `
         <div class="bulk-action-bar ${state.coSelectionMode ? 'show' : ''}">
           <div style="display:flex;align-items:center;gap:12px;padding:0 4px 10px">
-            <span style="font-size:14px;font-weight:700;color:var(--text-primary)">${state.selectedCallouts.size} selected</span>
+            <span class="bulk-count"><span class="n">${state.selectedCallouts.size}</span> selected</span>
             <button onclick="coToggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">${coAllSel ? 'Deselect all' : 'Select all'}</button>
             <span style="flex:1"></span>
-            <button onclick="coToggleSelectionMode()" style="background:none;border:none;color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;display:flex;align-items:center;gap:4px;">Cancel <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            <button class="bulk-cancel" onclick="coToggleSelectionMode()" title="Cancel selection"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div class="bulk-action-btns" style="width:100%;">
             <button class="bulk-btn delete" onclick="coDeleteSelected()" ${noCoSel ? 'disabled' : ''}>
