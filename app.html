@@ -21199,7 +21199,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.26';
+    const VERSION = '6.6.27';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37754,36 +37754,8 @@
           return '<button class="hist-chip' + (filter === c[0] ? ' active' : '') + '" onclick="historyFilter(\'' + c[0] + '\')">' + c[1] + '</button>';
         }).join('') + '</div>';
 
-      // Jump modal
-      var jumpHtml = '';
-      if (state.historyJumpOpen) {
-        var qw = [curWeekStart, _histAddWeeks(curWeekStart, 1), _histAddWeeks(curWeekStart, 2)];
-        var qLabels = ['This week', 'Next week', 'Week after'];
-        var selQ = state.historyJumpQuick != null ? state.historyJumpQuick : 1;
-        var jumpDate = state.historyJumpDate || qw[selQ];
-        jumpHtml = '<div class="hist-jump-overlay" onclick="if(event.target.classList.contains(\'hist-jump-overlay\'))histCloseJump()">' +
-          '<div class="hist-jump-sheet" onclick="event.stopPropagation()">' +
-          '<div class="hist-jump-handle"></div>' +
-          '<div class="hist-jump-title">Select Week</div>' +
-          '<div class="hist-jump-sub">Choose a week to view tasks or add new ones</div>' +
-          '<div class="hist-quick-grid">' +
-          qw.map(function (ws, i) {
-            return '<button class="hist-quick-btn' + (selQ === i ? ' sel' : '') + '" onclick="histSetQuick(' + i + ',\'' + ws + '\')">' +
-              '<span class="hist-quick-label">' + qLabels[i] + '</span>' +
-              '<span class="hist-quick-date">' + esc(formatWeekRange(ws)) + '</span>' +
-              '</button>';
-          }).join('') +
-          '</div>' +
-          '<div class="hist-date-wrap">' +
-          '<input type="date" id="hist-date-input" value="' + esc(jumpDate) + '" oninput="histDateChange(this.value)">' +
-          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' +
-          '</div>' +
-          '<div class="hist-jump-actions">' +
-          '<button class="hist-jump-btn cancel" onclick="histCloseJump()">Cancel</button>' +
-          '<button class="hist-jump-btn go" onclick="histJumpGo()">Open Week</button>' +
-          '</div>' +
-          '</div></div>';
-      }
+      // Jump modal (shared builder — mobile variant)
+      var jumpHtml = _histBuildJumpHtml(false);
 
       return '<div class="hist-view">' +
         '<div class="hist-hdr">' +
@@ -37796,6 +37768,41 @@
         '<div class="hist-body">' + searchHtml + (searchQ ? _histBuildMobileResultsHtml(searchResults, searchQ) : (statsHtml + chipsHtml + listHtml)) + '</div>' +
         jumpHtml +
         '</div>';
+    }
+
+    // Shared jump-modal builder — mobile and desktop only differ in a drag handle
+    // and the sheet's border-radius. See item 8 in TODO-week-history.md.
+    function _histBuildJumpHtml(isDesktop) {
+      if (!state.historyJumpOpen) return '';
+      var curWeekStart = dateToStr(getCurrentFriday());
+      var qw = [curWeekStart, _histAddWeeks(curWeekStart, 1), _histAddWeeks(curWeekStart, 2)];
+      var qLabels = ['This week', 'Next week', 'Week after'];
+      var selQ = state.historyJumpQuick != null ? state.historyJumpQuick : 1;
+      var jumpDate = state.historyJumpDate || qw[selQ];
+      var handle = isDesktop ? '' : '<div class="hist-jump-handle"></div>';
+      var sheetStyle = isDesktop ? ' style="border-radius:18px"' : '';
+      return '<div class="hist-jump-overlay" onclick="if(event.target.classList.contains(\'hist-jump-overlay\'))histCloseJump()">' +
+        '<div class="hist-jump-sheet" onclick="event.stopPropagation()"' + sheetStyle + '>' +
+        handle +
+        '<div class="hist-jump-title">Select Week</div>' +
+        '<div class="hist-jump-sub">Choose a week to view tasks or add new ones</div>' +
+        '<div class="hist-quick-grid">' +
+        qw.map(function (ws, i) {
+          return '<button class="hist-quick-btn' + (selQ === i ? ' sel' : '') + '" onclick="histSetQuick(' + i + ',\'' + ws + '\')">' +
+            '<span class="hist-quick-label">' + qLabels[i] + '</span>' +
+            '<span class="hist-quick-date">' + esc(formatWeekRange(ws)) + '</span>' +
+            '</button>';
+        }).join('') +
+        '</div>' +
+        '<div class="hist-date-wrap">' +
+        '<input type="date" id="hist-date-input" value="' + esc(jumpDate) + '" oninput="histDateChange(this.value)">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' +
+        '</div>' +
+        '<div class="hist-jump-actions">' +
+        '<button class="hist-jump-btn cancel" onclick="histCloseJump()">Cancel</button>' +
+        '<button class="hist-jump-btn go" onclick="histJumpGo()">Open Week</button>' +
+        '</div>' +
+        '</div></div>';
     }
 
     function _histSearchTokens(q) {
@@ -38168,24 +38175,8 @@
         '</table>' +
         '</div><div class="dj-resize-handle dj-rh-invis" onmousedown="histResultsResizeStart(event)"></div>' + resultsHtml + '</div></div>';
 
-      // Jump modal
-      var jumpHtml = '';
-      if (state.historyJumpOpen) {
-        var qw = [curWeekStart, _histAddWeeks(curWeekStart, 1), _histAddWeeks(curWeekStart, 2)];
-        var qLabels = ['This week', 'Next week', 'Week after'];
-        var selQ = state.historyJumpQuick != null ? state.historyJumpQuick : 1;
-        var jumpDate = state.historyJumpDate || qw[selQ];
-        jumpHtml = '<div class="hist-jump-overlay" onclick="if(event.target.classList.contains(\'hist-jump-overlay\'))histCloseJump()">' +
-          '<div class="hist-jump-sheet" onclick="event.stopPropagation()" style="border-radius:18px">' +
-          '<div class="hist-jump-title">Select Week</div>' +
-          '<div class="hist-jump-sub">Choose a week to view tasks or add new ones</div>' +
-          '<div class="hist-quick-grid">' +
-          qw.map(function (ws, i) { return '<button class="hist-quick-btn' + (selQ === i ? ' sel' : '') + '" onclick="histSetQuick(' + i + ',\'' + ws + '\')"><span class="hist-quick-label">' + qLabels[i] + '</span><span class="hist-quick-date">' + esc(formatWeekRange(ws)) + '</span></button>'; }).join('') +
-          '</div>' +
-          '<div class="hist-date-wrap"><input type="date" id="hist-date-input" value="' + esc(jumpDate) + '" oninput="histDateChange(this.value)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>' +
-          '<div class="hist-jump-actions"><button class="hist-jump-btn cancel" onclick="histCloseJump()">Cancel</button><button class="hist-jump-btn go" onclick="histJumpGo()">Open Week</button></div>' +
-          '</div></div>';
-      }
+      // Jump modal (shared builder — desktop variant)
+      var jumpHtml = _histBuildJumpHtml(true);
 
       return '<main>' +
         '<div class="hist-desk-wrap">' + sidebarHtml + '<div class="dj-resize-handle dj-rh-invis" onmousedown="histSidebarResizeStart(event)"></div>' + mainHtml + '</div>' +
@@ -38194,17 +38185,24 @@
     }
 
     function historyFilter(key) { state.historyFilter = key; render(); }
+    // Debounced search — coalesces keystrokes so we don't rerender the entire
+    // history view on every character. 200ms feels responsive without stuttering.
+    var _histSearchDebounce = null;
     function historySearchInput(value) {
       state.historySearch = value || '';
-      render();
-      requestAnimationFrame(function () {
-        var el = document.getElementById('hist-search-input') || document.querySelector('.hist-mobile-search input');
-        if (el) {
-          el.focus({ preventScroll: true });
-          var len = el.value.length;
-          try { el.setSelectionRange(len, len); } catch (e) { }
-        }
-      });
+      clearTimeout(_histSearchDebounce);
+      _histSearchDebounce = setTimeout(function () {
+        _histSearchDebounce = null;
+        render();
+        requestAnimationFrame(function () {
+          var el = document.getElementById('hist-search-input') || document.querySelector('.hist-mobile-search input');
+          if (el) {
+            el.focus({ preventScroll: true });
+            var len = el.value.length;
+            try { el.setSelectionRange(len, len); } catch (e) { }
+          }
+        });
+      }, 200);
     }
     function historySearchScope(scope) {
       state.historySearchScope = scope || 'all';
