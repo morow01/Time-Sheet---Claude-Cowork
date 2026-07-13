@@ -21456,32 +21456,56 @@
     </div>
   </div>
 
+  <style>
+    #paste-ticket-modal {
+      align-items: flex-end;
+    }
+    .pt-modal-inner {
+      background: var(--bg-modal);
+      padding: 20px 24px 24px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      flex-direction: column;
+      height: 95%;
+      max-height: 95vh;
+    }
+    @media (min-width: 640px) {
+      #paste-ticket-modal {
+        align-items: center;
+        padding: 16px;
+      }
+      .pt-modal-inner {
+        height: auto;
+        max-height: 85vh;
+        border-radius: 16px;
+      }
+    }
+  </style>
+
   <!-- Paste Ticket modal -->
-  <div id="paste-ticket-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center"
+  <div id="paste-ticket-modal" class="hidden fixed inset-0 z-50 flex justify-center"
     style="background:var(--overlay)">
-    <div class="w-full max-w-md shadow-2xl"
-      style="background:var(--bg-modal);border-radius:16px 16px 0 0;padding:20px 24px 24px">
-      <div id="paste-ticket-step1">
+    <div class="w-full max-w-md shadow-2xl pt-modal-inner">
+      <div id="paste-ticket-step1" style="display:flex;flex-direction:column;flex:1;min-height:0">
         <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Paste Ticket Email</h2>
-        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Copy the email body from Gmail and paste
-          it below.</p>
-        <textarea id="paste-ticket-input" rows="6" placeholder="Paste email text here…"
-          style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:vertical;background:var(--bg-card);color:var(--text-primary);font-family:inherit"></textarea>
-        <div class="flex gap-3" style="margin-top:16px">
+        <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Copy the email body from Gmail and paste it below.</p>
+        <textarea id="paste-ticket-input" placeholder="Paste email text here…"
+          style="width:100%;flex:1;min-height:0;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:none;background:var(--bg-card);color:var(--text-primary);font-family:inherit;margin-bottom:16px"></textarea>
+        <div class="flex gap-3" style="margin-top:auto">
           <button onclick="closePasteTicket()" class="flex-1 py-3 rounded-xl font-medium"
-            style="border:1px solid var(--border);color:var(--text-secondary)">Cancel</button>
+            style="border:1px solid var(--border);color:var(--text-secondary);background:none">Cancel</button>
           <button onclick="parsePasteTicket()" class="flex-1 py-3 rounded-xl font-bold text-white"
-            style="background:var(--accent)">Parse</button>
+            style="background:var(--accent);border:none">Parse</button>
         </div>
       </div>
-      <div id="paste-ticket-step2" style="display:none">
+      <div id="paste-ticket-step2" style="display:none;flex-direction:column;flex:1;min-height:0">
         <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 12px">Confirm Details</h2>
-        <div id="paste-ticket-preview" style="display:flex;flex-direction:column;gap:10px"></div>
-        <div class="flex gap-3" style="margin-top:16px">
+        <div id="paste-ticket-preview" style="display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;margin-bottom:16px;padding-right:4px;"></div>
+        <div class="flex gap-3" style="margin-top:auto">
           <button onclick="pasteTicketBack()" class="flex-1 py-3 rounded-xl font-medium"
-            style="border:1px solid var(--border);color:var(--text-secondary)">Back</button>
+            style="border:1px solid var(--border);color:var(--text-secondary);background:none">Back</button>
           <button onclick="pasteTicketCreate()" class="flex-1 py-3 rounded-xl font-bold text-white"
-            style="background:var(--accent)">Create Callout</button>
+            style="background:var(--accent);border:none">Create Callout</button>
         </div>
       </div>
     </div>
@@ -21501,7 +21525,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.30';
+    const VERSION = '6.6.31';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44396,11 +44420,18 @@
         var wd = weeks[selWeek] || {};
         var allCo = wd.callouts || [];
 
-        calloutsHtml += '<div class="desk-panel-days-hdr dj-hdr-with-btn">' +
+        calloutsHtml += '<div class="desk-panel-days-hdr">' +
           '<span>' + formatWeekRange(selWeek) + '<span class="dco-hdr-badge">' + allCo.length + '</span></span>' +
-          '<button class="dco-hdr-btn" onclick="openPasteTicket()">' +
-          '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>' +
-          'Paste Fault</button></div>';
+          '</div>';
+
+        calloutsHtml += '<div style="display:flex;gap:10px;padding:10px 14px 4px;">' +
+          '<button onclick="dcoAddCallout()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+          'Add Callout</button>' +
+          '<button onclick="openPasteTicket()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>' +
+          'Paste Fault</button>' +
+          '</div>';
 
         // Auto-select first callout if none selected
         if (!state.dcoSelectedCo || !allCo.find(function (c) { return c.id === state.dcoSelectedCo; })) {
@@ -44454,10 +44485,7 @@
             '<div style="font-size:12px;color:var(--text-muted)">Click "+ Add Callout" to log an incident.</div></div>';
         }
 
-        // Add callout button
-        calloutsHtml += '<button onclick="dcoAddCallout()" style="margin:8px 14px;width:calc(100% - 28px);display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-          'Add Callout</button>';
+
       } else {
         calloutsHtml += '<div style="text-align:center;padding:40px 16px;color:var(--text-muted)">Select a week</div>';
       }
@@ -44927,10 +44955,20 @@
           <div style="font-size:15px;font-weight:700;color:var(--text-primary)">${esc(rangeStr)}</div>
           <div style="font-size:12px;color:var(--text-muted)">${allCallouts.length} callout${allCallouts.length !== 1 ? 's' : ''}</div>
         </div>
-        <button onclick="openPasteTicket()" style="display:flex;align-items:center;gap:4px;padding:7px 10px;background:var(--bg-card);color:var(--accent);border:1px solid var(--accent);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" title="Paste ticket email">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg> Paste Fault
-          </button>
       </div>`;
+
+      if (state.calloutsExpandedId !== '__new__') {
+        html += `<div style="display:flex;gap:10px;padding:10px 14px 4px;">
+          <button onclick="coOpenAdd()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:inherit;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Callout
+          </button>
+          <button onclick="openPasteTicket()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:inherit;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+            Paste Fault
+          </button>
+        </div>`;
+      }
 
       // Note: selection controls (count, select-all, cancel, delete) are now
       // unified in the bottom .bulk-action-bar below, matching the Notes pattern.
@@ -44968,13 +45006,7 @@
         }
         html += `</div>`;
       }
-      // Add button at bottom — same dashed style as "Add Task"
-      if (state.calloutsExpandedId !== '__new__') {
-        html += `<button onclick="coOpenAdd()" style="margin:8px 14px 14px;width:calc(100% - 28px);display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Callout
-        </button>`;
-      }
+
       // Gesture hint — matches the Notes list hint
       if (!state.coSelectionMode && allCallouts.length > 0) {
         html += `<div style="margin:0 14px 8px;font-size:12px;color:var(--text-muted);font-style:italic;text-align:center">Tap = open · Long-press = select</div>`;
@@ -45960,7 +45992,7 @@
     function openPasteTicket() {
       _pasteTicketParsed = null;
       document.getElementById('paste-ticket-input').value = '';
-      document.getElementById('paste-ticket-step1').style.display = '';
+      document.getElementById('paste-ticket-step1').style.display = 'flex';
       document.getElementById('paste-ticket-step2').style.display = 'none';
       document.getElementById('paste-ticket-modal').classList.remove('hidden');
       setTimeout(() => document.getElementById('paste-ticket-input').focus(), 100);
@@ -45972,7 +46004,7 @@
     }
 
     function pasteTicketBack() {
-      document.getElementById('paste-ticket-step1').style.display = '';
+      document.getElementById('paste-ticket-step1').style.display = 'flex';
       document.getElementById('paste-ticket-step2').style.display = 'none';
     }
 
@@ -46120,7 +46152,7 @@
 
       // Switch to preview step
       document.getElementById('paste-ticket-step1').style.display = 'none';
-      document.getElementById('paste-ticket-step2').style.display = '';
+      document.getElementById('paste-ticket-step2').style.display = 'flex';
     }
 
     function pasteTicketCreate() {
