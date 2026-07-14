@@ -16620,6 +16620,11 @@
       view-transition-name: co-screen;
     }
 
+    /* Callouts weeks-list page: title header should scroll away normally, not stick */
+    .co-page > .hist-hdr {
+      position: static;
+    }
+
     ::view-transition-group(co-screen) {
       overflow: hidden;
     }
@@ -19326,8 +19331,9 @@
       /* ── Desktop Callouts: Three-panel ── */
       .dco-wrap {
         display: flex;
-        min-height: calc(100vh - 180px);
+        height: calc(100vh - 180px);
         border-top: 1px solid var(--border);
+        overflow: hidden;
       }
 
       .dco-panel-weeks {
@@ -21525,7 +21531,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.32';
+    const VERSION = '6.6.33';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
