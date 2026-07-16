@@ -21475,6 +21475,12 @@
       height: 95%;
       max-height: 95vh;
     }
+    /* Mobile: textarea fills available space and scrolls internally so buttons stay visible */
+    .pt-input {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
     @media (min-width: 640px) {
       #paste-ticket-modal {
         align-items: center;
@@ -21484,6 +21490,12 @@
         height: auto;
         max-height: 85vh;
         border-radius: 16px;
+      }
+      /* Desktop: auto-grow from a comfortable default */
+      .pt-input {
+        flex: none;
+        min-height: 560px;
+        overflow-y: hidden;
       }
     }
   </style>
@@ -21495,8 +21507,8 @@
       <div id="paste-ticket-step1" style="display:flex;flex-direction:column;flex:1;min-height:0">
         <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Paste Ticket Email</h2>
         <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Copy the email body from Gmail and paste it below.</p>
-        <textarea id="paste-ticket-input" placeholder="Paste email text here…" oninput="_ptAutoGrow(this)"
-          style="width:100%;min-height:560px;overflow-y:hidden;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:none;background:var(--bg-card);color:var(--text-primary);font-family:inherit;margin-bottom:16px"></textarea>
+        <textarea id="paste-ticket-input" placeholder="Paste email text here…" oninput="_ptAutoGrow(this)" class="pt-input"
+          style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:none;background:var(--bg-card);color:var(--text-primary);font-family:inherit;margin-bottom:16px"></textarea>
         <div class="flex gap-3" style="margin-top:auto">
           <button onclick="closePasteTicket()" class="flex-1 py-3 rounded-xl font-medium"
             style="border:1px solid var(--border);color:var(--text-secondary);background:none">Cancel</button>
@@ -21531,7 +21543,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.41';
+    const VERSION = '6.6.42';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -46002,6 +46014,8 @@
 
     function _ptAutoGrow(el) {
       if (!el) return;
+      // Mobile: let CSS flex + internal scroll handle sizing (keeps buttons visible)
+      if (window.innerWidth < 640) { el.style.height = ''; el.style.overflowY = ''; return; }
       el.style.height = 'auto';
       var max = Math.round(window.innerHeight * 0.78);
       var h = Math.min(el.scrollHeight + 2, max);
@@ -46015,11 +46029,13 @@
       document.getElementById('paste-ticket-step1').style.display = 'flex';
       document.getElementById('paste-ticket-step2').style.display = 'none';
       document.getElementById('paste-ticket-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
       setTimeout(() => { var el = document.getElementById('paste-ticket-input'); if (el) { _ptAutoGrow(el); el.focus(); } }, 100);
     }
 
     function closePasteTicket() {
       document.getElementById('paste-ticket-modal').classList.add('hidden');
+      document.body.style.overflow = '';
       _pasteTicketParsed = null;
     }
 
