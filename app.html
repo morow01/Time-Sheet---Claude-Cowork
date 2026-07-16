@@ -19331,9 +19331,8 @@
       /* ── Desktop Callouts: Three-panel ── */
       .dco-wrap {
         display: flex;
-        height: calc(100vh - 180px);
+        min-height: calc(100vh - 180px);
         border-top: 1px solid var(--border);
-        overflow: hidden;
       }
 
       .dco-panel-weeks {
@@ -19342,7 +19341,6 @@
         border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
-        overflow-y: auto;
         flex-shrink: 0;
       }
 
@@ -19352,14 +19350,12 @@
         border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
-        overflow-y: auto;
         flex-shrink: 0;
       }
 
       .dco-panel-detail {
         flex: 1;
         background: var(--bg-card);
-        overflow-y: auto;
       }
 
       .dco-panel-detail .desk-detail-body {
@@ -44435,7 +44431,7 @@
           '<span>' + formatWeekRange(selWeek) + '<span class="dco-hdr-badge">' + allCo.length + '</span></span>' +
           '</div>';
 
-        calloutsHtml += '<div style="position:sticky;top:0;z-index:10;display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
+        calloutsHtml += '<div style="display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
           '<button onclick="dcoAddCallout()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
           'Add Callout</button>' +
