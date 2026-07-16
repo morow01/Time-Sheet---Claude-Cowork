@@ -21531,7 +21531,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.33';
+    const VERSION = '6.6.34';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -31265,6 +31265,11 @@
 
     function toggleSummary() {
       state.showSummary = !state.showSummary;
+      // Refresh content (hours + callouts) so it reflects the latest state —
+      // the table markup is otherwise only rebuilt on a full render(), so
+      // e.g. callouts added while viewing another page wouldn't show up
+      // until toggled here.
+      if (state.showSummary) updateSummaryDisplay();
       const tableWrap = document.querySelector('.sum-table-wrap');
       const chevron = document.querySelector('.sum-chevron-svg');
       if (tableWrap) tableWrap.classList.toggle('open', state.showSummary);
