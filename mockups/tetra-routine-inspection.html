@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rian - Tetra Routine Inspection Mockup</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #eef3f8;
+      --card: #ffffff;
+      --card-2: #f7f9fc;
+      --text: #162033;
+      --muted: #63748a;
+      --border: #d5e0eb;
+      --accent: #2d6be4;
+      --accent-soft: #e8f0ff;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --pink: #db0075;
+      --orange: #f97316;
+      --teal: #188c98;
+      --red: #b91c1c;
+      --shadow: 0 18px 50px rgba(22, 32, 51, 0.14);
+    }
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, input, textarea { font: inherit; }
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      height: 58px;
+      background: #101d31;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #2d6be4, #7c3aed);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+    .title {
+      min-width: 0;
+    }
+    .title strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.1;
+    }
+    .title span {
+      display: block;
+      color: rgba(255,255,255,0.55);
+      font-size: 12px;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .save-pill {
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.8);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .workspace {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) 420px;
+      gap: 18px;
+      flex: 1;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-width: 0;
+    }
+    .panel-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--card);
+    }
+    .panel-kicker {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+    .panel-head h1, .panel-head h2 {
+      margin: 2px 0 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .seg {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 12px;
+      background: #e8eef6;
+      flex-shrink: 0;
+    }
+    .seg button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 9px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .seg button.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(22,32,51,0.08);
+    }
+    .guide-body {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 16px;
+      align-items: start;
+    }
+    .image-frame {
+      background: #111827;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      max-width: 560px;
+      aspect-ratio: 2432/3128;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+    .image-frame img {
+      width: 100%;
+      display: block;
+    }
+    .hotspot {
+      position: absolute;
+      border: 2px solid rgba(255,255,255,0.95);
+      background: rgba(219,0,117,0.28);
+      border-radius: 12px;
+      cursor: pointer;
+      outline: none;
+      transition: background 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, transform 0.14s ease;
+      will-change: transform, background;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hotspot:hover,
+    .hotspot.active {
+      transform: scale(1.02);
+      background: rgba(255,255,255,0.18);
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.55), 0 0 14px 4px rgba(255,255,255,0.25);
+    }
+    .hotspot span {
+      background: #101d31;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+    .h-mts span {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-50%, 4px);
+    }
+    .h-preselector-a { left: 12.5%; top: 4.7%; width: 13.0%; height: 13.3%; background: rgba(34, 197, 94, 0.24); }
+    .h-preselector-b { left: 33.0%; top: 4.7%; width: 13.0%; height: 13.3%; background: rgba(34, 197, 94, 0.24); }
+    .h-duplexer { left: 53.5%; top: 4.7%; width: 13.0%; height: 26.6%; background: rgba(59, 130, 246, 0.24); }
+    .h-br1 { left: 9.6%; top: 38.8%; width: 26.2%; height: 36.7%; background: rgba(234, 179, 8, 0.24); }
+    .h-psu { left: 38.0%; top: 38.8%; width: 16.6%; height: 36.7%; background: rgba(234, 179, 8, 0.24); }
+    .h-tsc { left: 79.0%; top: 38.8%; width: 12.8%; height: 36.7%; background: rgba(234, 179, 8, 0.24); }
+    .h-fans-1 { left: 9.6%; top: 76.2%; width: 26.2%; height: 6.4%; background: rgba(168, 85, 247, 0.24); }
+    .h-fans-2 { left: 38.0%; top: 76.2%; width: 26.2%; height: 6.4%; background: rgba(168, 85, 247, 0.24); }
+    .h-fans-3 { left: 66.2%; top: 76.2%; width: 26.2%; height: 6.4%; background: rgba(168, 85, 247, 0.24); }
+    .h-mts { left: 42.5%; top: 87.2%; width: 13.0%; height: 4.5%; background: rgba(236, 72, 153, 0.24); }
+    .guide-notes {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .note-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      background: var(--card-2);
+    }
+    .note-card strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+    .note-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .component-list {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: calc(100vh - 86px);
+      overflow: auto;
+    }
+    .component {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      overflow: hidden;
+    }
+    .component.active {
+      border-color: rgba(45,107,228,0.6);
+      box-shadow: 0 0 0 3px rgba(45,107,228,0.12);
+    }
+    .component-top {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer;
+    }
+    .badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .badge.pink { background: var(--pink); }
+    .badge.orange { background: var(--orange); }
+    .badge.teal { background: var(--teal); }
+    .badge.red { background: var(--red); }
+    .comp-title {
+      min-width: 0;
+    }
+    .comp-title strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.15;
+    }
+    .comp-title span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status {
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #edf2f7;
+      color: var(--muted);
+    }
+    .status.review { background: #fff7ed; color: var(--warn); }
+    .status.done { background: #dcfce7; color: var(--ok); }
+    .component-body {
+      border-top: 1px solid var(--border);
+      padding: 12px;
+      display: none;
+      gap: 10px;
+      background: var(--card-2);
+    }
+    .component.active .component-body {
+      display: grid;
+    }
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+    .field label {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .field input, .field textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #fff;
+      padding: 9px 10px;
+      color: var(--text);
+      outline: none;
+      min-width: 0;
+    }
+    .field textarea {
+      min-height: 66px;
+      resize: vertical;
+    }
+    .photo-box {
+      border: 1px dashed #a9b9ca;
+      border-radius: 9px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+    .photo-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 9px;
+      padding: 9px 11px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn.ok {
+      background: var(--ok);
+    }
+    .ocr-hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      background: var(--card-2);
+    }
+    .summary {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .summary span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .summary strong {
+      display: block;
+      font-size: 20px;
+      margin-top: 2px;
+    }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 12px 16px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--card);
+    }
+    .flow span {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    @media (max-width: 1100px) {
+      .workspace { grid-template-columns: 1fr; }
+      .component-list { max-height: none; }
+    }
+    @media (max-width: 720px) {
+      .topbar { height: auto; padding: 12px; align-items: flex-start; }
+      .workspace { padding: 10px; gap: 10px; }
+      .panel-head { align-items: flex-start; flex-direction: column; }
+      .guide-body { grid-template-columns: 1fr; padding: 10px; }
+      .image-frame { min-height: 0; }
+      .summary-bar { grid-template-columns: 1fr; }
+      .save-pill { display: none; }
+    }
+    
+    /* Vertiv Styles */
+    .vertiv-workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+      gap: 18px;
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+      flex: 1;
+    }
+    .vertiv-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .vertiv-card-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .vertiv-card-header h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .vertiv-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+    .vertiv-form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .vertiv-form-field label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .vertiv-form-field input, .vertiv-form-field select {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+    .vertiv-form-field input:focus, .vertiv-form-field select:focus {
+      border-color: var(--accent);
+    }
+    .vertiv-timer-panel {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .vertiv-timer-panel.active {
+      background: var(--accent-soft);
+      border-bottom: 1px solid rgba(45, 107, 228, 0.2);
+    }
+    .vertiv-timer-panel.inactive {
+      background: var(--card-2);
+    }
+    .vertiv-timer-icon-wrap {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(45, 107, 228, 0.1);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+    }
+    .vertiv-timer-panel.active .vertiv-timer-icon-wrap {
+      background: var(--accent);
+      color: #fff;
+    }
+    .vertiv-timer-stats {
+      flex: 1;
+    }
+    .timer-stat-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+    .timer-stat-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .timer-stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .timer-val {
+      font-family: monospace;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .timer-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .timer-stat-divider {
+      font-size: 18px;
+      color: var(--border);
+      align-self: center;
+    }
+    .vertiv-btn-start-timer {
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .vertiv-btn-reset-timer {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    
+    .vertiv-steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .vertiv-step-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .vertiv-step-card:hover {
+      border-color: rgba(45, 107, 228, 0.4);
+    }
+    .vertiv-step-card.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .vertiv-step-card.completed {
+      background: var(--card-2);
+      opacity: 0.85;
+    }
+    .vertiv-step-checkbox {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      margin-top: 2px;
+      cursor: pointer;
+    }
+    .vertiv-step-content {
+      flex: 1;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .vertiv-step-title {
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .vertiv-step-desc {
+      color: var(--muted);
+    }
+    
+    .vertiv-tables-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+    .vertiv-readings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .vertiv-readings-table th, .vertiv-readings-table td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .vertiv-readings-table th {
+      background: var(--card-2);
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .vertiv-readings-table td.interval-col {
+      background: var(--card-2);
+      font-weight: 700;
+    }
+    .reading-cell-input {
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      padding: 4px;
+      font-size: 12px;
+      text-align: center;
+      outline: none;
+      border-radius: 4px;
+    }
+    .reading-cell-input:focus {
+      border-color: var(--accent);
+      background: #fff;
+    }
+    .reading-cell-input.filled {
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .reading-cell-input::-webkit-outer-spin-button,
+    .reading-cell-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .reading-cell-input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    
+    .vertiv-guide-panel {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .vertiv-image-frame {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      position: relative;
+    }
+    .vertiv-image-frame img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .vertiv-image-caption {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .vertiv-img-switcher {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(15, 22, 36, 0.75);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+      z-index: 10;
+    }
+    .vertiv-img-switcher.hidden {
+      display: none;
+    }
+    .vertiv-img-switcher button {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .vertiv-img-switcher button.active {
+      background: var(--bg-segment-active, #273449);
+      color: #fff;
+    }
+    
+    /* Reminder Toggles & Fast Forward Controls */
+    .vertiv-reminders-box {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-2);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .vertiv-reminders-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .vertiv-reminders-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .vertiv-reminders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+      gap: 6px;
+    }
+    .vertiv-reminder-pill {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .vertiv-reminder-pill.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .vertiv-reminder-pill.fired {
+      border-color: var(--ok);
+      background: #dcfce7;
+      color: var(--ok);
+      opacity: 0.75;
+    }
+    .vertiv-fast-forward-panel {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #fffbeb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .vertiv-fast-forward-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #b45309;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .vertiv-fast-forward-select {
+      border: 1px solid #fcd34d;
+      background: #fff;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      outline: none;
+      cursor: pointer;
+      color: #92400e;
+    }
+
+    .vertiv-readings-table tr.active-interval {
+      background-color: var(--accent-soft) !important;
+      font-weight: 700;
+    }
+    .vertiv-readings-table tr.active-interval td {
+      border-color: rgba(45, 107, 228, 0.3) !important;
+    }
+    .vertiv-readings-table tr.active-interval td.interval-col {
+      background-color: rgba(45, 107, 228, 0.12) !important;
+      color: var(--accent) !important;
+    }
+    .vertiv-readings-table tr.active-interval input {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Scrollable tables for mobile */
+    #vertiv-b1-table-container, #vertiv-b2-table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+    }
+
+    /* Mobile responsive overrides for Vertiv */
+    @media (max-width: 1024px) {
+      .vertiv-workspace-grid {
+        grid-template-columns: 1fr;
+        padding: 10px;
+        gap: 12px;
+      }
+      .vertiv-tables-grid {
+        grid-template-columns: 1fr;
+        padding: 10px;
+        gap: 12px;
+      }
+      .vertiv-form-grid {
+        grid-template-columns: 1fr 1fr;
+        padding: 12px;
+      }
+    }
+    @media (max-width: 580px) {
+      .vertiv-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .hide-mobile {
+        display: none !important;
+      }
+      .vertiv-readings-table th {
+        width: auto !important;
+      }
+      .vertiv-readings-table th:first-child {
+        width: 16% !important;
+      }
+      .vertiv-readings-table th:nth-child(2),
+      .vertiv-readings-table th:nth-child(3),
+      .vertiv-readings-table th:nth-child(4),
+      .vertiv-readings-table th:nth-child(5),
+      .vertiv-readings-table th:nth-child(6) {
+        width: 16.8% !important;
+      }
+    }
+
+    .tetra-tab-container {
+      display: flex;
+      justify-content: center;
+      background: #101d31;
+      padding: 0px 16px 8px;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .tetra-tab-btn {
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.65);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tetra-tab-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .tetra-tab-btn:hover:not(.active) {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Crop & Lightbox Modals */
+    .crop-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(15, 22, 36, 0.95);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    .crop-modal.hidden {
+      display: none !important;
+    }
+    
+    #tetra-lightbox-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: rgba(15, 22, 36, 0.95);
+      backdrop-filter: blur(4px);
+      touch-action: none;
+      overflow: hidden;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+    }
+    #tetra-lightbox-modal:not(.hidden) {
+      display: flex;
+    }
+    #tetra-lightbox-modal img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transform-origin: center center;
+      will-change: transform;
+      border-radius: 4px;
+      user-select: none;
+      -webkit-user-select: none;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    #tetra-lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(15, 22, 36, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #fff;
+      cursor: pointer;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      outline: none;
+      transition: background 0.2s;
+    }
+    #tetra-lightbox-close:hover {
+      background: rgba(15, 22, 36, 0.85);
+    }
+    .crop-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: #000;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      touch-action: none;
+    }
+    .crop-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+    .crop-box {
+      position: absolute;
+      border: 2px dashed #2D6BE4;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+      display: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">R</div>
+        <div class="title">
+          <strong>Tetra Routine Inspection <span style="font-size: 10px; font-weight: normal; background: rgba(255, 255, 255, 0.12); color: rgba(255,255,255,0.7); padding: 1px 5px; border: 1px solid rgba(255,255,255,0.18); border-radius: 4px; margin-left: 2px; vertical-align: middle; display: inline-block;">v6.5.31-mockup</span></strong>
+          <span>Mockup: guided photos, serial OCR and confirmation</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div id="keyIndicator" style="display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px 10px; border-radius: 6px; background: rgba(22, 163, 74, 0.15); border: 1px solid rgba(22, 163, 74, 0.3); color: #4ade80;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display: inline-block; vertical-align: -1px; margin-right: 3px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5l-3-3"/></svg>
+          API Key Active
+        </div>
+        <div id="keyInputContainer" style="display: none; align-items: center; gap: 5px;">
+          <input id="mockKeyInput" type="password" placeholder="Enter Gemini Key" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; color: #fff; padding: 5px 8px; font-size: 11px; outline: none; width: 140px;" oninput="saveMockKey(this.value)">
+        </div>
+        <div class="save-pill">Draft saved locally</div>
+      </div>
+    </header>
+
+    <div class="tetra-tab-container">
+      <button class="tetra-tab-btn active" id="tetra-tab-cabinet" onclick="switchTetraTab('cabinet')">Cabinet Visual Checklist</button>
+      <button class="tetra-tab-btn" id="tetra-tab-vertiv" onclick="switchTetraTab('vertiv')">Vertiv Battery Discharge</button>
+    </div>
+
+    <div id="tetra-cabinet-workspace" style="display: block;">
+      <main class="workspace">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Visual Guide</div>
+              <h1>Know what to photograph before OCR</h1>
+            </div>
+            <div class="seg" aria-label="Guide image mode">
+              <button id="btnClean" class="active" onclick="setGuideMode('clean')">Clean</button>
+              <button id="btnLabels" onclick="setGuideMode('labels')">Labels</button>
+            </div>
+          </div>
+          <div class="guide-body">
+            <div class="image-frame">
+              <img id="guideImg" src="tetra-layout-no-labels.jpg" alt="Tetra cabinet visual guide">
+              <button class="hotspot h-preselector-a active" data-target="preselector-a" onclick="selectComponent('preselector-a')"><span>Preselector 1</span></button>
+              <button class="hotspot h-preselector-b" data-target="preselector-b" onclick="selectComponent('preselector-b')"><span>Preselector 2</span></button>
+              <button class="hotspot h-duplexer" data-target="duplexer" onclick="selectComponent('duplexer')"><span>Duplexer</span></button>
+              <button class="hotspot h-br1" data-target="br1" onclick="selectComponent('br1')"><span>BR1</span></button>
+              <button class="hotspot h-psu" data-target="psu" onclick="selectComponent('psu')"><span>PSU</span></button>
+              <button class="hotspot h-tsc" data-target="tsc" onclick="selectComponent('tsc')"><span>TSC</span></button>
+              <button class="hotspot h-fans-1" data-target="fans" onclick="selectComponent('fans')"><span>Fan 1</span></button>
+              <button class="hotspot h-fans-2" data-target="fans" onclick="selectComponent('fans')"><span>Fan 2</span></button>
+              <button class="hotspot h-fans-3" data-target="fans" onclick="selectComponent('fans')"><span>Fan 3</span></button>
+              <button class="hotspot h-mts" data-target="mts" onclick="selectComponent('mts')"><span>MTS</span></button>
+            </div>
+            <aside class="guide-notes">
+              <div class="note-card">
+                <strong>Suggested first version</strong>
+                <span>User manually picks the component, takes a label photo, AI extracts the serial, then the user confirms it. This avoids unreliable full object detection in the field.</span>
+              </div>
+              <div class="note-card">
+                <strong>Photo standard</strong>
+                <span>Ask for a close, square-on photo of the barcode/serial label. Store the original photo with the confirmed serial for audit history.</span>
+              </div>
+              <div class="note-card">
+                <strong>Future upgrade</strong>
+                <span>The clean image can become an interactive map inside Rian. Tapping a hotspot opens the matching capture card.</span>
+              </div>
+            </aside>
+          </div>
+          <div class="flow">
+            <span>1. Pick component</span>
+            <span>2. Show photo guide</span>
+            <span>3. Take label photo</span>
+            <span>4. Run OCR</span>
+            <span>5. Confirm serial</span>
+            <span>6. Save routine evidence</span>
+          </div>
+        </section>
+
+        <aside class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-kicker">Capture Checklist</div>
+              <h2>Today - Mountmellick Tetra</h2>
+            </div>
+          </div>
+          <div class="component-list" id="componentList"></div>
+          <div class="summary-bar">
+            <div class="summary"><span>Captured</span><strong id="sumCaptured">0</strong></div>
+            <div class="summary"><span>Review</span><strong id="sumReview">0</strong></div>
+            <div class="summary"><span>Missing</span><strong id="sumMissing">8</strong></div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="tetra-vertiv-workspace" style="display: none;">
+      <div class="vertiv-workspace-grid">
+        <div class="vertiv-left-panel">
+          <div class="vertiv-card" id="vertiv-timer-container"></div>
+
+          <div class="vertiv-card">
+            <div class="vertiv-card-header">
+              <h3>Battery String 1 Voltage Readings</h3>
+            </div>
+            <div id="vertiv-b1-table-container"></div>
+          </div>
+          <div class="vertiv-card">
+            <div class="vertiv-card-header">
+              <h3>Battery String 2 Voltage Readings</h3>
+            </div>
+            <div id="vertiv-b2-table-container"></div>
+          </div>
+        </div>
+        <div class="vertiv-right-panel">
+          <div class="vertiv-card">
+            <div class="vertiv-card-header">
+              <h3>Technical Reference Screen</h3>
+            </div>
+            <div class="vertiv-guide-panel">
+              <div class="vertiv-image-frame" onclick="zoomVertivScreenshot()">
+                <img id="vertiv-guide-img" src="../docs/images/image1.jpg" alt="Vertiv Technical Step Reference">
+                <div id="vertiv-img-switcher" class="vertiv-img-switcher hidden" onclick="event.stopPropagation()">
+                  <button class="switcher-btn active" onclick="switchVertivImage(0)">Overview</button>
+                  <button class="switcher-btn" onclick="switchVertivImage(1)">Close-up</button>
+                </div>
+              </div>
+              <div class="vertiv-image-caption" id="vertiv-guide-caption">
+                Select a step below to load its corresponding technical screenshot guide.
+              </div>
+            </div>
+          </div>
+          <div class="vertiv-card" style="margin-bottom: 0;">
+            <div class="vertiv-card-header">
+              <h3>Guided Discharge Checklist</h3>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn" onclick="copyVertivReport()" style="padding: 5px 10px; font-size: 11px;">
+                  Copy Report
+                </button>
+                <button class="btn" id="exportWordBtn" onclick="exportVertivDocx()" style="padding: 5px 10px; font-size: 11px;">
+                  Export Word
+                </button>
+              </div>
+            </div>
+            <div class="vertiv-steps-container" id="vertiv-steps-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Crop Modal -->
+  <div id="tetra-crop-modal" class="crop-modal hidden">
+    <div class="crop-header">
+      <h3>Crop Label Photo</h3>
+      <button onclick="closeCropModal()" class="crop-close-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="crop-instructions">
+      Drag/swipe across the image to select the label area.
+    </div>
+    <div id="tetra-crop-container" class="crop-container">
+      <img id="tetra-crop-img" class="crop-img">
+      <div id="tetra-crop-box" class="crop-box"></div>
+    </div>
+    <div class="crop-actions">
+      <button class="btn secondary" onclick="rotateCropImage()" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; cursor: pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Rotate 90°
+      </button>
+      <button class="btn secondary" onclick="resetCrop()" style="padding: 8px 16px; font-size: 13px; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; cursor: pointer;">
+        Reset Selection
+      </button>
+      <button class="btn ok" onclick="submitCrop()" style="padding: 8px 20px; font-size: 13px; background: #2D6BE4; color: #fff; border: none; border-radius: 6px; cursor: pointer;">
+        Crop & Analyze
+      </button>
+    </div>
+  </div>
+
+  <!-- Lightbox Modal (Rian Style) -->
+  <div id="tetra-lightbox-modal" class="lightbox-modal hidden">
+    <button id="tetra-lightbox-close" onclick="closeLightboxModal()" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <img id="tetra-lightbox-img" class="crop-img" style="pointer-events: auto;">
+  </div>
+
+  <script>
+    const components = [
+      { id: 'preselector-a', label: 'Preselector 1', short: 'PRE 1', colour: 'pink', instruction: 'Photograph the white barcode label on the left Preselector module at the top of the cabinet.' },
+      { id: 'preselector-b', label: 'Preselector 2', short: 'PRE 2', colour: 'pink', instruction: 'Photograph the white barcode label on the second Preselector module at the top centre of the cabinet.' },
+      { id: 'duplexer', label: 'Duplexer', short: 'DUP', colour: 'pink', instruction: 'Photograph the barcode label on the Duplexer module at the top right. Avoid glare from the metal faceplate.' },
+      { id: 'br1', label: 'BR1 Base Radio', short: 'BR1', colour: 'orange', instruction: 'Photograph the base radio serial label near the lower front label area. Confirm which Rx port set is in use.' },
+      { id: 'psu', label: 'Power Supply', short: 'PSU', colour: 'orange', instruction: 'Photograph the PSU label on the centre power module. Include the power switch area if possible.' },
+      { id: 'tsc', label: 'TSC Site Controller', short: 'TSC', colour: 'orange', instruction: 'Photograph the TSC label at the lower right and capture LED state in the notes if any alarm is active.' },
+      { id: 'fans', label: 'Fan Trays', short: 'FAN', colour: 'teal', instruction: 'Photograph each fan tray label. If there are three fans, record all three serials separated by commas.' },
+      { id: 'mts', label: 'MTS', short: 'MTS', colour: 'red', instruction: 'Photograph the MTS label at the bottom rail. This label may be partly obscured by loose cables.' }
+    ];
+      const state = Object.fromEntries(components.map(c => [c.id, {
+        serial: '',
+        note: '',
+        status: 'missing',
+        photo: '',
+        photoData: '',
+        photoMime: '',
+        ocrRunning: false,
+        ocrError: ''
+      }]));
+      let activeId = 'preselector-a';
+
+      function esc(s) {
+        if (!s) return '';
+        return s.toString()
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      const VERTIV_STEPS = [
+        { id: 1, title: 'Call SMC to log on site', desc: 'Dial 1800 407 000. Select Option 1 (Front Office) then Option 3 (Managed Services) to notify SMC you are commencing the routine.', image: '../docs/images/image1.jpg' },
+        { id: 2, title: 'Shut down VPN & Wi-Fi', desc: 'Ensure your laptop VPN client is disconnected and Wi-Fi is disabled to prevent routing conflicts with local Ethernet interface. Also clear your browser cache.', image: '../docs/images/image2.jpeg' },
+        { id: 3, title: 'Set static IP to 192.168.100.99', desc: 'Open Network Connections (ncpa.cpl). Edit Ethernet properties (IPv4) and set IP: 192.168.100.99, Subnet: 255.255.255.0. Admin password required.', image: '../docs/images/image3.png' },
+        { id: 4, title: 'Connect Ethernet (CAT5)', desc: 'Connect a CAT5 Ethernet patch cable from your laptop RJ45 port to the Vertiv controller web access port.', image: '../docs/images/image4.png' },
+        { id: 5, title: 'Connect Serial/USB cable', desc: 'Plug your USB-to-serial converter into your laptop USB port, and connect the black serial console lead into the Tetra Site Controller serial port.', image: '../docs/images/image5.png', images: ['../docs/images/image5.png', '../docs/images/image6.png'] },
+        { id: 6, title: 'Open Vertiv Web UI', desc: 'Navigate to http://192.168.100.100 in your browser and log in with the default credentials:<br><strong>Login:</strong> admin<br><strong>Password:</strong> 640275', image: '../docs/images/image7.png' },
+        { id: 7, title: 'Verify electricity flow before discharge', desc: 'Check the home screen power flow diagram to observe the flow of electricity before starting the discharge test.', image: '../docs/images/image8.png' },
+        { id: 8, title: 'Check/Set Battery Capacity', desc: 'Navigate to <strong>Settings → Quick Settings → Battery1 Rated Capacity</strong>. Verify if the battery capacity is correct (For 1 set of batteries is 100 Ah, for 2 sets is 200 Ah).', image: '../docs/images/image9.png' },
+        { id: 9, title: 'Change Battery Current Limit', desc: 'Navigate to <strong>Settings → Battery Charge → Battery Current Limit</strong>. Change the Battery Current Limit to <strong>0.15 C10</strong>.', image: '../docs/images/image10.png' },
+        { id: 10, title: 'Change Block Voltage Diff(Mid)', desc: 'Navigate to <strong>Settings → Battery Monitoring → Block Voltage Diff(Mid)</strong>. Change the Block Voltage Diff(Mid) to <strong>0.5 V</strong>.', image: '../docs/images/image11.png' },
+        { id: 11, title: 'Check settings in Settings → Battery Test', desc: 'Navigate to <strong>Settings → Battery Test</strong> and configure/verify:<br>- <strong>End Test Voltage:</strong> 46.4 V<br>- <strong>End Test Time:</strong> 63 min<br>- <strong>End Test Capacity:</strong> 30%<br>- <strong>Record Threshold:</strong> 0.05 V', image: '../docs/images/image12.png' },
+        { id: 12, title: 'Take pre-discharge readings', desc: 'Record the initial temperature and cell voltage readings (Cell 1–4) for both Battery 1 and Battery 2 strings on the left panel before starting the discharge test.', image: '' },
+        { id: 13, title: 'Start the Battery Discharge Test', desc: 'Navigate to <strong>Settings → Battery Test → Battery Test Control</strong>. Choose <strong>Start</strong> and click <strong>Set</strong>.', image: '../docs/images/image13.png' },
+        { id: 14, title: 'Verify discharge state & alarms', desc: 'Return to the Home dashboard. Verify that two observation alarms show up: <strong>Battery Discharge</strong> and <strong>Manual Test</strong>. Also check that the power flow diagram shows current flowing from the batteries.', image: '../docs/images/image14.png' },
+        { id: 15, title: 'Start timer & record discharge readings', desc: 'Click "Start Test" on the timer dashboard on the left. Record Cell 1–4 voltages and temperature at 5, 10, 20, 30, 40, 50, and 60 minutes.', image: '' },
+        { id: 16, title: 'Verify test completion', desc: 'Once the 60-minute duration is reached, confirm the Vertiv controller terminates the test and returns to float charge mode.', image: '../docs/images/image15.png' },
+        { id: 17, title: 'Record battery charging state', desc: 'Verify the Home dashboard power flow diagram shows the batteries are receiving charge (normal float/boost state) and OA alarms are cleared.', image: '../docs/images/image15.png' },
+        { id: 18, title: 'Review logged test values', desc: 'Double check that all reading fields are complete. Confirm EOT threshold was not breached and voltage differences are within tolerance.', image: '../docs/images/image15.png' },
+        { id: 19, title: 'Disconnect cables & call SMC off-site', desc: 'Revert laptop network settings to DHCP. Unplug Ethernet and serial converter cables. Call SMC (1800 407 000) to confirm you are logging off site.', image: '../docs/images/image1.jpg' }
+      ];
+
+      if (!localStorage.getItem('vertiv_mockup_state')) {
+        const defaultState = {
+          stepsCompleted: [],
+          serialNumbers: '',
+          closeoutCallDone: false,
+          testStartTime: null,
+          battery1Readings: {},
+          battery2Readings: {}
+        };
+        localStorage.setItem('vertiv_mockup_state', JSON.stringify(defaultState));
+      }
+      
+      window._vertivData = JSON.parse(localStorage.getItem('vertiv_mockup_state'));
+      window._vertivActiveStepId = 1;
+      window._tetraActiveTab = 'cabinet';
+
+      function saveVertivStateQuietly() {
+        localStorage.setItem('vertiv_mockup_state', JSON.stringify(window._vertivData));
+      }
+
+      function switchTetraTab(tab) {
+        window._tetraActiveTab = tab;
+        const tabCabBtn = document.getElementById('tetra-tab-cabinet');
+        const tabVertBtn = document.getElementById('tetra-tab-vertiv');
+        const cabinetWorkspace = document.getElementById('tetra-cabinet-workspace');
+        const vertivWorkspace = document.getElementById('tetra-vertiv-workspace');
+        
+        if (tab === 'cabinet') {
+          if (tabCabBtn) tabCabBtn.classList.add('active');
+          if (tabVertBtn) tabVertBtn.classList.remove('active');
+          if (cabinetWorkspace) cabinetWorkspace.style.display = 'block';
+          if (vertivWorkspace) vertivWorkspace.style.display = 'none';
+        } else {
+          if (tabCabBtn) tabCabBtn.classList.remove('active');
+          if (tabVertBtn) tabVertBtn.classList.add('active');
+          if (cabinetWorkspace) cabinetWorkspace.style.display = 'none';
+          if (vertivWorkspace) vertivWorkspace.style.display = 'block';
+          renderVertivView();
+        }
+      }
+
+      function toggleVertivStep(stepId, checkbox) {
+        const stepIdx = window._vertivData.stepsCompleted.indexOf(stepId);
+        if (checkbox.checked) {
+          if (stepIdx === -1) window._vertivData.stepsCompleted.push(stepId);
+        } else {
+          if (stepIdx !== -1) window._vertivData.stepsCompleted.splice(stepIdx, 1);
+        }
+        
+        const stepRow = document.getElementById('vertiv-step-' + stepId);
+        if (stepRow) {
+          if (checkbox.checked) {
+            stepRow.classList.add('completed');
+          } else {
+            stepRow.classList.remove('completed');
+          }
+        }
+        
+        saveVertivStateQuietly();
+      }
+
+      let _vertivActiveImgIdx = 0;
+
+      function selectVertivStep(stepId) {
+        window._vertivActiveStepId = stepId;
+        
+        const cards = document.querySelectorAll('.vertiv-step-card');
+        cards.forEach(c => {
+          const id = parseInt(c.getAttribute('data-step-id'));
+          c.classList.toggle('active', id === stepId);
+        });
+        
+        const step = VERTIV_STEPS.find(s => s.id === stepId);
+        if (step) {
+          const imgEl = document.getElementById('vertiv-guide-img');
+          const switcherEl = document.getElementById('vertiv-img-switcher');
+          _vertivActiveImgIdx = 0;
+          
+          if (step.images && step.images.length > 1) {
+            if (imgEl) imgEl.src = step.images[0];
+            if (switcherEl) {
+              switcherEl.classList.remove('hidden');
+              const btns = switcherEl.querySelectorAll('button');
+              btns.forEach((btn, idx) => {
+                btn.classList.toggle('active', idx === 0);
+              });
+            }
+          } else {
+            if (imgEl) imgEl.src = step.image || '';
+            if (switcherEl) switcherEl.classList.add('hidden');
+          }
+          
+          const captionEl = document.getElementById('vertiv-guide-caption');
+          if (captionEl) captionEl.innerHTML = `<strong>Step ${step.id} Reference:</strong> ${step.title}`;
+        }
+      }
+
+      function switchVertivImage(idx) {
+        const step = VERTIV_STEPS.find(s => s.id === window._vertivActiveStepId);
+        if (step && step.images && step.images[idx]) {
+          _vertivActiveImgIdx = idx;
+          const imgEl = document.getElementById('vertiv-guide-img');
+          if (imgEl) imgEl.src = step.images[idx];
+          
+          const switcherEl = document.getElementById('vertiv-img-switcher');
+          if (switcherEl) {
+            const btns = switcherEl.querySelectorAll('button');
+            btns.forEach((btn, bIdx) => {
+              btn.classList.toggle('active', bIdx === idx);
+            });
+          }
+        }
+      }
+      window.switchVertivImage = switchVertivImage;
+
+
+
+      function saveVertivStart() {
+        window._vertivData.testStartTime = new Date().toISOString();
+        saveVertivStateQuietly();
+        renderVertivView();
+      }
+
+      function resetVertivTest() {
+        if (!confirm('Are you sure you want to clear the active test timer and all recorded readings?')) return;
+        window._vertivData.testStartTime = null;
+        window._vertivData.battery1Readings = {};
+        window._vertivData.battery2Readings = {};
+        saveVertivStateQuietly();
+        renderVertivView();
+      }
+
+      function changeVertivReading(batteryNum, interval, cellNum, inputEl) {
+        const val = inputEl.value;
+        const readingsKey = 'battery' + batteryNum + 'Readings';
+        if (!window._vertivData[readingsKey]) window._vertivData[readingsKey] = {};
+        if (!window._vertivData[readingsKey][interval]) window._vertivData[readingsKey][interval] = {};
+        window._vertivData[readingsKey][interval][cellNum] = val;
+        
+        if (val !== '') {
+          inputEl.classList.add('filled');
+        } else {
+          inputEl.classList.remove('filled');
+        }
+        
+        saveVertivStateQuietly();
+      }
+
+      function changeVertivTemp(batteryNum, interval, inputEl) {
+        const val = inputEl.value;
+        const readingsKey = 'battery' + batteryNum + 'Readings';
+        if (!window._vertivData[readingsKey]) window._vertivData[readingsKey] = {};
+        if (!window._vertivData[readingsKey][interval]) window._vertivData[readingsKey][interval] = {};
+        window._vertivData[readingsKey][interval]['temp'] = val;
+        
+        if (val !== '') {
+          inputEl.classList.add('filled');
+        } else {
+          inputEl.classList.remove('filled');
+        }
+        
+        saveVertivStateQuietly();
+      }
+
+      function tickVertivTimer() {
+        if (!window._vertivData || !window._vertivData.testStartTime) return;
+        
+        const start = new Date(window._vertivData.testStartTime);
+        const now = new Date();
+        const totalElapsedSeconds = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 1000));
+        
+        const elapsedMin = Math.floor(totalElapsedSeconds / 60);
+        const elapsedSec = totalElapsedSeconds % 60;
+        const elapsedStr = String(elapsedMin).padStart(2, '0') + ':' + String(elapsedSec).padStart(2, '0');
+        
+        const elapsedEl = document.getElementById('vertiv-timer-elapsed');
+        if (elapsedEl) elapsedEl.textContent = elapsedStr;
+        
+        const remainingEl = document.getElementById('vertiv-timer-remaining');
+        if (remainingEl) {
+          if (totalElapsedSeconds < 3600) {
+            const remainingTotal = 3600 - totalElapsedSeconds;
+            const remainingMin = Math.floor(remainingTotal / 60);
+            const remainingSec = remainingTotal % 60;
+            remainingEl.textContent = String(remainingMin).padStart(2, '0') + ':' + String(remainingSec).padStart(2, '0');
+          } else {
+            remainingEl.textContent = 'Completed';
+            if (window._vertivTimerInterval) {
+              clearInterval(window._vertivTimerInterval);
+              window._vertivTimerInterval = null;
+            }
+            showToast('✅ Battery Discharge Test Completed! Please take final readings.', 7000);
+          }
+        }
+
+        // Update active row highlights dynamically in the DOM
+        updateActiveIntervalHighlights();
+
+        // Check reminders for intervals
+        const reminderIntervals = [5, 10, 20, 30, 40, 50, 60];
+        reminderIntervals.forEach(m => {
+          if (elapsedMin >= m) {
+            const isEnabled = window._vertivData.remindersEnabled && window._vertivData.remindersEnabled[m];
+            const hasFired = window._vertivData.remindersFired && window._vertivData.remindersFired.includes(m);
+            
+            if (isEnabled && !hasFired) {
+              if (!window._vertivData.remindersFired) window._vertivData.remindersFired = [];
+              window._vertivData.remindersFired.push(m);
+              saveVertivStateQuietly();
+              
+              triggerIntervalReminder(m);
+              renderVertivView();
+            }
+          }
+        });
+      }
+
+      function getActiveIntervalMinutes() {
+        const v = window._vertivData;
+        if (!v || !v.testStartTime) return null;
+        
+        const start = new Date(v.testStartTime);
+        const now = new Date();
+        const totalElapsedSeconds = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 1000));
+        const elapsedMin = Math.floor(totalElapsedSeconds / 60);
+        
+        if (elapsedMin >= 0 && elapsedMin < 5) return 0;
+        if (elapsedMin >= 5 && elapsedMin < 10) return 5;
+        if (elapsedMin >= 10 && elapsedMin < 20) return 10;
+        if (elapsedMin >= 20 && elapsedMin < 30) return 20;
+        if (elapsedMin >= 30 && elapsedMin < 40) return 30;
+        if (elapsedMin >= 40 && elapsedMin < 50) return 40;
+        if (elapsedMin >= 50 && elapsedMin < 60) return 50;
+        return 60;
+      }
+
+      function updateActiveIntervalHighlights() {
+        const activeInterval = getActiveIntervalMinutes();
+        const tables = document.querySelectorAll('.vertiv-readings-table');
+        tables.forEach(table => {
+          const rows = table.querySelectorAll('tbody tr');
+          rows.forEach(row => {
+            const intervalText = row.querySelector('.interval-col')?.textContent || '';
+            const intervalMin = parseInt(intervalText);
+            
+            if (activeInterval !== null && intervalMin === activeInterval) {
+              row.classList.add('active-interval');
+            } else {
+              row.classList.remove('active-interval');
+            }
+          });
+        });
+      }
+
+      function buildBatteryTableHtml(batteryNum, readings) {
+        const activeInterval = getActiveIntervalMinutes();
+        const intervals = [0, 5, 10, 20, 30, 40, 50, 60];
+        let html = `
+          <table class="vertiv-readings-table">
+            <thead>
+              <tr>
+                <th style="width: 70px;">Interval</th>
+                <th>Cell 1<span class="hide-mobile"> (V)</span></th>
+                <th>Cell 2<span class="hide-mobile"> (V)</span></th>
+                <th>Cell 3<span class="hide-mobile"> (V)</span></th>
+                <th>Cell 4<span class="hide-mobile"> (V)</span></th>
+                <th style="width: 90px;">Temp<span class="hide-mobile"> (°C)</span></th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        intervals.forEach(i => {
+          const intervalReadings = readings[i] || {};
+          const c1Val = intervalReadings[1] || '';
+          const c2Val = intervalReadings[2] || '';
+          const c3Val = intervalReadings[3] || '';
+          const c4Val = intervalReadings[4] || '';
+          const tempVal = intervalReadings['temp'] || '';
+          
+          const c1Class = c1Val !== '' ? 'filled' : '';
+          const c2Class = c2Val !== '' ? 'filled' : '';
+          const c3Class = c3Val !== '' ? 'filled' : '';
+          const c4Class = c4Val !== '' ? 'filled' : '';
+          const tempClass = tempVal !== '' ? 'filled' : '';
+          
+          const rowClass = (activeInterval !== null && activeInterval === i) ? 'active-interval' : '';
+          
+          html += `
+            <tr class="${rowClass}">
+              <td class="interval-col">${i} min</td>
+              <td>
+                <input type="number" step="0.001" placeholder="--" class="reading-cell-input ${c1Class}" 
+                  value="${c1Val}" oninput="changeVertivReading(${batteryNum}, ${i}, 1, this)">
+              </td>
+              <td>
+                <input type="number" step="0.001" placeholder="--" class="reading-cell-input ${c2Class}" 
+                  value="${c2Val}" oninput="changeVertivReading(${batteryNum}, ${i}, 2, this)">
+              </td>
+              <td>
+                <input type="number" step="0.001" placeholder="--" class="reading-cell-input ${c3Class}" 
+                  value="${c3Val}" oninput="changeVertivReading(${batteryNum}, ${i}, 3, this)">
+              </td>
+              <td>
+                <input type="number" step="0.001" placeholder="--" class="reading-cell-input ${c4Class}" 
+                  value="${c4Val}" oninput="changeVertivReading(${batteryNum}, ${i}, 4, this)">
+              </td>
+              <td>
+                <input type="number" step="0.1" placeholder="--" class="reading-cell-input ${tempClass}" 
+                  value="${tempVal}" oninput="changeVertivTemp(${batteryNum}, ${i}, this)">
+              </td>
+            </tr>
+          `;
+        });
+        
+        html += `
+            </tbody>
+          </table>
+        `;
+        return html;
+      }
+
+      function zoomVertivScreenshot() {
+        const activeStep = VERTIV_STEPS.find(s => s.id === window._vertivActiveStepId);
+        if (!activeStep) return;
+        
+        const lbImg = document.getElementById('tetra-lightbox-img');
+        if (lbImg) {
+          if (activeStep.images && activeStep.images[_vertivActiveImgIdx]) {
+            lbImg.src = activeStep.images[_vertivActiveImgIdx];
+          } else {
+            lbImg.src = activeStep.image || '';
+          }
+        }
+        
+        const modal = document.getElementById('tetra-lightbox-modal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          _resetTransform(false);
+          // Push state for back button navigation
+          if (!_lightboxHistoryActive) {
+            history.pushState({ lightbox: true }, '');
+            _lightboxHistoryActive = true;
+          }
+        }
+      }
+
+      function renderVertivView() {
+        const v = window._vertivData;
+        
+        // Initialize reminders states if missing
+        if (!v.remindersEnabled) {
+          v.remindersEnabled = { 5: true, 10: true, 20: true, 30: true, 40: true, 50: true, 60: true };
+        }
+        if (!v.remindersFired) {
+          v.remindersFired = [];
+        }
+        
+        let timerHtml = '';
+        let timerRunning = false;
+        let totalElapsedSeconds = 0;
+        
+        if (v.testStartTime) {
+          const start = new Date(v.testStartTime);
+          const now = new Date();
+          totalElapsedSeconds = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 1000));
+          timerRunning = totalElapsedSeconds < 3600;
+          
+          const elapsedMin = Math.floor(totalElapsedSeconds / 60);
+          const elapsedSec = totalElapsedSeconds % 60;
+          const timeStr = String(elapsedMin).padStart(2, '0') + ':' + String(elapsedSec).padStart(2, '0');
+          
+          let remainingStr = '';
+          if (totalElapsedSeconds < 3600) {
+            const remainingTotal = 3600 - totalElapsedSeconds;
+            const remainingMin = Math.floor(remainingTotal / 60);
+            const remainingSec = remainingTotal % 60;
+            remainingStr = String(remainingMin).padStart(2, '0') + ':' + String(remainingSec).padStart(2, '0');
+          } else {
+            remainingStr = 'Completed';
+          }
+
+          timerHtml = `
+            <div class="vertiv-timer-panel active">
+              <div class="vertiv-timer-icon-wrap" style="animation: pulse 2s infinite;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="vertiv-timer-stats">
+                <div class="timer-stat-label">DISCHARGE TEST TIMER</div>
+                <div class="timer-stat-row">
+                  <div class="timer-stat-item">
+                    <span class="timer-val" id="vertiv-timer-elapsed">${timeStr}</span>
+                    <span class="timer-lbl">Elapsed</span>
+                  </div>
+                  <div class="timer-stat-divider">/</div>
+                  <div class="timer-stat-item">
+                    <span class="timer-val" id="vertiv-timer-remaining" style="color: var(--accent);">${remainingStr}</span>
+                    <span class="timer-lbl">Remaining</span>
+                  </div>
+                </div>
+              </div>
+              <button class="vertiv-btn-reset-timer" onclick="resetVertivTest()">
+                Reset
+              </button>
+            </div>
+            
+            <div class="vertiv-fast-forward-panel">
+              <div class="vertiv-fast-forward-label">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle;">
+                  <polygon points="11 19 2 12 11 5 11 19"/>
+                  <polygon points="22 19 13 12 22 5 22 19"/>
+                </svg>
+                Mockup Fast-Forward:
+              </div>
+              <select class="vertiv-fast-forward-select" onchange="fastForwardVertiv(this.value)">
+                <option value="">-- Jump to time --</option>
+                <option value="0">0 min (Start)</option>
+                <option value="295">4 min 55s (5m Alert)</option>
+                <option value="595">9 min 55s (10m Alert)</option>
+                <option value="1195">19 min 55s (20m Alert)</option>
+                <option value="1795">29 min 55s (30m Alert)</option>
+                <option value="2395">39 min 55s (40m Alert)</option>
+                <option value="2995">49 min 55s (50m Alert)</option>
+                <option value="3595">59 min 55s (60m Alert)</option>
+                <option value="3600">60 min (End)</option>
+              </select>
+            </div>
+          `;
+          
+          if (!window._vertivTimerInterval && timerRunning) {
+            window._vertivTimerInterval = setInterval(tickVertivTimer, 1000);
+          }
+        } else {
+          if (window._vertivTimerInterval) {
+            clearInterval(window._vertivTimerInterval);
+            window._vertivTimerInterval = null;
+          }
+          timerHtml = `
+            <div class="vertiv-timer-panel inactive">
+              <div class="vertiv-timer-icon-wrap">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="vertiv-timer-stats">
+                <div class="timer-stat-label">TEST TIMER INACTIVE</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Configure parameters in Step 3 and click "Start Discharge Test" to begin the 60-minute countdown.</div>
+              </div>
+              <button class="vertiv-btn-start-timer" onclick="saveVertivStart()">
+                Start Test
+              </button>
+            </div>
+          `;
+        }
+
+        // Append Interval Reminders selector
+        timerHtml += `
+          <div class="vertiv-reminders-box">
+            <div class="vertiv-reminders-title-row">
+              <div class="vertiv-reminders-title">Interval Alerts (System Notifications)</div>
+              <button class="btn secondary" onclick="requestNotificationPermission()" style="padding: 2px 6px; font-size: 9px; line-height: 1; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: #fff;">
+                Test Permission
+              </button>
+            </div>
+            <div class="vertiv-reminders-grid">
+              ${[5, 10, 20, 30, 40, 50, 60].map(m => {
+                const isEnabled = !!v.remindersEnabled[m];
+                const isFired = v.remindersFired.includes(m);
+                const stateClass = isFired ? 'fired' : (isEnabled ? 'active' : '');
+                const label = isFired ? `${m}m ✓` : `${m} min`;
+                return `
+                  <button class="vertiv-reminder-pill ${stateClass}" onclick="toggleVertivReminder(${m})">
+                    ${label}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        
+        const timerContainer = document.getElementById('vertiv-timer-container');
+        if (timerContainer) timerContainer.innerHTML = timerHtml;
+        
+        const b1Container = document.getElementById('vertiv-b1-table-container');
+        if (b1Container) b1Container.innerHTML = buildBatteryTableHtml(1, v.battery1Readings || {});
+        
+        const b2Container = document.getElementById('vertiv-b2-table-container');
+        if (b2Container) b2Container.innerHTML = buildBatteryTableHtml(2, v.battery2Readings || {});
+        
+
+
+        renderVertivChecklist();
+      }
+
+      function renderVertivChecklist() {
+        const container = document.getElementById('vertiv-steps-list');
+        if (!container) return;
+        
+        container.innerHTML = VERTIV_STEPS.map(s => {
+          const isCompleted = window._vertivData.stepsCompleted.includes(s.id);
+          const isActive = window._vertivActiveStepId === s.id;
+          
+          return `
+            <div class="vertiv-step-card ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" 
+              data-step-id="${s.id}" onclick="selectVertivStep(${s.id})">
+              <input type="checkbox" class="vertiv-step-checkbox" ${isCompleted ? 'checked' : ''} 
+                onclick="event.stopPropagation(); toggleVertivStep(${s.id}, this)">
+              <div class="vertiv-step-content" id="vertiv-step-${s.id}">
+                <div class="vertiv-step-title">Step ${s.id}: ${s.title}</div>
+                <div class="vertiv-step-desc">${s.desc}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function copyVertivReport() {
+        const v = window._vertivData;
+        const intervals = [0, 5, 10, 20, 30, 40, 50, 60];
+        
+        let report = `VERTIV BATTERY DISCHARGE TEST REPORT\n`;
+        report += `====================================\n`;
+        report += `Capacity Rating: 200 Ah\n`;
+        report += `Current Discharge Limit: 30.0 A\n`;
+        report += `EOT Cutoff Voltage: 46.4 V\n`;
+        report += `Allowed Voltage Difference (Mid): 0.5 V\n`;
+        report += `Duration Target: 63 min\n\n`;
+        
+        report += `BATTERY STRING 1 READINGS\n`;
+        report += `-------------------------\n`;
+        report += `Interval | Cell 1 | Cell 2 | Cell 3 | Cell 4 | Temp\n`;
+        intervals.forEach(i => {
+          const r = (v.battery1Readings && v.battery1Readings[i]) || {};
+          report += `${String(i).padStart(8)} | ${String(r[1] || '--').padStart(6)} | ${String(r[2] || '--').padStart(6)} | ${String(r[3] || '--').padStart(6)} | ${String(r[4] || '--').padStart(6)} | ${r.temp || '--'}°C\n`;
+        });
+        
+        report += `\nBATTERY STRING 2 READINGS\n`;
+        report += `-------------------------\n`;
+        report += `Interval | Cell 1 | Cell 2 | Cell 3 | Cell 4 | Temp\n`;
+        intervals.forEach(i => {
+          const r = (v.battery2Readings && v.battery2Readings[i]) || {};
+          report += `${String(i).padStart(8)} | ${String(r[1] || '--').padStart(6)} | ${String(r[2] || '--').padStart(6)} | ${String(r[3] || '--').padStart(6)} | ${String(r[4] || '--').padStart(6)} | ${r.temp || '--'}°C\n`;
+        });
+        
+        report += `\nSteps Completed: ${v.stepsCompleted.length} of ${VERTIV_STEPS.length}\n`;
+        
+        navigator.clipboard.writeText(report).then(() => {
+          showToast('📋 Vertiv Battery Discharge Report copied to clipboard!');
+        }).catch(err => {
+          showToast('❌ Failed to copy report: ' + err);
+        });
+      }
+
+      async function exportVertivDocx() {
+        const btn = document.getElementById('exportWordBtn');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Generating...';
+        
+        try {
+          const docx = await import('https://cdn.jsdelivr.net/npm/docx@9.7.1/+esm');
+          const v = window._vertivData;
+          const intervals = [0, 5, 10, 20, 30, 40, 50, 60];
+          
+          const doc = new docx.Document({
+            sections: [{
+              properties: {},
+              children: [
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({
+                      text: "VERTIV BATTERY DISCHARGE REPORT",
+                      bold: true,
+                      size: 32,
+                      color: "2D6BE4"
+                    })
+                  ],
+                  alignment: docx.AlignmentType.CENTER,
+                  spacing: { after: 240 }
+                }),
+                
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "Site: ", bold: true }),
+                    new docx.TextRun({ text: "Mountmellick Tetra" })
+                  ],
+                  spacing: { after: 60 }
+                }),
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "Date: ", bold: true }),
+                    new docx.TextRun({ text: new Date().toLocaleDateString() })
+                  ],
+                  spacing: { after: 60 }
+                }),
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "Capacity Rating: ", bold: true }),
+                    new docx.TextRun({ text: "200 Ah" })
+                  ],
+                  spacing: { after: 60 }
+                }),
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "Current Discharge Limit: ", bold: true }),
+                    new docx.TextRun({ text: "30.0 A" })
+                  ],
+                  spacing: { after: 60 }
+                }),
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "EOT Cutoff Voltage: ", bold: true }),
+                    new docx.TextRun({ text: "46.4 V" })
+                  ],
+                  spacing: { after: 60 }
+                }),
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "Allowed Voltage Difference (Mid): ", bold: true }),
+                    new docx.TextRun({ text: "0.5 V" })
+                  ],
+                  spacing: { after: 60 }
+                }),
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "Duration Target: ", bold: true }),
+                    new docx.TextRun({ text: "63 min" })
+                  ],
+                  spacing: { after: 60 }
+                }),
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "Steps Completed: ", bold: true }),
+                    new docx.TextRun({ text: `${v.stepsCompleted.length} of ${VERTIV_STEPS.length}` })
+                  ],
+                  spacing: { after: 360 }
+                }),
+
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "CABINET COMPONENT SERIAL NUMBERS", bold: true, size: 24, color: "2D6BE4" })
+                  ],
+                  spacing: { after: 120 }
+                }),
+                
+                new docx.Table({
+                  layout: docx.TableLayoutType.FIXED,
+                  columnWidths: [2600, 3200, 3200],
+                  rows: [
+                    new docx.TableRow({
+                      children: [
+                        new docx.TableCell({
+                          children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Component", bold: true, color: "FFFFFF" })] })],
+                          shading: { fill: "2D6BE4" },
+                          margins: { top: 120, bottom: 120, left: 120, right: 120 },
+                          width: { size: 2600, type: docx.WidthType.DXA }
+                        }),
+                        new docx.TableCell({
+                          children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Confirmed Serial Number", bold: true, color: "FFFFFF" })] })],
+                          shading: { fill: "2D6BE4" },
+                          margins: { top: 120, bottom: 120, left: 120, right: 120 },
+                          width: { size: 3200, type: docx.WidthType.DXA }
+                        }),
+                        new docx.TableCell({
+                          children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Technician Notes", bold: true, color: "FFFFFF" })] })],
+                          shading: { fill: "2D6BE4" },
+                          margins: { top: 120, bottom: 120, left: 120, right: 120 },
+                          width: { size: 3200, type: docx.WidthType.DXA }
+                        })
+                      ]
+                    }),
+                    ...components.map(c => {
+                      const item = state[c.id] || {};
+                      return new docx.TableRow({
+                        children: [
+                          new docx.TableCell({
+                            children: [new docx.Paragraph({ children: [new docx.TextRun({ text: c.label })] })],
+                            margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                            width: { size: 2600, type: docx.WidthType.DXA }
+                          }),
+                          new docx.TableCell({
+                            children: [new docx.Paragraph({ children: [new docx.TextRun({ text: item.serial || "Not Confirmed" })] })],
+                            margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                            width: { size: 3200, type: docx.WidthType.DXA }
+                          }),
+                          new docx.TableCell({
+                            children: [new docx.Paragraph({ children: [new docx.TextRun({ text: item.note || "No Notes" })] })],
+                            margins: { top: 100, bottom: 100, left: 100, right: 100 },
+                            width: { size: 3200, type: docx.WidthType.DXA }
+                          })
+                        ]
+                      });
+                    })
+                  ]
+                }),
+
+                new docx.Paragraph({ text: "", spacing: { after: 240 } }),
+
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "BATTERY STRING 1 READINGS", bold: true, size: 24, color: "2D6BE4" })
+                  ],
+                  spacing: { after: 120 }
+                }),
+
+                new docx.Table({
+                  layout: docx.TableLayoutType.FIXED,
+                  columnWidths: [1300, 1540, 1540, 1540, 1540, 1540],
+                  rows: [
+                    new docx.TableRow({
+                      children: [
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Interval", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1300, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 1 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 2 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 3 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 4 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Temp (°C)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } })
+                      ]
+                    }),
+                    ...intervals.map(i => {
+                      const r = (v.battery1Readings && v.battery1Readings[i]) || {};
+                      return new docx.TableRow({
+                        children: [
+                          new docx.TableCell({ children: [new docx.Paragraph(`${i} min`)], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1300, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[1] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[2] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[3] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[4] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(r.temp ? `${r.temp}°C` : '--')], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } })
+                        ]
+                      });
+                    })
+                  ]
+                }),
+
+                new docx.Paragraph({ text: "", spacing: { after: 240 } }),
+
+                new docx.Paragraph({
+                  children: [
+                    new docx.TextRun({ text: "BATTERY STRING 2 READINGS", bold: true, size: 24, color: "2D6BE4" })
+                  ],
+                  spacing: { after: 120 }
+                }),
+
+                new docx.Table({
+                  layout: docx.TableLayoutType.FIXED,
+                  columnWidths: [1300, 1540, 1540, 1540, 1540, 1540],
+                  rows: [
+                    new docx.TableRow({
+                      children: [
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Interval", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1300, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 1 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 2 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 3 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Cell 4 (V)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                        new docx.TableCell({ children: [new docx.Paragraph({ children: [new docx.TextRun({ text: "Temp (°C)", bold: true, color: "FFFFFF" })] })], shading: { fill: "2D6BE4" }, margins: { top: 120, bottom: 120, left: 120, right: 120 }, width: { size: 1540, type: docx.WidthType.DXA } })
+                      ]
+                    }),
+                    ...intervals.map(i => {
+                      const r = (v.battery2Readings && v.battery2Readings[i]) || {};
+                      return new docx.TableRow({
+                        children: [
+                          new docx.TableCell({ children: [new docx.Paragraph(`${i} min`)], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1300, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[1] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[2] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[3] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(String(r[4] || '--'))], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } }),
+                          new docx.TableCell({ children: [new docx.Paragraph(r.temp ? `${r.temp}°C` : '--')], margins: { top: 80, bottom: 80, left: 80, right: 80 }, width: { size: 1540, type: docx.WidthType.DXA } })
+                        ]
+                      });
+                    })
+                  ]
+                })
+              ]
+            }]
+          });
+          
+          const blob = await docx.Packer.toBlob(doc);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `Vertiv_Battery_Discharge_Report_${new Date().toISOString().slice(0,10)}.docx`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('✓ Word document downloaded successfully!');
+        } catch (err) {
+          console.error(err);
+          showToast('❌ Failed to export Word document: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+      }
+
+      function toggleVertivReminder(minutes) {
+        if (!window._vertivData.remindersEnabled) {
+          window._vertivData.remindersEnabled = { 5: true, 10: true, 20: true, 30: true, 40: true, 50: true, 60: true };
+        }
+        window._vertivData.remindersEnabled[minutes] = !window._vertivData.remindersEnabled[minutes];
+        
+        if (window._vertivData.remindersEnabled[minutes]) {
+          const firedIdx = window._vertivData.remindersFired.indexOf(minutes);
+          if (firedIdx !== -1) {
+            window._vertivData.remindersFired.splice(firedIdx, 1);
+          }
+        }
+        
+        saveVertivStateQuietly();
+        renderVertivView();
+      }
+
+      function requestNotificationPermission() {
+        if (!('Notification' in window)) {
+          showToast('⚠️ This browser does not support system notifications.');
+          return;
+        }
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            playChime();
+            showToast('🔔 System notifications enabled successfully!');
+          } else {
+            showToast('⚠️ Notification permission was denied. Reminders will fall back to screen alerts.');
+          }
+          renderVertivView();
+        });
+      }
+
+      function fastForwardVertiv(secondsVal) {
+        if (!secondsVal || !window._vertivData.testStartTime) return;
+        const seconds = parseInt(secondsVal);
+        const simulatedStart = new Date(Date.now() - (seconds * 1000));
+        
+        const elapsedMinutes = Math.floor(seconds / 60);
+        window._vertivData.remindersFired = window._vertivData.remindersFired.filter(m => m <= elapsedMinutes);
+        
+        window._vertivData.testStartTime = simulatedStart.toISOString();
+        saveVertivStateQuietly();
+        renderVertivView();
+      }
+
+      function playChime() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          const now = ctx.currentTime;
+          
+          osc.frequency.setValueAtTime(880, now);
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+          gain.gain.linearRampToValueAtTime(0, now + 0.25);
+          
+          osc.frequency.setValueAtTime(880, now + 0.3);
+          gain.gain.linearRampToValueAtTime(0.15, now + 0.35);
+          gain.gain.linearRampToValueAtTime(0, now + 0.55);
+          
+          osc.frequency.setValueAtTime(1100, now + 0.6);
+          gain.gain.linearRampToValueAtTime(0.2, now + 0.65);
+          gain.gain.linearRampToValueAtTime(0, now + 0.95);
+          
+          osc.start(now);
+          osc.stop(now + 1.0);
+        } catch (e) {
+          console.warn('AudioContext not allowed or not supported', e);
+        }
+      }
+
+      function showToast(msg, duration = 3500) {
+        let el = document.getElementById('toast-msg');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'toast-msg';
+          el.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(15, 23, 42, 0.95);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.08);color:#fff;padding:12px 24px;border-radius:24px;font-size:13px;font-weight:700;z-index:99999;pointer-events:none;transition:opacity 0.3s ease, bottom 0.3s ease;opacity:0;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);';
+          document.body.appendChild(el);
+        }
+        el.textContent = msg;
+        el.offsetHeight; // trigger reflow
+        el.style.opacity = '1';
+        el.style.bottom = '40px';
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => { 
+          el.style.opacity = '0'; 
+          el.style.bottom = '30px';
+        }, duration);
+      }
+
+      function triggerIntervalReminder(minutes) {
+        playChime();
+        const msg = `⏰ Time to record ${minutes}-minute battery readings!`;
+        if (Notification.permission === 'granted') {
+          new Notification('Rian - Vertiv Battery Discharge', {
+            body: msg,
+            requireInteraction: true
+          });
+        }
+        showToast(msg, 6000);
+      }
+
+      function checkApiKey() {
+        const key = localStorage.getItem('geminiKey') || window._tempGeminiKey || '';
+        const indicator = document.getElementById('keyIndicator');
+        const container = document.getElementById('keyInputContainer');
+        const input = document.getElementById('mockKeyInput');
+        if (key && key.trim().startsWith('AIzaSy')) {
+          if (indicator) indicator.style.display = 'flex';
+          if (container) container.style.display = 'none';
+        } else {
+          if (indicator) indicator.style.display = 'none';
+          if (container) container.style.display = 'flex';
+          if (input && key) input.value = key;
+        }
+      }
+
+      function saveMockKey(val) {
+        const clean = val.trim();
+        if (clean) {
+          localStorage.setItem('geminiKey', clean);
+          window._tempGeminiKey = clean;
+        } else {
+          localStorage.removeItem('geminiKey');
+          window._tempGeminiKey = '';
+        }
+        checkApiKey();
+      }
+
+      function setGuideMode(mode) {
+        document.getElementById('guideImg').src = mode === 'labels' ? 'tetra-layout-labels.jpg' : 'tetra-layout-no-labels.jpg';
+        document.getElementById('btnClean').classList.toggle('active', mode === 'clean');
+        document.getElementById('btnLabels').classList.toggle('active', mode === 'labels');
+        document.querySelectorAll('.hotspot').forEach(h => h.style.display = mode === 'labels' ? 'none' : '');
+      }
+
+      function selectComponent(id) {
+        activeId = id;
+        renderComponents();
+        document.querySelectorAll('.hotspot').forEach(h => h.classList.toggle('active', h.dataset.target === id));
+        const el = document.querySelector('[data-card="' + id + '"]');
+        if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+
+      function setSerial(id, value) {
+        state[id].serial = value.trim();
+        state[id].status = state[id].serial ? 'review' : (state[id].photo ? 'review' : 'missing');
+        updateSummary();
+      }
+
+      let activeCropId = '';
+      let cropStartX = 0;
+      let cropStartY = 0;
+      let cropEndX = 0;
+      let cropEndY = 0;
+      let isCropping = false;
+      let cropHandlersInited = false;
+
+      function openCropModal(id, dataUrl) {
+        activeCropId = id;
+        const modal = document.getElementById('tetra-crop-modal');
+        const img = document.getElementById('tetra-crop-img');
+        img.src = dataUrl;
+        modal.classList.remove('hidden');
+        resetCrop();
+        
+        if (!cropHandlersInited) {
+          initCropHandlers();
+          cropHandlersInited = true;
+        }
+      }
+
+      function closeCropModal() {
+        const modal = document.getElementById('tetra-crop-modal');
+        modal.classList.add('hidden');
+        const fileInput = document.getElementById('file-' + activeCropId);
+        if (fileInput) fileInput.value = '';
+      }
+
+      function resetCrop() {
+        const cropBox = document.getElementById('tetra-crop-box');
+        if (cropBox) cropBox.style.display = 'none';
+        cropStartX = 0;
+        cropStartY = 0;
+        cropEndX = 0;
+        cropEndY = 0;
+        isCropping = false;
+      }
+
+      function initCropHandlers() {
+        const container = document.getElementById('tetra-crop-container');
+        const cropBox = document.getElementById('tetra-crop-box');
+        
+        if (!container || !cropBox) return;
+
+        function getMousePos(e) {
+          const rect = container.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+          };
+        }
+
+        function startDrag(e) {
+          isCropping = true;
+          const pos = getMousePos(e);
+          cropStartX = pos.x;
+          cropStartY = pos.y;
+          cropEndX = pos.x;
+          cropEndY = pos.y;
+          updateCropBox();
+        }
+
+        function moveDrag(e) {
+          if (!isCropping) return;
+          if (e.cancelable) e.preventDefault();
+          const pos = getMousePos(e);
+          cropEndX = pos.x;
+          cropEndY = pos.y;
+          updateCropBox();
+        }
+
+        function endDrag(e) {
+          if (!isCropping) return;
+          isCropping = false;
+          const width = Math.abs(cropEndX - cropStartX);
+          const height = Math.abs(cropEndY - cropStartY);
+          if (width < 10 || height < 10) {
+            cropBox.style.display = 'none';
+          }
+        }
+
+        container.addEventListener('mousedown', startDrag);
+        container.addEventListener('mousemove', moveDrag);
+        window.addEventListener('mouseup', endDrag);
+
+        container.addEventListener('touchstart', startDrag, { passive: false });
+        container.addEventListener('touchmove', moveDrag, { passive: false });
+        container.addEventListener('touchend', endDrag);
+      }
+
+      function updateCropBox() {
+        const cropBox = document.getElementById('tetra-crop-box');
+        if (!cropBox) return;
+
+        const left = Math.min(cropStartX, cropEndX);
+        const top = Math.min(cropStartY, cropEndY);
+        const width = Math.abs(cropEndX - cropStartX);
+        const height = Math.abs(cropEndY - cropStartY);
+
+        cropBox.style.left = left + 'px';
+        cropBox.style.top = top + 'px';
+        cropBox.style.width = width + 'px';
+        cropBox.style.height = height + 'px';
+        cropBox.style.display = 'block';
+      }
+
+      function getImgDisplayRect() {
+        const img = document.getElementById('tetra-crop-img');
+        const container = document.getElementById('tetra-crop-container');
+        if (!img || !container) return null;
+
+        const imgWidth = img.naturalWidth;
+        const imgHeight = img.naturalHeight;
+        const contWidth = container.clientWidth;
+        const contHeight = container.clientHeight;
+
+        if (!imgWidth || !imgHeight || !contWidth || !contHeight) return null;
+
+        const imgRatio = imgWidth / imgHeight;
+        const contRatio = contWidth / contHeight;
+
+        let displayWidth, displayHeight;
+        if (imgRatio > contRatio) {
+          displayWidth = contWidth;
+          displayHeight = contWidth / imgRatio;
+        } else {
+          displayHeight = contHeight;
+          displayWidth = contHeight * imgRatio;
+        }
+
+        const left = (contWidth - displayWidth) / 2;
+        const top = (contHeight - displayHeight) / 2;
+
+        return {
+          left,
+          top,
+          width: displayWidth,
+          height: displayHeight,
+          naturalWidth: imgWidth,
+          naturalHeight: imgHeight
+        };
+      }
+
+      function rotateCropImage() {
+        const img = document.getElementById('tetra-crop-img');
+        if (!img || !img.naturalWidth) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalHeight;
+        canvas.height = img.naturalWidth;
+        const ctx = canvas.getContext('2d');
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((90 * Math.PI) / 180);
+        ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+
+        img.src = canvas.toDataURL('image/jpeg', 0.9);
+        resetCrop();
+      }
+
+      function submitCrop() {
+        const img = document.getElementById('tetra-crop-img');
+        const cropBox = document.getElementById('tetra-crop-box');
+        if (!img || !cropBox) return;
+
+        const rect = getImgDisplayRect();
+        if (!rect) return;
+
+        const boxLeft = Math.min(cropStartX, cropEndX);
+        const boxTop = Math.min(cropStartY, cropEndY);
+        const boxWidth = Math.abs(cropEndX - cropStartX);
+        const boxHeight = Math.abs(cropEndY - cropStartY);
+
+        let cropX = 0;
+        let cropY = 0;
+        let cropW = rect.naturalWidth;
+        let cropH = rect.naturalHeight;
+
+        if (boxWidth >= 10 && boxHeight >= 10) {
+          const x1 = Math.max(rect.left, boxLeft);
+          const y1 = Math.max(rect.top, boxTop);
+          const x2 = Math.min(rect.left + rect.width, boxLeft + boxWidth);
+          const y2 = Math.min(rect.top + rect.height, boxTop + boxHeight);
+
+          if (x2 > x1 && y2 > y1) {
+            cropX = ((x1 - rect.left) / rect.width) * rect.naturalWidth;
+            cropY = ((y1 - rect.top) / rect.height) * rect.naturalHeight;
+            cropW = ((x2 - x1) / rect.width) * rect.naturalWidth;
+            cropH = ((y2 - y1) / rect.height) * rect.naturalHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = cropW;
+        canvas.height = cropH;
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+        const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const parts = croppedDataUrl.split(',');
+        const mime = parts[0].match(/:(.*?);/)[1];
+        const base64 = parts[1];
+
+        const id = activeCropId;
+        if (state[id]) {
+          state[id].photoData = base64;
+          state[id].photoMime = mime;
+          state[id].status = 'review';
+          state[id].ocrError = '';
+          state[id].ocrRunning = true;
+          
+          closeCropModal();
+          renderComponents();
+          runOcr(id);
+        }
+      }
+
+      function viewPhoto(id) {
+        const item = state[id];
+        if (!item || !item.photoData) return;
+        
+        const lbImg = document.getElementById('tetra-lightbox-img');
+        if (lbImg) {
+          lbImg.src = `data:${item.photoMime || 'image/jpeg'};base64,${item.photoData}`;
+        }
+        
+        const modal = document.getElementById('tetra-lightbox-modal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          _resetTransform(false);
+          // Push state for back button navigation
+          if (!_lightboxHistoryActive) {
+            history.pushState({ lightbox: true }, '');
+            _lightboxHistoryActive = true;
+          }
+        }
+      }
+
+      let _scale = 1;
+      let _originX = 0;
+      let _originY = 0;
+      let _minScale = 1.0;
+      let _maxScale = 5.0;
+      let _panning = false;
+      let _panStartX = 0;
+      let _panStartY = 0;
+      let _panBaseX = 0;
+      let _panBaseY = 0;
+      let _wheelTransTimer = 0;
+      let _pinching = false;
+      let _touchPanning = false;
+      let _touchStartX = 0;
+      let _touchStartY = 0;
+      let _lastTap = 0;
+      let _lastDist = 0;
+      let _lightboxHistoryActive = false;
+
+      function _applyTransform() {
+        const lbImg = document.getElementById('tetra-lightbox-img');
+        if (lbImg) {
+          lbImg.style.transform = 'translate(' + _originX + 'px,' + _originY + 'px) scale(' + _scale + ')';
+        }
+      }
+
+      function _updateCursor() {
+        const lbImg = document.getElementById('tetra-lightbox-img');
+        if (lbImg) {
+          lbImg.style.cursor = _scale > 1.05 ? (_panning ? 'grabbing' : 'grab') : '';
+        }
+      }
+
+      // Calculate distance between two touch points
+      function _dist(t) {
+        var dx = t[0].clientX - t[1].clientX;
+        var dy = t[0].clientY - t[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      // Calculate midpoint between two touch points
+      function _midpoint(t) {
+        return {
+          x: (t[0].clientX + t[1].clientX) / 2,
+          y: (t[0].clientY + t[1].clientY) / 2
+        };
+      }
+
+      function _resetTransform(animate) {
+        _scale = 1; _originX = 0; _originY = 0;
+        const lbImg = document.getElementById('tetra-lightbox-img');
+        if (lbImg) {
+          if (animate) lbImg.style.transition = 'transform 0.25s ease';
+          _applyTransform();
+          _updateCursor();
+          if (animate) setTimeout(function () { lbImg.style.transition = ''; }, 260);
+        }
+      }
+
+      function _onTouchStart(e) {
+        const lbImg = document.getElementById('tetra-lightbox-img');
+        if (!lbImg) return;
+        
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          _pinching = true;
+          _touchPanning = false;
+          _lastDist = _dist(e.touches);
+        } else if (e.touches.length === 1) {
+          _pinching = false;
+          // Double-tap to zoom/reset
+          var now = Date.now();
+          if (now - _lastTap < 300) {
+            e.preventDefault();
+            _touchPanning = false;
+            if (_scale > 1.05) {
+              _resetTransform(true);
+            } else {
+              // Zoom to 2.5x centered on tap point
+              var rect = lbImg.getBoundingClientRect();
+              var tx = e.touches[0].clientX;
+              var ty = e.touches[0].clientY;
+              var cx = (tx - rect.left - rect.width / 2);
+              var cy = (ty - rect.top - rect.height / 2);
+              _scale = 2.5;
+              _originX = -cx * (_scale - 1);
+              _originY = -cy * (_scale - 1);
+              lbImg.style.transition = 'transform 0.25s ease';
+              _applyTransform();
+              _updateCursor();
+              setTimeout(function () { lbImg.style.transition = ''; }, 260);
+            }
+          } else if (_scale > 1.05) {
+            // Start single-finger pan when zoomed
+            _touchPanning = true;
+            _touchStartX = e.touches[0].clientX;
+            _touchStartY = e.touches[0].clientY;
+            _panBaseX = _originX;
+            _panBaseY = _originY;
+          }
+          _lastTap = now;
+        }
+      }
+
+      function _onTouchMove(e) {
+        if (_pinching && e.touches.length >= 2) {
+          e.preventDefault();
+          var newDist = _dist(e.touches);
+          var ratio = newDist / _lastDist;
+          _lastDist = newDist;
+          var mid = _midpoint(e.touches);
+          var newScale = Math.min(_maxScale, Math.max(_minScale, _scale * ratio));
+          var scaleDiff = newScale / _scale;
+          _originX = mid.x - window.innerWidth / 2 + ((_originX + window.innerWidth / 2 - mid.x) * scaleDiff);
+          _originY = mid.y - window.innerHeight / 2 + ((_originY + window.innerHeight / 2 - mid.y) * scaleDiff);
+          _scale = newScale;
+          if (_scale <= 1.01) { _originX = 0; _originY = 0; }
+          _applyTransform();
+        } else if (_touchPanning && e.touches.length === 1 && _scale > 1.05) {
+          e.preventDefault();
+          _originX = _panBaseX + (e.touches[0].clientX - _touchStartX);
+          _originY = _panBaseY + (e.touches[0].clientY - _touchStartY);
+          _applyTransform();
+        }
+      }
+
+      function _onTouchEnd(e) {
+        if (e.touches.length < 2) _pinching = false;
+        if (e.touches.length === 0) _touchPanning = false;
+        if (_scale < 1.05 && !_pinching) { _resetTransform(true); }
+      }
+
+      function closeLightboxModal(skipHistoryBack) {
+        const modal = document.getElementById('tetra-lightbox-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          _panning = false;
+          _touchPanning = false;
+          _pinching = false;
+          _resetTransform(false);
+          const lbImg = document.getElementById('tetra-lightbox-img');
+          if (lbImg) lbImg.src = '';
+          
+          if (!skipHistoryBack && _lightboxHistoryActive) {
+            _lightboxHistoryActive = false;
+            history.back();
+          } else {
+            _lightboxHistoryActive = false;
+          }
+        }
+      }
+
+      window.addEventListener('popstate', function (e) {
+        const modal = document.getElementById('tetra-lightbox-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+          closeLightboxModal(true);
+        }
+      });
+
+      // Initialize zoom, pan, and Escape key listeners
+      setTimeout(() => {
+        const lbImg = document.getElementById('tetra-lightbox-img');
+        const lbContainer = lbImg ? lbImg.parentElement : null;
+        
+        if (lbContainer && lbImg) {
+          // Touch gestures: pinch-to-zoom and pan
+          lbContainer.addEventListener('touchstart', _onTouchStart, { passive: false });
+          lbContainer.addEventListener('touchmove', _onTouchMove, { passive: false });
+          lbContainer.addEventListener('touchend', _onTouchEnd);
+
+          // Desktop scroll-wheel zoom (centred on cursor, smooth animated)
+          lbContainer.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            var mx = e.clientX, my = e.clientY;
+            var factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+            var newScale = Math.min(_maxScale, Math.max(_minScale, _scale * factor));
+            var scaleDiff = newScale / _scale;
+            
+            // Adjust pan origin so zoom centers around current mouse cursor
+            _originX = mx - window.innerWidth / 2 + ((_originX + window.innerWidth / 2 - mx) * scaleDiff);
+            _originY = my - window.innerHeight / 2 + ((_originY + window.innerHeight / 2 - my) * scaleDiff);
+            _scale = newScale;
+            
+            if (_scale <= 1.01) { _originX = 0; _originY = 0; }
+            
+            lbImg.style.transition = 'transform 0.15s ease-out';
+            _applyTransform();
+            _updateCursor();
+            clearTimeout(_wheelTransTimer);
+            _wheelTransTimer = setTimeout(function () { lbImg.style.transition = ''; }, 180);
+          }, { passive: false });
+
+          // Mouse drag-to-pan (when zoomed)
+          lbContainer.addEventListener('mousedown', function (e) {
+            if (e.button !== 0 || _scale <= 1.05) return;
+            e.preventDefault();
+            _panning = true;
+            _panStartX = e.clientX; _panStartY = e.clientY;
+            _panBaseX = _originX; _panBaseY = _originY;
+            lbImg.style.transition = '';
+            _updateCursor();
+          });
+          
+          window.addEventListener('mousemove', function (e) {
+            if (!_panning) return;
+            _originX = _panBaseX + (e.clientX - _panStartX);
+            _originY = _panBaseY + (e.clientY - _panStartY);
+            _applyTransform();
+          });
+          
+          window.addEventListener('mouseup', function () {
+            if (!_panning) return;
+            _panning = false;
+            _updateCursor();
+          });
+
+          // Click on backdrop/container background closes if not zoomed and not panning
+          lbContainer.addEventListener('click', function (e) {
+            if (e.target === lbContainer && _scale <= 1.05 && !_panning) {
+              closeLightboxModal();
+            }
+          });
+        }
+        
+        // Escape key listener for both modals
+        window.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            const lb = document.getElementById('tetra-lightbox-modal');
+            if (lb && !lb.classList.contains('hidden')) {
+              closeLightboxModal();
+            }
+            const cropModal = document.getElementById('tetra-crop-modal');
+            if (cropModal && !cropModal.classList.contains('hidden')) {
+              closeCropModal();
+            }
+          }
+        });
+      }, 50);
+
+      function attachPhoto(id, input) {
+        const file = input && input.files && input.files[0];
+        if (!file) return;
+
+        state[id].photo = file.name;
+        state[id].status = 'review';
+        state[id].ocrError = '';
+        renderComponents();
+
+        const reader = new FileReader();
+        reader.onloadend = function () {
+          openCropModal(id, reader.result);
+        };
+        reader.onerror = function () {
+          state[id].ocrError = 'Failed to read image file.';
+          state[id].ocrRunning = false;
+          renderComponents();
+        };
+        reader.readAsDataURL(file);
+      }
+
+      async function runOcr(id) {
+        const key = localStorage.getItem('geminiKey') || window._tempGeminiKey || '';
+        if (!key) {
+          state[id].ocrError = 'Gemini API key missing. Please enter it in the top bar.';
+          state[id].ocrRunning = false;
+          renderComponents();
+          return;
+        }
+        if (!state[id].photoData) {
+          state[id].ocrError = 'Please select a label photo first.';
+          state[id].ocrRunning = false;
+          renderComponents();
+          return;
+        }
+
+        state[id].ocrRunning = true;
+        state[id].ocrError = '';
+        state[id].status = 'review';
+        renderComponents();
+
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: "This is a close-up photo of an equipment label on telecom/electrical equipment. Perform OCR and extract the SERIAL NUMBER of this component. Output ONLY the clean alphanumeric serial number code with no spaces, with no label prefix like 'S/N', 'Serial', 'No', or explanations. Just return the raw code. If no serial number exists, return 'NOT_FOUND'." },
+                  { inlineData: { mimeType: state[id].photoMime, data: state[id].photoData } }
+                ]
+              }]
+            })
+          });
+
+          if (!response.ok) {
+            const errText = await response.text();
+            let msg = 'API Error: ' + response.status;
+            try {
+              const errObj = JSON.parse(errText);
+              msg = errObj.error?.message || msg;
+            } catch(e) {}
+            throw new Error(msg);
+          }
+
+          const data = await response.json();
+          const extracted = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          const cleaned = extracted.trim().replace(/`/g, '');
+          
+          if (cleaned.includes('NOT_FOUND')) {
+            state[id].ocrError = 'Serial number not detected in photo. Please type it manually.';
+          } else {
+            state[id].serial = cleaned;
+            state[id].status = 'review';
+          }
+        } catch (err) {
+          state[id].ocrError = err.message || 'OCR failed.';
+        } finally {
+          state[id].ocrRunning = false;
+          renderComponents();
+        }
+      }
+
+      function confirmSerial(id) {
+        if (!state[id].serial.trim()) return;
+        // Capture note from DOM before re-render — tapping button on mobile
+        // dismisses the keyboard without firing oninput on the textarea.
+        const noteEl = document.getElementById('notes-' + id);
+        if (noteEl) state[id].note = noteEl.value;
+        state[id].status = 'done';
+        renderComponents();
+      }
+
+      function clearComponent(id) {
+        state[id] = { serial: '', note: '', status: 'missing', photo: '', photoData: '', photoMime: '', ocrRunning: false, ocrError: '' };
+        renderComponents();
+      }
+
+      function statusLabel(s) {
+        if (s === 'done') return 'Confirmed';
+        if (s === 'review') return 'Needs review';
+        return 'Missing';
+      }
+
+      function updateSummary() {
+        const counts = Object.values(state).reduce((acc, item) => {
+          acc[item.status] = (acc[item.status] || 0) + 1;
+          return acc;
+        }, {});
+        document.getElementById('sumCaptured').textContent = counts.done || 0;
+        document.getElementById('sumReview').textContent = counts.review || 0;
+        document.getElementById('sumMissing').textContent = counts.missing || 0;
+      }
+
+      function renderComponents() {
+        const list = document.getElementById('componentList');
+        list.innerHTML = components.map(c => {
+          const item = state[c.id];
+          const statusClass = item.status === 'done' ? 'done' : item.status === 'review' ? 'review' : '';
+          return `
+            <article class="component ${activeId === c.id ? 'active' : ''}" data-card="${c.id}">
+              <div class="component-top" onclick="selectComponent('${c.id}')">
+                <div class="badge ${c.colour}">${c.short}</div>
+                <div class="comp-title">
+                  <strong>${c.label}</strong>
+                  <span>${item.serial || c.instruction}</span>
+                </div>
+                <div class="status ${statusClass}">${statusLabel(item.status)}</div>
+              </div>
+              <div class="component-body">
+                <div class="ocr-hint">${c.instruction}</div>
+                <div class="photo-box">
+                  ${item.photoData ? `
+                  <div style="position: relative; margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); max-width: 120px; aspect-ratio: 16/9; background: #000; cursor: pointer;" onclick="viewPhoto('${c.id}')">
+                    <img src="data:${item.photoMime || 'image/jpeg'};base64,${item.photoData}" style="width: 100%; height: 100%; display: block; object-fit: cover;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 8px; padding: 2px; text-align: center; text-transform: uppercase; font-weight: 800;">Click to view</div>
+                  </div>
+                  ` : ''}
+                  <div class="photo-row">
+                    <button class="btn" ${item.ocrRunning ? 'disabled' : ''} onclick="document.getElementById('file-${c.id}').click()">
+                      ${item.photo ? 'Change photo' : 'Take / choose photo'}
+                    </button>
+                    <button class="btn secondary" ${item.ocrRunning || !item.photoData ? 'disabled' : ''} onclick="runOcr('${c.id}')">
+                      ${item.ocrRunning ? 'Running OCR...' : 'Run OCR'}
+                    </button>
+                    <input id="file-${c.id}" type="file" accept="image/*" capture="environment" style="display:none" onchange="attachPhoto('${c.id}', this)">
+                  </div>
+                  <div class="ocr-hint" style="margin-top: 4px;">
+                    ${item.ocrRunning ? '<span style="color:var(--accent);font-weight:700;">Analyzing label image...</span>' : (item.photo || 'No label photo attached yet.')}
+                  </div>
+                  ${item.ocrError ? `<div style="color:var(--red);font-size:11px;margin-top:4px;font-weight:700;">⚠️ ${esc(item.ocrError)}</div>` : ''}
+                </div>
+                <div class="field">
+                  <label for="serial-${c.id}">Serial number</label>
+                  <input id="serial-${c.id}" value="${item.serial}" ${item.ocrRunning ? 'disabled placeholder="Extracting serial..."' : 'placeholder="OCR result will appear here, or type manually"'} oninput="setSerial('${c.id}', this.value)">
+                </div>
+                <div class="field">
+                  <label for="notes-${c.id}">Technician note</label>
+                  <textarea id="notes-${c.id}" placeholder="Optional note: damaged label, unreadable, alarm LED, second module, etc." oninput="state['${c.id}'].note = this.value">${item.note || ''}</textarea>
+                </div>
+                <div class="photo-row">
+                  <button class="btn ok" onclick="confirmSerial('${c.id}')">Confirm serial</button>
+                  <button class="btn secondary" onclick="clearComponent('${c.id}')">Clear</button>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+        updateSummary();
+      }
+
+      checkApiKey();
+      renderComponents();
+      renderVertivView();
+  </script>
+</body>
+</html>

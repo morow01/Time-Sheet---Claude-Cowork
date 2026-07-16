@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rian Callouts UX Options Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Codex (Default Light) Theme */
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-input: #f8fafc;
+      --border: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --accent: #2D6BE4;
+      --accent-light: rgba(45, 107, 228, 0.1);
+      --font-body: 'DM Sans', sans-serif;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    [data-theme="dark"] {
+      /* Dark Theme overrides */
+      --bg-page: #0f1624;
+      --bg-card: #1e293b;
+      --bg-input: #171f2d;
+      --border: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --accent: #3b82f6;
+      --accent-light: rgba(59, 130, 246, 0.15);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      box-shadow: var(--shadow);
+      z-index: 20;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Segmented Control for Options */
+    .segmented-control {
+      background: var(--bg-page);
+      border-radius: 12px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .seg-btn {
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .seg-btn.active {
+      background: var(--bg-card);
+      color: var(--accent);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Mode Toggles */
+    .icon-btn {
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    /* Main Content Layout */
+    .main-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar: Stats (matches Rian Desktop) */
+    .panel-left {
+      width: 280px;
+      border-right: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      overflow-y: auto;
+      gap: 16px;
+    }
+
+    .sidebar-section-title {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: var(--bg-page);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Middle List Panel */
+    .panel-list {
+      width: 360px;
+      border-right: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-hdr {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      z-index: 5;
+    }
+
+    /* Scrollable items list container */
+    .list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 24px;
+    }
+
+    /* Action Buttons Bar */
+    .action-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      width: 100%;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    /* Option 1 Specific Styles: Sticky Top */
+    .action-bar.sticky-top {
+      position: sticky;
+      top: 0;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 6px -4px rgba(0,0,0,0.1);
+    }
+
+    /* Option 2 Specific Styles: Fixed Bottom */
+    .action-bar.fixed-bottom {
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -4px 6px -4px rgba(0,0,0,0.1);
+      order: 2; /* CSS Flexbox order moves it below the scroll container */
+    }
+
+    .action-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .action-btn.dashed {
+      border: 1px dashed var(--border);
+      background: var(--bg-card);
+      color: var(--accent);
+    }
+
+    .action-btn.dashed:hover {
+      background: var(--accent-light);
+      border-color: var(--accent);
+    }
+
+    /* Callout Row Item */
+    .callout-row {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background-color 0.15s;
+      position: relative;
+    }
+
+    .callout-row:hover {
+      background-color: var(--bg-page);
+    }
+
+    .callout-row.selected {
+      background: linear-gradient(to right, var(--accent-light), rgba(45, 107, 228, 0.02));
+      border-left: 3px solid var(--accent);
+      padding-left: 13px;
+    }
+
+    .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .row-ticket {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .row-date {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .row-fault {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-site {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Right Details Panel */
+    .panel-detail {
+      flex: 1;
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .detail-hdr {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .detail-section-lbl {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .detail-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .detail-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 600px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--text-primary);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-page);
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Modal for Paste Ticket */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-inner {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 440px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .badge-draft {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mockup Header -->
+  <header>
+    <div class="header-left">
+      <div style="background: var(--accent); color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800;">R</div>
+      <span class="header-title">Callout Actions UX Sandbox</span>
+    </div>
+    <div class="header-actions">
+      <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary);">Select UX Mode:</span>
+      <div class="segmented-control">
+        <button class="seg-btn active" onclick="switchMode(1)">Option 1: Sticky Top</button>
+        <button class="seg-btn" onclick="switchMode(2)">Option 2: Fixed Bottom</button>
+        <button class="seg-btn" onclick="switchMode(3)">Option 3: Auto-Scroll</button>
+      </div>
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌓</button>
+    </div>
+  </header>
+
+  <!-- Sandbox Main Container -->
+  <div class="main-container">
+    
+    <!-- Left Panel (Sidebar Stats) -->
+    <div class="panel-left">
+      <span class="sidebar-section-title">On-Call Stats</span>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-val" id="stats-total">14</span>
+          <span class="stat-lbl">Incidents</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-val">3</span>
+          <span class="stat-lbl">Extra Shifts</span>
+        </div>
+      </div>
+      <span class="sidebar-section-title">Schedule Info</span>
+      <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+        This panel simulates the Left sidebar in Rian's Desktop layout, which displays historical weeks and totals.
+      </div>
+    </div>
+
+    <!-- Middle Panel (Callouts List with layout configuration) -->
+    <div class="panel-list" id="panel-list-container">
+      
+      <!-- Week Title Header -->
+      <div class="panel-hdr">
+        <span>Week 28 (10/07 - 17/07)</span>
+        <span style="background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px;" id="list-count-badge">14</span>
+      </div>
+
+      <!-- Scrollable list of items -->
+      <div class="list-scroll" id="callouts-list">
+        <!-- Action Buttons Container (Placed INSIDE the scroll area for realistic demo) -->
+        <div class="action-bar sticky-top" id="buttons-container">
+          <button class="action-btn dashed" onclick="startNewCallout()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Callout
+          </button>
+          <button class="action-btn dashed" onclick="openPasteModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+            Paste Fault
+          </button>
+        </div>
+        <div id="list-items-wrap"></div>
+      </div>
+
+    </div>
+
+    <!-- Right Panel (Callout Details Editor) -->
+    <div class="panel-detail" id="detail-panel">
+      <!-- Populated dynamically based on selection -->
+    </div>
+
+  </div>
+
+  <!-- Paste Modal Overlay -->
+  <div class="modal-overlay" id="paste-modal">
+    <div class="modal-inner">
+      <h3 style="font-size: 16px; font-weight: 800;">Paste Ticket Email</h3>
+      <p style="font-size: 12px; color: var(--text-secondary)">Paste dummy raw email string or click "Simulate" to parse a sample ticket.</p>
+      <textarea id="paste-input" class="form-input form-textarea" placeholder="Paste email text here..."></textarea>
+      <div style="display:flex; justify-content: space-between; gap:10px;">
+        <button class="btn btn-secondary" onclick="simulateOcrText()" style="flex:1; font-size:12px; padding:8px 12px;">Simulate sample</button>
+        <button class="btn btn-secondary" onclick="closePasteModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="parsePasteText()">Parse</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span>✅ Action completed successfully</span>
+  </div>
+
+  <script>
+    // State
+    let currentMode = 1;
+    let selectedId = null;
+    let isDark = false;
+    let callouts = [
+      { id: 1, ticket: "R24982", date: "2026-07-14", fault: "Generator Fail to Start", site: "Dublin Port Tetra", notes: "Called out by Dublin control at 22:00. Battery voltages healthy.", isDraft: false },
+      { id: 2, ticket: "R24980", date: "2026-07-14", fault: "Mains Failure & Battery Low", site: "Killiney Hill Tetra", notes: "Grid outage due to local lightning strike. Checked rectifier values.", isDraft: false },
+      { id: 3, ticket: "R24955", date: "2026-07-13", fault: "Aircon Fan Speed Alarm", site: "Sandyford Exchange", notes: "Cleaned condenser filters. Fan alarm cleared.", isDraft: false },
+      { id: 4, ticket: "R24941", date: "2026-07-12", fault: "Cabinet Door Tamper Alarm", site: "Dun Laoghaire Cabinet", notes: "Found latch misaligned. Adjusted lock bracket.", isDraft: false },
+      { id: 5, ticket: "R24920", date: "2026-07-11", fault: "Rectifier Module 3 Fail", site: "Glencullen Tetra", notes: "Swapped module with spare from van. Checked current share.", isDraft: false },
+      { id: 6, ticket: "R24899", date: "2026-07-10", fault: "Link Down - Microwave Link Loss", site: "Three Rock Tetra", notes: "Aligned microwave dish after storm. Signal levels restored.", isDraft: false },
+      { id: 7, ticket: "R24860", date: "2026-07-09", fault: "DC High Temp Alarm", site: "Dundrum Cabinet", notes: "Internal fan replaced. Temp dropped to 22C.", isDraft: false },
+      { id: 8, ticket: "R24840", date: "2026-07-08", fault: "Smoke Sensor Trip", site: "Bray Exchange", notes: "False alarm caused by dust. Cleaned detector sensor.", isDraft: false },
+      { id: 9, ticket: "R24805", date: "2026-07-07", fault: "Rectifier Fan 1 Fault", site: "Tallaght Tetra", notes: "Rectifier controller shows fan alarm. Replaced fan cartridge.", isDraft: false },
+      { id: 10, ticket: "R24782", date: "2026-07-06", fault: "Low Voltage Disconnect Active", site: "Rathfarnham Cabinet", notes: "AC failure for 8 hours. Battery discharge completed. AC restored.", isDraft: false },
+      { id: 11, ticket: "R24750", date: "2026-07-05", fault: "Door Open Intruder Alarm", site: "Clondalkin Tetra", notes: "Door was left slightly ajar. Verified site secure.", isDraft: false },
+      { id: 12, ticket: "R24711", date: "2026-07-04", fault: "Heater Fault High Humidity", site: "Lucan Cabinet", notes: "Heater replacement completed. Humidity normalized.", isDraft: false }
+    ];
+
+    let draftCallout = null;
+
+    // Switch Option Mode
+    function switchMode(modeNum) {
+      currentMode = modeNum;
+      
+      // Update segmented controls active state
+      const buttons = document.querySelectorAll('.seg-btn');
+      buttons.forEach((btn, idx) => {
+        if (idx === modeNum - 1) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      // Rearrange action buttons in DOM
+      const btnBar = document.getElementById('buttons-container');
+      const listContainer = document.getElementById('panel-list-container');
+      const scrollArea = document.getElementById('callouts-list');
+
+      // Reset classes
+      btnBar.className = "action-bar";
+
+      if (modeNum === 1) {
+        // Option 1: Sticky Top (Inside scroll area, behaves stickily)
+        btnBar.classList.add('sticky-top');
+        scrollArea.insertBefore(btnBar, scrollArea.firstChild);
+      } else if (modeNum === 2) {
+        // Option 2: Fixed Bottom (Outside the scroll area entirely, at bottom of panel)
+        listContainer.appendChild(btnBar);
+        btnBar.classList.add('fixed-bottom');
+      } else {
+        // Option 3: Auto-scroll on save (Inside scroll area, static/standard scrolling)
+        scrollArea.insertBefore(btnBar, scrollArea.firstChild);
+      }
+
+      showToast(`Switched to Option ${modeNum}`);
+    }
+
+    // Toggle Theme
+    function toggleTheme() {
+      isDark = !isDark;
+      if (isDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+    // Render Callouts list
+    function renderList() {
+      const list = document.getElementById('list-items-wrap') || document.getElementById('callouts-list');
+      const countBadge = document.getElementById('list-count-badge');
+      const statsTotal = document.getElementById('stats-total');
+      
+      countBadge.textContent = callouts.length;
+      statsTotal.textContent = callouts.length;
+
+      let html = '';
+      
+      // If there is a draft, render it at the top
+      if (draftCallout) {
+        html += `
+          <div class="callout-row selected" onclick="selectCallout('draft')">
+            <div class="row-top">
+              <span class="row-ticket">${draftCallout.ticket || 'UNSAVED TICKET'}</span>
+              <span class="badge-draft">Draft</span>
+            </div>
+            <div class="row-fault">${draftCallout.fault || 'No description yet...'}</div>
+            <div class="row-site">${draftCallout.site || 'No site selected'}</div>
+          </div>
+        `;
+      }
+
+      callouts.forEach(c => {
+        const isSel = (c.id === selectedId) && !draftCallout;
+        html += `
+          <div class="callout-row${isSel ? ' selected' : ''}" onclick="selectCallout(${c.id})">
+            <div class="row-top">
+              <span class="row-ticket">${c.ticket}</span>
+              <span class="row-date">${c.date}</span>
+            </div>
+            <div class="row-fault">${c.fault}</div>
+            <div class="row-site">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="color:#ef4444; flex-shrink:0;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+              ${c.site}
+            </div>
+          </div>
+        `;
+      });
+
+      if (list) list.innerHTML = html;
+    }
+
+    // Select Callout item
+    function selectCallout(id) {
+      if (id === 'draft') {
+        selectedId = 'draft';
+        renderDraftDetail();
+        return;
+      }
+
+      draftCallout = null; // Discard active draft
+      selectedId = id;
+      renderList();
+
+      const item = callouts.find(c => c.id === id);
+      if (!item) return;
+
+      const detail = document.getElementById('detail-panel');
+      detail.innerHTML = `
+        <div class="detail-hdr">
+          <span class="detail-section-lbl">Callout Details</span>
+          <div class="detail-title">${item.ticket} — ${item.site}</div>
+        </div>
+        <div class="detail-body">
+          <div class="form-group">
+            <span class="form-label">Ticket / Incident Number</span>
+            <input type="text" class="form-input" value="${item.ticket}" readonly>
+          </div>
+          <div class="form-group">
+            <span class="form-label">Site Location</span>
+            <input type="text" class="form-input" value="${item.site}" readonly>
+          </div>
+          <div class="form-group">
+            <span class="form-label">Fault Description</span>
+            <input type="text" class="form-input" value="${item.fault}" readonly>
+          </div>
+          <div class="form-group">
+            <span class="form-label">Date Logged</span>
+            <input type="date" class="form-input" value="${item.date}" readonly>
+          </div>
+          <div class="form-group">
+            <span class="form-label">Technician Action Notes</span>
+            <textarea class="form-input form-textarea" readonly>${item.notes}</textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" onclick="deleteCallout(${item.id})">Delete Callout</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Open detail layout for creating new callout (Draft)
+    function startNewCallout() {
+      selectedId = 'draft';
+      draftCallout = {
+        ticket: '',
+        site: '',
+        fault: '',
+        date: new Date().toISOString().split('T')[0],
+        notes: ''
+      };
+      
+      renderList();
+      renderDraftDetail();
+
+      // In Option 3: Smooth scroll to the top of the list when beginning a new callout
+      if (currentMode === 3) {
+        document.getElementById('callouts-list').scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Render draft form inside detail panel
+    function renderDraftDetail() {
+      const detail = document.getElementById('detail-panel');
+      detail.innerHTML = `
+        <div class="detail-hdr" style="background: var(--accent-light)">
+          <span class="detail-section-lbl" style="color: var(--accent)">New Callout (Draft)</span>
+          <div class="detail-title">Create Incident Entry</div>
+        </div>
+        <div class="detail-body">
+          <div class="form-group">
+            <span class="form-label">Ticket / Incident Number</span>
+            <input type="text" id="draft-ticket" class="form-input" placeholder="e.g. R24999" value="${draftCallout.ticket}" oninput="updateDraftField('ticket', this.value)">
+          </div>
+          <div class="form-group">
+            <span class="form-label">Site Location</span>
+            <input type="text" id="draft-site" class="form-input" placeholder="e.g. Dublin Port Tetra" value="${draftCallout.site}" oninput="updateDraftField('site', this.value)">
+          </div>
+          <div class="form-group">
+            <span class="form-label">Fault Description</span>
+            <input type="text" id="draft-fault" class="form-input" placeholder="e.g. Battery Voltage Low" value="${draftCallout.fault}" oninput="updateDraftField('fault', this.value)">
+          </div>
+          <div class="form-group">
+            <span class="form-label">Date</span>
+            <input type="date" id="draft-date" class="form-input" value="${draftCallout.date}" oninput="updateDraftField('date', this.value)">
+          </div>
+          <div class="form-group">
+            <span class="form-label">Action Notes</span>
+            <textarea id="draft-notes" class="form-input form-textarea" placeholder="Describe fault resolution details..." oninput="updateDraftField('notes', this.value)">${draftCallout.notes}</textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="saveDraft()">Save Callout</button>
+            <button class="btn btn-secondary" onclick="discardDraft()">Discard</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateDraftField(field, value) {
+      draftCallout[field] = value;
+      // Re-render list title row dynamically to show title as they type
+      renderList();
+    }
+
+    // Save Callout Draft
+    function saveDraft() {
+      if (!draftCallout.ticket || !draftCallout.site || !draftCallout.fault) {
+        alert("Please fill in Ticket Number, Site, and Fault Description.");
+        return;
+      }
+
+      const newId = Date.now();
+      const newCallout = {
+        id: newId,
+        ticket: draftCallout.ticket,
+        site: draftCallout.site,
+        fault: draftCallout.fault,
+        date: draftCallout.date,
+        notes: draftCallout.notes
+      };
+
+      // Add to front of the array (newest entries at top)
+      callouts.unshift(newCallout);
+      draftCallout = null;
+      selectedId = newId;
+
+      renderList();
+      selectCallout(newId);
+      showToast("Callout saved successfully!");
+
+      // Option 3 behavior: Auto-scroll to top when a new item is saved
+      if (currentMode === 3) {
+        document.getElementById('callouts-list').scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Discard draft
+    function discardDraft() {
+      draftCallout = null;
+      selectedId = null;
+      renderList();
+      const detail = document.getElementById('detail-panel');
+      detail.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; color: var(--text-muted);">
+          <h3>Select a Callout to View Details</h3>
+          <p style="font-size:12px; margin-top:4px;">Or click "Add Callout" to log a new incident.</p>
+        </div>
+      `;
+      showToast("Draft discarded");
+    }
+
+    // Delete existing Callout
+    function deleteCallout(id) {
+      callouts = callouts.filter(c => c.id !== id);
+      selectedId = null;
+      renderList();
+      const detail = document.getElementById('detail-panel');
+      detail.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; color: var(--text-muted);">
+          <h3>Select a Callout to View Details</h3>
+        </div>
+      `;
+      showToast("Callout deleted");
+    }
+
+    // Paste Modal Controls
+    function openPasteModal() {
+      document.getElementById('paste-modal').classList.add('open');
+      document.getElementById('paste-input').value = '';
+    }
+
+    function closePasteModal() {
+      document.getElementById('paste-modal').classList.remove('open');
+    }
+
+    function simulateOcrText() {
+      const sample = `Incident: R24999\nPriority: High\nSummary: Mains failure / Mains charger fail\nSite: Dublin Port Tetra (DPT01)\nDate: 2026-07-14\nNotes:\nGrid supply failed due to sub-station fault. Generator ran and took load. Checked DC voltage level.`;
+      document.getElementById('paste-input').value = sample;
+    }
+
+    function parsePasteText() {
+      const text = document.getElementById('paste-input').value.trim();
+      if (!text) return;
+
+      // Extract variables (simple simulation)
+      const ticketMatch = text.match(/Incident:\s*(R\d+)/i);
+      const siteMatch = text.match(/Site:\s*(.+)/i);
+      const summaryMatch = text.match(/Summary:\s*(.+)/i);
+      const notesMatch = text.match(/Notes:\s*(.+)/i);
+
+      selectedId = 'draft';
+      draftCallout = {
+        ticket: ticketMatch ? ticketMatch[1] : 'R' + Math.floor(Math.random() * 90000 + 10000),
+        site: siteMatch ? siteMatch[1] : 'Dublin Port Tetra',
+        fault: summaryMatch ? summaryMatch[1] : 'Battery Voltage Low Alarm',
+        date: new Date().toISOString().split('T')[0],
+        notes: text
+      };
+
+      closePasteModal();
+      renderList();
+      renderDraftDetail();
+
+      // Option 3 behavior: Auto-scroll to top on pasting
+      if (currentMode === 3) {
+        document.getElementById('callouts-list').scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Show Toast
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.querySelector('span').textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Init
+    window.onload = function() {
+      renderList();
+      if (callouts.length > 0) {
+        selectCallout(callouts[0].id);
+      }
+    }
+  </script>
+</body>
+</html>

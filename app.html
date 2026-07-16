@@ -7301,7 +7301,7 @@
     }
 
     .sum-table-wrap.open {
-      max-height: 3000px;
+      max-height: 100000px;
       overflow: visible;
       opacity: 1;
     }
@@ -19331,8 +19331,9 @@
       /* ── Desktop Callouts: Three-panel ── */
       .dco-wrap {
         display: flex;
-        min-height: calc(100vh - 180px);
+        height: calc(100vh - 180px);
         border-top: 1px solid var(--border);
+        overflow: hidden;
       }
 
       .dco-panel-weeks {
@@ -19341,6 +19342,7 @@
         border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
+        overflow-y: auto;
         flex-shrink: 0;
       }
 
@@ -19350,12 +19352,14 @@
         border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
+        overflow-y: auto;
         flex-shrink: 0;
       }
 
       .dco-panel-detail {
         flex: 1;
         background: var(--bg-card);
+        overflow-y: auto;
       }
 
       .dco-panel-detail .desk-detail-body {
@@ -21487,12 +21491,12 @@
   <!-- Paste Ticket modal -->
   <div id="paste-ticket-modal" class="hidden fixed inset-0 z-50 flex justify-center"
     style="background:var(--overlay)">
-    <div class="w-full max-w-md shadow-2xl pt-modal-inner">
+    <div class="w-full max-w-2xl shadow-2xl pt-modal-inner">
       <div id="paste-ticket-step1" style="display:flex;flex-direction:column;flex:1;min-height:0">
         <h2 class="text-lg font-bold" style="color:var(--text-primary);margin:0 0 4px">Paste Ticket Email</h2>
         <p class="text-sm" style="color:var(--text-secondary);margin:0 0 12px">Copy the email body from Gmail and paste it below.</p>
-        <textarea id="paste-ticket-input" placeholder="Paste email text here…"
-          style="width:100%;flex:1;min-height:0;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:none;background:var(--bg-card);color:var(--text-primary);font-family:inherit;margin-bottom:16px"></textarea>
+        <textarea id="paste-ticket-input" placeholder="Paste email text here…" oninput="_ptAutoGrow(this)"
+          style="width:100%;min-height:560px;overflow-y:hidden;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;resize:none;background:var(--bg-card);color:var(--text-primary);font-family:inherit;margin-bottom:16px"></textarea>
         <div class="flex gap-3" style="margin-top:auto">
           <button onclick="closePasteTicket()" class="flex-1 py-3 rounded-xl font-medium"
             style="border:1px solid var(--border);color:var(--text-secondary);background:none">Cancel</button>
@@ -21527,7 +21531,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.34';
+    const VERSION = '6.6.41';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44431,7 +44435,7 @@
           '<span>' + formatWeekRange(selWeek) + '<span class="dco-hdr-badge">' + allCo.length + '</span></span>' +
           '</div>';
 
-        calloutsHtml += '<div style="display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
+        calloutsHtml += '<div style="position:sticky;top:0;z-index:10;display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
           '<button onclick="dcoAddCallout()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
           'Add Callout</button>' +
@@ -45996,13 +46000,22 @@
     // ============================================================
     let _pasteTicketParsed = null;
 
+    function _ptAutoGrow(el) {
+      if (!el) return;
+      el.style.height = 'auto';
+      var max = Math.round(window.innerHeight * 0.78);
+      var h = Math.min(el.scrollHeight + 2, max);
+      el.style.height = h + 'px';
+      el.style.overflowY = (el.scrollHeight > max) ? 'auto' : 'hidden';
+    }
+
     function openPasteTicket() {
       _pasteTicketParsed = null;
       document.getElementById('paste-ticket-input').value = '';
       document.getElementById('paste-ticket-step1').style.display = 'flex';
       document.getElementById('paste-ticket-step2').style.display = 'none';
       document.getElementById('paste-ticket-modal').classList.remove('hidden');
-      setTimeout(() => document.getElementById('paste-ticket-input').focus(), 100);
+      setTimeout(() => { var el = document.getElementById('paste-ticket-input'); if (el) { _ptAutoGrow(el); el.focus(); } }, 100);
     }
 
     function closePasteTicket() {
