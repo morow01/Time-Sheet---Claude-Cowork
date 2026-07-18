@@ -2,20 +2,30 @@ package com.rian.fieldlog;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.webkit.JavascriptInterface;
+import android.webkit.MimeTypeMap;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import com.getcapacitor.BridgeActivity;
+import java.io.File;
 
 public class MainActivity extends BridgeActivity {
 
@@ -56,6 +66,12 @@ public class MainActivity extends BridgeActivity {
                 @JavascriptInterface
                 public void exitApp() {
                     runOnUiThread(() -> finishAffinity());
+                }
+                // Download a file attachment and open it directly in the associated
+                // app (Excel / Word / PDF viewer) instead of the browser.
+                @JavascriptInterface
+                public void openFile(final String url, final String name) {
+                    runOnUiThread(() -> downloadAndOpen(url, name));
                 }
             }, "RianNative");
 
@@ -112,6 +128,77 @@ public class MainActivity extends BridgeActivity {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.M
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED;
+    }
+
+    // Guess a MIME type from a file name's extension.
+    private String guessMime(String name) {
+        if (name == null) return null;
+        int dot = name.lastIndexOf('.');
+        if (dot < 0 || dot == name.length() - 1) return null;
+        String ext = name.substring(dot + 1).toLowerCase();
+        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+        if (mime != null) return mime;
+        // Fallbacks for common office types not always in the map
+        switch (ext) {
+            case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            case "xls":  return "application/vnd.ms-excel";
+            case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            case "doc":  return "application/msword";
+            case "pptx": return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            case "csv":  return "text/csv";
+            case "pdf":  return "application/pdf";
+            default:     return null;
+        }
+    }
+
+    // Download a file via DownloadManager, then open it in the associated app.
+    private void downloadAndOpen(String url, String name) {
+        try {
+            String fileName = (name == null || name.trim().isEmpty()) ? "attachment" : name.trim();
+            fileName = fileName.replaceAll("[^a-zA-Z0-9._-]", "_");
+            final String finalName = fileName;
+            final String mime = guessMime(fileName);
+
+            DownloadManager.Request req = new DownloadManager.Request(Uri.parse(url));
+            req.setTitle(finalName);
+            req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            req.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, finalName);
+            if (mime != null) req.setMimeType(mime);
+
+            final DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm == null) { Toast.makeText(this, "Download unavailable", Toast.LENGTH_SHORT).show(); return; }
+            final long downloadId = dm.enqueue(req);
+
+            BroadcastReceiver onComplete = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context ctx, Intent intent) {
+                    long got = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                    if (got != downloadId) return;
+                    try { ctx.unregisterReceiver(this); } catch (Exception ignored) {}
+                    try {
+                        File file = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), finalName);
+                        Uri uri = FileProvider.getUriForFile(
+                            MainActivity.this, getPackageName() + ".fileprovider", file);
+                        Intent view = new Intent(Intent.ACTION_VIEW);
+                        view.setDataAndType(uri, mime != null ? mime : "*/*");
+                        view.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(view);
+                    } catch (ActivityNotFoundException e) {
+                        Toast.makeText(MainActivity.this, "No app can open this file type", Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Couldn't open file", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            };
+            IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(onComplete, filter, Context.RECEIVER_EXPORTED);
+            } else {
+                registerReceiver(onComplete, filter);
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Download failed", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

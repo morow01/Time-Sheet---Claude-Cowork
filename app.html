@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.73';
+    const VERSION = '6.6.74';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23035,6 +23035,20 @@
       }
       input.value = '';
     }
+
+    // Native app: open attachment chips directly in the associated app (Excel/Word/PDF)
+    // instead of letting the WebView hand the download URL to an external browser.
+    document.addEventListener('click', function (e) {
+      try {
+        if (!IS_NATIVE || !(window.RianNative && typeof window.RianNative.openFile === 'function')) return;
+        const a = e.target && e.target.closest ? e.target.closest('a.tt-file-chip, a[href*="noteFiles"]') : null;
+        if (!a || !a.href) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const nm = a.getAttribute('data-name') || (a.textContent || '').trim() || 'file';
+        window.RianNative.openFile(a.href, nm);
+      } catch (err) { /* fall back to default link behaviour */ }
+    }, true);
 
     function _activityNoteImageKey(weekStart, actId) {
       return 'activityNotes/' + (weekStart || state.weekStart || 'unknown-week') + '/' + (actId || uid());
