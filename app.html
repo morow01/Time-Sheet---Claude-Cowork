@@ -21569,7 +21569,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.53';
+    const VERSION = '6.6.57';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -32708,9 +32708,14 @@
             ? '<div class="note-cat-menu ncm-open dnotes-tag-menu" onclick="event.stopPropagation()">' + buildNoteCatMenuHtml(n.id, n.category || '') + '</div>'
             : '';
 
-          var rowCls = 'dnotes-note-row' + (isSel ? ' active' : '') + (n._draft && !isSel ? ' is-draft' : '');
-          listHtml += '<div class="' + rowCls + '" onclick="deskSelectNote(\'' + escId + '\')">' +
+          var _nSelMode = !!state.selectionMode;
+          var _nChecked = state.selectedNotes.has(n.id);
+          var rowActive = _nSelMode ? _nChecked : isSel;
+          var _nCheckHtml = _nSelMode ? '<div class="dco-check' + (_nChecked ? ' checked' : '') + '" style="width:20px;height:20px;border-radius:6px;margin-right:2px;flex-shrink:0">' + (_nChecked ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') + '</div>' : '';
+          var rowCls = 'dnotes-note-row' + (rowActive ? ' active' : '') + (n._draft && !rowActive ? ' is-draft' : '');
+          listHtml += '<div class="' + rowCls + '" data-note-id="' + n.id + '" onclick="deskNoteRowClick(\'' + escId + '\', event)" onpointerdown="_dnotePressStart(event,\'' + escId + '\')" onpointerup="_dnotePressEnd()" onpointercancel="_dnotePressEnd()" onpointerleave="_dnotePressEnd()" oncontextmenu="event.preventDefault()">' +
             '<div class="note-row-top">' +
+            _nCheckHtml +
             '<div class="note-dot ' + dotCls + '" style="flex-shrink:0;margin:0"></div>' +
             '<div class="note-row-title" style="flex:1;min-width:0;' + (n.status === 'done' ? 'text-decoration:line-through;color:var(--text-muted)' : '') + '">' + esc(title) + '</div>' +
             '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);opacity:0.5;flex-shrink:0"><polyline points="9 6 15 12 9 18"/></svg>' +
@@ -32848,16 +32853,54 @@
           '</div>';
       }
 
+      // ── Bulk action bar (desktop select mode) — reuses mobile note bulk functions ──
+      var _dnSelMode = !!state.selectionMode;
+      var _dnNoSel = state.selectedNotes.size === 0;
+      var _dnAllSel = listNotes.length > 0 && listNotes.every(function (n) { return state.selectedNotes.has(n.id); });
+      var _dnTrash = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+      var _dnRestore = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>';
+      // Smart status label — matches mobile (Complete / Reopen / Toggle Status)
+      var _dnSelIds = Array.from(state.selectedNotes);
+      var _dnSelNotes = state.notes.filter(function (n) { return _dnSelIds.indexOf(n.id) !== -1; });
+      var _dnAllDone = _dnSelNotes.length > 0 && _dnSelNotes.every(function (n) { return n.status === 'done'; });
+      var _dnAllOpen = _dnSelNotes.length > 0 && _dnSelNotes.every(function (n) { return n.status === 'open'; });
+      var _dnStatusLabel = _dnAllDone ? 'Reopen' : _dnAllOpen ? 'Complete' : 'Toggle Status';
+      var _dnStatusIcon = _dnAllDone
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      var _dnBtns;
+      if (notesTab === 'archive') {
+        _dnBtns = '<button class="btn-cancel" style="flex:0 0 42%" onclick="bulkUnarchiveSelected()" ' + (_dnNoSel ? 'disabled' : '') + '>' + _dnRestore + 'Restore</button>' +
+          '<button class="bulk-btn delete" style="flex:1" onclick="deleteSelected()" ' + (_dnNoSel ? 'disabled' : '') + '>' + _dnTrash + 'Delete</button>';
+      } else if (notesTab === 'bin') {
+        _dnBtns = '<button class="btn-cancel" style="flex:0 0 42%" onclick="bulkRestoreSelected()" ' + (_dnNoSel ? 'disabled' : '') + '>' + _dnRestore + 'Restore</button>' +
+          '<button class="bulk-btn delete" style="flex:1" onclick="deleteSelected()" ' + (_dnNoSel ? 'disabled' : '') + '>' + _dnTrash + 'Delete Forever</button>';
+      } else {
+        _dnBtns = '<button class="btn-cancel" style="flex:0 0 42%" onclick="toggleStatusSelected()" ' + (_dnNoSel ? 'disabled' : '') + '>' + _dnStatusIcon + _dnStatusLabel + '</button>' +
+          '<button class="bulk-btn delete" style="flex:1" onclick="deleteSelected()" ' + (_dnNoSel ? 'disabled' : '') + '>' + _dnTrash + 'Delete</button>';
+      }
+      var _dnotesBulkBar = '<div class="bulk-action-bar ' + (_dnSelMode ? 'show' : '') + '">' +
+        '<div style="display:flex;align-items:center;gap:12px;padding:0 4px 10px">' +
+        '<span class="bulk-count"><span class="n">' + state.selectedNotes.size + '</span> selected</span>' +
+        '<button onclick="toggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;padding:0;font-family:inherit;">' + (_dnAllSel ? 'Deselect all' : 'Select all') + '</button>' +
+        '<span style="flex:1"></span>' +
+        '<button class="bulk-cancel" onclick="toggleSelectionMode()" title="Cancel selection"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+        '</div>' +
+        '<div class="bulk-action-btns" style="width:100%;">' + _dnBtns + '</div>' +
+        '</div>';
+
       return '<div class="dnotes-wrap">' +
         '<div class="dnotes-sidebar" style="width:' + _dnotesSidebarWidth + 'px">' + sidebarHtml + '</div>' +
         '<div class="dj-resize-handle dj-rh-invis" onmousedown="deskNotesResizeStart(event,1)"></div>' +
         '<div class="dnotes-list" style="width:' + _dnotesListWidth + 'px"><div class="desk-panel-days-hdr dj-hdr-with-btn"><span>Notes</span>' +
+        (listNotes.length > 0 ? '<button class="dco-hdr-btn" style="margin-left:auto;margin-right:8px" onclick="' + (_dnSelMode ? 'toggleSelectionMode()' : 'deskNotesEnterSelect()') + '">' + (_dnSelMode ? 'Done' : 'Select') + '</button>' : '') +
         (notesTab === 'notes' ? '<button class="dj-hdr-add-btn" onclick="deskNotesNew()" title="New note">+</button>' : '') +
         (notesTab === 'bin' && binNotes.length > 1 ? '<button onclick="emptyBin()" title="Permanently delete all notes in the bin" style="display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:8px;border:1px solid rgba(var(--priority-high-rgb),0.35);background:rgba(var(--priority-high-rgb),0.08);color:var(--priority-high);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;text-transform:none;letter-spacing:normal">' +
           '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Empty Bin</button>' : '') +
         '</div>' + listHtml + '</div>' +
         '<div class="dj-resize-handle dj-rh-invis" onmousedown="deskNotesResizeStart(event,2)"></div>' +
         '<div class="dnotes-editor"><div class="desk-panel-days-hdr" style="' + (state.deskTagManagerOpen ? 'display:flex;align-items:center;gap:10px' : '') + '">' + (state.deskTagManagerOpen ? '<button onclick="deskCloseTagManager()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;display:flex;align-items:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg><span style="font-weight:700">Notes Tag Manager</span>' : 'Details') + '</div>' + editorHtml + '</div>' +
+        _dnotesBulkBar +
         '</div>';
     }
 
@@ -32874,6 +32917,75 @@
     function deskCloseTagManager() {
       state.deskTagManagerOpen = false;
       render();
+    }
+
+    // ── Desktop Notes multi-select (checkbox mode + long-press + Ctrl/Shift-click) ──
+    let _dnotePressTimer = null;
+    let _dnotePressLocked = false;
+    let _dnoteLastId = null;
+
+    function deskNotesEnterSelect() {
+      state.selectionMode = true;
+      state.selectedNotes.clear();
+      render();
+    }
+
+    function _dnotePressStart(e, id) {
+      if (e && e.pointerType === 'mouse' && e.button !== 0) return;
+      _dnotePressLocked = false;
+      _dnotePressTimer = setTimeout(function () {
+        _dnotePressTimer = null;
+        _dnotePressLocked = true;
+        if (!state.selectionMode) { state.selectionMode = true; state.selectedNotes.clear(); }
+        state.selectedNotes.add(id);
+        _dnoteLastId = id;
+        if (navigator.vibrate) navigator.vibrate(30);
+        render();
+      }, 500);
+    }
+
+    function _dnotePressEnd() {
+      if (_dnotePressTimer) { clearTimeout(_dnotePressTimer); _dnotePressTimer = null; }
+    }
+
+    function _deskNoteSelectRange(fromId, toId) {
+      var rows = document.querySelectorAll('#dnotes-list-scroll .dnotes-note-row');
+      var ids = Array.prototype.map.call(rows, function (r) { return r.getAttribute('data-note-id'); });
+      var i = ids.indexOf(fromId), j = ids.indexOf(toId);
+      if (i < 0 || j < 0) { state.selectedNotes.add(toId); return; }
+      if (i > j) { var t = i; i = j; j = t; }
+      for (var k = i; k <= j; k++) state.selectedNotes.add(ids[k]);
+    }
+
+    function deskNoteRowClick(id, ev) {
+      if (_dnotePressLocked) { _dnotePressLocked = false; return; }
+      ev = ev || window.event;
+      var isCtrl = ev && (ev.ctrlKey || ev.metaKey);
+      var isShift = ev && ev.shiftKey;
+      if (isCtrl) {
+        if (!state.selectionMode) { state.selectionMode = true; state.selectedNotes.clear(); }
+        if (state.selectedNotes.has(id)) state.selectedNotes.delete(id);
+        else state.selectedNotes.add(id);
+        _dnoteLastId = id;
+        render();
+        return;
+      }
+      if (isShift && _dnoteLastId) {
+        if (!state.selectionMode) { state.selectionMode = true; state.selectedNotes.clear(); }
+        _deskNoteSelectRange(_dnoteLastId, id);
+        _dnoteLastId = id;
+        render();
+        return;
+      }
+      if (state.selectionMode) {
+        if (state.selectedNotes.has(id)) state.selectedNotes.delete(id);
+        else state.selectedNotes.add(id);
+        _dnoteLastId = id;
+        render();
+        return;
+      }
+      _dnoteLastId = id;
+      deskSelectNote(id);
     }
 
     // Desktop Notes helper: select a note
@@ -44478,7 +44590,7 @@
       weeksHtml += '</div>';
 
       // ── Panel 2: Callouts for selected week ──
-      var calloutsHtml = '<div class="dco-panel-callouts" style="width:' + _dcoCalloutsWidth + 'px">';
+      var calloutsHtml = '<div class="dco-panel-callouts" id="dco-callouts-scroll" style="width:' + _dcoCalloutsWidth + 'px">';
       if (selWeek) {
         var wd = weeks[selWeek] || {};
         var allCo = wd.callouts || [];
@@ -44702,6 +44814,19 @@
       render();
     }
 
+    // Re-render the callouts view while keeping the list panel's scroll position.
+    // render() is debounced via requestAnimationFrame, so restore must run AFTER
+    // the rebuild — schedule it on the next frame.
+    function _dcoRender() {
+      var el = document.getElementById('dco-callouts-scroll');
+      var top = el ? el.scrollTop : 0;
+      render();
+      requestAnimationFrame(function () {
+        var el2 = document.getElementById('dco-callouts-scroll');
+        if (el2) el2.scrollTop = top;
+      });
+    }
+
     // Desktop long-press (hold left mouse) to enter select mode — mirrors mobile
     let _dcoPressTimer = null;
     let _dcoPressLocked = false;
@@ -44716,7 +44841,7 @@
         state.selectedCallouts.add(id);
         state.dcoLastCoId = id;
         if (navigator.vibrate) navigator.vibrate(30);
-        render();
+        _dcoRender();
       }, 500);
     }
 
@@ -44737,7 +44862,7 @@
         if (state.selectedCallouts.has(coId)) state.selectedCallouts.delete(coId);
         else state.selectedCallouts.add(coId);
         state.dcoLastCoId = coId;
-        render();
+        _dcoRender();
         return;
       }
       // Shift+click: select the range from the last clicked callout
@@ -44745,7 +44870,7 @@
         state.dcoSelectMode = true;
         _dcoSelectRange(state.dcoLastCoId, coId);
         state.dcoLastCoId = coId;
-        render();
+        _dcoRender();
         return;
       }
       // Plain click while in select mode: toggle
@@ -44753,13 +44878,13 @@
         if (state.selectedCallouts.has(coId)) state.selectedCallouts.delete(coId);
         else state.selectedCallouts.add(coId);
         state.dcoLastCoId = coId;
-        render();
+        _dcoRender();
         return;
       }
       // Normal click: open the callout in the detail panel
       state.dcoSelectedCo = coId;
       state.dcoLastCoId = coId;
-      render();
+      _dcoRender();
     }
 
     // Ordered list of callout ids for a week (matches the on-screen order: by date, then array order)
@@ -44798,7 +44923,7 @@
       var allSel = ids.length > 0 && ids.every(function (id) { return state.selectedCallouts.has(id); });
       if (allSel) ids.forEach(function (id) { state.selectedCallouts.delete(id); });
       else ids.forEach(function (id) { state.selectedCallouts.add(id); });
-      render();
+      _dcoRender();
     }
 
     function dcoMoveSelectedBulk() {
