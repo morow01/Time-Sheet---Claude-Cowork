@@ -11204,6 +11204,12 @@
       border: none;
     }
 
+    .bulk-btn.move {
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
     .bulk-btn:disabled {
       opacity: 0.38;
       pointer-events: none;
@@ -19345,6 +19351,10 @@
         overflow-y: auto;
         flex-shrink: 0;
       }
+      /* Keep header/stats/rows at natural height so the panel scrolls instead of squashing the stats grid */
+      .dco-panel-weeks > * {
+        flex-shrink: 0;
+      }
 
       .dco-panel-callouts {
         width: 360px;
@@ -19360,6 +19370,21 @@
         flex: 1;
         background: var(--bg-card);
         overflow-y: auto;
+      }
+
+      .dco-check {
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        border: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .dco-check.checked {
+        background: var(--accent);
+        border-color: var(--accent);
       }
 
       .dco-panel-detail .desk-detail-body {
@@ -21535,6 +21560,7 @@
   <div id="note-confirm-modal" class="hidden"></div>
   <!-- Note to task day picker -->
   <div id="task-picker-modal" class="hidden"></div>
+  <div id="co-move-modal" class="hidden"></div>
   <!-- Reminder dialog -->
   <div id="remind-modal" class="hidden" style="position:relative;z-index:10100"></div>
 
@@ -21543,7 +21569,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.42';
+    const VERSION = '6.6.53';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37682,6 +37708,7 @@
         ['local-exit-modal', () => { const el = document.getElementById('local-exit-modal'); if (el) el.classList.add('hidden'); }],
         ['local-disconnect-modal', () => { const el = document.getElementById('local-disconnect-modal'); if (el) el.classList.add('hidden'); }],
         ['local-merge-modal', () => { const el = document.getElementById('local-merge-modal'); if (el) el.classList.add('hidden'); }],
+        ['co-move-modal', () => typeof closeCoMovePicker === 'function' && closeCoMovePicker()],
         ['paste-ticket-modal', () => typeof closePasteTicket === 'function' && closePasteTicket()],
         ['rtn-picker-modal', () => typeof closeRoutinesSitePicker === 'function' && closeRoutinesSitePicker()],
         ['rtn-log-modal', () => typeof closeRoutinesLogModal === 'function' && closeRoutinesLogModal()],
@@ -37717,6 +37744,11 @@
       if (state && state.coSelectionMode) {
         e.preventDefault();
         if (typeof coToggleSelectionMode === 'function') coToggleSelectionMode();
+        return;
+      }
+      if (state && state.dcoSelectMode) {
+        e.preventDefault();
+        if (typeof dcoExitSelect === 'function') dcoExitSelect();
         return;
       }
       if (state && state.isMenuOpen) {
@@ -44427,11 +44459,19 @@
         weeksHtml += _dcoWeekRow(curWeekStart, true, curWeekStart === selWeek);
       }
 
-      // Previous weeks — everything except current, newest first
-      var pastWeeks = sortedWeeks.filter(function (wk) { return wk !== curWeekStart; });
-      if (pastWeeks.length > 0) {
+      // Upcoming weeks (future, nearest first) then Previous weeks (past, newest first)
+      var nonCurrent = sortedWeeks.filter(function (wk) { return wk !== curWeekStart; });
+      var upcomingW = nonCurrent.filter(function (wk) { return wk > curWeekStart; }).slice().reverse();
+      var previousW = nonCurrent.filter(function (wk) { return wk < curWeekStart; });
+      if (upcomingW.length > 0) {
+        weeksHtml += '<div class="dco-panel-hdr">Upcoming</div>';
+        upcomingW.forEach(function (wk) {
+          weeksHtml += _dcoWeekRow(wk, false, wk === selWeek);
+        });
+      }
+      if (previousW.length > 0) {
         weeksHtml += '<div class="dco-panel-hdr">Previous</div>';
-        pastWeeks.forEach(function (wk) {
+        previousW.forEach(function (wk) {
           weeksHtml += _dcoWeekRow(wk, false, wk === selWeek);
         });
       }
@@ -44443,18 +44483,34 @@
         var wd = weeks[selWeek] || {};
         var allCo = wd.callouts || [];
 
-        calloutsHtml += '<div class="desk-panel-days-hdr">' +
+        var selMode = !!state.dcoSelectMode;
+        calloutsHtml += '<div class="desk-panel-days-hdr dj-hdr-with-btn">' +
           '<span>' + formatWeekRange(selWeek) + '<span class="dco-hdr-badge">' + allCo.length + '</span></span>' +
+          (allCo.length > 0 ? '<button class="dco-hdr-btn" onclick="' + (selMode ? 'dcoExitSelect()' : 'dcoEnterSelect()') + '">' + (selMode ? 'Done' : 'Select') + '</button>' : '') +
           '</div>';
 
-        calloutsHtml += '<div style="position:sticky;top:0;z-index:10;display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
-          '<button onclick="dcoAddCallout()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
-          'Add Callout</button>' +
-          '<button onclick="openPasteTicket()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>' +
-          'Paste Fault</button>' +
-          '</div>';
+        if (selMode) {
+          var _selCount = state.selectedCallouts.size;
+          var _orderedIds = _dcoOrderedIds(selWeek);
+          var _allSel = _orderedIds.length > 0 && _orderedIds.every(function (id) { return state.selectedCallouts.has(id); });
+          var _dis = _selCount === 0 ? ';opacity:0.4;pointer-events:none' : '';
+          calloutsHtml += '<div style="position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
+            '<span style="font-size:13px;font-weight:700;color:var(--text-primary)">' + _selCount + ' selected</span>' +
+            '<button onclick="dcoToggleSelectAll()" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:0">' + (_allSel ? 'Deselect all' : 'Select all') + '</button>' +
+            '<span style="flex:1"></span>' +
+            '<button onclick="dcoMoveSelectedBulk()" style="display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:9px;border:1px solid var(--accent);background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit' + _dis + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>Move</button>' +
+            '<button onclick="dcoDeleteSelectedBulk()" style="display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:9px;border:1px solid var(--priority-high-border);background:var(--priority-high-bg);color:var(--priority-high);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit' + _dis + '"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Delete</button>' +
+            '</div>';
+        } else {
+          calloutsHtml += '<div style="position:sticky;top:0;z-index:10;display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
+            '<button onclick="dcoAddCallout()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+            'Add Callout</button>' +
+            '<button onclick="openPasteTicket()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>' +
+            'Paste Fault</button>' +
+            '</div>';
+        }
 
         // Auto-select first callout if none selected
         if (!state.dcoSelectedCo || !allCo.find(function (c) { return c.id === state.dcoSelectedCo; })) {
@@ -44485,12 +44541,16 @@
 
           byDate[dateStr].forEach(function (co) {
             globalIdx++;
-            var isSel = co.id === state.dcoSelectedCo;
+            var isChecked = state.selectedCallouts.has(co.id);
+            var isSel = selMode ? isChecked : (co.id === state.dcoSelectedCo);
             var fault = co.fault || '';
             var site = co.site || '';
             var ticket = co.ticket || '';
-            calloutsHtml += '<div class="dco-co-row' + (isSel ? ' dco-co-selected' : '') + '" onclick="dcoSelectCo(\'' + co.id + '\')">' +
-              '<div class="task-num">' + globalIdx + '</div>' +
+            var numHtml = selMode
+              ? '<div class="dco-check' + (isChecked ? ' checked' : '') + '">' + (isChecked ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') + '</div><div class="task-num">' + globalIdx + '</div>'
+              : '<div class="task-num">' + globalIdx + '</div>';
+            calloutsHtml += '<div class="dco-co-row' + (isSel ? ' dco-co-selected' : '') + '" onclick="dcoSelectCo(\'' + co.id + '\', event)" onpointerdown="dcoPressStart(event,\'' + co.id + '\')" onpointerup="dcoPressEnd()" onpointercancel="dcoPressEnd()" onpointerleave="dcoPressEnd()" oncontextmenu="event.preventDefault()">' +
+              numHtml +
               '<div style="flex:1;min-width:0">' +
               '<div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (fault ? esc(fault.substring(0, 60)) : '<span style="opacity:0.4;font-style:italic">No description</span>') + '</div>' +
               '<div style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;margin-top:2px">' +
@@ -44581,7 +44641,10 @@
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard</button>' +
           '</div>'
           : '<div class="desk-detail-actions">' +
-          '<button class="desk-detail-btn danger" style="margin-left:auto" onclick="dcoDeleteCallout()">' +
+          '<button class="desk-detail-btn" style="margin-left:auto;color:var(--accent);border-color:var(--accent)" onclick="dcoMoveCallout()">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>' +
+          ' Move</button>' +
+          '<button class="desk-detail-btn danger" onclick="dcoDeleteCallout()">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>' +
           ' Delete</button>' +
           '</div>';
@@ -44639,9 +44702,127 @@
       render();
     }
 
-    function dcoSelectCo(coId) {
+    // Desktop long-press (hold left mouse) to enter select mode — mirrors mobile
+    let _dcoPressTimer = null;
+    let _dcoPressLocked = false;
+
+    function dcoPressStart(e, id) {
+      if (e && e.pointerType === 'mouse' && e.button !== 0) return;
+      _dcoPressLocked = false;
+      _dcoPressTimer = setTimeout(function () {
+        _dcoPressTimer = null;
+        _dcoPressLocked = true;
+        if (!state.dcoSelectMode) { state.dcoSelectMode = true; state.selectedCallouts.clear(); }
+        state.selectedCallouts.add(id);
+        state.dcoLastCoId = id;
+        if (navigator.vibrate) navigator.vibrate(30);
+        render();
+      }, 500);
+    }
+
+    function dcoPressEnd() {
+      if (_dcoPressTimer) { clearTimeout(_dcoPressTimer); _dcoPressTimer = null; }
+    }
+
+    function dcoSelectCo(coId, ev) {
+      // Swallow the click that follows a long-press
+      if (_dcoPressLocked) { _dcoPressLocked = false; return; }
+      ev = ev || window.event;
+      var isCtrl = ev && (ev.ctrlKey || ev.metaKey);
+      var isShift = ev && ev.shiftKey;
+
+      // Ctrl/Cmd+click: toggle this callout in the selection (enters select mode)
+      if (isCtrl) {
+        state.dcoSelectMode = true;
+        if (state.selectedCallouts.has(coId)) state.selectedCallouts.delete(coId);
+        else state.selectedCallouts.add(coId);
+        state.dcoLastCoId = coId;
+        render();
+        return;
+      }
+      // Shift+click: select the range from the last clicked callout
+      if (isShift && state.dcoLastCoId) {
+        state.dcoSelectMode = true;
+        _dcoSelectRange(state.dcoLastCoId, coId);
+        state.dcoLastCoId = coId;
+        render();
+        return;
+      }
+      // Plain click while in select mode: toggle
+      if (state.dcoSelectMode) {
+        if (state.selectedCallouts.has(coId)) state.selectedCallouts.delete(coId);
+        else state.selectedCallouts.add(coId);
+        state.dcoLastCoId = coId;
+        render();
+        return;
+      }
+      // Normal click: open the callout in the detail panel
       state.dcoSelectedCo = coId;
+      state.dcoLastCoId = coId;
       render();
+    }
+
+    // Ordered list of callout ids for a week (matches the on-screen order: by date, then array order)
+    function _dcoOrderedIds(wk) {
+      var wd = state.callouts.weeks[wk];
+      if (!wd || !wd.callouts) return [];
+      var byDate = {};
+      wd.callouts.forEach(function (c) { (byDate[c.date] = byDate[c.date] || []).push(c); });
+      var ids = [];
+      Object.keys(byDate).sort().forEach(function (d) { byDate[d].forEach(function (c) { ids.push(c.id); }); });
+      return ids;
+    }
+
+    function _dcoSelectRange(fromId, toId) {
+      var ids = _dcoOrderedIds(state.dcoSelectedWeek);
+      var i = ids.indexOf(fromId), j = ids.indexOf(toId);
+      if (i < 0 || j < 0) { state.selectedCallouts.add(toId); return; }
+      if (i > j) { var t = i; i = j; j = t; }
+      for (var k = i; k <= j; k++) state.selectedCallouts.add(ids[k]);
+    }
+
+    function dcoEnterSelect() {
+      state.dcoSelectMode = true;
+      state.selectedCallouts.clear();
+      render();
+    }
+
+    function dcoExitSelect() {
+      state.dcoSelectMode = false;
+      state.selectedCallouts.clear();
+      render();
+    }
+
+    function dcoToggleSelectAll() {
+      var ids = _dcoOrderedIds(state.dcoSelectedWeek);
+      var allSel = ids.length > 0 && ids.every(function (id) { return state.selectedCallouts.has(id); });
+      if (allSel) ids.forEach(function (id) { state.selectedCallouts.delete(id); });
+      else ids.forEach(function (id) { state.selectedCallouts.add(id); });
+      render();
+    }
+
+    function dcoMoveSelectedBulk() {
+      if (state.selectedCallouts.size === 0) return;
+      _coMovePicker = { targetWeek: null, srcWeek: state.dcoSelectedWeek, ids: Array.from(state.selectedCallouts) };
+      renderCoMovePicker();
+    }
+
+    function dcoDeleteSelectedBulk() {
+      if (state.selectedCallouts.size === 0) return;
+      var count = state.selectedCallouts.size;
+      showConfirm('Delete callouts?', 'Delete ' + count + ' selected callout' + (count === 1 ? '' : 's') + '?', async function () {
+        var toDelete = Array.from(state.selectedCallouts);
+        var wd = state.callouts.weeks[state.dcoSelectedWeek];
+        if (wd) {
+          wd.callouts = (wd.callouts || []).filter(function (c) { return toDelete.indexOf(c.id) === -1; });
+          await saveCallouts();
+        }
+        state.selectedCallouts.clear();
+        state.dcoSelectMode = false;
+        if (state.dcoSelectedCo && toDelete.indexOf(state.dcoSelectedCo) !== -1) state.dcoSelectedCo = null;
+        render();
+        showToast(toDelete.length + ' callout' + (toDelete.length === 1 ? '' : 's') + ' deleted');
+      });
     }
 
     function dcoAddCallout() {
@@ -44690,12 +44871,16 @@
 
     function dcoDeleteCallout() {
       if (!state.dcoSelectedWeek || !state.dcoSelectedCo) return;
-      var wd = state.callouts.weeks[state.dcoSelectedWeek];
-      if (!wd || !wd.callouts) return;
-      wd.callouts = wd.callouts.filter(function (c) { return c.id !== state.dcoSelectedCo; });
-      state.dcoSelectedCo = null;
-      _coScheduleSave();
-      render();
+      var delId = state.dcoSelectedCo;
+      showConfirm('Delete Callout?', 'This cannot be undone.', async function () {
+        var wd = state.callouts.weeks[state.dcoSelectedWeek];
+        if (!wd || !wd.callouts) return;
+        wd.callouts = wd.callouts.filter(function (c) { return c.id !== delId; });
+        if (state.dcoSelectedCo === delId) state.dcoSelectedCo = null;
+        await saveCallouts();
+        render();
+        showToast('Callout deleted');
+      });
     }
 
     function dcoSaveDraft() {
@@ -44850,6 +45035,28 @@
       return end <= new Date();
     }
 
+    function _coWeekCardHtml(weekKey) {
+      const onCall = state.callouts.onCall || {};
+      const wd = state.callouts.weeks?.[weekKey];
+      const calloutCount = wd ? (wd.callouts || []).length : 0;
+      const ocType = onCall[weekKey];
+      const badgeHtml = ocType === 'extra'
+        ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(var(--amber-rgb), 0.15);color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
+        : '';
+      const badgeBg = ocType === 'extra' ? 'rgba(var(--amber-rgb), 0.15)' : 'var(--accent-light)';
+      const badgeColor = ocType === 'extra' ? '#F59E0B' : 'var(--accent)';
+      return `<div style="margin:0 14px 8px;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);cursor:pointer" onclick="coSelectWeek('${weekKey}')">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
+          <div class="task-num" style="background:${badgeBg};color:${badgeColor}">${calloutCount}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:600;color:var(--text-primary)">${formatWeekRange(weekKey)}${badgeHtml}</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${calloutCount} incident${calloutCount !== 1 ? 's' : ''}</div>
+          </div>
+          <span style="font-size:14px;color:var(--text-muted)">›</span>
+        </div>
+      </div>`;
+    }
+
     function renderCalloutsList() {
       const onCall = state.callouts.onCall || {};
       const weeks = Object.entries(state.callouts.weeks || {}).sort().reverse();
@@ -44914,9 +45121,11 @@
       // Only show weeks that are on-call/extra, or have actual fault entries
       pastWeeks.forEach(([wk]) => { if (onCall[wk] || (state.callouts.weeks?.[wk]?.callouts?.length > 0)) allPastKeys.add(wk); });
       Object.keys(onCall).forEach(wk => { if (wk !== curWeekStart && _ocIsPast(wk)) allPastKeys.add(wk); });
-      const sortedPast = Array.from(allPastKeys).sort().reverse();
+      const sortedAll = Array.from(allPastKeys).sort();
+      const upcomingWeeks = sortedAll.filter(k => k > curWeekStart);            // ascending — nearest first
+      const previousWeeks = sortedAll.filter(k => k < curWeekStart).reverse();  // descending — most recent first
 
-      if (sortedPast.length > 0) {
+      if (upcomingWeeks.length > 0 || previousWeeks.length > 0) {
         // Stats bar
         html += `<div style="margin:14px 14px 8px">`;
         html += `<div class="stat-grid four-col">
@@ -44927,27 +45136,14 @@
         </div>`;
         html += `</div>`;
 
-        html += `<div class="act-field-label" style="padding:4px 16px 4px">Previous Weeks</div>`;
-        sortedPast.forEach(weekKey => {
-          const wd = state.callouts.weeks?.[weekKey];
-          const calloutCount = wd ? (wd.callouts || []).length : 0;
-          const ocType = onCall[weekKey];
-          const badgeHtml = ocType === 'extra'
-            ? `<span style="padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(var(--amber-rgb), 0.15);color:#F59E0B;margin-left:6px">EXTRA SHIFT</span>`
-            : '';
-          const badgeBg = ocType === 'extra' ? 'rgba(var(--amber-rgb), 0.15)' : 'var(--accent-light)';
-          const badgeColor = ocType === 'extra' ? '#F59E0B' : 'var(--accent)';
-          html += `<div style="margin:0 14px 8px;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);cursor:pointer" onclick="coSelectWeek('${weekKey}')">
-            <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
-              <div class="task-num" style="background:${badgeBg};color:${badgeColor}">${calloutCount}</div>
-              <div style="flex:1;min-width:0">
-                <div style="font-size:14px;font-weight:600;color:var(--text-primary)">${formatWeekRange(weekKey)}${badgeHtml}</div>
-                <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${calloutCount} incident${calloutCount !== 1 ? 's' : ''}</div>
-              </div>
-              <span style="font-size:14px;color:var(--text-muted)">›</span>
-            </div>
-          </div>`;
-        });
+        if (upcomingWeeks.length > 0) {
+          html += `<div class="act-field-label" style="padding:4px 16px 4px">Upcoming Weeks</div>`;
+          upcomingWeeks.forEach(weekKey => { html += _coWeekCardHtml(weekKey); });
+        }
+        if (previousWeeks.length > 0) {
+          html += `<div class="act-field-label" style="padding:4px 16px 4px">Previous Weeks</div>`;
+          previousWeeks.forEach(weekKey => { html += _coWeekCardHtml(weekKey); });
+        }
       }
 
       html += `</div>`;
@@ -45048,6 +45244,10 @@
             <button class="bulk-cancel" onclick="coToggleSelectionMode()" title="Cancel selection"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div class="bulk-action-btns" style="width:100%;">
+            <button class="bulk-btn move" onclick="coMoveSelected()" ${noCoSel ? 'disabled' : ''}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+              Move
+            </button>
             <button class="bulk-btn delete" onclick="coDeleteSelected()" ${noCoSel ? 'disabled' : ''}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               Delete
@@ -46005,6 +46205,134 @@
         render();
         showToast(`${toDelete.length} callout${toDelete.length === 1 ? '' : 's'} deleted`);
       });
+    }
+
+    // ── Move callouts to another on-call week ──
+    let _coMovePicker = { targetWeek: null, srcWeek: null, ids: [] };
+
+    function _coEligibleMoveWeeks() {
+      const src = _coMovePicker.srcWeek;
+      const onCall = (state.callouts && state.callouts.onCall) || {};
+      const list = Object.keys(onCall).filter(k => (onCall[k] === 'oncall' || onCall[k] === 'extra') && k !== src);
+      // Upcoming weeks (nearest first), then past weeks (nearest first)
+      list.sort((a, b) => {
+        const au = a > src, bu = b > src;
+        if (au && bu) return a < b ? -1 : 1;
+        if (!au && !bu) return a > b ? -1 : 1;
+        return au ? -1 : 1;
+      });
+      return list;
+    }
+
+    // Mobile: move all bulk-selected callouts
+    function coMoveSelected() {
+      if (state.selectedCallouts.size === 0) return;
+      _coMovePicker = { targetWeek: null, srcWeek: state.calloutsSelectedWeek, ids: Array.from(state.selectedCallouts) };
+      renderCoMovePicker();
+    }
+
+    // Desktop: move the single selected callout from the detail panel
+    function dcoMoveCallout() {
+      if (!state.dcoSelectedWeek || !state.dcoSelectedCo) return;
+      _coMovePicker = { targetWeek: null, srcWeek: state.dcoSelectedWeek, ids: [state.dcoSelectedCo] };
+      renderCoMovePicker();
+    }
+
+    function closeCoMovePicker() {
+      const m = document.getElementById('co-move-modal');
+      if (m) { m.classList.add('hidden'); m.innerHTML = ''; }
+    }
+
+    function coMoveSelectWeek(wk) {
+      _coMovePicker.targetWeek = (_coMovePicker.targetWeek === wk) ? null : wk;
+      // Patch selection in place (avoid re-rendering the whole sheet — that replays the slide-up animation)
+      const modal = document.getElementById('co-move-modal');
+      if (!modal) return;
+      const target = _coMovePicker.targetWeek;
+      const checkSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+      modal.querySelectorAll('.task-picker-day').forEach(row => {
+        const isSel = row.getAttribute('data-wk') === target;
+        row.classList.toggle('selected', isSel);
+        const chk = row.querySelector('.task-picker-day-check');
+        if (chk) { chk.classList.toggle('checked', isSel); chk.innerHTML = isSel ? checkSvg : ''; }
+      });
+      const btn = modal.querySelector('.task-picker-actions .btn-add-task');
+      if (btn) btn.disabled = !target;
+    }
+
+    function renderCoMovePicker() {
+      const modal = document.getElementById('co-move-modal');
+      if (!modal) return;
+      const count = _coMovePicker.ids.length;
+      const src = _coMovePicker.srcWeek;
+      const weeks = _coEligibleMoveWeeks();
+      const target = _coMovePicker.targetWeek;
+      const nextWk = weeks.find(k => k > src);
+
+      let rowsHtml;
+      if (weeks.length === 0) {
+        rowsHtml = '<div style="text-align:center;padding:24px 12px;color:var(--text-muted);font-size:13px;line-height:1.5">No other on-call weeks in your schedule.<br>Mark a week on-call in the schedule first.</div>';
+      } else {
+        rowsHtml = weeks.map(wk => {
+          const isSel = target === wk;
+          const isExtra = state.callouts.onCall[wk] === 'extra';
+          const isNext = wk === nextWk;
+          const checkCls = isSel ? 'task-picker-day-check checked' : 'task-picker-day-check';
+          const checkSvg = isSel ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
+          const nextBadge = isNext ? ' <span class="task-picker-day-today">Next</span>' : '';
+          return '<div class="task-picker-day' + (isSel ? ' selected' : '') + '" data-wk="' + wk + '" onclick="coMoveSelectWeek(\'' + wk + '\')">' +
+            '<div class="' + checkCls + '">' + checkSvg + '</div>' +
+            '<div class="task-picker-day-name">' + esc(formatWeekRange(wk)) + nextBadge + '</div>' +
+            '<div class="task-picker-day-date">' + (isExtra ? 'Extra shift' : 'On-call') + '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      const hasSel = !!target;
+      modal.innerHTML = '<div class="task-picker-overlay" style="z-index:2000" onclick="if(event.target===this)closeCoMovePicker()">' +
+        '<div class="task-picker-sheet">' +
+          '<div class="task-picker-handle"></div>' +
+          '<div class="task-picker-title">Move ' + count + ' callout' + (count !== 1 ? 's' : '') + '</div>' +
+          '<div class="task-picker-sub">Choose an on-call week to move to.</div>' +
+          '<div style="padding:0 12px 4px;"><span style="font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase;">Select Week</span></div>' +
+          '<div class="task-picker-days">' + rowsHtml + '</div>' +
+          '<div class="task-picker-actions">' +
+            '<button class="btn-cancel" onclick="closeCoMovePicker()">Cancel</button>' +
+            '<button class="btn-add-task" ' + (hasSel ? '' : 'disabled') + ' onclick="executeCoMove()">' +
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg> Move' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+      modal.classList.remove('hidden');
+    }
+
+    async function executeCoMove() {
+      const target = _coMovePicker.targetWeek;
+      const toMove = _coMovePicker.ids || [];
+      const src = _coMovePicker.srcWeek;
+      if (!target || toMove.length === 0) return;
+      const srcWd = state.callouts.weeks[src];
+      if (!srcWd) { closeCoMovePicker(); return; }
+      if (!state.callouts.weeks[target]) state.callouts.weeks[target] = { startDate: target, callouts: [] };
+      const tgtWd = state.callouts.weeks[target];
+      if (!tgtWd.callouts) tgtWd.callouts = [];
+      const moving = (srcWd.callouts || []).filter(c => toMove.indexOf(c.id) !== -1);
+      srcWd.callouts = (srcWd.callouts || []).filter(c => toMove.indexOf(c.id) === -1);
+      moving.forEach(c => { delete c._draft; tgtWd.callouts.push(c); });
+      await saveCallouts();
+      // Clear mobile + desktop selection state
+      state.selectedCallouts.clear();
+      state.coSelectionMode = false;
+      state.dcoSelectMode = false;
+      state.calloutsExpandedId = null;
+      state.calloutsEditId = null;
+      state.calloutsNotesOpen = false;
+      // Clear desktop selection if the moved callout was the one open
+      if (state.dcoSelectedCo && toMove.indexOf(state.dcoSelectedCo) !== -1) state.dcoSelectedCo = null;
+      closeCoMovePicker();
+      render();
+      showToast(moving.length + ' callout' + (moving.length !== 1 ? 's' : '') + ' moved');
     }
 
     // ============================================================
