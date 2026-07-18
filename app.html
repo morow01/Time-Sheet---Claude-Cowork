@@ -21589,7 +21589,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.64';
+    const VERSION = '6.6.66';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45502,6 +45502,9 @@
             <button class="act-action-btn act-action-delete" onclick="event.stopPropagation(); coDelete()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
             </button>` : `
+            <button class="act-action-btn" style="flex:1;color:var(--accent);border:1px solid var(--accent);background:var(--accent-light)" onclick="event.stopPropagation(); coMoveSingle('${esc(id)}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg> Move
+            </button>
             <button class="act-action-btn act-action-delete" style="flex:1" onclick="event.stopPropagation(); coDelete()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Delete Callout
             </button>`}
@@ -46375,6 +46378,13 @@
     function coMoveSelected() {
       if (state.selectedCallouts.size === 0) return;
       _coMovePicker = { targetWeek: null, srcWeek: state.calloutsSelectedWeek, ids: Array.from(state.selectedCallouts) };
+      renderCoMovePicker();
+    }
+
+    // Mobile: move a single callout from its expanded card
+    function coMoveSingle(id) {
+      if (!id) return;
+      _coMovePicker = { targetWeek: null, srcWeek: state.calloutsSelectedWeek, ids: [id] };
       renderCoMovePicker();
     }
 
