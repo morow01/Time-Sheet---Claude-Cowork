@@ -9301,6 +9301,18 @@
       /* required for selectedCell::after overlay and column-resize-handle */
       overflow: hidden;
       /* contain the resize handle so it never affects row height */
+      /* Wrap long words/URLs so a column can be resized narrower than its longest token */
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* Ensure long links/words inside cells wrap too (URLs are otherwise unbreakable) */
+    :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) td a,
+    :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) th a,
+    :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) td p,
+    :is(#note-fs-editor .ProseMirror, #dj-editor-mount .ProseMirror, .tt-prose) th p {
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
 
     /* Strip hardcoded inline backgrounds from pasted/saved table content on non-default themes */
@@ -16660,6 +16672,14 @@
       display: none !important;
     }
 
+    /* Callout card expand chevron: right when collapsed, rotates down when expanded */
+    .co-card .co-chevron {
+      transition: transform 0.22s ease;
+    }
+    .co-card.expanded .co-chevron {
+      transform: rotate(90deg);
+    }
+
     /* ===== ON-CALL SCHEDULE OVERLAY ===== */
     .oc-overlay {
       position: fixed;
@@ -21569,7 +21589,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.57';
+    const VERSION = '6.6.64';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27631,7 +27651,7 @@
         return html;
       })();
 
-      const chevronSvg = `<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)'}"><path d="M4 6l4 4 4-4" stroke="var(--text-muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      const chevronSvg = `<svg class="sum-chevron-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(90deg)' : 'rotate(0deg)'}"><polyline points="9 6 15 12 9 18"/></svg>`;
 
       const summaryHtml = `
   <div class="sum-section">
@@ -27762,7 +27782,7 @@
           '</div>';
       });
       var deskSumOpen = state.showSummary;
-      var deskChevron = '<svg class="sum-chevron-svg" width="14" height="14" viewBox="0 0 16 16" fill="none" style="transition:transform 0.22s;transform:' + (deskSumOpen ? 'rotate(180deg)' : 'rotate(0deg)') + '"><path d="M4 6l4 4 4-4" stroke="var(--text-muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var deskChevron = '<svg class="sum-chevron-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.22s;transform:' + (deskSumOpen ? 'rotate(90deg)' : 'rotate(0deg)') + '"><polyline points="9 6 15 12 9 18"/></svg>';
 
       var deskSummaryHtml = '<div class="sum-section" style="margin:0">' +
         '<button onclick="toggleSummary()" class="sum-new-head">' +
@@ -31311,7 +31331,7 @@
       const tableWrap = document.querySelector('.sum-table-wrap');
       const chevron = document.querySelector('.sum-chevron-svg');
       if (tableWrap) tableWrap.classList.toggle('open', state.showSummary);
-      if (chevron) chevron.style.transform = state.showSummary ? 'rotate(180deg)' : 'rotate(0deg)';
+      if (chevron) chevron.style.transform = state.showSummary ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 
     function prevWeek() {
@@ -44646,9 +44666,10 @@
           var dayNum = d.getDate();
           var monthShort = d.toLocaleDateString('en-IE', { month: 'short' });
           var items = byDate[dateStr];
-          calloutsHtml += '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px">' +
+          calloutsHtml += '<div style="display:flex;align-items:center;gap:9px;padding:12px 14px 7px">' +
             '<span style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">' + dayName + ' ' + dayNum + ' ' + monthShort + '</span>' +
-            '<span style="font-size:11px;color:var(--text-muted);font-weight:500">' + items.length + ' callout' + (items.length !== 1 ? 's' : '') + '</span>' +
+            '<span style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);opacity:0.35;flex-shrink:0"></span>' +
+            '<span style="font-size:11px;font-weight:800;color:#fff;background:var(--accent);padding:2px 10px;border-radius:20px;letter-spacing:0.02em">' + items.length + ' callout' + (items.length !== 1 ? 's' : '') + '</span>' +
             '</div>';
 
           byDate[dateStr].forEach(function (co) {
@@ -45294,7 +45315,7 @@
       let html = `<div class="co-page" style="${state.coSelectionMode ? 'padding-bottom:100px' : ''}">`;
       // Header
       html += `<div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--bg-card)">
-        <button class="back-btn" onclick="coBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="hist-icon-btn" onclick="coBack()" title="Back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div style="flex:1">
           <div style="font-size:15px;font-weight:700;color:var(--text-primary)">${esc(rangeStr)}</div>
           <div style="font-size:12px;color:var(--text-muted)">${allCallouts.length} callout${allCallouts.length !== 1 ? 's' : ''}</div>
@@ -45334,9 +45355,10 @@
           const monthShort = d.toLocaleDateString('en-IE', { month: 'short' });
           const items = calloutsByDate[dateStr];
           // Subtle day label
-          html += `<div style="display:flex;align-items:center;gap:8px;padding:10px 2px 6px">
+          html += `<div style="display:flex;align-items:center;gap:9px;padding:12px 2px 7px">
             <span style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">${dayName} ${dayNum} ${monthShort}</span>
-            <span style="font-size:11px;color:var(--text-muted);font-weight:500">${items.length} callout${items.length !== 1 ? 's' : ''}</span>
+            <span style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);opacity:0.35;flex-shrink:0"></span>
+            <span style="font-size:11px;font-weight:800;color:#fff;background:var(--accent);padding:2px 10px;border-radius:20px;letter-spacing:0.02em">${items.length} callout${items.length !== 1 ? 's' : ''}</span>
           </div>`;
           items.forEach(co => {
             globalIdx++;
@@ -45414,7 +45436,7 @@
               </div>
             </div>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted)"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg class="co-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted)"><polyline points="9 18 15 12 9 6"/></svg>
         </div>`;
 
       // Expanded detail — only render when expanded.
