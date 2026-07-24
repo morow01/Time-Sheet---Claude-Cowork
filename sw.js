@@ -100,17 +100,24 @@ self.addEventListener('fetch', e => {
   // Cache GET requests; ignore Firestore WebSocket, analytics, or Google Auth POSTs
   if (e.request.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
-  // Network-first for all whitelisted same-origin & CDN requests: always serve latest when online,
-  // fall back to cache when offline. Fixes stale /app and handles offline CDN resources.
+  // Stale-while-revalidate: serve from cache instantly, refresh the cache in the
+  // background. In weak-signal areas the old network-first strategy stalled on every
+  // request (20-60s OS timeout each) before falling back to cache. Trade-off: after
+  // a deploy, users get the new version on the launch after next, not immediately.
   e.respondWith(
-    fetch(e.request)
-      .then(res => {
+    caches.match(e.request).then(cached => {
+      const network = fetch(e.request).then(res => {
         if (res.ok || res.type === 'opaque') {
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      })
-      .catch(() => caches.match(e.request))
+      });
+      if (cached) {
+        e.waitUntil(network.catch(() => { }));
+        return cached;
+      }
+      return network.catch(() => caches.match(e.request));
+    })
   );
 });
