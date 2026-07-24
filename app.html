@@ -21659,7 +21659,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.87';
+    const VERSION = '6.6.88';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -51344,6 +51344,10 @@ QUESTION: ${query}`;
       if (!isOpen) {
         _ttPrepCellPopupButtons();
         _ttPositionCellPopup();
+        // Blur the editor so the native caret / selection handle isn't drawn
+        // on top of the popup (Android composites it above all page content).
+        // Popup actions restore focus via chain().focus() when they run.
+        try { _tiptapEditor?.view?.dom?.blur(); } catch (_) { }
       }
     }
 
