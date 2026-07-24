@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.82';
+    const VERSION = '6.6.83';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50862,6 +50862,9 @@ QUESTION: ${query}`;
       });
       on('tt-col-before', () => e.chain().focus().addColumnBefore().run());
       on('tt-col-after', () => e.chain().focus().addColumnAfter().run());
+      on('tt-col-narrow', () => _ttAdjustColWidth(e, -20));
+      on('tt-col-wide', () => _ttAdjustColWidth(e, 20));
+      on('tt-col-fit', () => _ttResetColWidths(e));
       on('tt-col-del', async () => {
         const ok = await showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true });
         if (ok) e.chain().focus().deleteColumn().run();
@@ -51920,6 +51923,73 @@ QUESTION: ${query}`;
     // whose columns haven't been manually resized.  The plugin sets min-width =
     // 100px × N cols even when no colwidths are stored.  Tables where the user
     // has dragged a column (col elements get width) are left alone.
+    // ── Touch-friendly column width controls ──
+    // The columnResizing plugin's drag handles are mouse-only (hover-activated),
+    // so on mobile columns can't be resized at all. These step the current
+    // column's stored colwidth via toolbar buttons instead.
+    function _ttFindCellCtx(editor) {
+      const $pos = editor.state.selection.$anchor;
+      let cellDepth = -1, tableDepth = -1;
+      for (let d = $pos.depth; d > 0; d--) {
+        const n = $pos.node(d).type.name;
+        if ((n === 'tableCell' || n === 'tableHeader') && cellDepth < 0) cellDepth = d;
+        if (n === 'table') { tableDepth = d; break; }
+      }
+      if (cellDepth < 0 || tableDepth < 0) return null;
+      const row = $pos.node(cellDepth - 1);
+      const cellIndex = $pos.index(cellDepth - 1);
+      let colIndex = 0;
+      for (let i = 0; i < cellIndex; i++) colIndex += row.child(i).attrs.colspan || 1;
+      return {
+        $pos, cellDepth, colIndex,
+        table: $pos.node(tableDepth),
+        tableStart: $pos.start(tableDepth)
+      };
+    }
+
+    function _ttAdjustColWidth(editor, delta) {
+      const ctx = _ttFindCellCtx(editor);
+      if (!ctx) return;
+      const cellNode = ctx.$pos.node(ctx.cellDepth);
+      let base = cellNode.attrs.colwidth && cellNode.attrs.colwidth[0];
+      if (!base) {
+        // No stored width yet — measure the rendered cell
+        const dom = editor.view.domAtPos(ctx.$pos.start(ctx.cellDepth));
+        let el = dom.node.nodeType === 1 ? dom.node : dom.node.parentElement;
+        el = el && el.closest ? el.closest('td,th') : null;
+        base = el ? el.offsetWidth : 100;
+      }
+      const w = Math.max(40, Math.round(base + delta));
+      const tr = editor.state.tr;
+      ctx.table.forEach((rowNode, rowOffset) => {
+        let col = 0;
+        rowNode.forEach((cell, cellOffset) => {
+          const span = cell.attrs.colspan || 1;
+          if (col <= ctx.colIndex && ctx.colIndex < col + span && span === 1) {
+            const pos = ctx.tableStart + rowOffset + 1 + cellOffset;
+            tr.setNodeMarkup(pos, null, Object.assign({}, cell.attrs, { colwidth: [w] }));
+          }
+          col += span;
+        });
+      });
+      if (tr.docChanged) editor.view.dispatch(tr);
+    }
+
+    function _ttResetColWidths(editor) {
+      const ctx = _ttFindCellCtx(editor);
+      if (!ctx) return;
+      const tr = editor.state.tr;
+      ctx.table.forEach((rowNode, rowOffset) => {
+        rowNode.forEach((cell, cellOffset) => {
+          if (cell.attrs.colwidth) {
+            const pos = ctx.tableStart + rowOffset + 1 + cellOffset;
+            tr.setNodeMarkup(pos, null, Object.assign({}, cell.attrs, { colwidth: null }));
+          }
+        });
+      });
+      if (tr.docChanged) editor.view.dispatch(tr);
+    }
+
     // Shared TipTap table keyboard handler — wired into both editors via editorProps.handleKeyDown
     var _ttDeletePending = null; // 'row' | 'col' — set after Phase 1 clears content
 
@@ -54133,6 +54203,32 @@ The state block is invisible to the user.`;
               <rect x="6" y="2" width="8" height="16" rx="1.5" />
               <line x1="9" y1="8.5" x2="11" y2="11.5" />
               <line x1="11" y1="8.5" x2="9" y2="11.5" />
+            </svg>
+          </button>
+          <div class="tt-sep"></div>
+          <!-- Column width (touch-friendly resize) -->
+          <button class="tt-btn" id="tt-col-narrow" title="Narrower column">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="10" y1="3" x2="10" y2="17" />
+              <polyline points="3,7 6,10 3,13" />
+              <polyline points="17,7 14,10 17,13" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-col-wide" title="Wider column">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="10" y1="3" x2="10" y2="17" />
+              <polyline points="6,7 3,10 6,13" />
+              <polyline points="14,7 17,10 14,13" />
+            </svg>
+          </button>
+          <button class="tt-btn" id="tt-col-fit" title="Fit columns to content">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect x="2" y="2" width="16" height="16" rx="1.5" />
+              <line x1="7.3" y1="2" x2="7.3" y2="18" />
+              <line x1="12.6" y1="2" x2="12.6" y2="18" />
             </svg>
           </button>
           <div class="tt-sep"></div>
