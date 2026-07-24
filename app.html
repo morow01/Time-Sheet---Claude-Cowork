@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.75';
+    const VERSION = '6.6.76';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26553,8 +26553,12 @@
         error: '<span class="text-red-300 text-xs">✗</span>',
       };
       const syncTitles = { idle: '', pending: 'Unsaved changes', syncing: 'Syncing…', synced: 'Synced', error: 'Sync failed – tap to retry' };
-      const syncStatusLabel = state.syncStatus === 'synced' ? 'Synced' : 'Not synced';
-      const syncStatusColor = state.syncStatus === 'synced' ? '#63f097' : '#f87171';
+      // Offline overrides the synced/not-synced label — Firestore serves cached
+      // snapshots offline, so syncStatus can read 'synced' with no connection.
+      const _hdrOffline = !navigator.onLine;
+      const syncStatusLabel = _hdrOffline ? 'Offline' : (state.syncStatus === 'synced' ? 'Synced' : 'Not synced');
+      const syncStatusColor = _hdrOffline ? '#fbbf24' : (state.syncStatus === 'synced' ? '#63f097' : '#f87171');
+      const syncStatusTitle = _hdrOffline ? 'Offline — changes saved on this device' : syncTitles[state.syncStatus];
 
       return `
   <header class="shadow-lg" style="background:var(--bg-header);color:var(--text-header)">
@@ -26801,7 +26805,7 @@
       </div>
       <div class="flex-1 text-center" style="min-width:0">
         <div class="text-xs flex items-center justify-center gap-2" style="color:var(--text-header-sub);min-height:18px">
-          <span title="${syncTitles[state.syncStatus]}" style="color:${syncStatusColor}">${syncStatusLabel}</span>
+          <span title="${syncStatusTitle}" style="color:${syncStatusColor}">${syncStatusLabel}</span>
           <span style="color:var(--text-header-sub);opacity:0.85" class="text-xs">v${VERSION}</span>
         </div>
       </div>
