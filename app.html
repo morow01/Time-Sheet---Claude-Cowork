@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.77';
+    const VERSION = '6.6.78';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50806,7 +50806,19 @@ QUESTION: ${query}`;
       // Table insert menu — Empty table + premade presets (battery cells, DC routines…)
       on('tt-table-empty', () => { e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); _closeToolbarDrops(); });
       on('tt-table-batt24', () => {
-        e.chain().focus().insertContent(_batteryBuildCellsHtml({}, 24, '') + '<p></p>').run();
+        const half = 12;
+        const cP = '<p style="text-align: center">';
+        let rows = '';
+        for (let i = 1; i <= half; i++) {
+          rows += '<tr><td>' + cP + i + '</p></td><td>' + cP + '</p></td>'
+            + '<td>' + cP + (i + half) + '</p></td><td>' + cP + '</p></td></tr>';
+        }
+        const html =
+          '<h2 style="text-align: center">Do the Three-Month Routine for Battery in </h2>'
+          + cP + '<strong>Overall:</strong> V</p>'
+          + '<table><thead><tr><th>' + cP + 'Cell</p></th><th>' + cP + 'Volts</p></th><th>' + cP + 'Cell</p></th><th>' + cP + 'Volts</p></th></tr></thead><tbody>'
+          + rows + '</tbody></table><p></p>';
+        e.chain().focus().insertContent(html).run();
         _closeToolbarDrops();
       });
       on('tt-collapsible', () => {
