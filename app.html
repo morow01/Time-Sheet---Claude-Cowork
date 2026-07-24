@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.83';
+    const VERSION = '6.6.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50865,6 +50865,7 @@ QUESTION: ${query}`;
       on('tt-col-narrow', () => _ttAdjustColWidth(e, -20));
       on('tt-col-wide', () => _ttAdjustColWidth(e, 20));
       on('tt-col-fit', () => _ttResetColWidths(e));
+      _ttBindTouchColResize(e);
       on('tt-col-del', async () => {
         const ok = await showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true });
         if (ok) e.chain().focus().deleteColumn().run();
@@ -51947,6 +51948,30 @@ QUESTION: ${query}`;
       };
     }
 
+    // Write width w onto every cell of column colIndex in the table containing $pos
+    function _ttCommitColWidth(editor, $pos, colIndex, w) {
+      let tableDepth = -1;
+      for (let d = $pos.depth; d > 0; d--) {
+        if ($pos.node(d).type.name === 'table') { tableDepth = d; break; }
+      }
+      if (tableDepth < 0) return;
+      const table = $pos.node(tableDepth);
+      const tableStart = $pos.start(tableDepth);
+      const tr = editor.state.tr;
+      table.forEach((rowNode, rowOffset) => {
+        let col = 0;
+        rowNode.forEach((cell, cellOffset) => {
+          const span = cell.attrs.colspan || 1;
+          if (col <= colIndex && colIndex < col + span && span === 1) {
+            const pos = tableStart + rowOffset + 1 + cellOffset;
+            tr.setNodeMarkup(pos, null, Object.assign({}, cell.attrs, { colwidth: [w] }));
+          }
+          col += span;
+        });
+      });
+      if (tr.docChanged) editor.view.dispatch(tr);
+    }
+
     function _ttAdjustColWidth(editor, delta) {
       const ctx = _ttFindCellCtx(editor);
       if (!ctx) return;
@@ -51960,19 +51985,76 @@ QUESTION: ${query}`;
         base = el ? el.offsetWidth : 100;
       }
       const w = Math.max(40, Math.round(base + delta));
-      const tr = editor.state.tr;
-      ctx.table.forEach((rowNode, rowOffset) => {
-        let col = 0;
-        rowNode.forEach((cell, cellOffset) => {
-          const span = cell.attrs.colspan || 1;
-          if (col <= ctx.colIndex && ctx.colIndex < col + span && span === 1) {
-            const pos = ctx.tableStart + rowOffset + 1 + cellOffset;
-            tr.setNodeMarkup(pos, null, Object.assign({}, cell.attrs, { colwidth: [w] }));
-          }
-          col += span;
-        });
-      });
-      if (tr.docChanged) editor.view.dispatch(tr);
+      _ttCommitColWidth(editor, ctx.$pos, ctx.colIndex, w);
+    }
+
+    // Touch drag on a column border resizes that column (the columnResizing
+    // plugin is hover/mouse-only). Horizontal drag starting within EDGE px of
+    // a cell border activates; vertical movement falls through to scrolling,
+    // and plain taps still place the caret normally.
+    function _ttBindTouchColResize(editor) {
+      const root = editor.view.dom;
+      if (root._ttTouchResizeBound) return;
+      root._ttTouchResizeBound = true;
+      const EDGE = 14;
+      let drag = null;
+
+      root.addEventListener('touchstart', (ev) => {
+        if (ev.touches.length !== 1) { drag = null; return; }
+        const t = ev.touches[0];
+        const cell = ev.target && ev.target.closest ? ev.target.closest('td,th') : null;
+        if (!cell) return;
+        const rect = cell.getBoundingClientRect();
+        let target = null;
+        if (rect.right - t.clientX <= EDGE) target = cell;
+        else if (t.clientX - rect.left <= EDGE) target = cell.previousElementSibling;
+        if (!target || (target.tagName !== 'TD' && target.tagName !== 'TH')) return;
+        const tableEl = target.closest('table');
+        if (!tableEl) return;
+        let colIndex = 0;
+        for (let el = target.previousElementSibling; el; el = el.previousElementSibling) colIndex += el.colSpan || 1;
+        colIndex += (target.colSpan || 1) - 1;
+        const colgroup = tableEl.querySelector('colgroup');
+        drag = {
+          cellEl: target,
+          colEl: colgroup ? colgroup.children[colIndex] : null,
+          colIndex,
+          startX: t.clientX, startY: t.clientY,
+          startW: target.getBoundingClientRect().width,
+          active: false, liveW: 0
+        };
+      }, { passive: true });
+
+      root.addEventListener('touchmove', (ev) => {
+        if (!drag) return;
+        const t = ev.touches[0];
+        const dx = t.clientX - drag.startX;
+        const dy = t.clientY - drag.startY;
+        if (!drag.active) {
+          if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 6) { drag = null; return; }
+          if (Math.abs(dx) < 6) return;
+          drag.active = true;
+        }
+        ev.preventDefault();
+        const w = Math.max(40, Math.round(drag.startW + dx));
+        drag.liveW = w;
+        if (drag.colEl) drag.colEl.style.width = w + 'px';
+      }, { passive: false });
+
+      const end = () => {
+        if (!drag) return;
+        const d = drag;
+        drag = null;
+        if (!d.active || !d.liveW) return;
+        try {
+          const pos = editor.view.posAtDOM(d.cellEl, 0);
+          _ttCommitColWidth(editor, editor.state.doc.resolve(pos), d.colIndex, d.liveW);
+        } catch (err) {
+          console.warn('[Rian] Touch column resize:', err);
+        }
+      };
+      root.addEventListener('touchend', end);
+      root.addEventListener('touchcancel', end);
     }
 
     function _ttResetColWidths(editor) {
