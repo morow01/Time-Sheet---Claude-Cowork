@@ -9581,6 +9581,23 @@
       flex-shrink: 0;
     }
 
+    /* Touch column-resize guide line — shown on the border being dragged */
+    #tt-col-guide {
+      display: none;
+      position: fixed;
+      width: 3px;
+      border-radius: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.6);
+      z-index: 100000;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    #tt-col-guide.tt-guide-active {
+      opacity: 1;
+    }
+
     /* Floating cell action trigger + popup */
     #tt-cell-trigger {
       display: none;
@@ -21629,7 +21646,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.84';
+    const VERSION = '6.6.85';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -51992,6 +52009,21 @@ QUESTION: ${query}`;
     // plugin is hover/mouse-only). Horizontal drag starting within EDGE px of
     // a cell border activates; vertical movement falls through to scrolling,
     // and plain taps still place the caret normally.
+    function _ttColGuide() {
+      let g = document.getElementById('tt-col-guide');
+      if (!g) {
+        g = document.createElement('div');
+        g.id = 'tt-col-guide';
+        document.body.appendChild(g);
+      }
+      return g;
+    }
+
+    function _ttHideColGuide() {
+      const g = document.getElementById('tt-col-guide');
+      if (g) { g.style.display = 'none'; g.classList.remove('tt-guide-active'); }
+    }
+
     function _ttBindTouchColResize(editor) {
       const root = editor.view.dom;
       if (root._ttTouchResizeBound) return;
@@ -52000,7 +52032,7 @@ QUESTION: ${query}`;
       let drag = null;
 
       root.addEventListener('touchstart', (ev) => {
-        if (ev.touches.length !== 1) { drag = null; return; }
+        if (ev.touches.length !== 1) { drag = null; _ttHideColGuide(); return; }
         const t = ev.touches[0];
         const cell = ev.target && ev.target.closest ? ev.target.closest('td,th') : null;
         if (!cell) return;
@@ -52015,14 +52047,24 @@ QUESTION: ${query}`;
         for (let el = target.previousElementSibling; el; el = el.previousElementSibling) colIndex += el.colSpan || 1;
         colIndex += (target.colSpan || 1) - 1;
         const colgroup = tableEl.querySelector('colgroup');
+        const targetRect = target.getBoundingClientRect();
         drag = {
           cellEl: target,
           colEl: colgroup ? colgroup.children[colIndex] : null,
           colIndex,
           startX: t.clientX, startY: t.clientY,
-          startW: target.getBoundingClientRect().width,
+          startW: targetRect.width,
+          cellLeft: targetRect.left,
           active: false, liveW: 0
         };
+        // Armed feedback — dimmed guide line on the border about to be dragged
+        const tRect = tableEl.getBoundingClientRect();
+        const g = _ttColGuide();
+        g.classList.remove('tt-guide-active');
+        g.style.top = tRect.top + 'px';
+        g.style.height = tRect.height + 'px';
+        g.style.left = (targetRect.right - 1.5) + 'px';
+        g.style.display = 'block';
       }, { passive: true });
 
       root.addEventListener('touchmove', (ev) => {
@@ -52031,7 +52073,7 @@ QUESTION: ${query}`;
         const dx = t.clientX - drag.startX;
         const dy = t.clientY - drag.startY;
         if (!drag.active) {
-          if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 6) { drag = null; return; }
+          if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 6) { drag = null; _ttHideColGuide(); return; }
           if (Math.abs(dx) < 6) return;
           drag.active = true;
         }
@@ -52039,9 +52081,13 @@ QUESTION: ${query}`;
         const w = Math.max(40, Math.round(drag.startW + dx));
         drag.liveW = w;
         if (drag.colEl) drag.colEl.style.width = w + 'px';
+        const g = _ttColGuide();
+        g.classList.add('tt-guide-active');
+        g.style.left = (drag.cellLeft + w - 1.5) + 'px';
       }, { passive: false });
 
       const end = () => {
+        _ttHideColGuide();
         if (!drag) return;
         const d = drag;
         drag = null;
