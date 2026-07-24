@@ -21659,7 +21659,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.89';
+    const VERSION = '6.6.90';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50764,7 +50764,7 @@ QUESTION: ${query}`;
       on('tt-h3', () => { e.chain().focus().toggleHeading({ level: 3 }).run(); _closeHdgMenu(); _ttUpdateToolbar(e); });
       on('tt-thr', () => {
         const ed = _tiptapEditor; if (!ed) return;
-        ed.chain().focus().toggleHeaderRow().run();
+        _ttToggleRowHeader(ed);
         _closeHdgMenu(); _ttUpdateToolbar(ed);
       });
       // Lists
@@ -51390,7 +51390,7 @@ QUESTION: ${query}`;
       else if (action === 'col-after') { e.chain().focus().addColumnAfter().run(); }
       else if (action === 'col-del') { showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true }).then(ok => { if (ok) e.chain().focus().deleteColumn().run(); }); }
       else if (action === 'table-del') { e.chain().focus().deleteTable().run(); }
-      else if (action === 'thr') { e.chain().focus().toggleHeaderRow().run(); }
+      else if (action === 'thr') { _ttToggleRowHeader(e, _resolvedHead()); }
       else if (action === 'fit-content') {
         // Walk ProseMirror doc and null out every colwidth attr in the
         // table that contains the cursor.  This is safe — no HTML round-trip,
@@ -52139,6 +52139,31 @@ QUESTION: ${query}`;
         });
       });
       if (tr.docChanged) editor.view.dispatch(tr);
+    }
+
+    // Toggle header status of the row the CURSOR is in (TipTap's built-in
+    // toggleHeaderRow only ever toggles the first row, which makes a second
+    // header row impossible to turn off).
+    function _ttToggleRowHeader(editor, $head) {
+      if ($head) editor.chain().focus().setTextSelection($head.pos).run();
+      else editor.chain().focus().run();
+      const $pos = editor.state.selection.$anchor;
+      let rowDepth = -1;
+      for (let d = $pos.depth; d > 0; d--) {
+        if ($pos.node(d).type.name === 'tableRow') { rowDepth = d; break; }
+      }
+      if (rowDepth < 0) return false;
+      const rowNode = $pos.node(rowDepth);
+      const rowStart = $pos.start(rowDepth);
+      let isHeader = false;
+      rowNode.forEach(c => { if (c.type.name === 'tableHeader') isHeader = true; });
+      const toType = editor.state.schema.nodes[isHeader ? 'tableCell' : 'tableHeader'];
+      const tr = editor.state.tr;
+      rowNode.forEach((cell, offset) => {
+        if (cell.type !== toType) tr.setNodeMarkup(rowStart + offset, toType, cell.attrs);
+      });
+      if (tr.docChanged) { editor.view.dispatch(tr); return true; }
+      return false;
     }
 
     // Insert a row before/after the current one, always as a BODY row.
