@@ -21659,7 +21659,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.86';
+    const VERSION = '6.6.87';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50896,7 +50896,6 @@ QUESTION: ${query}`;
       on('tt-col-wide', () => _ttAdjustColWidth(e, 20));
       on('tt-col-fit', () => _ttResetColWidths(e));
       _ttBindTouchColResize(e);
-      _ttBindCellLongPress(e);
       on('tt-col-del', async () => {
         const ok = await showRianDialog({ title: 'Delete Column', message: 'Delete this column and all its content?', confirmText: 'Delete', danger: true });
         if (ok) e.chain().focus().deleteColumn().run();
@@ -51348,24 +51347,6 @@ QUESTION: ${query}`;
       }
     }
 
-    // Open the cell actions popup at touch coordinates (long-press path)
-    function _ttOpenCellPopupAt(x, y) {
-      const popup = document.getElementById('tt-cell-popup');
-      if (!popup) return;
-      popup.style.display = 'block';
-      _ttPrepCellPopupButtons();
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const pw = 218;
-      const headerEl = document.querySelector('#note-fs-modal > div > div');
-      const headerBottom = headerEl ? Math.ceil(headerEl.getBoundingClientRect().bottom) + 4 : 64;
-      let left = x + 10;
-      if (left + pw > vw - 8) left = vw - pw - 8;
-      let top = y + 10;
-      if (top + 390 > vh) top = Math.max(headerBottom, vh - 396);
-      popup.style.left = Math.max(8, left) + 'px';
-      popup.style.top = Math.max(headerBottom, top) + 'px';
-    }
 
     function _ttCellAct(action) {
       const e = _tiptapEditor;
@@ -52139,60 +52120,6 @@ QUESTION: ${query}`;
       };
       root.addEventListener('touchend', end);
       root.addEventListener('touchcancel', end);
-    }
-
-    // Long-press (500ms, finger still) on a table cell → place caret there and
-    // open the cell actions popup under the finger. user-select is suppressed on
-    // the pressed cell for the duration so Android's native text-selection
-    // long-press doesn't fight with it.
-    function _ttBindCellLongPress(editor) {
-      const root = editor.view.dom;
-      if (root._ttLongPressBound) return;
-      root._ttLongPressBound = true;
-      let lp = null;
-
-      const cancel = () => {
-        if (!lp) return;
-        clearTimeout(lp.timer);
-        lp.cellEl.style.webkitUserSelect = '';
-        lp.cellEl.style.userSelect = '';
-        lp = null;
-      };
-
-      root.addEventListener('touchstart', (ev) => {
-        cancel();
-        if (ev.touches.length !== 1) return;
-        const cell = ev.target && ev.target.closest ? ev.target.closest('td,th') : null;
-        if (!cell) return;
-        const t = ev.touches[0];
-        lp = { x: t.clientX, y: t.clientY, cellEl: cell };
-        cell.style.webkitUserSelect = 'none';
-        cell.style.userSelect = 'none';
-        lp.timer = setTimeout(() => {
-          const cur = lp;
-          lp = null;
-          cur.cellEl.style.webkitUserSelect = '';
-          cur.cellEl.style.userSelect = '';
-          try {
-            _ttHideColGuide();
-            const pos = editor.view.posAtDOM(cur.cellEl, 0);
-            editor.chain().focus().setTextSelection(pos + 1).run();
-            if (navigator.vibrate) navigator.vibrate(15);
-            _ttOpenCellPopupAt(cur.x, cur.y);
-          } catch (err) {
-            console.warn('[Rian] Cell long-press:', err);
-          }
-        }, 500);
-      }, { passive: true });
-
-      root.addEventListener('touchmove', (ev) => {
-        if (!lp) return;
-        const t = ev.touches[0];
-        if (Math.abs(t.clientX - lp.x) > 6 || Math.abs(t.clientY - lp.y) > 6) cancel();
-      }, { passive: true });
-
-      root.addEventListener('touchend', cancel);
-      root.addEventListener('touchcancel', cancel);
     }
 
     function _ttResetColWidths(editor) {
