@@ -21659,7 +21659,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.88';
+    const VERSION = '6.6.89';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50884,8 +50884,8 @@ QUESTION: ${query}`;
         _closeToolbarDrops();
       });
       // Table context buttons
-      on('tt-row-before', () => e.chain().focus().addRowBefore().run());
-      on('tt-row-after', () => e.chain().focus().addRowAfter().run());
+      on('tt-row-before', () => _ttAddRowAsBody(e, 'before'));
+      on('tt-row-after', () => _ttAddRowAsBody(e, 'after'));
       on('tt-row-del', async () => {
         const ok = await showRianDialog({ title: 'Delete Row', message: 'Delete this row and all its content?', confirmText: 'Delete', danger: true });
         if (ok) e.chain().focus().deleteRow().run();
@@ -51383,8 +51383,8 @@ QUESTION: ${query}`;
         return -1;
       }
 
-      if (action === 'row-before') { e.chain().focus().addRowBefore().run(); }
-      else if (action === 'row-after') { e.chain().focus().addRowAfter().run(); }
+      if (action === 'row-before') { _ttAddRowAsBody(e, 'before', _resolvedHead()); }
+      else if (action === 'row-after') { _ttAddRowAsBody(e, 'after', _resolvedHead()); }
       else if (action === 'row-del') { showRianDialog({ title: 'Delete Row', message: 'Delete this row and all its content?', confirmText: 'Delete', danger: true }).then(ok => { if (ok) e.chain().focus().deleteRow().run(); }); }
       else if (action === 'col-before') { e.chain().focus().addColumnBefore().run(); }
       else if (action === 'col-after') { e.chain().focus().addColumnAfter().run(); }
@@ -52137,6 +52137,46 @@ QUESTION: ${query}`;
             tr.setNodeMarkup(pos, null, Object.assign({}, cell.attrs, { colwidth: null }));
           }
         });
+      });
+      if (tr.docChanged) editor.view.dispatch(tr);
+    }
+
+    // Insert a row before/after the current one, always as a BODY row.
+    // addRowBefore/addRowAfter copy cell types from the reference row, so
+    // inserting next to the header row clones a second header (th) row —
+    // convert any th cells in the new row back to td. Headers are only
+    // created explicitly via Toggle header row.
+    function _ttAddRowAsBody(editor, where, $head) {
+      const chain = editor.chain().focus();
+      if ($head) chain.setTextSelection($head.pos);
+      const $pos = $head || editor.state.selection.$anchor;
+      let tableDepth = -1;
+      for (let d = $pos.depth; d > 0; d--) {
+        if ($pos.node(d).type.name === 'table') { tableDepth = d; break; }
+      }
+      const rowIndex = tableDepth > 0 ? $pos.index(tableDepth) : -1;
+      const ok = (where === 'before' ? chain.addRowBefore() : chain.addRowAfter()).run();
+      if (!ok || rowIndex < 0) return;
+      const state = editor.state;
+      const $sel = state.selection.$anchor;
+      let td = -1;
+      for (let d = $sel.depth; d > 0; d--) {
+        if ($sel.node(d).type.name === 'table') { td = d; break; }
+      }
+      if (td < 0) return;
+      const table = $sel.node(td);
+      const tableStart = $sel.start(td);
+      const newIndex = where === 'before' ? rowIndex : rowIndex + 1;
+      if (newIndex >= table.childCount) return;
+      let rowOffset = 0;
+      for (let i = 0; i < newIndex; i++) rowOffset += table.child(i).nodeSize;
+      const rowNode = table.child(newIndex);
+      const cellType = state.schema.nodes.tableCell;
+      const tr = state.tr;
+      rowNode.forEach((cell, offset) => {
+        if (cell.type.name === 'tableHeader') {
+          tr.setNodeMarkup(tableStart + rowOffset + 1 + offset, cellType, cell.attrs);
+        }
       });
       if (tr.docChanged) editor.view.dispatch(tr);
     }
