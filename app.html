@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.81';
+    const VERSION = '6.6.82';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50821,6 +50821,20 @@ QUESTION: ${query}`;
         e.chain().focus().insertContent(html).run();
         _closeToolbarDrops();
       });
+      on('tt-table-batt4', () => {
+        const cP = '<p style="text-align: center">';
+        let rows = '';
+        for (let i = 1; i <= 4; i++) {
+          rows += '<tr><td>' + cP + '<strong>' + i + '</strong></p></td><td>' + cP + '</p></td></tr>';
+        }
+        const html =
+          '<h2 style="text-align: center">Do the Three-Month Routine for Battery in </h2>'
+          + '<p style="text-align: left"><strong>Overall:</strong> V</p>'
+          + '<table><thead><tr><th>' + cP + 'Cell</p></th><th>' + cP + 'Volts</p></th></tr></thead><tbody>'
+          + rows + '</tbody></table><p></p>';
+        e.chain().focus().insertContent(html).run();
+        _closeToolbarDrops();
+      });
       on('tt-table-dcpower', () => {
         const row = (label, unit) => '<tr><td><p><strong>' + label + '</strong></p></td><td><p>' + (unit || '') + '</p></td></tr>';
         const html =
@@ -54017,6 +54031,7 @@ The state block is invisible to the user.`;
               <button class="tt-list-item" id="tt-table-empty">Empty table</button>
               <div class="tt-menu-div"></div>
               <button class="tt-list-item" id="tt-table-batt24">Battery — 24 cells</button>
+              <button class="tt-list-item" id="tt-table-batt4">Battery — 4 cells</button>
               <button class="tt-list-item" id="tt-table-dcpower">DC Power Routine</button>
             </div>
           </div>
