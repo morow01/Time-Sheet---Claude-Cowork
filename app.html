@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.79';
+    const VERSION = '6.6.80';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50815,9 +50815,22 @@ QUESTION: ${query}`;
         }
         const html =
           '<h2 style="text-align: center">Do the Three-Month Routine for Battery in </h2>'
-          + '<p><strong>Overall:</strong> V</p>'
+          + '<p style="text-align: left"><strong>Overall:</strong> V</p>'
           + '<table><thead><tr><th>' + cP + 'Cell</p></th><th>' + cP + 'Volts</p></th><th>' + cP + 'Cell</p></th><th>' + cP + 'Volts</p></th></tr></thead><tbody>'
           + rows + '</tbody></table><p></p>';
+        e.chain().focus().insertContent(html).run();
+        _closeToolbarDrops();
+      });
+      on('tt-table-dcpower', () => {
+        const row = (label, unit) => '<tr><td><p><strong>' + label + '</strong></p></td><td><p>' + (unit || '') + '</p></td></tr>';
+        const html =
+          '<h2>Do DC Power Routine in </h2>'
+          + '<table><thead><tr><th><p>Values</p></th><th><p></p></th></tr></thead><tbody>'
+          + row('Rectifiers') + row('DC Load', 'A') + row('Boost Voltage') + row('Float Voltage') + row('Temperature', '°C')
+          + '</tbody></table><p></p>'
+          + '<table><thead><tr><th><p>Alarm Limits</p></th><th><p></p></th></tr></thead><tbody>'
+          + row('Low Voltage') + row('High Voltage') + row('High Load') + row('High Temperature', '°C')
+          + '</tbody></table><p></p>';
         e.chain().focus().insertContent(html).run();
         _closeToolbarDrops();
       });
@@ -54004,6 +54017,7 @@ The state block is invisible to the user.`;
               <button class="tt-list-item" id="tt-table-empty">Empty table</button>
               <div class="tt-menu-div"></div>
               <button class="tt-list-item" id="tt-table-batt24">Battery — 24 cells</button>
+              <button class="tt-list-item" id="tt-table-dcpower">DC Power Routine</button>
             </div>
           </div>
           <button class="tt-btn" id="tt-collapsible" title="Wrap selection in collapsible (or insert new)">
