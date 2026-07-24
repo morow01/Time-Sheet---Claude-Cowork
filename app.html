@@ -21629,7 +21629,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.80';
+    const VERSION = '6.6.81';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50826,7 +50826,7 @@ QUESTION: ${query}`;
         const html =
           '<h2>Do DC Power Routine in </h2>'
           + '<table><thead><tr><th><p>Values</p></th><th><p></p></th></tr></thead><tbody>'
-          + row('Rectifiers') + row('DC Load', 'A') + row('Boost Voltage') + row('Float Voltage') + row('Temperature', '°C')
+          + row('Rectifiers') + row('DC Load') + row('Boost Voltage') + row('Float Voltage') + row('Temperature', '°C')
           + '</tbody></table><p></p>'
           + '<table><thead><tr><th><p>Alarm Limits</p></th><th><p></p></th></tr></thead><tbody>'
           + row('Low Voltage') + row('High Voltage') + row('High Load') + row('High Temperature', '°C')
