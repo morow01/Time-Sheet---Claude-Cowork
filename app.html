@@ -21659,7 +21659,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.90';
+    const VERSION = '6.6.91';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50268,8 +50268,22 @@ QUESTION: ${query}`;
             return doc.body.innerHTML;
           },
           handlePaste(view, event) {
+            const cd = event.clipboardData;
+            // Markdown pipe table pasted as plain text → insert a real table.
+            // Only when there's no text/html flavour (that pastes fine already).
+            if (cd && !(cd.getData('text/html') || '').trim()) {
+              const parsed = _ttParseMdTable(cd.getData('text/plain') || '');
+              if (parsed) {
+                event.preventDefault();
+                if (_tiptapEditor) {
+                  _tiptapEditor.chain().focus().insertContent(_ttMdTableToHtml(parsed)).run();
+                  showToast('Pasted as table');
+                }
+                return true;
+              }
+            }
             // Intercept raw image paste (screenshot from clipboard) — compress + upload to Storage
-            const items = event.clipboardData && event.clipboardData.items;
+            const items = cd && cd.items;
             if (!items) return false;
             for (let i = 0; i < items.length; i++) {
               if (items[i].type.startsWith('image/')) {
@@ -50835,6 +50849,7 @@ QUESTION: ${query}`;
       });
       // Table insert menu — Empty table + premade presets (battery cells, DC routines…)
       on('tt-table-empty', () => { e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); _closeToolbarDrops(); });
+      on('tt-table-frommd', () => { _ttConvertSelectionToTable(); _closeToolbarDrops(); });
       on('tt-table-batt24', () => {
         const half = 12;
         const cP = '<p style="text-align: center">';
@@ -52139,6 +52154,102 @@ QUESTION: ${query}`;
         });
       });
       if (tr.docChanged) editor.view.dispatch(tr);
+    }
+
+    // ── Markdown pipe table → real table ──
+    // Text copied from other apps (AI chats, docs) arrives as "| a | b |" lines
+    // with a |---|---| separator. TipTap has no Markdown parser, so it lands as
+    // plain text. Parse it, and reshape a long 2-column cell/value list into the
+    // same 4-column layout the battery presets use.
+    function _ttParseMdTable(text) {
+      if (!text || text.indexOf('|') < 0) return null;
+      const lines = String(text).replace(/\r/g, '').split('\n');
+      let lead = [];        // non-table lines above the table (e.g. "Overall 54.11")
+      let rows = [];
+      let sepIndex = -1;
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i].trim();
+        if (!raw) { if (!rows.length) lead.push(''); continue; }
+        const isRow = raw.indexOf('|') >= 0;
+        if (!isRow) {
+          if (rows.length) break;   // text after the table ends parsing
+          lead.push(raw);
+          continue;
+        }
+        const cells = raw.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+        if (cells.every(c => /^:?-{2,}:?$/.test(c))) {
+          if (rows.length === 1) { sepIndex = rows.length; continue; }
+          if (!rows.length) continue;
+        }
+        rows.push(cells);
+      }
+      // Require the separator row — keeps ordinary text containing "|" untouched
+      if (sepIndex < 0 || rows.length < 2) return null;
+      return { header: rows[0], body: rows.slice(1), lead: lead.filter(l => l) };
+    }
+
+    function _ttMdTableToHtml(parsed) {
+      const cP = '<p style="text-align: center">';
+      const cell = (v, bold) => '<td>' + cP + (bold && v ? '<strong>' + esc(v) + '</strong>' : esc(v || '')) + '</p></td>';
+      const leadHtml = parsed.lead.map(l => {
+        // "Overall 54.11" / "Overall: 54.11" → bold label like the presets
+        const m = l.match(/^overall\s*:?\s*(.*)$/i);
+        return m
+          ? '<p style="text-align: left"><strong>Overall:</strong> ' + esc(m[1]) + '</p>'
+          : '<p style="text-align: left">' + esc(l) + '</p>';
+      }).join('');
+
+      // Battery shape: 2 columns whose first column is a sequential 1..N run
+      // (N even, ≥ 8) → reshape into side-by-side pairs, matching the presets.
+      const b = parsed.body;
+      const isSeq2Col = parsed.header.length === 2 && b.length >= 8 && b.length % 2 === 0
+        && b.every((r, i) => r.length >= 2 && parseInt(r[0], 10) === i + 1);
+      if (isSeq2Col) {
+        const half = b.length / 2;
+        let rows = '';
+        for (let i = 0; i < half; i++) {
+          rows += '<tr>' + cell(b[i][0], true) + cell(b[i][1])
+            + cell(b[i + half][0], true) + cell(b[i + half][1]) + '</tr>';
+        }
+        const h = parsed.header;
+        return leadHtml
+          + '<table><thead><tr>'
+          + '<th>' + cP + esc(h[0]) + '</p></th><th>' + cP + esc(h[1]) + '</p></th>'
+          + '<th>' + cP + esc(h[0]) + '</p></th><th>' + cP + esc(h[1]) + '</p></th>'
+          + '</tr></thead><tbody>' + rows + '</tbody></table><p></p>';
+      }
+
+      // Literal conversion
+      const cols = parsed.header.length;
+      const head = parsed.header.map(h => '<th>' + cP + esc(h) + '</p></th>').join('');
+      const body = b.map(r => {
+        let tds = '';
+        for (let i = 0; i < cols; i++) tds += cell(r[i]);
+        return '<tr>' + tds + '</tr>';
+      }).join('');
+      return leadHtml + '<table><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table><p></p>';
+    }
+
+    // Convert the current text selection (or, if collapsed, the whole note) from
+    // a Markdown pipe table into a real table.
+    function _ttConvertSelectionToTable() {
+      const e = _tiptapEditor;
+      if (!e) return;
+      const { state } = e.view;
+      const { from, to, empty } = state.selection;
+      const start = empty ? 0 : from;
+      const end = empty ? state.doc.content.size : to;
+      const text = state.doc.textBetween(start, end, '\n', '\n');
+      const parsed = _ttParseMdTable(text);
+      if (!parsed) {
+        showToast('No markdown table found — select the pasted lines and try again');
+        return;
+      }
+      e.chain().focus()
+        .deleteRange({ from: start, to: end })
+        .insertContent(_ttMdTableToHtml(parsed))
+        .run();
+      showToast('Converted to table');
     }
 
     // Toggle header status of the row the CURSOR is in (TipTap's built-in
@@ -54315,6 +54426,7 @@ The state block is invisible to the user.`;
             </button>
             <div class="tt-list-menu" id="tt-table-menu">
               <button class="tt-list-item" id="tt-table-empty">Empty table</button>
+              <button class="tt-list-item" id="tt-table-frommd">Convert text to table</button>
               <div class="tt-menu-div"></div>
               <button class="tt-list-item" id="tt-table-batt24">Battery — 24 cells</button>
               <button class="tt-list-item" id="tt-table-batt4">Battery — 4 cells</button>
