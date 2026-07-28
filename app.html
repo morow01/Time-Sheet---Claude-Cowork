@@ -21659,7 +21659,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.91';
+    const VERSION = '6.6.92';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37955,6 +37955,9 @@
       }
       // Priority order: topmost layer first. First match wins.
       const stack = [
+        // Image lightbox sits above everything (z-index 99999) — ESC must close
+        // only the lightbox, leaving the note editor beneath it open.
+        ['img-lightbox', () => typeof closeLightbox === 'function' && closeLightbox()],
         ['tetra-crop-modal', () => typeof closeTetraCropModal === 'function' && closeTetraCropModal()],
         ['tetra-lightbox-modal', () => typeof closeTetraLightboxModal === 'function' && closeTetraLightboxModal()],
         ['task-modal-overlay', () => typeof closeTaskModal === 'function' && closeTaskModal()],
