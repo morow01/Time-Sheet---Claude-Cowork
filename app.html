@@ -20376,13 +20376,20 @@
       border-color: var(--accent);
     }
 
+    /* Hide Chrome's built-in picker icon — desktop showed it alongside the
+       custom icon below (Android never renders it, hence the mismatch). */
+    .hist-date-wrap input::-webkit-calendar-picker-indicator {
+      display: none;
+      -webkit-appearance: none;
+    }
+
     .hist-date-wrap svg {
       position: absolute;
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
-      pointer-events: none;
+      cursor: pointer;
     }
 
     .hist-jump-actions {
@@ -21659,7 +21666,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.94';
+    const VERSION = '6.6.95';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -38453,7 +38460,7 @@
         '</div>' +
         '<div class="hist-date-wrap">' +
         '<input type="date" id="hist-date-input" value="' + esc(jumpDate) + '" oninput="histDateChange(this.value)">' +
-        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" onclick="_histOpenDatePicker()"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' +
         '</div>' +
         '<div class="hist-jump-actions">' +
         '<button class="hist-jump-btn cancel" onclick="histCloseJump()">Cancel</button>' +
@@ -38970,6 +38977,16 @@
     function histCloseJump() { state.historyJumpOpen = false; render(); }
     function histSetQuick(idx, ws) { state.historyJumpQuick = idx; state.historyJumpDate = ws; render(); }
     function histDateChange(val) { state.historyJumpDate = val; state.historyJumpQuick = -1; }
+    // The custom calendar icon opens the native picker (Chrome's own indicator
+    // is hidden so only one icon shows).
+    function _histOpenDatePicker() {
+      var i = document.getElementById('hist-date-input');
+      if (!i) return;
+      if (typeof i.showPicker === 'function') {
+        try { i.showPicker(); return; } catch (e) { /* fall through to focus */ }
+      }
+      i.focus();
+    }
     function histJumpGo() {
       var val = state.historyJumpDate || (document.getElementById('hist-date-input') && document.getElementById('hist-date-input').value);
       if (!val) return;
