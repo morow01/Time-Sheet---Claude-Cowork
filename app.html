@@ -1771,13 +1771,15 @@
     }
 
 
-    /* Timeline Horizontal Branch */
+    /* Timeline Horizontal Branch — reaches from the vertical line (x=17) to the
+       card. Offsets are measured from the card's PADDING box, which the 4px
+       border-left pushes to x=31, so 31-17 = 14px back and 14px wide. */
     .activity-card::before {
       content: "";
       position: absolute;
-      left: -10px;
+      left: -14px;
       top: 24px;
-      width: 10px;
+      width: 14px;
       height: 2px;
       background: #c4d0e1;
       opacity: 1;
@@ -1789,10 +1791,11 @@
     .activity-card::after {
       content: "";
       position: absolute;
-      /* Card's left edge is at 27px (container padding-left); the vertical line
-         spans 17-19px, so its centre is 18px = -9px from the card. translateX
-         centres the node on that point regardless of border-box/content-box. */
-      left: -9px;
+      /* Container padding-left puts the card's border box at 27px, and its 4px
+         border-left puts the PADDING box (what these offsets measure from) at
+         31px. The vertical line spans 17-19px, centre 18px = -13px from there.
+         translateX centres the node on that point in either box model. */
+      left: -13px;
       transform: translateX(-50%);
       top: 20px;
       width: 10px;
@@ -21669,7 +21672,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.96';
+    const VERSION = '6.6.97';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26463,7 +26466,13 @@
       requestAnimationFrame(_initInlineNoteThumbs);
       // Restore scroll position after DOM is painted
       if (savedScroll > 0) requestAnimationFrame(() => window.scrollTo(0, savedScroll));
-      // Fix timeline lines so they end exactly at the last task node
+      // Fix timeline lines so they end exactly at the last task node.
+      // Run synchronously first: render() rebuilds the DOM, so --tl-height resets
+      // to 0 each time, and several renders fire while data loads (IDB → snapshot
+      // → poll). Waiting for rAF let the line paint at height 0 in between, which
+      // read as the line flashing repeatedly on refresh. The rAF pass still runs
+      // afterwards to correct the height once layout has settled.
+      fixTimelineLines();
       requestAnimationFrame(fixTimelineLines);
       // Sync sticky header width/scroll for Routines view
       if (state.view === 'routines') requestAnimationFrame(initRtnStickyHeader);
