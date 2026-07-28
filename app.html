@@ -21659,7 +21659,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.93';
+    const VERSION = '6.6.94';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -43705,8 +43705,7 @@
           + '</div>'
           + '<div style="display:flex;gap:6px;padding:8px 16px 14px;">'
           + '<button onclick="if(_rtnMapInstance)_rtnMapInstance.closePopup();openRoutinesLogModal(\'' + esc(site).replace(/'/g,"\\'") + '\',' + state.routinesYear + ',' + (new Date().getMonth()+1) + ')" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--accent,#2D6BE4);color:#fff;font-family:inherit;">Log Visit</button>'
-          + '<button onclick="_openUrl(\'' + _mapsUrl + '\')" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#34a853;color:#fff;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;">'
-          + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Open Map</button>'
+          + '<button onclick="_openUrl(\'' + _mapsUrl + '\')" style="flex:1;padding:7px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#34a853;color:#fff;font-family:inherit;white-space:nowrap;">Open Map</button>'
           + '</div>'
           + '</div>';
 
