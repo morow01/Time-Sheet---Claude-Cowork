@@ -1789,8 +1789,11 @@
     .activity-card::after {
       content: "";
       position: absolute;
-      left: -15px;
-      /* Center centered on vertical line */
+      /* Card's left edge is at 27px (container padding-left); the vertical line
+         spans 17-19px, so its centre is 18px = -9px from the card. translateX
+         centres the node on that point regardless of border-box/content-box. */
+      left: -9px;
+      transform: translateX(-50%);
       top: 20px;
       width: 10px;
       height: 10px;
@@ -21666,7 +21669,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.95';
+    const VERSION = '6.6.96';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
