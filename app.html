@@ -21764,7 +21764,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.13';
+    const VERSION = '6.7.14';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27788,25 +27788,26 @@
       const isCurrentWeek = weekStart === dateToStr(getCurrentFriday());
       const mainAction = isCurrentWeek ? `setView('history')` : `goToCurrentWeek()`;
       const subClass = isCurrentWeek ? 'page-week-selector-sub' : 'page-week-selector-sub is-back';
-      let subInner;
-      if (isCurrentWeek) {
-        // Current week: show totals + compact History affordance (v6.6.17)
-        let tOrd = 0, tOt = 0;
-        (state.weekData?.days || []).forEach(d => d.activities.forEach(a => {
-          tOrd += parseFloat(a.ordinary) || 0;
-          tOt += parseFloat(a.overtime) || 0;
-        }));
-        const fmtN = n => Math.round(n) === n ? n : n.toFixed(1);
-        const histHtml = '<span style="display:inline-flex;align-items:center;gap:3px">' +
-          '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History &rsaquo;</span>';
-        const parts = [];
-        if (tOrd > 0) parts.push('<span style="color:var(--accent);font-weight:700">' + fmtN(tOrd) + 'h</span>');
-        if (tOt > 0) parts.push('<span style="color:#F59E0B;font-weight:700">+' + fmtN(tOt) + ' OT</span>');
-        parts.push(histHtml);
-        subInner = parts.join('<span style="opacity:0.5;margin:0 4px">·</span>');
-      } else {
-        subInner = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to this week`;
-      }
+      // Week totals appear on EVERY week (v6.7.14) — hours are core timesheet
+      // data, so they stay reachable without scrolling to the Weekly Summary
+      // and regardless of the Show stats switch. Past weeks trade the
+      // "History ›" link for a shortened back link to keep the line to 3 items.
+      let tOrd = 0, tOt = 0;
+      (state.weekData?.days || []).forEach(d => d.activities.forEach(a => {
+        tOrd += parseFloat(a.ordinary) || 0;
+        tOt += parseFloat(a.overtime) || 0;
+      }));
+      const fmtN = n => Math.round(n) === n ? n : n.toFixed(1);
+      const histHtml = '<span style="display:inline-flex;align-items:center;gap:3px">' +
+        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History &rsaquo;</span>';
+      const backHtml = '<span style="display:inline-flex;align-items:center;gap:3px">' +
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>This week</span>';
+      const parts = [];
+      if (!isCurrentWeek) parts.push(backHtml);
+      if (tOrd > 0) parts.push('<span style="color:var(--accent);font-weight:700">' + fmtN(tOrd) + 'h</span>');
+      if (tOt > 0) parts.push('<span style="color:#F59E0B;font-weight:700">+' + fmtN(tOt) + ' OT</span>');
+      if (isCurrentWeek) parts.push(histHtml);
+      const subInner = parts.join('<span style="opacity:0.5;margin:0 4px">·</span>');
       // Surface on-call / extra-shift status from state.callouts.onCall[weekStart].
       // 'oncall' = scheduled on-call week (red pill). 'extra' = extra shift (amber pill).
       const ocStatus = state.callouts && state.callouts.onCall && state.callouts.onCall[weekStart];
