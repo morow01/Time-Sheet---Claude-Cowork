@@ -21672,7 +21672,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.99';
+    const VERSION = '6.7.0';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50921,13 +50921,14 @@ QUESTION: ${query}`;
         _closeToolbarDrops();
       });
       on('tt-table-dcpower', () => {
-        const row = (label, unit) => '<tr><td><p><strong>' + label + '</strong></p></td><td><p>' + (unit || '') + '</p></td></tr>';
+        const cP = '<p style="text-align: center">';
+        const row = (label, unit) => '<tr><td><p><strong>' + label + '</strong></p></td><td>' + cP + (unit || '') + '</p></td></tr>';
         const html =
           '<h2>Do DC Power Routine in </h2>'
-          + '<table><thead><tr><th><p>Values</p></th><th><p></p></th></tr></thead><tbody>'
+          + '<table><thead><tr><th><p>Values</p></th><th>' + cP + '</p></th></tr></thead><tbody>'
           + row('Rectifiers') + row('DC Load') + row('Boost Voltage') + row('Float Voltage') + row('Temperature', '°C')
           + '</tbody></table><p></p>'
-          + '<table><thead><tr><th><p>Alarm Limits</p></th><th><p></p></th></tr></thead><tbody>'
+          + '<table><thead><tr><th><p>Alarm Limits</p></th><th>' + cP + '</p></th></tr></thead><tbody>'
           + row('Low Voltage') + row('High Voltage') + row('High Load') + row('High Temperature', '°C')
           + '</tbody></table><p></p>';
         e.chain().focus().insertContent(html).run();
