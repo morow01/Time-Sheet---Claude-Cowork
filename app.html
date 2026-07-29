@@ -21672,7 +21672,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.97';
+    const VERSION = '6.6.98';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -52238,11 +52238,14 @@ QUESTION: ${query}`;
           : '<p style="text-align: left">' + esc(l) + '</p>';
       }).join('');
 
-      // Battery shape: 2 columns whose first column is a sequential 1..N run
-      // (N even, ≥ 8) → reshape into side-by-side pairs, matching the presets.
+      // Battery shape: 2 columns whose first column is a sequential 1..N run.
+      // Long runs (N even, ≥ 8) reshape into side-by-side pairs like the 24-cell
+      // preset; short runs stay 2-column like the 4-cell preset, just with the
+      // cell numbers bolded.
       const b = parsed.body;
-      const isSeq2Col = parsed.header.length === 2 && b.length >= 8 && b.length % 2 === 0
+      const isSeqCells = parsed.header.length === 2 && b.length >= 2
         && b.every((r, i) => r.length >= 2 && parseInt(r[0], 10) === i + 1);
+      const isSeq2Col = isSeqCells && b.length >= 8 && b.length % 2 === 0;
       if (isSeq2Col) {
         const half = b.length / 2;
         let rows = '';
@@ -52258,12 +52261,13 @@ QUESTION: ${query}`;
           + '</tr></thead><tbody>' + rows + '</tbody></table><p></p>';
       }
 
-      // Literal conversion
+      // Literal conversion — short cell runs (4-cell battery) keep their 2 columns
+      // but get bold numbers, matching the 4-cell preset.
       const cols = parsed.header.length;
       const head = parsed.header.map(h => '<th>' + cP + esc(h) + '</p></th>').join('');
       const body = b.map(r => {
         let tds = '';
-        for (let i = 0; i < cols; i++) tds += cell(r[i]);
+        for (let i = 0; i < cols; i++) tds += cell(r[i], isSeqCells && i === 0);
         return '<tr>' + tds + '</tr>';
       }).join('');
       return leadHtml + '<table><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table><p></p>';
