@@ -21852,7 +21852,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.49';
+    const VERSION = '6.7.54';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -21871,7 +21871,12 @@
       { id: 'journal', label: 'Journal', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>' },
       { id: 'exchanges', label: 'Finder', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
       { id: 'callouts', label: 'Callouts', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' },
-      { id: 'routines', label: 'Routines', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="6" cy="9" r="1.2" fill="currentColor"/><circle cx="6" cy="13" r="1.2" fill="currentColor"/><circle cx="6" cy="17" r="1.2" fill="currentColor"/></svg>' }
+      { id: 'routines', label: 'Routines', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/><circle cx="6" cy="9" r="1.2" fill="currentColor"/><circle cx="6" cy="13" r="1.2" fill="currentColor"/><circle cx="6" cy="17" r="1.2" fill="currentColor"/></svg>' },
+      { id: 'history', label: 'History', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>' },
+      { id: 'email-week-v3', label: 'Export', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>' },
+      { id: 'availability', label: 'Planner', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 15h3M13 15h3M8 19h3"/></svg>' },
+      { id: 'tags-full', label: 'Tags', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>' },
+      { id: 'ai', label: 'AI', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>' }
     ];
 
     function getVisibleTabs() {
@@ -26602,10 +26607,13 @@
     function _renderNow() {
       const app = document.getElementById('app');
       if (!app) return;
-      // Preserve menu scroll position — render() destroys and recreates the menu DOM
+      // Preserve menu & top header tab bar scroll positions — render() destroys and recreates the DOM
       const _menuEl = document.getElementById('theme-dropdown');
       const _menuWasOpen = !!(_menuEl && _menuEl.classList.contains('open'));
       const _menuScroll = _menuWasOpen ? _menuEl.scrollTop : 0;
+
+      const _tabBarEl = document.getElementById('main-tab-bar');
+      const _tabBarScroll = _tabBarEl ? _tabBarEl.scrollLeft : 0;
 
       // Update bottom nav active state
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -26655,6 +26663,17 @@
       if (_menuWasOpen && _menuScroll > 0) {
         const _newMenuEl = document.getElementById('theme-dropdown');
         if (_newMenuEl) _newMenuEl.scrollTop = _menuScroll;
+      }
+      // Restore top tab bar horizontal scroll position & keep active tab in view
+      const _newTabBarEl = document.getElementById('main-tab-bar');
+      if (_newTabBarEl) {
+        if (_tabBarScroll > 0) {
+          _newTabBarEl.scrollLeft = _tabBarScroll;
+        }
+        const _activeTabBtn = _newTabBarEl.querySelector(`button[onclick*="setView('${state.view}')"]`);
+        if (_activeTabBtn && typeof _activeTabBtn.scrollIntoView === 'function') {
+          _activeTabBtn.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+        }
       }
       // Hoist .j-fab out of #app to document.body so position:fixed is always
       // relative to the viewport (not any transformed ancestor inside #app).
@@ -26852,6 +26871,22 @@
             ? `<img src="${esc(photoURL)}" class="menu-avatar-img" alt="User avatar" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="menu-avatar-initials" style="display:none">${initial}</div>`
             : `<div class="menu-avatar-initials">${initial}</div>`;
           const chev = `<span class="menu-row-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>`;
+          const vis = getVisibleTabs();
+          const _makePinBtn = (tabId, isPinnedAlways) => {
+            const pinSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7h1V5H8v2h1v3.76z"/></svg>`;
+            const pinFilledSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><line x1="12" y1="17" x2="12" y2="22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7h1V5H8v2h1v3.76z"/></svg>`;
+            const lockSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+
+            if (isPinnedAlways) {
+              return `<span style="width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);color:var(--text-muted);opacity:0.6;margin-left:auto;flex-shrink:0;" title="Pinned by default">${lockSvg}</span>`;
+            }
+            const isPinned = vis.includes(tabId);
+            const btnStyle = isPinned
+              ? `width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(var(--accent-rgb),0.16);border:1px solid rgba(var(--accent-rgb),0.3);color:var(--accent);cursor:pointer;margin-left:auto;flex-shrink:0;transition:all 0.15s;`
+              : `width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;color:var(--text-muted);cursor:pointer;margin-left:auto;flex-shrink:0;transition:all 0.15s;`;
+
+            return `<button type="button" onclick="event.stopPropagation();toggleTopTabVisibility('${tabId}')" style="${btnStyle}" title="${isPinned ? 'Pinned to top menu — tap to unpin' : 'Tap to pin to top menu'}">${isPinned ? pinFilledSvg : pinSvg}</button>`;
+          };
           return `
               <!-- Dark header block -->
               <div class="menu-header-block">
@@ -26886,17 +26921,6 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Navigation</div>
                 <div class="menu-card">
-                  ${(() => {
-                    const vis = getVisibleTabs();
-                    const _makePinBtn = (tabId, isPinnedAlways) => {
-                      if (isPinnedAlways) {
-                        return `<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:6px;background:rgba(var(--accent-rgb),0.12);color:var(--accent);font-size:10px;font-weight:700;flex-shrink:0;margin-left:auto;" title="Pinned to top header bar"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2h1v4.76a2 2 0 0 1-.11.79l-1.78.9A2 2 0 0 0 6 15.24V17z"/></svg>PINNED</span>`;
-                      }
-                      const isPinned = vis.includes(tabId);
-                      return `<span role="button" tabindex="0" onclick="event.stopPropagation();toggleTopTabVisibility('${tabId}')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:6px;border:1px solid ${isPinned ? 'var(--accent)' : 'var(--border)'};background:${isPinned ? 'var(--accent)' : 'transparent'};color:${isPinned ? '#fff' : 'var(--text-secondary)'};font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;margin-left:auto;transition:all 0.15s;" title="${isPinned ? 'Pinned to top menu — tap to unpin' : 'Tap to pin to top menu'}"><svg width="11" height="11" viewBox="0 0 24 24" fill="${isPinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2h1v4.76a2 2 0 0 1-.11.79l-1.78.9A2 2 0 0 0 6 15.24V17z"/></svg>${isPinned ? 'Pinned' : 'Pin'}</span>`;
-                    };
-
-                    return `
                   ${state.conflicts.length > 0 ? `
                   <div class="menu-row" role="button" onclick="setView('conflicts');closeThemeMenu()" style="background:var(--bg-ot)">
                     <span class="menu-row-icon" style="color:var(--pill-amber-color)">${_cIcons.warning}</span>
@@ -26943,25 +26967,27 @@
                   <div class="menu-row" role="button" onclick="openHistoryView()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Week History</span><span class="menu-row-sub">Jump to any week · review past work</span></span>
+                    ${_makePinBtn('history')}
                     ${chev}
                   </div>
                   <div class="menu-row" role="button" onclick="setView('email-week-v3');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Email / Export Week</span><span class="menu-row-sub">Preview &amp; copy, or send email</span></span>
+                    ${_makePinBtn('email-week-v3')}
                     ${chev}
                   </div>
                   <div class="menu-row" role="button" onclick="setView('availability');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 15h3M13 15h3M8 19h3"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Availability Planner</span><span class="menu-row-sub">Leave, training &amp; CTO service week badges</span></span>
+                    ${_makePinBtn('availability')}
                     ${chev}
                   </div>
                   ${_isDesktop() ? '' : `<div class="menu-row" role="button" onclick="setView('tags-full');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Notes Tag Manager</span><span class="menu-row-sub">Create, edit &amp; toggle tags for Notes only</span></span>
+                    ${_makePinBtn('tags-full')}
                     ${chev}
                   </div>`}
-                  `;
-                  })()}
                 </div>
               </div>
 
@@ -26969,11 +26995,12 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">AI Settings</div>
                 <div class="menu-card">
-                  <button class="menu-row" onclick="setView('ai');closeThemeMenu()">
+                  <div class="menu-row" role="button" onclick="setView('ai');closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></span>
-                    <span class="menu-row-body"><span class="menu-row-label">AI Assistant</span><span class="menu-row-sub">Ask about hours, faults, sites & more</span></span>
+                    <span class="menu-row-body"><span class="menu-row-label">AI Assistant</span><span class="menu-row-sub">Ask about hours, faults, sites &amp; more</span></span>
+                    ${_makePinBtn('ai')}
                     ${chev}
-                  </button>
+                  </div>
                   <div class="menu-ai-key-row">
                     <div class="menu-ai-key-hint">Gemini API key — used for voice entry &amp; Fault Assistant. Get a free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></div>
                     <div class="menu-ai-key-wrap">
