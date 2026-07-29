@@ -21723,7 +21723,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.3';
+    const VERSION = '6.7.4';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -43480,15 +43480,15 @@
           + '</div>'
           // Sidebar
           + '<div class="rtn-dash-sidebar">'
-          // Stats (2×2 grid)
-          + '<div class="rtn-stats-bar">'
-          + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:var(--accent)">' + sortedSites.length + '</div><div class="rtn-stat-label">Sites</div></div>'
-          + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#15803d">' + visitCount + '</div><div class="rtn-stat-label">Visits</div></div>'
-          + '</div>'
-          + '<div class="rtn-stats-bar">'
-          + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#16a34a">' + cntUpToDate + '</div><div class="rtn-stat-label">Up to date</div></div>'
-          + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#ef4444">' + cntOverdue + '</div><div class="rtn-stat-label">Overdue</div></div>'
-          + '</div>'
+          // Stats (2×2 grid) — obeys the ☰ → Display → Show stats switch
+          + (_statsVisible() ? ('<div class="rtn-stats-bar">'
+            + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:var(--accent)">' + sortedSites.length + '</div><div class="rtn-stat-label">Sites</div></div>'
+            + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#15803d">' + visitCount + '</div><div class="rtn-stat-label">Visits</div></div>'
+            + '</div>'
+            + '<div class="rtn-stats-bar">'
+            + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#16a34a">' + cntUpToDate + '</div><div class="rtn-stat-label">Up to date</div></div>'
+            + '<div class="rtn-stat"><div class="rtn-stat-val" style="color:#ef4444">' + cntOverdue + '</div><div class="rtn-stat-label">Overdue</div></div>'
+            + '</div>') : '')
           + '<div class="rtn-dash-card"><div class="rtn-dash-card-hdr">Visits per Month</div><div class="rtn-month-bar">' + monthBarHtml + '</div></div>'
           + '<div class="rtn-dash-card"><div class="rtn-dash-card-hdr">Never Visited <span class="rtn-dash-badge" style="background:rgba(239,68,68,0.1);color:#ef4444">' + neverVisited.length + '</span></div>' + neverHtml + '</div>'
           + '<div class="rtn-dash-card"><div class="rtn-dash-card-hdr">Due Visits <span class="rtn-dash-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b">' + dueVisits.length + '</span></div><div class="rtn-due-scroll">' + dueHtml + '</div></div>'
@@ -43533,12 +43533,12 @@
         + '</div>'
         // Tab: Stats (includes Due Visits + Never Visited below)
         + '<div class="rtn-tab-content' + (state.rtnMobTab === 'stats' ? ' active' : '') + '" id="rtn-tab-stats">'
-        + '<div class="stat-grid four-col">'
-        + '<div class="stat-cell"><div class="stat-cell-label">Sites</div><div class="stat-cell-value" style="color:var(--accent)">' + sortedSites.length + '</div></div>'
-        + '<div class="stat-cell"><div class="stat-cell-label">Visits</div><div class="stat-cell-value" style="color:#15803d">' + visitCount + '</div></div>'
-        + '<div class="stat-cell"><div class="stat-cell-label">Up to date</div><div class="stat-cell-value" style="color:#16a34a">' + cntUpToDate + '</div></div>'
-        + '<div class="stat-cell"><div class="stat-cell-label">Overdue</div><div class="stat-cell-value" style="color:#ef4444">' + cntOverdue + '</div></div>'
-        + '</div>'
+        + _statsBlock('routines', 'Summary', '<div class="stat-grid four-col">'
+          + '<div class="stat-cell"><div class="stat-cell-label">Sites</div><div class="stat-cell-value" style="color:var(--accent)">' + sortedSites.length + '</div></div>'
+          + '<div class="stat-cell"><div class="stat-cell-label">Visits</div><div class="stat-cell-value" style="color:#15803d">' + visitCount + '</div></div>'
+          + '<div class="stat-cell"><div class="stat-cell-label">Up to date</div><div class="stat-cell-value" style="color:#16a34a">' + cntUpToDate + '</div></div>'
+          + '<div class="stat-cell"><div class="stat-cell-label">Overdue</div><div class="stat-cell-value" style="color:#ef4444">' + cntOverdue + '</div></div>'
+          + '</div>')
         + '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px"><div style="flex:1;height:1px;background:var(--border)"></div><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Action Items</div><div style="flex:1;height:1px;background:var(--border)"></div></div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Due Visits <span class="rtn-mob-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b">' + dueVisits.length + '</span></div>' + dueHtml + '</div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Never Visited <span class="rtn-mob-badge" style="background:rgba(239,68,68,0.1);color:#ef4444">' + neverVisited.length + '</span></div>' + neverHtml + '</div>'
