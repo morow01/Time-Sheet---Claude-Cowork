@@ -21764,7 +21764,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.14';
+    const VERSION = '6.7.15';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27801,7 +27801,7 @@
       const histHtml = '<span style="display:inline-flex;align-items:center;gap:3px">' +
         '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History &rsaquo;</span>';
       const backHtml = '<span style="display:inline-flex;align-items:center;gap:3px">' +
-        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>This week</span>';
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</span>';
       const parts = [];
       if (!isCurrentWeek) parts.push(backHtml);
       if (tOrd > 0) parts.push('<span style="color:var(--accent);font-weight:700">' + fmtN(tOrd) + 'h</span>');
