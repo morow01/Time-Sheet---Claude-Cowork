@@ -21723,7 +21723,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.4';
+    const VERSION = '6.7.5';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47986,18 +47986,49 @@ Rules:
       showToast(key ? 'Key saved — tap Test to verify' : 'API key removed');
     }
 
+    // Rank candidate models for plain text generation. A plain reverse-alphabetical
+    // sort used to win here, which picked speech/image variants (e.g.
+    // gemini-2.5-flash-preview-tts sorts above gemini-2.5-flash) — those reject
+    // generateContent with "This model only supports Interactions API".
+    function _geminiRankModels(models) {
+      const UNSUITABLE = /(tts|audio|image|imagen|video|veo|embedding|embed|aqa|live|realtime|interaction|guard)/i;
+      const score = m => {
+        let s = 0;
+        if (/flash/i.test(m)) s += 100;                                  // fast + cheap
+        if (!/(preview|exp|experimental|thinking)/i.test(m)) s += 50;    // stable over preview
+        if (/latest/i.test(m)) s += 10;
+        const v = parseFloat((m.match(/(\d+(?:\.\d+)?)/) || [])[1] || '0');
+        s += v * 2;                                                      // newer generation
+        return s;
+      };
+      return models.filter(m => !UNSUITABLE.test(m)).sort((a, b) => score(b) - score(a));
+    }
+
     async function discoverGeminiModel(key) {
-      // Ask Google which models are available for this key, pick the best flash model
+      // Ask Google which models are available for this key, then pick the best
+      // one that actually answers a generateContent call — the model list can
+      // advertise generateContent for models that reject it in practice.
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
       if (!res.ok) return null;
       const data = await res.json();
       const models = (data.models || [])
         .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
         .map(m => m.name.replace('models/', ''));
-      // Prefer flash models (fast + cheap), newest first
-      const order = ['flash'];
-      const flash = models.filter(m => m.includes('flash')).sort().reverse();
-      return flash[0] || models[0] || null;
+      const ranked = _geminiRankModels(models);
+      for (let i = 0; i < Math.min(ranked.length, 4); i++) {
+        try {
+          const probe = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${ranked[i]}:generateContent?key=${key}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] })
+            }
+          );
+          if (probe.ok) return ranked[i];
+        } catch (e) { /* try the next candidate */ }
+      }
+      return ranked[0] || models[0] || null;
     }
 
     async function testGeminiKey() {
