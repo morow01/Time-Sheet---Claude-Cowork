@@ -21743,7 +21743,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.10';
+    const VERSION = '6.7.11';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27892,7 +27892,8 @@
 
       const chevronSvg = `<svg class="sum-chevron-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.22s;transform:${state.showSummary ? 'rotate(90deg)' : 'rotate(0deg)'}"><polyline points="9 6 15 12 9 18"/></svg>`;
 
-      const summaryHtml = `
+      // Weekly Summary keeps its own look, but obeys ☰ → Display → Show stats
+      const summaryHtml = !_statsVisible() ? '' : `
   <div class="sum-section">
     <button onclick="toggleSummary()" class="sum-new-head">
       <div class="sum-head-left">
@@ -28023,7 +28024,7 @@
       var deskSumOpen = state.showSummary;
       var deskChevron = '<svg class="sum-chevron-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.22s;transform:' + (deskSumOpen ? 'rotate(90deg)' : 'rotate(0deg)') + '"><polyline points="9 6 15 12 9 18"/></svg>';
 
-      var deskSummaryHtml = '<div class="sum-section" style="margin:0">' +
+      var deskSummaryHtml = !_statsVisible() ? '' : '<div class="sum-section" style="margin:0">' +
         '<button onclick="toggleSummary()" class="sum-new-head">' +
         '<div class="sum-head-left">' +
         '<div class="sum-sum-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>' +
@@ -28046,8 +28047,9 @@
       var daysPanel = '<div class="desk-panel-days" style="width:' + _deskDaysWidth + 'px">' +
         renderDesktopWeekDaysHeader() +
         daysHtml +
-        '<div class="desk-panel-summary' + (deskSumOpen ? ' is-open' : '') + '">' +
-        deskSummaryHtml + '</div>' +
+        (deskSummaryHtml
+          ? '<div class="desk-panel-summary' + (deskSumOpen ? ' is-open' : '') + '">' + deskSummaryHtml + '</div>'
+          : '') +
         '</div>';
 
       // ── Tasks panel ──
