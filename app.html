@@ -3676,15 +3676,84 @@
     }
 
     .page-week-selector {
-      padding: 8px 11px;
+      padding: 0;
       border: 1px solid var(--border);
-      border-radius: 0;
+      border-radius: 16px 16px 0 0;
       background: var(--bg-card);
       box-shadow: none;
       display: flex;
+      flex-direction: column;
+      margin-bottom: 11px;
+      overflow: hidden;
+    }
+
+    .pws-top-row {
+      display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 11px;
+      padding: 8px 10px;
+    }
+
+    .pws-stats-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg-card-alt);
+      border-top: 1px solid var(--border);
+      padding: 7px 8px;
+      cursor: pointer;
+    }
+
+    .pws-stat-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--border);
+      padding: 0 4px;
+    }
+
+    .pws-stat-col:last-child {
+      border-right: none;
+    }
+
+    .pws-stat-lbl {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      line-height: 1.1;
+    }
+
+    .pws-stat-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-top: 1px;
+    }
+
+    .pws-stat-val.is-ot {
+      color: var(--ot-color);
+    }
+
+    .pws-action-banner {
+      background: var(--accent-light);
+      border-top: 1px solid var(--border);
+      padding: 6px 12px;
+      text-align: center;
+      color: var(--accent);
+      font-size: 11.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .pws-action-banner:active {
+      background: rgba(var(--accent-rgb), 0.2);
     }
 
     .page-week-selector-btn {
@@ -3731,12 +3800,9 @@
       line-height: 1.2;
     }
 
-    /* Flex row so the date text and both pills share one centre line. Inline
-       vertical-align couldn't do this reliably: the two pill families have
-       different font sizes, line-heights and padding, so they rendered at
-       different heights and sat off the date's centre. */
+    /* Flex row so the date text and both pills share one centre line. */
     .page-week-selector-range {
-      margin-top: 2px;
+      margin-top: 0;
       font-size: 16px;
       font-weight: 800;
       line-height: 1.2;
@@ -21776,7 +21842,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.17';
+    const VERSION = '6.7.24';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27837,14 +27903,32 @@
       const avStatusPill = avRole && avRole !== 'OC' && avRole !== '50'
         ? '<span class="av-pill ' + _avClass(avRole) + '" title="Availability Planner">' + esc(avRole) + '</span>'
         : '';
+      const dateAction = `setView('history')`;
+      const backBanner = !isCurrentWeek
+        ? `<div class="pws-action-banner" onclick="goToCurrentWeek()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to the current week
+          </div>`
+        : '';
+
       return `<div class="page-week-selector">
-        <button onclick="prevWeek()" class="page-week-selector-btn" title="Previous week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <div class="page-week-selector-main" onclick="${mainAction}">
-          <div class="page-week-selector-kicker">${label}</div>
-          <div class="page-week-selector-range"><span class="pws-range-text">${esc(range)}</span>${statusPill}${avStatusPill}</div>
-          <div class="${subClass}">${subInner}</div>
+        <div class="pws-top-row">
+          <button onclick="prevWeek()" class="page-week-selector-btn" title="Previous week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="page-week-selector-main" onclick="${dateAction}" title="View Timesheet History">
+            <div class="page-week-selector-range"><span class="pws-range-text">${esc(range)}</span>${statusPill}${avStatusPill}</div>
+          </div>
+          <button onclick="nextWeek()" class="page-week-selector-btn" title="Next week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
         </div>
-        <button onclick="nextWeek()" class="page-week-selector-btn" title="Next week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <div class="pws-stats-bar" onclick="${dateAction}" title="View Timesheet History">
+          <div class="pws-stat-col">
+            <span class="pws-stat-lbl">TOTAL HOURS</span>
+            <span class="pws-stat-val">${tOrd > 0 ? fmtN(tOrd) + 'h' : '0h'}</span>
+          </div>
+          <div class="pws-stat-col">
+            <span class="pws-stat-lbl">OVERTIME</span>
+            <span class="pws-stat-val is-ot">${tOt > 0 ? '+' + fmtN(tOt) + ' OT' : '0h'}</span>
+          </div>
+        </div>
+        ${backBanner}
       </div>`;
     }
 
