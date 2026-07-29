@@ -1448,6 +1448,12 @@
       pointer-events: none;
     }
 
+    /* Today — same accent bar the timesheet uses on the current day's header.
+       Inset shadow rather than a border so the row doesn't shift by 2px. */
+    .copy-picker-day.today {
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
     .copy-picker-day-check {
       width: 20px;
       height: 20px;
@@ -21672,7 +21678,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.0';
+    const VERSION = '6.7.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -30053,10 +30059,13 @@
         const dayName = DAY_NAMES[i];
         const isSource = dateStr === sourceDate;
         const isSelected = copyPickerState.selectedDates.has(dateStr);
-        const cls = isSource ? 'copy-picker-day disabled' : (isSelected ? 'copy-picker-day selected' : 'copy-picker-day');
+        const isToday = dateStr === dateToStr(new Date());
+        const cls = (isSource ? 'copy-picker-day disabled' : (isSelected ? 'copy-picker-day selected' : 'copy-picker-day'))
+          + (isToday ? ' today' : '');
         const checkCls = isSelected ? 'copy-picker-day-check checked' : 'copy-picker-day-check';
         const checkSvg = isSelected ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '';
-        const label = isSource ? `${dayName} <span style="font-weight:400;color:var(--text-dim);">— source</span>` : dayName;
+        const tag = t => ` <span style="font-weight:400;color:var(--text-dim);">— ${t}</span>`;
+        const label = isSource ? `${dayName}${tag('source')}` : (isToday ? `${dayName}${tag('today')}` : dayName);
         html += `<div class="${cls}" onclick="toggleCopyDay('${dateStr}')">
           <div class="${checkCls}">${checkSvg}</div>
           <div class="copy-picker-day-name">${label}</div>
