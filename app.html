@@ -7277,6 +7277,42 @@
       color: var(--text-muted);
     }
 
+    /* ── Stats blocks (Show stats switch + per-block collapse) ── */
+    .stats-block-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 14px 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .stats-block-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .stats-block-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .stats-block-chevron {
+      transition: transform 0.22s;
+      flex-shrink: 0;
+    }
+
+    .stats-block.stats-collapsed .stats-block-body {
+      display: none;
+    }
+
     /* ── Summary card wrapper ── */
     .sum-section {
       margin: 10px 10px 12px;
@@ -21678,7 +21714,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.1';
+    const VERSION = '6.7.2';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26773,6 +26809,16 @@
                   </button>`;
             })()}
                   ${(() => {
+              const statsOn = _statsVisible();
+              return `<button id="menu-stats-btn" class="menu-row" onclick="toggleStatsVisible()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="13"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="9"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Show stats</span><span id="menu-stats-sub" class="menu-row-sub">${statsOn ? 'Shown — tap a heading to collapse' : 'Hidden everywhere'}</span></span>
+                    <span id="menu-stats-track" style="width:36px;height:20px;border-radius:10px;background:${statsOn ? 'var(--accent)' : 'var(--border-strong)'};position:relative;transition:background 0.2s;flex-shrink:0;display:inline-block;">
+                      <span id="menu-stats-pill" style="position:absolute;top:2px;left:${statsOn ? '18px' : '2px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.18);display:block;"></span>
+                    </span>
+                  </button>`;
+            })()}
+                  ${(() => {
               const lp = getLayoutPref();
               const isForceMobile = lp === 'mobile';
               const autoDesk = window.innerWidth >= 1280;
@@ -27267,13 +27313,13 @@
         renderSecondaryPageHeader('Availability Planner', 'CTO tracker colours, leave, training and service week hints', action, "setView('week')") +
         '<div class="av-wrap">' +
         '<aside class="av-panel">' +
-        '<div class="av-section-label">2026 Summary</div>' +
-        '<div class="av-stats">' +
-        '<div class="av-stat"><span>Annual Leave</span><strong>' + (counts['A/L'] || 0) + '</strong></div>' +
-        '<div class="av-stat"><span>Training</span><strong>' + (counts.WTT || 0) + '</strong></div>' +
-        '<div class="av-stat"><span>Bank Holidays</span><strong>' + (counts.BH || 0) + '</strong></div>' +
-        '<div class="av-stat"><span>Service Days</span><strong>' + ((counts.SD || 0) + (counts.SA || 0)) + '</strong></div>' +
-        '</div>' +
+        _statsBlock('availability', '2026 Summary',
+          '<div class="av-stats">' +
+          '<div class="av-stat"><span>Annual Leave</span><strong>' + (counts['A/L'] || 0) + '</strong></div>' +
+          '<div class="av-stat"><span>Training</span><strong>' + (counts.WTT || 0) + '</strong></div>' +
+          '<div class="av-stat"><span>Bank Holidays</span><strong>' + (counts.BH || 0) + '</strong></div>' +
+          '<div class="av-stat"><span>Service Days</span><strong>' + ((counts.SD || 0) + (counts.SA || 0)) + '</strong></div>' +
+          '</div>') +
         '<div class="av-card"><button class="av-btn primary" style="width:100%" onclick="avShowImportDialog()">Import CTO Tracker</button><p>' + esc((state.schedule && state.schedule.source) || 'No data imported yet.') + '</p></div>' +
         '</aside>' +
         '<section class="av-calendar-wrap">' + _avCalendarHtml() + '</section>' +
@@ -31484,6 +31530,49 @@
       document.querySelectorAll('[data-sum-table-content]').forEach(el => {
         el.innerHTML = html;
       });
+    }
+
+    // ── Stats blocks ──
+    // Global "Show stats" switch (☰ → Display) plus per-block collapse. Blocks
+    // are wrapped by _statsBlock(); when the switch is off nothing is rendered.
+    function _statsVisible() {
+      try { return localStorage.getItem('rian_stats_hidden') !== '1'; } catch (e) { return true; }
+    }
+
+    function toggleStatsVisible() {
+      try { localStorage.setItem('rian_stats_hidden', _statsVisible() ? '1' : '0'); } catch (e) { }
+      render();
+    }
+
+    function _statsCollapsedMap() {
+      try { return JSON.parse(localStorage.getItem('rian_stats_collapsed') || '{}') || {}; } catch (e) { return {}; }
+    }
+
+    function toggleStatsBlock(id) {
+      const map = _statsCollapsedMap();
+      map[id] = !map[id];
+      try { localStorage.setItem('rian_stats_collapsed', JSON.stringify(map)); } catch (e) { }
+      // Toggle in place — avoids a full render (and losing scroll position)
+      const wrap = document.querySelector('[data-stats-block="' + id + '"]');
+      if (!wrap) { render(); return; }
+      wrap.classList.toggle('stats-collapsed', !!map[id]);
+      const chev = wrap.querySelector('.stats-block-chevron');
+      if (chev) chev.style.transform = map[id] ? 'rotate(0deg)' : 'rotate(90deg)';
+    }
+
+    function _statsBlock(id, label, innerHtml) {
+      if (!_statsVisible()) return '';
+      const collapsed = _statsCollapsedMap()[id] === true;
+      return '<div class="stats-block' + (collapsed ? ' stats-collapsed' : '') + '" data-stats-block="' + id + '">'
+        + '<button class="stats-block-hdr" onclick="toggleStatsBlock(\'' + id + '\')">'
+        + '<span class="stats-block-label">' + label + '</span>'
+        + '<span class="stats-block-line"></span>'
+        + '<svg class="stats-block-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" '
+        + 'stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" '
+        + 'style="transform:rotate(' + (collapsed ? '0' : '90') + 'deg)"><polyline points="9 6 15 12 9 18"/></svg>'
+        + '</button>'
+        + '<div class="stats-block-body">' + innerHtml + '</div>'
+        + '</div>';
     }
 
     function toggleSummary() {
@@ -38426,12 +38515,12 @@
         '</div>';
 
       // Stats
-      var statsHtml = '<div class="stat-grid">' +
+      var statsHtml = _statsBlock('history', curYear + ' Summary', '<div class="stat-grid">' +
         '<div class="stat-cell"><div class="stat-cell-label">' + curYear + ' so far</div><div class="stat-cell-value">' + (isLoading ? '…' : workedWeeks.length) + '</div><div class="stat-cell-note">Weeks worked</div></div>' +
         '<div class="stat-cell"><div class="stat-cell-label">Ordinary hrs</div><div class="stat-cell-value">' + (isLoading ? '…' : yearOrd) + 'h</div><div class="stat-cell-note">' + (isLoading ? '…' : (yearOT > 0 ? yearOT + 'h OT' : 'No OT') + ' · avg ' + avgHrs + 'h/wk') + '</div></div>' +
         '<div class="stat-cell"><div class="stat-cell-label">On-call wks</div><div class="stat-cell-value">' + yearOnCall + '</div><div class="stat-cell-note">On-call / extra</div></div>' +
         '<div class="stat-cell"><div class="stat-cell-label">Callouts</div><div class="stat-cell-value">' + yearCallouts + '</div><div class="stat-cell-note">incidents</div></div>' +
-        '</div>';
+        '</div>');
 
       // Filter chips
       var chipsHtml = '<div class="hist-chips">' +
@@ -45460,14 +45549,12 @@
 
       if (upcomingWeeks.length > 0 || previousWeeks.length > 0) {
         // Stats bar
-        html += `<div style="margin:14px 14px 8px">`;
-        html += `<div class="stat-grid four-col">
+        html += _statsBlock('callouts', 'On-Call Summary', `<div style="margin:0 14px 8px">` + `<div class="stat-grid four-col">
           <div class="stat-cell"><div class="stat-cell-label">Total<br>Weeks</div><div class="stat-cell-value" style="color:var(--accent)">${totalOnCall + totalExtra}</div></div>
           <div class="stat-cell"><div class="stat-cell-label">Extra<br>Shifts</div><div class="stat-cell-value" style="color:#F59E0B">${totalExtra}</div></div>
           <div class="stat-cell"><div class="stat-cell-label">Total<br>Incidents</div><div class="stat-cell-value" style="color:var(--text-primary)">${totalIncidents}</div></div>
           <div class="stat-cell"><div class="stat-cell-label">Avg /<br>Week</div><div class="stat-cell-value" style="color:#818cf8">${avgPerWeek}</div></div>
-        </div>`;
-        html += `</div>`;
+        </div>` + `</div>`);
 
         if (upcomingWeeks.length > 0) {
           html += `<div class="act-field-label" style="padding:4px 16px 4px">Upcoming Weeks</div>`;
@@ -53790,7 +53877,7 @@ The state block is invisible to the user.`;
       }
 
       const stats = state.aiStats;
-      const statsHtml = stats && !state.aiResult && !state.aiLoading ? `
+      const statsHtml = stats && !state.aiResult && !state.aiLoading && _statsVisible() ? `
       <div class="ai-section">
         <div class="ai-section-label">Your Timesheet History</div>
         <div class="ai-stats-row">
