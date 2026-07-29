@@ -7309,8 +7309,17 @@
       flex-shrink: 0;
     }
 
+    /* Same expand animation as the Weekly Summary (.sum-table-wrap) */
+    .stats-block-body {
+      overflow: hidden;
+      max-height: 1000px;
+      opacity: 1;
+      transition: max-height 0.35s ease, opacity 0.25s ease;
+    }
+
     .stats-block.stats-collapsed .stats-block-body {
-      display: none;
+      max-height: 0;
+      opacity: 0;
     }
 
     /* ── Summary card wrapper ── */
@@ -21714,7 +21723,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.2';
+    const VERSION = '6.7.3';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
