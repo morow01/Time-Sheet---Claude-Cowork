@@ -16,7 +16,14 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.5.19**
+Current version: **6.7.47**
+
+**Top Menu Tabs Configuration (v6.7.28+)**:
+- Registry `ALL_TOP_TABS` defines available header tabs: `week` (Timesheet, pinned), `notes` (Notes), `journal` (Journal), `exchanges` (Finder), `callouts` (Callouts), `routines` (Routines).
+- Customisation selector in ☰ menu → Display section allows toggling which tabs are displayed in the header `#main-tab-bar`.
+- Dynamic Header Tab Layout (v6.7.28): 4 or fewer visible tabs use equal full-width flex distribution (`flex: 1 1 0%`, no horizontal scrolling needed). 5 or more visible tabs automatically switch to horizontal scroll mode (`flex: 1 0 auto`).
+- `Timesheet` is pinned 1st and cannot be disabled. Preferences persist in `localStorage` under `rian_visible_tabs`.
+- Helpers: `getVisibleTabs()`, `toggleTopTabVisibility(tabId)`.
 
 **7 themes active**: `Codex` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `apple` (macOS), `gameboy` (Game Boy), `lcd` (LCD). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
