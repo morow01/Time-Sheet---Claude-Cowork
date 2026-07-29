@@ -533,6 +533,8 @@
 
     /* Task row hour pills */
     .pill-hrs {
+      display: inline-flex;
+      align-items: center;
       padding: 2px 7px;
       border-radius: 8px;
       font-size: 11px;
@@ -543,6 +545,8 @@
     }
 
     .pill-ot {
+      display: inline-flex;
+      align-items: center;
       padding: 2px 7px;
       border-radius: 8px;
       font-size: 11px;
@@ -3803,7 +3807,7 @@
     /* Flex row so the date text and both pills share one centre line. */
     .page-week-selector-range {
       margin-top: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       line-height: 1.2;
       color: var(--text-primary);
@@ -3919,14 +3923,16 @@
         margin: 10px 12px 8px;
       }
 
+      /* Height is shared with .desk-panel-2hdr so the three columns line up —
+         change both together. */
       .desk-week-nav-hdr {
-        min-height: 66px;
+        min-height: 58px;
         border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 10px;
-        padding: 10px 12px;
+        padding: 8px 12px;
         background: var(--bg-card);
       }
 
@@ -3957,14 +3963,28 @@
         background: var(--bg-page);
       }
 
+      /* Flex row so the date and both pill families share one centre line and
+         one height — same fix as the mobile selector (.page-week-selector-range).
+         Inline vertical-align couldn't do it: .week-status-pill and .av-pill have
+         different font sizes, line-heights and padding. */
       .desk-week-nav-range {
         color: var(--text-primary);
-        font-size: 17px;
+        font-size: 16px;
         font-weight: 800;
         line-height: 1.2;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .desk-week-nav-range .av-pill,
+      .desk-week-nav-range .week-status-pill {
+        margin-left: 0;
+        height: 20px;
+        padding: 0 8px;
+        flex-shrink: 0;
       }
 
       .desk-week-nav-hint {
@@ -18090,8 +18110,57 @@
       /* ── Three-panel container ── */
       .desk-three-panel {
         display: flex;
-        min-height: calc(100vh - 180px);
+        height: calc(100vh - 180px);
+        overflow: hidden;
         border-top: 1px solid var(--border);
+      }
+
+      /* ── Desktop week stats bar (Total Hours / Overtime) ── */
+      .desk-week-stats-bar {
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-card);
+        flex-shrink: 0;
+      }
+
+      .desk-week-stat {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 8px;
+        gap: 1px;
+      }
+
+      .desk-week-stat + .desk-week-stat {
+        border-left: 1px solid var(--border);
+      }
+
+      .desk-week-stat-label {
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+      }
+
+      .desk-week-stat-value {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        line-height: 1.1;
+      }
+
+      .desk-week-stat-value.is-ot {
+        color: var(--ot-color);
+      }
+
+      .desk-week-stat-value.is-zero {
+        color: var(--text-muted);
+        font-size: 15px;
       }
 
       /* ── Panel: Days (left) ── */
@@ -18118,6 +18187,40 @@
         letter-spacing: 0.1em;
         border-bottom: 1px solid var(--border);
         flex-shrink: 0;
+      }
+
+      /* Two-line panel header (Tasks, Task Details).
+         Matches the days panel's FIRST row (.desk-week-nav-hdr, 58px) so the
+         three columns line up along the top — keep the two in sync. It used to
+         be 100px to span the nav + Week Days subheader, which left it taller
+         than the week nav once the stats bar was added between them. */
+      .desk-panel-2hdr {
+        min-height: 58px;
+        padding: 0 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-card);
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .desk-panel-hdr-label {
+        font-size: 9px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-muted);
+        line-height: 1;
+        margin-bottom: 2px;
+      }
+
+      .desk-panel-hdr-sub {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        letter-spacing: -0.02em;
+        line-height: 1.2;
       }
 
       .desk-day-row {
@@ -21852,7 +21955,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.54';
+    const VERSION = '6.7.59';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -28071,29 +28174,13 @@
     function renderDesktopWeekDaysHeader() {
       const weekStart = state.weekStart || dateToStr(getCurrentFriday());
       const range = state.weekStart ? formatWeekRange(state.weekStart) : '—';
-      // Mirror the mobile chooser: surface on-call / extra pills and the
-      // back-to-current-week affordance on desktop too.
       const isCurrentWeek = state.weekStart === dateToStr(getCurrentFriday());
-      const mainAction = isCurrentWeek ? 'setView(\'history\')' : 'goToCurrentWeek()';
-      const subClass = isCurrentWeek ? 'desk-week-nav-hint' : 'desk-week-nav-hint is-back';
-      // Same content and colour rule as the mobile selector (v6.7.16): totals on
-      // every week, accent = tappable, ink = numbers, amber = OT, muted = dots.
       let tOrd = 0, tOt = 0;
       (state.weekData?.days || []).forEach(d => d.activities.forEach(a => {
         tOrd += parseFloat(a.ordinary) || 0;
         tOt += parseFloat(a.overtime) || 0;
       }));
       const fmtN = n => Math.round(n) === n ? n : n.toFixed(1);
-      const histHtml = '<span style="display:inline-flex;align-items:center;gap:3px;color:var(--accent);font-weight:600">' +
-        '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History &rsaquo;</span>';
-      const backHtml = '<span style="display:inline-flex;align-items:center;gap:3px;color:var(--accent);font-weight:600">' +
-        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</span>';
-      const parts = [];
-      if (!isCurrentWeek) parts.push(backHtml);
-      if (tOrd > 0) parts.push('<span style="color:var(--text-ink);font-weight:700">' + fmtN(tOrd) + 'h</span>');
-      if (tOt > 0) parts.push('<span style="color:var(--ot-color);font-weight:700">+' + fmtN(tOt) + ' OT</span>');
-      if (isCurrentWeek) parts.push(histHtml);
-      const subInner = parts.join('<span style="color:var(--text-muted);opacity:0.7;margin:0 4px">·</span>');
       const ocStatus = state.callouts && state.callouts.onCall && state.callouts.onCall[weekStart];
       const phoneSvg = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
       const statusPill = ocStatus === 'oncall'
@@ -28105,14 +28192,30 @@
       const avStatusPill = avRole && avRole !== 'OC' && avRole !== '50'
         ? '<span class="av-pill ' + _avClass(avRole) + '" title="Availability Planner">' + esc(avRole) + '</span>'
         : '';
+      // ── Stats bar: same pws-stats-bar style as mobile ──
+      const statsBar = '<div class="pws-stats-bar" style="cursor:default;border-top:none;border-bottom:1px solid var(--border)">' +
+        '<div class="pws-stat-col">' +
+        '<span class="pws-stat-lbl">TOTAL HOURS</span>' +
+        '<span class="pws-stat-val' + (tOrd === 0 ? '" style="color:var(--text-muted)' : '') + '">' + (tOrd > 0 ? fmtN(tOrd) + 'h' : '0h') + '</span>' +
+        '</div>' +
+        '<div class="pws-stat-col">' +
+        '<span class="pws-stat-lbl">OVERTIME</span>' +
+        '<span class="pws-stat-val' + (tOt > 0 ? ' is-ot' : '') + '">' + (tOt > 0 ? '+' + fmtN(tOt) + ' OT' : '\u2014') + '</span>' +
+        '</div>' +
+        '</div>';
+      // Back banner — only shown when not on current week
+      const backBanner = !isCurrentWeek
+        ? '<div class="pws-action-banner" onclick="goToCurrentWeek()">' +
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>' +
+          'Back to the current week</div>'
+        : '';
       return '<div class="desk-week-nav-hdr">' +
         '<button onclick="prevWeek()" class="desk-week-nav-btn" title="Previous week"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>' +
-        '<div class="desk-week-nav-main" onclick="' + mainAction + '" title="' + (isCurrentWeek ? 'Open Week History' : 'Back to this week') + '">' +
-        '<div class="desk-week-nav-range">' + esc(range) + statusPill + avStatusPill + '</div>' +
-        '<div class="' + subClass + '">' + subInner + '</div>' +
+        '<div class="desk-week-nav-main" style="cursor:default">' +
+        '<div class="desk-week-nav-range"><span class="pws-range-text">' + esc(range) + '</span>' + statusPill + avStatusPill + '</div>' +
         '</div>' +
         '<button onclick="nextWeek()" class="desk-week-nav-btn" title="Next week"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>' +
-        '</div><div class="desk-week-days-subhdr">Week Days</div>';
+        '</div>' + statsBar + backBanner + '<div class="desk-week-days-subhdr">Week Days</div>';
     }
 
     function renderCardView() {
@@ -28334,7 +28437,10 @@
       var allCount = day.activities.length;
 
       var monthShort = strToDate(day.date).toLocaleDateString('en-IE', { month: 'short' });
-      var hdr = '<div class="desk-panel-days-hdr">Tasks — ' + esc(day.dayName) + ' ' + dom + ' ' + monthShort + '</div>';
+      var hdr = '<div class="desk-panel-2hdr">' +
+        '<div class="desk-panel-hdr-label">Tasks</div>' +
+        '<div class="desk-panel-hdr-sub">' + esc(day.dayName) + ' ' + dom + ' ' + monthShort + '</div>' +
+        '</div>';
 
       var cards = '';
       if (day.activities.length === 0) {
@@ -28401,11 +28507,12 @@
     function _renderDeskDetail(di, actId) {
       var day = state.weekData.days[di];
       if (!actId || !day) {
-        return '<div class="desk-panel-days-hdr">Task Details</div>' +
+        return '<div class="desk-panel-2hdr"><div class="desk-panel-hdr-label">Task Details</div><div class="desk-panel-hdr-sub">Select a task</div></div>' +
           '<div class="desk-empty-state">' +
           '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
           '<p>Select a task to view details</p>' +
           '</div>';
+
       }
       var actIndex = -1;
       var act = null;
@@ -28460,7 +28567,10 @@
       var escId = act.id.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       var escDesc = (act.description || 'Unnamed').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
-      return '<div class="desk-panel-days-hdr">Task Details</div>' +
+      var totalActCount = day.activities.filter(function(a) { return a.description || a.codes.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0; }).length;
+      var taskCounterSub = totalActCount > 0 ? 'Task ' + (actIndex + 1) + ' of ' + totalActCount : 'Task Details';
+
+      return '<div class="desk-panel-2hdr"><div class="desk-panel-hdr-label">Task Details</div><div class="desk-panel-hdr-sub">' + taskCounterSub + '</div></div>' +
         '<div class="desk-detail-body">' +
         '<div class="desk-detail-header">' +
         '<div class="task-num" style="background:var(--accent);color:#fff">' + (actIndex + 1) + '</div>' +
