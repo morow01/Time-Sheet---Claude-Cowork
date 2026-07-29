@@ -19960,14 +19960,20 @@
       color: var(--text-muted);
       margin-top: 4px;
     }
-    /* Single-row 4-column variant for narrow panels. Cells stack side-by-side. */
+    /* Single-row 3/4-column variants for narrow panels. Cells stack side-by-side. */
     .stat-grid.four-col { grid-template-columns: repeat(4, 1fr); }
-    .stat-grid.four-col .stat-cell {
+    .stat-grid.three-col { grid-template-columns: repeat(3, 1fr); }
+    .stat-grid.four-col .stat-cell,
+    .stat-grid.three-col .stat-cell {
       min-height: 0;
       border-bottom: 0;
       border-right: 1px solid var(--border);
     }
-    .stat-grid.four-col .stat-cell:last-child { border-right: 0; }
+    .stat-grid.four-col .stat-cell:last-child,
+    .stat-grid.three-col .stat-cell:last-child { border-right: 0; }
+
+    /* Availability Planner panel is edge-to-edge — inset the card like .av-card */
+    .av-stat-grid { margin: 0 16px 14px; }
 
     .hist-chips {
       display: flex;
@@ -21723,7 +21729,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.6';
+    const VERSION = '6.7.7';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27323,11 +27329,11 @@
         '<div class="av-wrap">' +
         '<aside class="av-panel">' +
         _statsBlock('availability', '2026 Summary',
-          '<div class="av-stats">' +
-          '<div class="av-stat"><span>Annual Leave</span><strong>' + (counts['A/L'] || 0) + '</strong></div>' +
-          '<div class="av-stat"><span>Training</span><strong>' + (counts.WTT || 0) + '</strong></div>' +
-          '<div class="av-stat"><span>Bank Holidays</span><strong>' + (counts.BH || 0) + '</strong></div>' +
-          '<div class="av-stat"><span>Service Days</span><strong>' + ((counts.SD || 0) + (counts.SA || 0)) + '</strong></div>' +
+          '<div class="stat-grid av-stat-grid">' +
+          '<div class="stat-cell"><div class="stat-cell-label">Annual Leave</div><div class="stat-cell-value">' + (counts['A/L'] || 0) + '</div></div>' +
+          '<div class="stat-cell"><div class="stat-cell-label">Training</div><div class="stat-cell-value">' + (counts.WTT || 0) + '</div></div>' +
+          '<div class="stat-cell"><div class="stat-cell-label">Bank Holidays</div><div class="stat-cell-value">' + (counts.BH || 0) + '</div></div>' +
+          '<div class="stat-cell"><div class="stat-cell-label">Service Days</div><div class="stat-cell-value">' + ((counts.SD || 0) + (counts.SA || 0)) + '</div></div>' +
           '</div>') +
         '<div class="av-card"><button class="av-btn primary" style="width:100%" onclick="avShowImportDialog()">Import CTO Tracker</button><p>' + esc((state.schedule && state.schedule.source) || 'No data imported yet.') + '</p></div>' +
         '</aside>' +
@@ -53919,10 +53925,10 @@ The state block is invisible to the user.`;
       const stats = state.aiStats;
       const statsHtml = stats && !state.aiResult && !state.aiLoading ? _statsBlock('ai', 'Your Timesheet History', `
       <div class="ai-section">
-        <div class="ai-stats-row">
-          <div class="ai-stat-tile"><div class="ai-stat-val">${stats.entryCount}</div><div class="ai-stat-lbl">entries</div></div>
-          <div class="ai-stat-tile"><div class="ai-stat-val">${stats.weekCount}</div><div class="ai-stat-lbl">weeks</div></div>
-          <div class="ai-stat-tile"><div class="ai-stat-val">${stats.monthsBack || '—'}</div><div class="ai-stat-lbl">months data</div></div>
+        <div class="stat-grid three-col">
+          <div class="stat-cell"><div class="stat-cell-label">Entries</div><div class="stat-cell-value">${stats.entryCount}</div></div>
+          <div class="stat-cell"><div class="stat-cell-label">Weeks</div><div class="stat-cell-value">${stats.weekCount}</div></div>
+          <div class="stat-cell"><div class="stat-cell-label">Months data</div><div class="stat-cell-value">${stats.monthsBack || '—'}</div></div>
         </div>
         ${stats.noteCount > 0 ? `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;display:flex;align-items:center;gap:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> ${stats.noteCount} fault note${stats.noteCount === 1 ? '' : 's'} available for fault diagnosis</div>` : ''}
         ${stats.entryCount === 0 ? `<div class="ai-empty-state" style="margin-top:10px;display:flex;align-items:center;gap:6px;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6m-3-3a6 6 0 1 0-3.46-10.74 8.5 8.5 0 0 1-1.04 1.74 6 6 0 0 0 4.5 9z"/><line x1="12" y1="18" x2="12" y2="22"/></svg> Your timesheet history will appear here once you start logging work entries.</div>` : ''}
