@@ -6723,9 +6723,13 @@
       }
 
       /* Summary panel sits at the top like the stats on every other page —
-         it holds no actions now (import lives in the header icon button). */
+         it holds no actions now (import lives in the header icon button).
+         Transparent so the stat card reads against the page background the
+         way it does on History/Callouts, rather than white-on-white. */
       .av-panel:first-child {
         order: 1;
+        background: transparent;
+        padding-top: 4px;
       }
 
       .av-calendar-wrap {
@@ -21739,7 +21743,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.8';
+    const VERSION = '6.7.9';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
