@@ -6231,6 +6231,14 @@
       line-height: 1.4;
     }
 
+    .av-card-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
     .av-btn {
       height: 42px;
       border-radius: 12px;
@@ -6714,16 +6722,18 @@
         border: 0;
       }
 
+      /* Summary panel sits at the top like the stats on every other page —
+         it holds no actions now (import lives in the header icon button). */
       .av-panel:first-child {
-        order: 3;
-      }
-
-      .av-calendar-wrap {
         order: 1;
       }
 
-      .av-panel:last-child {
+      .av-calendar-wrap {
         order: 2;
+      }
+
+      .av-panel:last-child {
+        order: 3;
       }
 
       .av-calendar-wrap {
@@ -21729,7 +21739,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.7';
+    const VERSION = '6.7.8';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27335,7 +27345,9 @@
           '<div class="stat-cell"><div class="stat-cell-label">Bank Holidays</div><div class="stat-cell-value">' + (counts.BH || 0) + '</div></div>' +
           '<div class="stat-cell"><div class="stat-cell-label">Service Days</div><div class="stat-cell-value">' + ((counts.SD || 0) + (counts.SA || 0)) + '</div></div>' +
           '</div>') +
-        '<div class="av-card"><button class="av-btn primary" style="width:100%" onclick="avShowImportDialog()">Import CTO Tracker</button><p>' + esc((state.schedule && state.schedule.source) || 'No data imported yet.') + '</p></div>' +
+        // Import action lives in the header icon button — this card only reports
+        // what was last imported, so the panel stays light enough to sit up top.
+        '<div class="av-card"><div class="av-card-label">CTO Tracker</div><p>' + esc((state.schedule && state.schedule.source) || 'No data imported yet.') + '</p></div>' +
         '</aside>' +
         '<section class="av-calendar-wrap">' + _avCalendarHtml() + '</section>' +
         '<aside class="av-panel"><div class="av-section-label">Edit Availability</div><div class="av-editor">' +
