@@ -3719,24 +3719,38 @@
       line-height: 1.2;
     }
 
+    /* Flex row so the date text and both pills share one centre line. Inline
+       vertical-align couldn't do this reliably: the two pill families have
+       different font sizes, line-heights and padding, so they rendered at
+       different heights and sat off the date's centre. */
     .page-week-selector-range {
       margin-top: 2px;
       font-size: 16px;
       font-weight: 800;
       line-height: 1.2;
       color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    /* Ellipsis lives on the text itself now that the row is a flex container */
+    .pws-range-text {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
-    /* Both pill families sit beside the date range — .week-status-pill used a
-       hardcoded vertical-align offset while .av-pill fell back to baseline, so
-       EXTRA sat ~3px above SD. Centre both instead, independent of font size. */
+    /* Equal height for both pill families so they read as one set */
     .page-week-selector-range .av-pill,
     .page-week-selector-range .week-status-pill {
-      margin-left: 8px;
-      vertical-align: middle;
+      margin-left: 0;
+      height: 20px;
+      padding: 0 8px;
+      flex-shrink: 0;
     }
     /* On-call / extra-shift pills shown beside the date range */
     .week-status-pill {
@@ -21750,7 +21764,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.12';
+    const VERSION = '6.7.13';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27810,7 +27824,7 @@
         <button onclick="prevWeek()" class="page-week-selector-btn" title="Previous week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
         <div class="page-week-selector-main" onclick="${mainAction}">
           <div class="page-week-selector-kicker">${label}</div>
-          <div class="page-week-selector-range">${esc(range)}${statusPill}${avStatusPill}</div>
+          <div class="page-week-selector-range"><span class="pws-range-text">${esc(range)}</span>${statusPill}${avStatusPill}</div>
           <div class="${subClass}">${subInner}</div>
         </div>
         <button onclick="nextWeek()" class="page-week-selector-btn" title="Next week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
