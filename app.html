@@ -21672,7 +21672,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.6.98';
+    const VERSION = '6.6.99';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50311,7 +50311,8 @@ QUESTION: ${query}`;
             // Markdown pipe table pasted as plain text → insert a real table.
             // Only when there's no text/html flavour (that pastes fine already).
             if (cd && !(cd.getData('text/html') || '').trim()) {
-              const parsed = _ttParseMdTable(cd.getData('text/plain') || '');
+              const _plain = cd.getData('text/plain') || '';
+              const parsed = _ttParseMdTable(_plain) || _ttParseCellList(_plain) || _ttParseDelimTable(_plain);
               if (parsed) {
                 event.preventDefault();
                 if (_tiptapEditor) {
@@ -52227,6 +52228,56 @@ QUESTION: ${query}`;
       return { header: rows[0], body: rows.slice(1), lead: lead.filter(l => l) };
     }
 
+    // Fallback for cell readings pasted WITHOUT pipes — some apps strip the
+    // markdown, leaving "1 13.47" lines (and a run-together "Cell NumberVoltage"
+    // header). Matches a sequential 1..N run of "<number> <value>" lines.
+    function _ttParseCellList(text) {
+      if (!text) return null;
+      const lines = String(text).replace(/\r/g, '').replace(/ /g, ' ').split('\n');
+      // Separator varies by source: space, colon, dash, comma, tab or pipe;
+      // value may use a , decimal and carry a unit. Optional leading "Cell".
+      const rowRe = /^(?:cells?\s*)?(\d{1,3})\s*[:\-–,|\t]?\s+(\d{1,4}(?:[.,]\d{1,3})?)\s*(?:v|volts?|vdc)?\.?$/i;
+      const rowReTight = /^(?:cells?\s*)?(\d{1,3})\s*[:\-–,|\t]\s*(\d{1,4}(?:[.,]\d{1,3})?)\s*(?:v|volts?|vdc)?\.?$/i;
+      let lead = [];
+      let body = [];
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i].trim();
+        if (!raw) continue;
+        const m = raw.match(rowRe) || raw.match(rowReTight);
+        if (m) {
+          if (parseInt(m[1], 10) !== body.length + 1) { if (body.length) break; continue; }
+          body.push([m[1], m[2].replace(',', '.')]);
+        } else if (body.length) {
+          break;                    // text after the run ends parsing
+        } else {
+          lead.push(raw);
+        }
+      }
+      if (body.length < 2) return null;
+      // Drop a run-together header line like "Cell NumberVoltage (V)"
+      if (lead.length && /cell/i.test(lead[lead.length - 1]) && /volt/i.test(lead[lead.length - 1])) lead.pop();
+      return { header: ['Cell', 'Volts'], body: body, lead: lead };
+    }
+
+    // Generic delimited table — tab-separated (spreadsheet copy) or columns kept
+    // apart by 2+ spaces. Deliberately never splits on single spaces or commas,
+    // so ordinary prose can't be mistaken for a table.
+    function _ttParseDelimTable(text) {
+      if (!text) return null;
+      const lines = String(text).replace(/\r/g, '').replace(/ /g, ' ')
+        .split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length < 2) return null;
+      const hasTab = lines.every(l => l.indexOf('\t') >= 0);
+      if (!hasTab && !lines.every(l => /\s{2,}/.test(l))) return null;
+      const rows = lines.map(l => (hasTab ? l.split('\t') : l.split(/\s{2,}/)).map(c => c.trim()));
+      const cols = rows[0].length;
+      if (cols < 2) return null;
+      if (!rows.every(r => r.length === cols)) return null;
+      // Long cells mean prose, not table data (only relevant for the space form)
+      if (!hasTab && !rows.every(r => r.every(c => c.length <= 24))) return null;
+      return { header: rows[0], body: rows.slice(1), lead: [] };
+    }
+
     function _ttMdTableToHtml(parsed) {
       const cP = '<p style="text-align: center">';
       const cell = (v, bold) => '<td>' + cP + (bold && v ? '<strong>' + esc(v) + '</strong>' : esc(v || '')) + '</p></td>';
@@ -52283,9 +52334,9 @@ QUESTION: ${query}`;
       const start = empty ? 0 : from;
       const end = empty ? state.doc.content.size : to;
       const text = state.doc.textBetween(start, end, '\n', '\n');
-      const parsed = _ttParseMdTable(text);
+      const parsed = _ttParseMdTable(text) || _ttParseCellList(text) || _ttParseDelimTable(text);
       if (!parsed) {
-        showToast('No markdown table found — select the pasted lines and try again');
+        showToast('No table found — select the pasted lines and try again');
         return;
       }
       e.chain().focus()
