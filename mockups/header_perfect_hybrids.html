@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rian — Hybrid Header Mockups</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-alt: #f8fafc;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --ot-color: #d97706;
+      --pill-oncall-bg: #fee2e2;
+      --pill-oncall-text: #991b1b;
+      --pill-extra-bg: #ffedd5;
+      --pill-extra-text: #9a3412;
+      --pill-sd-bg: #dbeafe;
+      --pill-sd-text: #1e40af;
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0f1624;
+      --bg-card: #1e293b;
+      --bg-card-alt: #273449;
+      --border: #334155;
+      --accent: #4d94ff;
+      --accent-light: rgba(77, 148, 255, 0.12);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --ot-color: #fbbf24;
+      --pill-oncall-bg: rgba(239, 68, 68, 0.2);
+      --pill-oncall-text: #fca5a5;
+      --pill-extra-bg: rgba(249, 115, 22, 0.2);
+      --pill-extra-text: #fdba74;
+      --pill-sd-bg: rgba(59, 130, 246, 0.2);
+      --pill-sd-text: #93c5fd;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      padding: 24px 16px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .top-bar h1 { font-size: 15px; font-weight: 800; }
+    .theme-btn {
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin: 24px 0 8px 4px;
+    }
+    .desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .mobile-frame {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+    }
+
+    .card-wrap {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg-card);
+      overflow: hidden;
+    }
+
+    .pws-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .pws-btn svg { width: 18px; height: 18px; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .status-pill.extra { background: var(--pill-extra-bg); color: var(--pill-extra-text); }
+    .status-pill.oncall { background: var(--pill-oncall-bg); color: var(--pill-oncall-text); }
+    .status-pill.sd { background: var(--pill-sd-bg); color: var(--pill-sd-text); }
+
+    /* HYBRID A CSS */
+    .ha-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+    }
+    .ha-date {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .ha-bottom {
+      display: flex;
+      align-items: center;
+      background: var(--bg-card-alt);
+      border-top: 1px solid var(--border);
+      padding: 8px 12px;
+    }
+    .ha-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ha-col.border-r { border-right: 1px solid var(--border); }
+    .ha-lbl { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .ha-val { font-size: 14px; font-weight: 800; color: var(--text-primary); margin-top: 1px; }
+    .ha-action-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    /* HYBRID B CSS */
+    .hb-banner {
+      background: var(--accent-light);
+      border-top: 1px solid var(--border);
+      padding: 6px 12px;
+      text-align: center;
+      color: var(--accent);
+      font-size: 11.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="top-bar">
+    <div>
+      <h1>Rian Hybrid Header Mockups</h1>
+      <div style="font-size:12px; color:var(--text-muted)">Solving UI/UX Feedback</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">🌙 Dark / ☀️ Light</button>
+  </div>
+
+  <!-- HYBRID A -->
+  <div class="section-title">🌟 Hybrid A: Material Action Text (Recommended)</div>
+  <div class="desc">Keeps 2-column stats together (Total | Overtime), but replaces the mystery chevron with an explicit <strong>Android Material Action Link</strong> (e.g. <code>HISTORY 🕒 ›</code> or <code>← CURRENT WEEK</code>).</div>
+  
+  <div class="mobile-frame">
+    <!-- Current Week -->
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">CURRENT WEEK</div>
+    <div class="card-wrap" style="margin-bottom:14px;">
+      <div class="ha-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="ha-date">
+          <span>24 Jul – 30 Jul</span>
+          <span class="status-pill extra">📞 Extra</span>
+          <span class="status-pill sd">SD</span>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="ha-bottom">
+        <div class="ha-col border-r">
+          <span class="ha-lbl">TOTAL HOURS</span>
+          <span class="ha-val">39h</span>
+        </div>
+        <div class="ha-col border-r">
+          <span class="ha-lbl">OVERTIME</span>
+          <span class="ha-val" style="color:var(--ot-color)">+1h OT</span>
+        </div>
+        <div class="ha-col" style="flex: 1.2;">
+          <span class="ha-lbl">VIEW</span>
+          <div class="ha-action-text" style="margin-top:2px;">
+            History &rsaquo;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Past Week -->
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">PAST WEEK</div>
+    <div class="card-wrap">
+      <div class="ha-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="ha-date">
+          <span>10 Jul – 16 Jul</span>
+          <span class="status-pill oncall">📞 On-call</span>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="ha-bottom">
+        <div class="ha-col border-r">
+          <span class="ha-lbl">TOTAL HOURS</span>
+          <span class="ha-val">39h</span>
+        </div>
+        <div class="ha-col border-r">
+          <span class="ha-lbl">OVERTIME</span>
+          <span class="ha-val" style="color:var(--ot-color)">+2h OT</span>
+        </div>
+        <div class="ha-col" style="flex: 1.4;">
+          <span class="ha-lbl">NAVIGATE</span>
+          <div class="ha-action-text" style="margin-top:2px; font-size:10px;">
+            &larr; Current
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- HYBRID B -->
+  <div class="section-title">🌟 Hybrid B: 2-Column Stats + Action Footer Banner</div>
+  <div class="desc">Keeps 2-column stats pure, and places a dedicated 1-line action strip underneath. Zero header pill clutter, 100% explicit action.</div>
+  
+  <div class="mobile-frame">
+    <div class="card-wrap">
+      <div class="ha-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="ha-date">
+          <span>24 Jul – 30 Jul</span>
+          <span class="status-pill extra">📞 Extra</span>
+          <span class="status-pill sd">SD</span>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="ha-bottom">
+        <div class="ha-col border-r">
+          <span class="ha-lbl">TOTAL HOURS</span>
+          <span class="ha-val">39h</span>
+        </div>
+        <div class="ha-col">
+          <span class="ha-lbl">OVERTIME</span>
+          <span class="ha-val" style="color:var(--ot-color)">+1h OT</span>
+        </div>
+      </div>
+      <div class="hb-banner">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>View Timesheet History &rsaquo;</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  }
+</script>
+</body>
+</html>

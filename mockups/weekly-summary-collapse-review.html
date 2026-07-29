@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly Summary — collapse pattern review</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font-body:'DM Sans',sans-serif;
+    --bg-page:#E8EEF5; --bg-card:#FFFFFF; --bg-card-alt:#F4F7FA;
+    --accent:#2D6BE4; --text-primary:#0F1C2E; --text-muted:#8BA5BE;
+    --border:#D4E0EC; --text-ink:#1e293b; --shadow-rgb:15,28,46;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#dbe4ee;font-family:var(--font-body);color:var(--text-primary);padding:20px}
+  h1{font-size:19px;margin:0 0 4px}
+  .intro{font-size:13px;color:#5b6b7f;margin:0 0 20px;line-height:1.5;max-width:760px}
+  .cols{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+  .col{flex:1;min-width:330px;max-width:420px}
+  .col-hd{font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#5b6b7f;margin-bottom:2px}
+  .col-note{font-size:12px;color:#6b7b8f;margin:0 0 10px;line-height:1.45;min-height:34px}
+  .phone{background:var(--bg-page);border-radius:18px;padding:10px 0 16px;border:1px solid #c9d6e4}
+  .measure{font-size:11px;font-weight:700;color:#8a99ab;text-align:center;margin-top:8px;font-variant-numeric:tabular-nums}
+
+  /* ── Pattern A: stats-block heading (used by History/Callouts/Routines) ── */
+  .stats-block-hdr{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px 8px;background:none;border:none;cursor:pointer;font-family:inherit}
+  .stats-block-label{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--text-muted)}
+  .stats-block-line{flex:1;height:1px;background:var(--border)}
+  .stats-block-chevron{transition:transform .22s;flex-shrink:0}
+  .stats-block-body{overflow:hidden;max-height:1000px;opacity:1;transition:max-height .35s ease,opacity .25s ease}
+  .stats-block.collapsed .stats-block-body{max-height:0;opacity:0}
+  .stats-block.collapsed .stats-block-chevron{transform:rotate(0deg)}
+  .stats-block-chevron{transform:rotate(90deg)}
+
+  /* ── Pattern B: card with internal header (current Weekly Summary) ── */
+  .sum-section{margin:10px 10px 12px;background:var(--bg-card);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(var(--shadow-rgb),.08)}
+  .sum-new-head{width:100%;background:var(--bg-card);padding:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:none;border-bottom:1px solid var(--border);text-align:left;font-family:inherit}
+  .sum-section.collapsed .sum-new-head{border-bottom:0}
+  .sum-head-left{display:flex;align-items:center;gap:10px}
+  .sum-sum-icon{width:32px;height:32px;border-radius:9px;background:#EBF1FD;color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .sum-new-title{font-size:13px;font-weight:700;color:var(--text-primary)}
+  .sum-new-sub{font-size:11px;font-weight:600;color:var(--text-muted);margin-top:1px}
+  .sum-table-wrap{overflow:hidden;max-height:1000px;opacity:1;transition:max-height .35s ease,opacity .25s ease}
+  .sum-section.collapsed .sum-table-wrap{max-height:0;opacity:0}
+  .sum-section.collapsed .sum-chev{transform:rotate(0deg)}
+  .sum-chev{transition:transform .22s;transform:rotate(90deg)}
+
+  /* shared demo content */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:0 12px 14px;box-shadow:0 1px 4px rgba(var(--shadow-rgb),.06)}
+  .stat-cell{min-height:74px;background:var(--bg-card);padding:12px;border-bottom:1px solid var(--border)}
+  .stat-cell:nth-child(odd){border-right:1px solid var(--border)}
+  .stat-cell:nth-child(n+3){border-bottom:0}
+  .stat-cell-label{font-size:10px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+  .stat-cell-value{font-size:22px;font-weight:800;color:var(--accent);line-height:1;margin-top:6px}
+  .stat-cell-note{font-size:11px;color:var(--text-muted);margin-top:4px}
+  .sumrows{padding:4px 0 8px}
+  .sumrow{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:12px}
+  .sumrow .code{font-weight:800;color:var(--text-ink);width:44px}
+  .sumrow .desc{flex:1;color:#54657a}
+  .sumrow .num{font-weight:800;color:var(--text-ink);width:42px;text-align:right;font-variant-numeric:tabular-nums}
+  .sumrow.total{border-top:1px solid var(--border);margin-top:4px;padding-top:11px;font-weight:800}
+  .bar{height:4px;border-radius:2px;background:#e3ebf4;flex:1;max-width:70px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .tip{font-size:12px;color:#5b6b7f;margin:22px 0 0;padding:12px 14px;background:#fff;border:1px solid #c9d6e4;border-radius:10px;max-width:900px;line-height:1.5}
+  kbd{background:#eef2f7;border:1px solid #cfdae6;border-radius:4px;padding:1px 5px;font-size:11px;font-family:inherit}
+</style>
+</head>
+<body>
+<h1>Weekly Summary — which collapse pattern?</h1>
+<p class="intro">Both columns show the <strong>same Weekly Summary content</strong>, using the app's real colours, fonts and spacing. Click either header to collapse/expand. The number underneath is the measured height of the block in its current state — collapse both to compare what they cost when hidden.</p>
+
+<div class="cols">
+  <div class="col">
+    <div class="col-hd">Option A — section heading</div>
+    <p class="col-note">Matches History, Callouts, Routines, Availability and AI. Week range folded into the heading.</p>
+    <div class="phone">
+      <div class="stats-block" id="blockA">
+        <button class="stats-block-hdr" onclick="tog('blockA')">
+          <span class="stats-block-label">Weekly Summary</span>
+          <span class="stats-block-line"></span>
+          <span class="stats-block-label" style="letter-spacing:.04em">24 Jul – 30 Jul</span>
+          <svg class="stats-block-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8BA5BE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </button>
+        <div class="stats-block-body">
+          <div class="stat-grid" style="grid-template-columns:1fr;margin-bottom:0">
+            <div class="sumrows" id="rowsA"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="measure" id="mA"></div>
+  </div>
+
+  <div class="col">
+    <div class="col-hd">Option B — card header (current)</div>
+    <p class="col-note">Today's Weekly Summary. Bigger tap target and an icon, but the header stays on screen when collapsed.</p>
+    <div class="phone">
+      <div class="sum-section" id="blockB">
+        <button class="sum-new-head" onclick="tog('blockB')">
+          <span class="sum-head-left">
+            <span class="sum-sum-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </span>
+            <span>
+              <span class="sum-new-title" style="display:block">Weekly Summary</span>
+              <span class="sum-new-sub" style="display:block">24 Jul – 30 Jul</span>
+            </span>
+          </span>
+          <svg class="sum-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8BA5BE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+        </button>
+        <div class="sum-table-wrap"><div class="sumrows" id="rowsB"></div></div>
+      </div>
+    </div>
+    <div class="measure" id="mB"></div>
+  </div>
+</div>
+
+<p class="tip"><strong>What to judge:</strong> collapse both and compare the leftover height — that's the everyday cost on a phone. Then ask whether the thin heading in A is still an obvious enough tap target for you in the field, versus B's full-width card header.</p>
+
+<script>
+  var rows = [
+    ['ND','Normal Day',18.5,52],
+    ['CO','Callout',7,20],
+    ['SB','Standby',5.5,15],
+    ['TR','Travel',4.5,13]
+  ];
+  function rowsHtml(){
+    var h='';
+    rows.forEach(function(r){
+      h += '<div class="sumrow"><span class="code">'+r[0]+'</span><span class="desc">'+r[1]+'</span>'
+         + '<span class="bar"><i style="width:'+r[3]+'%"></i></span>'
+         + '<span class="num">'+r[2].toFixed(1)+'</span></div>';
+    });
+    h += '<div class="sumrow total"><span class="code">&nbsp;</span><span class="desc">Total</span><span class="bar" style="background:none"></span><span class="num">35.5</span></div>';
+    return h;
+  }
+  document.getElementById('rowsA').innerHTML = rowsHtml();
+  document.getElementById('rowsB').innerHTML = rowsHtml();
+
+  function measure(){
+    ['A','B'].forEach(function(k){
+      var el = document.getElementById('block'+k);
+      var open = !el.classList.contains('collapsed');
+      document.getElementById('m'+k).textContent =
+        Math.round(el.getBoundingClientRect().height) + ' px  ·  ' + (open ? 'expanded' : 'collapsed');
+    });
+  }
+  function tog(id){
+    document.getElementById(id).classList.toggle('collapsed');
+    setTimeout(measure, 380);
+  }
+  measure();
+</script>
+</body>
+</html>

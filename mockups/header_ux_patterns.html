@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rian — Header UX Refinements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-alt: #f8fafc;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --ot-color: #d97706;
+      --ot-bg: #fffbeb;
+      --ot-border: #fde68a;
+      --pill-oncall-bg: #fee2e2;
+      --pill-oncall-text: #991b1b;
+      --pill-extra-bg: #ffedd5;
+      --pill-extra-text: #9a3412;
+      --pill-sd-bg: #dbeafe;
+      --pill-sd-text: #1e40af;
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0f1624;
+      --bg-card: #1e293b;
+      --bg-card-alt: #273449;
+      --border: #334155;
+      --accent: #4d94ff;
+      --accent-light: rgba(77, 148, 255, 0.12);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --ot-color: #fbbf24;
+      --ot-bg: rgba(251, 191, 36, 0.12);
+      --ot-border: rgba(251, 191, 36, 0.25);
+      --pill-oncall-bg: rgba(239, 68, 68, 0.2);
+      --pill-oncall-text: #fca5a5;
+      --pill-extra-bg: rgba(249, 115, 22, 0.2);
+      --pill-extra-text: #fdba74;
+      --pill-sd-bg: rgba(59, 130, 246, 0.2);
+      --pill-sd-text: #93c5fd;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      padding: 24px 16px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .top-bar h1 { font-size: 15px; font-weight: 800; }
+    .theme-btn {
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin: 24px 0 8px 4px;
+    }
+    .desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .mobile-frame {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+    }
+
+    /* Common Card Wrappers */
+    .card-wrap {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg-card);
+      overflow: hidden;
+    }
+
+    .pws-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .pws-btn svg { width: 18px; height: 18px; }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .status-pill.extra { background: var(--pill-extra-bg); color: var(--pill-extra-text); }
+    .status-pill.oncall { background: var(--pill-oncall-bg); color: var(--pill-oncall-text); }
+    .status-pill.sd { background: var(--pill-sd-bg); color: var(--pill-sd-text); }
+
+    /* ========================================================
+       PATTERN 1: Left Stats / Right Action Button
+       ======================================================== */
+    .p1-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+    }
+    .p1-date {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .p1-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-alt);
+      border-top: 1px solid var(--border);
+      padding: 8px 14px;
+    }
+    .p1-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .p1-stats .hrs { color: var(--text-primary); font-weight: 800; }
+    .p1-stats .ot { color: var(--ot-color); font-weight: 800; }
+    .p1-stats .dot { color: var(--text-muted); opacity: 0.5; }
+    .p1-act-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+    }
+    .p1-act-btn.subtle {
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid rgba(var(--accent-rgb), 0.2);
+    }
+
+    /* ========================================================
+       PATTERN 2: Pure 2-Column Stats + Header Icon
+       ======================================================== */
+    .p2-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+    }
+    .p2-date-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .p2-hist-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-light);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .p2-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg-card-alt);
+      border-top: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: center;
+    }
+    .p2-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .p2-col:first-child { border-right: 1px solid var(--border); }
+    .p2-lbl { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .p2-val { font-size: 14px; font-weight: 800; color: var(--text-primary); margin-top: 1px; }
+
+    /* ========================================================
+       PATTERN 3: Pure 2-Column Stats + Tappable Strip Chevron
+       ======================================================== */
+    .p3-bottom {
+      display: flex;
+      align-items: center;
+      background: var(--bg-card-alt);
+      border-top: 1px solid var(--border);
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    .p3-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      text-align: center;
+    }
+    .p3-chevron {
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 800;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="top-bar">
+    <div>
+      <h1>Rian Header UX Patterns</h1>
+      <div style="font-size:12px; color:var(--text-muted)">Solving Data vs Action UX</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">🌙 Dark / ☀️ Light</button>
+  </div>
+
+  <!-- PATTERN 1 -->
+  <div class="section-title">💡 Pattern 1: Separate Stats & Action Button</div>
+  <div class="desc">Left side holds data (39h · +1 OT), right side has a dedicated standalone action button. No confusing grid labels!</div>
+  
+  <div class="mobile-frame">
+    <!-- Current Week -->
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">CURRENT WEEK VIEW</div>
+    <div class="card-wrap" style="margin-bottom:14px;">
+      <div class="p1-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="p1-date">
+          <span>24 Jul – 30 Jul</span>
+          <span class="status-pill extra">📞 Extra</span>
+          <span class="status-pill sd">SD</span>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="p1-bottom">
+        <div class="p1-stats">
+          <span class="hrs">39h total</span>
+          <span class="dot">•</span>
+          <span class="ot">+1 OT</span>
+        </div>
+        <button class="p1-act-btn subtle">History &rsaquo;</button>
+      </div>
+    </div>
+
+    <!-- Past Week -->
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:4px;">PAST WEEK VIEW</div>
+    <div class="card-wrap">
+      <div class="p1-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="p1-date">
+          <span>10 Jul – 16 Jul</span>
+          <span class="status-pill oncall">📞 On-call</span>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="p1-bottom">
+        <div class="p1-stats">
+          <span class="hrs">39h total</span>
+          <span class="dot">•</span>
+          <span class="ot">+2 OT</span>
+        </div>
+        <button class="p1-act-btn">&larr; Current Week</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PATTERN 2 -->
+  <div class="section-title">📊 Pattern 2: Pure 2-Column Stats + Header Icon</div>
+  <div class="desc">Moves the History action button up to the header next to the date (`🕒`), leaving the bottom strip as 100% pure read-only stat metrics.</div>
+  
+  <div class="mobile-frame">
+    <div class="card-wrap">
+      <div class="p2-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="p2-date-box">
+          <span style="font-size:15px; font-weight:800;">24 Jul – 30 Jul</span>
+          <span class="status-pill extra">📞 Extra</span>
+          <div class="p2-hist-icon" title="View History"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="p2-stats-grid">
+        <div class="p2-col">
+          <span class="p2-lbl">TOTAL HOURS</span>
+          <span class="p2-val">39h</span>
+        </div>
+        <div class="p2-col">
+          <span class="p2-lbl">OVERTIME</span>
+          <span class="p2-val" style="color:var(--ot-color)">+1h OT</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- PATTERN 3 -->
+  <div class="section-title">⚡ Pattern 3: Integrated Tappable Summary Card</div>
+  <div class="desc">2 clean stat columns (`TOTAL` | `OVERTIME`), with a subtle accent chevron (`›`) on the far right indicating the entire strip is a tappable card to view History.</div>
+  
+  <div class="mobile-frame">
+    <div class="card-wrap">
+      <div class="p1-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div class="p1-date">
+          <span>24 Jul – 30 Jul</span>
+          <span class="status-pill extra">📞 Extra</span>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+      <div class="p3-bottom">
+        <div class="p3-grid">
+          <div class="p2-col" style="border-right:1px solid var(--border)">
+            <span class="p2-lbl">TOTAL HOURS</span>
+            <span class="p2-val">39h</span>
+          </div>
+          <div class="p2-col">
+            <span class="p2-lbl">OVERTIME</span>
+            <span class="p2-val" style="color:var(--ot-color)">+1h OT</span>
+          </div>
+        </div>
+        <div class="p3-chevron" title="Tap for History">&rsaquo;</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  }
+</script>
+</body>
+</html>

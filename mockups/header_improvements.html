@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rian — Header UI/UX Mockups</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #f1f5f9;
+      --bg-header: #0f172a;
+      --bg-card: #ffffff;
+      --bg-card-alt: #f8fafc;
+      --border: #e2e8f0;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --ot-color: #d97706;
+      --ot-bg: #fffbeb;
+      --ot-border: #fde68a;
+      --pill-oncall-bg: #fee2e2;
+      --pill-oncall-text: #991b1b;
+      --pill-extra-bg: #ffedd5;
+      --pill-extra-text: #9a3412;
+      --pill-sd-bg: #dbeafe;
+      --pill-sd-text: #1e40af;
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0f1624;
+      --bg-header: #090e1c;
+      --bg-card: #1e293b;
+      --bg-card-alt: #273449;
+      --border: #334155;
+      --accent: #4d94ff;
+      --accent-light: rgba(77, 148, 255, 0.12);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --ot-color: #fbbf24;
+      --ot-bg: rgba(251, 191, 36, 0.12);
+      --ot-border: rgba(251, 191, 36, 0.25);
+      --pill-oncall-bg: rgba(239, 68, 68, 0.2);
+      --pill-oncall-text: #fca5a5;
+      --pill-extra-bg: rgba(249, 115, 22, 0.2);
+      --pill-extra-text: #fdba74;
+      --pill-sd-bg: rgba(59, 130, 246, 0.2);
+      --pill-sd-text: #93c5fd;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      padding: 24px 16px;
+      line-height: 1.5;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* Top Control Bar */
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .top-controls h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .theme-toggle {
+      background: var(--bg-page);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin: 28px 0 10px 4px;
+    }
+
+    .description {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    /* Mobile Device Frame Simulator */
+    .mobile-frame {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+    }
+
+    /* Nav Buttons */
+    .pws-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .pws-btn svg { width: 18px; height: 18px; }
+
+    /* Common Status Pills */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .status-pill.extra { background: var(--pill-extra-bg); color: var(--pill-extra-text); }
+    .status-pill.oncall { background: var(--pill-oncall-bg); color: var(--pill-oncall-text); }
+    .status-pill.sd { background: var(--pill-sd-bg); color: var(--pill-sd-text); }
+
+    /* ========================================================
+       MOCKUP 1: Structured Metric Chips (Option 1)
+       ======================================================== */
+    .mockup-1-card {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mockup-1-main {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+    }
+    .mockup-1-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .mockup-1-date {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+    .mockup-1-chips {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .chip.hours { background: var(--bg-page); color: var(--text-primary); border: 1px solid var(--border); }
+    .chip.ot { background: var(--ot-bg); color: var(--ot-color); border: 1px solid var(--ot-border); }
+    .chip.link { color: var(--accent); font-weight: 700; background: var(--accent-light); padding: 3px 10px; border-radius: 999px; }
+
+    /* ========================================================
+       MOCKUP 2: Kicker Header Row (Option 2)
+       ======================================================== */
+    .mockup-2-card {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mockup-2-main {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+    }
+    .mockup-2-kicker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin-bottom: 2px;
+    }
+    .mockup-2-date {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+    .mockup-2-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* ========================================================
+       MOCKUP 3: Two-Tier Split Header Card (Option 3)
+       ======================================================== */
+    .mockup-3-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg-card);
+      overflow: hidden;
+    }
+    .mockup-3-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+    }
+    .mockup-3-date {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .mockup-3-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      background: var(--bg-card-alt);
+      border-top: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: center;
+    }
+    .mockup-3-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-right: 1px solid var(--border);
+    }
+    .mockup-3-col:last-child { border-right: none; }
+    .mockup-3-lbl { font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); }
+    .mockup-3-val { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+    .mockup-3-val.ot { color: var(--ot-color); }
+    .mockup-3-val.act { color: var(--accent); }
+
+    /* Original Comparison */
+    .original-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="top-controls">
+    <div>
+      <h1>Rian Header UI/UX Mockups</h1>
+      <div style="font-size:12px; color:var(--text-muted)">Solving mobile top-bar crowding</div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark / ☀️ Light</button>
+  </div>
+
+  <!-- MOCKUP 1 -->
+  <div class="section-title">✨ Option 1: Structured Metric Chips</div>
+  <div class="description">Replaces text dots with distinct pill containers. Date sits cleanly alongside status pills, while metrics use soft-tinted chips for instant scannability.</div>
+  
+  <div class="mobile-frame">
+    <!-- Current Week View -->
+    <div class="mockup-1-card">
+      <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="mockup-1-main">
+        <div class="mockup-1-top">
+          <span class="mockup-1-date">24 Jul – 30 Jul</span>
+          <span class="status-pill extra">📞 Extra</span>
+          <span class="status-pill sd">SD</span>
+        </div>
+        <div class="mockup-1-chips">
+          <span class="chip hours">39h total</span>
+          <span class="chip ot">+1 OT</span>
+          <span class="chip link">History &rsaquo;</span>
+        </div>
+      </div>
+      <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+
+    <!-- Past Week View -->
+    <div class="mockup-1-card" style="margin-top:12px;">
+      <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="mockup-1-main">
+        <div class="mockup-1-top">
+          <span class="mockup-1-date">10 Jul – 16 Jul</span>
+          <span class="status-pill oncall">📞 On-call</span>
+        </div>
+        <div class="mockup-1-chips">
+          <span class="chip link">&larr; Back to current</span>
+          <span class="chip hours">39h</span>
+          <span class="chip ot">+2 OT</span>
+        </div>
+      </div>
+      <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- MOCKUP 2 -->
+  <div class="section-title">🏷️ Option 2: Status Kicker Header</div>
+  <div class="description">Lifts status badges (On-call, Extra, SD) above the date range as a subtle kicker line. This frees up 100% horizontal width for the date.</div>
+  
+  <div class="mobile-frame">
+    <div class="mockup-2-card">
+      <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="mockup-2-main">
+        <div class="mockup-2-kicker">
+          <span class="status-pill extra">📞 Extra Shift</span>
+          <span class="status-pill sd">SD</span>
+        </div>
+        <div class="mockup-2-date">24 Jul – 30 Jul</div>
+        <div class="mockup-2-sub">
+          <strong style="color:var(--text-primary)">39h</strong>
+          <span style="color:var(--text-muted)">•</span>
+          <strong style="color:var(--ot-color)">+1 OT</strong>
+          <span style="color:var(--text-muted)">•</span>
+          <span style="color:var(--accent); font-weight:700">History &rsaquo;</span>
+        </div>
+      </div>
+      <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- MOCKUP 3 -->
+  <div class="section-title">📊 Option 3: Two-Tier Integrated Dashboard Header</div>
+  <div class="description">Splits Date switching and Weekly Metrics into a dedicated 2-tier card. Date navigation is wide and effortless, while metrics sit in a clean 3-column bar.</div>
+  
+  <div class="mobile-frame">
+    <div class="mockup-3-card">
+      <div class="mockup-3-nav">
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <div style="flex:1; text-align:center;">
+          <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+            <span class="mockup-3-date">24 Jul – 30 Jul</span>
+            <span class="status-pill extra">📞 Extra</span>
+          </div>
+        </div>
+        <button class="pws-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+
+      <div class="mockup-3-bar">
+        <div class="mockup-3-col">
+          <span class="mockup-3-lbl">Total</span>
+          <span class="mockup-3-val">39h</span>
+        </div>
+        <div class="mockup-3-col">
+          <span class="mockup-3-lbl">Overtime</span>
+          <span class="mockup-3-val ot">+1h OT</span>
+        </div>
+        <div class="mockup-3-col">
+          <span class="mockup-3-lbl">Quick Link</span>
+          <span class="chip link" style="margin-top:2px; font-size:11px;">History &rsaquo;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+  }
+</script>
+</body>
+</html>
