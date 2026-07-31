@@ -21955,7 +21955,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.62';
+    const VERSION = '6.7.63';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26373,7 +26373,12 @@
 
       return '<!doctype html><html><body style="margin:0;padding:0;background:' + C.outerBg + ';font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;color:' + C.txt + ';">' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="background:' + C.outerBg + ';padding:22px 10px;"><tr><td align="center">' +
-        '<table width="760" cellpadding="0" cellspacing="0" style="width:100%;max-width:760px;">' +
+        // Fixed width, deliberately NOT fluid. Fluid let phones reflow the shell
+        // to ~360px, where the fixed-layout percentage columns collapsed (DEPART
+        // wrapping one letter per line, codes overflowing into Description).
+        // At a fixed width mail clients scale the whole email down to fit, so
+        // mobile gets a faithful miniature and desktop is unchanged at 760px.
+        '<table width="760" cellpadding="0" cellspacing="0" style="width:760px;max-width:760px;">' +
         '<tr><td style="padding:0 0 14px;">' +
         '<div style="font-size:24px;font-weight:850;letter-spacing:0;color:' + C.txt + ';">Email / Export Week</div>' +
         '<div style="margin-top:4px;font-size:14px;font-weight:700;color:' + C.label + ';">' + esc(range) + '</div>' +
