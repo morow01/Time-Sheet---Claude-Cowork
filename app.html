@@ -21955,7 +21955,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.59';
+    const VERSION = '6.7.60';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -49363,6 +49363,23 @@ Work week = Friday to Thursday.
 
 `;
 
+      // TODAY'S TASKS — stated explicitly (including "none") so questions like
+      // "what's scheduled today" have a concrete answer to hit, rather than
+      // leaving the model to fill the gap with invented work.
+      if (state.aiScope.timesheet) {
+        const todayWeek = weekMap[thisWeekStart];
+        const todayDay = todayWeek?.days?.find(d => d.date === todayStr);
+        const todayActs = (todayDay?.activities || []).filter(a =>
+          a.description || a.codes?.length || parseFloat(a.ordinary) > 0 || parseFloat(a.overtime) > 0);
+        ctx += `TODAY'S TASKS (${todayStr}):\n`;
+        if (!todayActs.length) {
+          ctx += `  NONE — there are no timesheet entries for today. If asked what is scheduled or planned for today, answer that nothing is recorded.\n`;
+        } else {
+          todayActs.forEach((act, i) => { ctx += `  ${i + 1}. ${actLine(act)}\n`; });
+        }
+        ctx += '\n';
+      }
+
       // SECTION 1 & 2: Timesheet hours/history (gated by Timesheet scope toggle)
       if (state.aiScope.timesheet) {
         if (!sortedMonths.length) {
@@ -49488,15 +49505,24 @@ Work week = Friday to Thursday.
         ? `\nMATCHING SAVED NOTES (standalone notes from the Notes tab that match the query):\n${noteMatches.slice(0, 10).map(n => `[${n.status?.toUpperCase() || 'OPEN'}] ${n.description || '(no description)'}${n.location ? ' @ ' + n.location : ''}${n.date ? ' [' + fmtDateAI(n.date) + ']' : ''}`).join('\n')}\n`
         : '';
       const prompt = `You are a personal timesheet assistant for a telecommunications field technician.
-You have their full work history. Answer their question directly and confidently using the data below.
-Use the DATE REFERENCES section to resolve any time words like "last week", "this month", "yesterday".
-Be specific — include actual numbers, dates, and site names. Do not hedge or say the data is unclear when it is present.
+You have their work history below. Answer their question using ONLY that data.
+
+GROUNDING RULES — these override every other instruction, including the formatting rules:
+- Every task, date, site, code, note and quotation you output MUST appear verbatim in the data below. Copy them; never rephrase a site name or invent a site code.
+- If the data does not answer the question, say so plainly, e.g. "Nothing found in your timesheet or notes for today." Then stop. An empty answer is CORRECT and expected — the user's records are often genuinely empty for a given day.
+- Never invent, infer, extrapolate or fill gaps with plausible-sounding work. If you are unsure whether something is in the data, leave it out.
+- If asked where information came from, cite only the section it appeared in (TODAY'S TASKS, SAVED NOTES, TASK NOTES, etc.). If you cannot point to it in the data, say you cannot — do not reconstruct a source.
+- Do not answer from general knowledge of telecoms work. You know nothing about this technician beyond the data below.
+
+Use the DATE REFERENCES section to resolve time words like "last week", "this month", "yesterday", "today".
+Be specific when the data is present — quote actual numbers, dates and site names from it.
 
 When the user asks about "issues", "problems", or anything general about their notes, list ALL open SAVED NOTES — every single one, not just ones that literally contain the word "issue". Open notes ARE issues/tasks by definition.
 Also check the TIMESHEET ISSUES section for tasks with missing codes/hours and report those too.
 When the user searches for a keyword (e.g. "battery"), list EVERY note and task entry that contains that keyword. Do not skip any matches — completeness matters.
 
-FORMATTING RULES — follow these strictly:
+FORMATTING RULES — follow these strictly, but ONLY for entries that exist in the data.
+Never emit a placeholder entry just to satisfy the format; if there is nothing to list, write the plain "nothing found" sentence instead.
 - Use markdown headings (### Section Title) for section titles. NEVER put * or - before a heading.
 - IMPORTANT: Separate your answer into two sections when reporting both query-specific results AND general timesheet issues:
   1. First section: entries TOPICALLY related to the user's question. Use "- **Task:**" prefix. Be GENEROUS — if the entry's work description relates to the query topic (e.g. rectifier work, battery measurement, and fault repairs are ALL related to "power issues"), classify it as **Task:** even if it also has timesheet issues like missing codes.
@@ -49525,7 +49551,7 @@ QUESTION: ${query}`;
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.2, maxOutputTokens: 1200 }
+            generationConfig: { temperature: 0, maxOutputTokens: 1200 }
           })
         }
       );
