@@ -21895,16 +21895,24 @@
         align-items: center;
         padding: 16px;
       }
+      /* Give the card a comfortable size that can never exceed the viewport.
+         dvh (with a vh fallback) matters on Android, where vh ignores the
+         browser chrome. Previously the card was capped at 85vh while the
+         textarea claimed a 560px minimum — on a short-but-wide screen such as
+         an unfolded Fold the content outgrew the card, so the buttons rendered
+         below its background and off the bottom of the screen. */
       .pt-modal-inner {
-        height: auto;
-        max-height: 85vh;
+        height: min(85vh, 760px);
+        height: min(85dvh, 760px);
+        max-height: none;
         border-radius: 16px;
       }
-      /* Desktop: auto-grow from a comfortable default */
+      /* Fill whatever the heading and buttons leave, scroll internally —
+         same rule as mobile, so the buttons always stay on the card. */
       .pt-input {
-        flex: none;
-        min-height: 560px;
-        overflow-y: hidden;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
       }
     }
   </style>
@@ -21955,7 +21963,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.63';
+    const VERSION = '6.7.64';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47192,15 +47200,16 @@
     // ============================================================
     let _pasteTicketParsed = null;
 
+    // Sizing is entirely CSS now: the card is capped to the viewport and the
+    // textarea flexes into whatever the heading and buttons leave, at every
+    // width. This used to set an inline height of 78% of the window on wide
+    // screens, which overflowed the card on short-but-wide displays (unfolded
+    // Fold) and pushed the buttons off it. Kept as a no-op that clears any
+    // stale inline sizing, since it is still wired to oninput.
     function _ptAutoGrow(el) {
       if (!el) return;
-      // Mobile: let CSS flex + internal scroll handle sizing (keeps buttons visible)
-      if (window.innerWidth < 640) { el.style.height = ''; el.style.overflowY = ''; return; }
-      el.style.height = 'auto';
-      var max = Math.round(window.innerHeight * 0.78);
-      var h = Math.min(el.scrollHeight + 2, max);
-      el.style.height = h + 'px';
-      el.style.overflowY = (el.scrollHeight > max) ? 'auto' : 'hidden';
+      el.style.height = '';
+      el.style.overflowY = '';
     }
 
     function openPasteTicket() {
