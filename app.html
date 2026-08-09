@@ -21998,7 +21998,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.68';
+    const VERSION = '6.7.69';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -25777,21 +25777,27 @@
     // to the displayed total. The last row with a fractional display value absorbs any
     // rounding diff, so e.g. 4h ÷ 3 codes → [1.33, 1.33, 1.34] not [1.33, 1.33, 1.33].
     function adjOrdHrs(summary, totalOrd) {
-      const vals = summary.map(r => fmtHrs(r.ordinary));
+      // Works in tenths so the values are already at display precision — one
+      // decimal place. At two decimals the export rounded each row again to a
+      // whole number, so 16h split three ways showed 5 + 5 + 5 = 15 against a
+      // total of 39. In tenths the same split is 5.3 + 5.3 + 5.4 = 16 exactly.
+      const tenths = summary.map(r => Math.round((parseFloat(r.ordinary) || 0) * 10));
       // Target matches what the total row displays (integer-rounded)
-      const targetCents = Math.round(totalOrd) * 100;
-      const sumCents = vals.reduce((s, v) => s + Math.round(parseFloat(v) * 100), 0);
-      const diffCents = targetCents - sumCents;
-      if (diffCents === 0) return vals;
-      // Apply to the last row that has a fractional display value; fall back to last row
-      let adjIdx = vals.length - 1;
-      for (let i = vals.length - 1; i >= 0; i--) {
-        if (parseFloat(vals[i]) % 1 !== 0) { adjIdx = i; break; }
+      const targetTenths = Math.round(totalOrd) * 10;
+      const diff = targetTenths - tenths.reduce((s, v) => s + v, 0);
+      const adjusted = [...tenths];
+      if (diff !== 0) {
+        // Apply to the last row that has a fractional display value; fall back to last row
+        let adjIdx = adjusted.length - 1;
+        for (let i = adjusted.length - 1; i >= 0; i--) {
+          if (adjusted[i] % 10 !== 0) { adjIdx = i; break; }
+        }
+        adjusted[adjIdx] += diff;
       }
-      const adjusted = [...vals];
-      const adjVal = (Math.round(parseFloat(adjusted[adjIdx]) * 100) + diffCents) / 100;
-      adjusted[adjIdx] = adjVal % 1 === 0 ? adjVal : parseFloat(adjVal.toFixed(2));
-      return adjusted;
+      return adjusted.map(t => {
+        const v = t / 10;
+        return v % 1 === 0 ? v : parseFloat(v.toFixed(1));
+      });
     }
 
     // ============================================================
@@ -26322,6 +26328,13 @@
       const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
       const adjOrd = adjOrdHrs(summary, totalOrd);
       const fmtWhole = n => String(Math.round(Number(n) || 0));
+      // Code rows carry the balanced values from adjOrdHrs, so they print at one
+      // decimal place rather than being rounded whole — otherwise the rows do
+      // not add up to the total shown beneath them.
+      const fmtCodeHrs = n => {
+        const v = Math.round((Number(n) || 0) * 10) / 10;
+        return v % 1 === 0 ? String(v) : v.toFixed(1);
+      };
       const stripLoc = s => String(s || '').replace(/\s*\([^)]+\)$/, '').trim();
       const cleanDesc = s => stripHtml(String(s || '')).trim();
       const dash = '<span style="color:#8BA5BE;">&mdash;</span>';
@@ -26376,8 +26389,8 @@
       const codeRows = summary.map((r, idx) => {
         const ot = Math.round(Number(r.overtime) || 0);
         return '<tr>' +
-          '<td style="' + td + num + '">' + fmtWhole(adjOrd[idx]) + '</td>' +
-          '<td style="' + td + num + 'color:' + C.ot + ';">' + fmtWhole(ot) + '</td>' +
+          '<td style="' + td + num + '">' + fmtCodeHrs(adjOrd[idx]) + '</td>' +
+          '<td style="' + td + num + 'color:' + C.ot + ';">' + fmtCodeHrs(ot) + '</td>' +
           '<td style="' + td + num + 'text-align:center;">' + esc(r.code) + '</td>' +
           '<td style="' + td + 'color:' + C.txtSec + ';">' + esc(r.description) + '</td>' +
           '</tr>';
@@ -27795,7 +27808,13 @@
       const totalOT = summary.reduce((s, r) => s + r.overtime, 0);
       const adjOrd = adjOrdHrs(summary, totalOrd);
       const fmtWhole = n => String(Math.round(Number(n) || 0));
-      const fmtCode = n => String(Math.round(Number(n) || 0));
+      // One decimal place, trailing .0 dropped. Must NOT round to whole numbers —
+      // adjOrdHrs already balances the rows to the total at this precision, and
+      // rounding again broke that (5.3 + 5.3 + 5.4 became 5 + 5 + 5).
+      const fmtCode = n => {
+        const v = Math.round((Number(n) || 0) * 10) / 10;
+        return v % 1 === 0 ? String(v) : v.toFixed(1);
+      };
       const stripLoc = s => String(s || '').replace(/\s*\([^)]+\)$/, '').trim();
       const calloutEntries = ((state.callouts && state.callouts.weeks && state.callouts.weeks[weekData.weekStart] && state.callouts.weeks[weekData.weekStart].callouts) || []).filter(co => !co._draft);
       const formatCalloutDate = dateStr => {
