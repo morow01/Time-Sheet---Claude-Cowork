@@ -3742,6 +3742,10 @@
       cursor: pointer;
     }
 
+    .pws-stats-bar.has-callouts {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
     .pws-stat-col {
       display: flex;
       flex-direction: column;
@@ -3773,6 +3777,10 @@
 
     .pws-stat-val.is-ot {
       color: var(--ot-color);
+    }
+
+    .pws-stat-val.is-callout {
+      color: var(--pill-callout-text);
     }
 
     .pws-action-banner {
@@ -21998,7 +22006,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.69';
+    const VERSION = '6.7.70';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -28216,6 +28224,7 @@
         tOt += parseFloat(a.overtime) || 0;
       }));
       const fmtN = n => Math.round(n) === n ? n : n.toFixed(1);
+      const coCount = (state.callouts?.weeks?.[weekStart]?.callouts || []).length;
       const histHtml = '<span style="display:inline-flex;align-items:center;gap:3px;color:var(--accent);font-weight:600">' +
         '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>History &rsaquo;</span>';
       const backHtml = '<span style="display:inline-flex;align-items:center;gap:3px;color:var(--accent);font-weight:600">' +
@@ -28258,7 +28267,7 @@
           </div>
           <button onclick="nextWeek()" class="page-week-selector-btn" title="Next week"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
         </div>
-        <div class="pws-stats-bar" onclick="${dateAction}" title="View Timesheet History">
+        <div class="pws-stats-bar${coCount > 0 ? ' has-callouts' : ''}" onclick="${dateAction}" title="View Timesheet History">
           <div class="pws-stat-col">
             <span class="pws-stat-lbl">TOTAL HOURS</span>
             <span class="pws-stat-val">${tOrd > 0 ? fmtN(tOrd) + 'h' : '0h'}</span>
@@ -28267,6 +28276,10 @@
             <span class="pws-stat-lbl">OVERTIME</span>
             <span class="pws-stat-val is-ot">${tOt > 0 ? '+' + fmtN(tOt) + ' OT' : '0h'}</span>
           </div>
+          ${coCount > 0 ? `<div class="pws-stat-col">
+            <span class="pws-stat-lbl">CALLOUTS</span>
+            <span class="pws-stat-val is-callout">${coCount}</span>
+          </div>` : ''}
         </div>
         ${backBanner}
       </div>`;
@@ -28282,6 +28295,7 @@
         tOt += parseFloat(a.overtime) || 0;
       }));
       const fmtN = n => Math.round(n) === n ? n : n.toFixed(1);
+      const coCount = ((state.callouts?.weeks?.[weekStart]?.callouts) || []).length;
       const ocStatus = state.callouts && state.callouts.onCall && state.callouts.onCall[weekStart];
       const phoneSvg = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
       const statusPill = ocStatus === 'oncall'
@@ -28294,7 +28308,7 @@
         ? '<span class="av-pill ' + _avClass(avRole) + '" title="Availability Planner">' + esc(avRole) + '</span>'
         : '';
       // ── Stats bar: same pws-stats-bar style as mobile ──
-      const statsBar = '<div class="pws-stats-bar" style="cursor:default;border-top:none;border-bottom:1px solid var(--border)">' +
+      const statsBar = '<div class="pws-stats-bar' + (coCount > 0 ? ' has-callouts' : '') + '" style="cursor:default;border-top:none;border-bottom:1px solid var(--border)">' +
         '<div class="pws-stat-col">' +
         '<span class="pws-stat-lbl">TOTAL HOURS</span>' +
         '<span class="pws-stat-val' + (tOrd === 0 ? '" style="color:var(--text-muted)' : '') + '">' + (tOrd > 0 ? fmtN(tOrd) + 'h' : '0h') + '</span>' +
@@ -28303,6 +28317,10 @@
         '<span class="pws-stat-lbl">OVERTIME</span>' +
         '<span class="pws-stat-val' + (tOt > 0 ? ' is-ot' : '') + '">' + (tOt > 0 ? '+' + fmtN(tOt) + ' OT' : '\u2014') + '</span>' +
         '</div>' +
+        (coCount > 0 ? '<div class="pws-stat-col">' +
+        '<span class="pws-stat-lbl">CALLOUTS</span>' +
+        '<span class="pws-stat-val is-callout">' + coCount + '</span>' +
+        '</div>' : '') +
         '</div>';
       // Back banner — only shown when not on current week
       const backBanner = !isCurrentWeek
