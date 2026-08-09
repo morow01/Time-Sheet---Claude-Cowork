@@ -21963,7 +21963,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.64';
+    const VERSION = '6.7.65';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -30674,6 +30674,7 @@
             newAct.timePerTask = sourceAct.timePerTask || '';
             newAct.otPerTask = sourceAct.otPerTask || '';
             newAct.notes = sourceAct.notes || '';
+            newAct.remedyPending = !!sourceAct.remedyPending;
             state.weekData.days[dayIdx].activities.push(newAct);
             _actualPushes++;
             _currentWeekChanged = true;
@@ -30726,6 +30727,7 @@
               newAct.timePerTask = sourceAct.timePerTask || '';
               newAct.otPerTask = sourceAct.otPerTask || '';
               newAct.notes = sourceAct.notes || '';
+              newAct.remedyPending = !!sourceAct.remedyPending;
               weekData.days[dayIdx].activities.push(newAct);
               _actualPushes++;
             });
