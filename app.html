@@ -21963,7 +21963,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.65';
+    const VERSION = '6.7.66';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26774,6 +26774,13 @@
 
       // Detach desktop journal TipTap wrapper before innerHTML wipes the DOM
       if (_djTiptapWrap && _djTiptapWrap.parentNode) _djTiptapWrap.remove();
+      // Same-view re-renders leave scroll alone (see savedScroll above), but the
+      // innerHTML swap can still displace it: the rebuilt DOM is briefly shorter
+      // — textareas start at their default height until autoGrow runs below, and
+      // a just-saved draft card collapses — so the browser clamps scrollTop and
+      // the page ends up higher than it was. Captured here, corrected after the
+      // content reaches its final height.
+      const _preScroll = window.scrollY || window.pageYOffset || 0;
       app.innerHTML = renderHeader() + _renderConflictBanner() + '<div id="draft-warning-banner-container">' + _renderDraftWarningBanner() + '</div>' + _renderSaveErrorBanner() + viewBody;
       // Restore menu scroll position after DOM rebuild
       if (_menuWasOpen && _menuScroll > 0) {
@@ -26819,6 +26826,17 @@
       requestAnimationFrame(_initInlineNoteThumbs);
       // Restore scroll position after DOM is painted
       if (savedScroll > 0) requestAnimationFrame(() => window.scrollTo(0, savedScroll));
+      // Same-view re-render: put scroll back only if the rebuild displaced it.
+      // The equality guard keeps the original no-scrollTo-during-momentum
+      // behaviour — an untouched scroll position is never written to.
+      // Runs after autoGrow above, then again once late layout settles.
+      if (!viewChanged && _preScroll > 0) {
+        const _restoreScroll = () => {
+          if ((window.scrollY || window.pageYOffset || 0) !== _preScroll) window.scrollTo(0, _preScroll);
+        };
+        _restoreScroll();
+        requestAnimationFrame(_restoreScroll);
+      }
       // Fix timeline lines so they end exactly at the last task node.
       // Run synchronously first: render() rebuilds the DOM, so --tl-height resets
       // to 0 each time, and several renders fire while data loads (IDB → snapshot
