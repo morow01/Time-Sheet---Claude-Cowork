@@ -21998,7 +21998,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.67';
+    const VERSION = '6.7.68';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -30568,11 +30568,14 @@
       renderCopyPicker();
     }
 
-    // Jump straight back after paging away, rather than clicking ‹ repeatedly.
+    // Jump straight to the week containing today, rather than clicking ‹ repeatedly.
+    // Deliberately NOT state.weekStart — that is the week open in the timesheet,
+    // i.e. the task's source week, which is not what "current week" means.
     // Selected days are kept — they may be in another week and still valid.
     function copyPickerGoCurrentWeek() {
-      if (copyPickerState.viewingWeekStart === state.weekStart) return;
-      copyPickerState.viewingWeekStart = state.weekStart;
+      const cur = dateToStr(getCurrentFriday());
+      if (copyPickerState.viewingWeekStart === cur) return;
+      copyPickerState.viewingWeekStart = cur;
       renderCopyPicker();
     }
 
@@ -30626,7 +30629,8 @@
         const endD = new Date(ws + 'T00:00:00');
         endD.setDate(endD.getDate() + 6);
         const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
-        const isCurrent = ws === state.weekStart;
+        // "current" means the week containing today, not the week open in the timesheet
+        const isCurrent = ws === dateToStr(getCurrentFriday());
         const labelEl = modal.querySelector('.cp-weeknav-mid');
         if (labelEl) labelEl.innerHTML = `<div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>`
           + (isCurrent ? '' : '<button class="copy-picker-weeknav-back" onclick="copyPickerGoCurrentWeek()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</button>');
@@ -30645,7 +30649,8 @@
       // Full rebuild (first open)
       const act = state.weekData.days[copyPickerState.sourceDi]?.activities.find(a => a.id === copyPickerState.actId);
       const descLabel = act ? (act.description || 'Unnamed') : 'Task';
-      const isCurrent = ws === state.weekStart;
+      // "current" means the week containing today, not the week open in the timesheet
+      const isCurrent = ws === dateToStr(getCurrentFriday());
       const endD = new Date(ws + 'T00:00:00');
       endD.setDate(endD.getDate() + 6);
       const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
@@ -30955,8 +30960,9 @@
     }
 
     function taskPickerGoCurrentWeek() {
-      if (taskPickerState.viewingWeekStart === state.weekStart) return;
-      taskPickerState.viewingWeekStart = state.weekStart;
+      const cur = dateToStr(getCurrentFriday());
+      if (taskPickerState.viewingWeekStart === cur) return;
+      taskPickerState.viewingWeekStart = cur;
       renderTaskPicker();
     }
 
@@ -31017,7 +31023,8 @@
         const endD = new Date(ws + 'T00:00:00');
         endD.setDate(endD.getDate() + 6);
         const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
-        const isCurrent = ws === state.weekStart;
+        // "current" means the week containing today, not the week open in the timesheet
+        const isCurrent = ws === dateToStr(getCurrentFriday());
         const labelEl = modal.querySelector('.cp-weeknav-mid');
         if (labelEl) labelEl.innerHTML = `<div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>`
           + (isCurrent ? '' : '<button class="copy-picker-weeknav-back" onclick="taskPickerGoCurrentWeek()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</button>');
@@ -31037,7 +31044,8 @@
       const loc = note.location || '';
       const noteContentPlain = note.noteContent ? note.noteContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
       const notePreview = noteContentPlain ? `<span style="color:var(--text-secondary)">·</span> <span style="font-size:11px;color:var(--text-slate);">Note: ${esc(noteContentPlain.length > 60 ? noteContentPlain.slice(0, 60) + '…' : noteContentPlain)}</span>` : '';
-      const isCurrent = ws === state.weekStart;
+      // "current" means the week containing today, not the week open in the timesheet
+      const isCurrent = ws === dateToStr(getCurrentFriday());
       const endD = new Date(ws + 'T00:00:00');
       endD.setDate(endD.getDate() + 6);
       const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
