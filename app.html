@@ -1431,6 +1431,41 @@
       margin-left: 6px;
     }
 
+    /* Week label stacks over the back link, so the current-week row is unchanged.
+       flex:1 is required — without it the column shrinks below its content in the
+       space-between row and wraps the back link onto three lines. */
+    .cp-weeknav-mid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Override the 30px square styling the nav's arrow buttons use */
+    .copy-picker-weeknav button.copy-picker-weeknav-back {
+      width: auto;
+      height: auto;
+      border: none;
+      background: none;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--accent);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .copy-picker-weeknav button.copy-picker-weeknav-back:hover {
+      background: none;
+      border: none;
+      text-decoration: underline;
+    }
+
     .copy-picker-days {
       overflow-y: auto;
       padding: 0 12px 8px;
@@ -21963,7 +21998,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.66';
+    const VERSION = '6.7.67';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -30533,6 +30568,14 @@
       renderCopyPicker();
     }
 
+    // Jump straight back after paging away, rather than clicking ‹ repeatedly.
+    // Selected days are kept — they may be in another week and still valid.
+    function copyPickerGoCurrentWeek() {
+      if (copyPickerState.viewingWeekStart === state.weekStart) return;
+      copyPickerState.viewingWeekStart = state.weekStart;
+      renderCopyPicker();
+    }
+
     function toggleCopyDay(dateStr) {
       if (copyPickerState.selectedDates.has(dateStr)) {
         copyPickerState.selectedDates.delete(dateStr);
@@ -30584,8 +30627,9 @@
         endD.setDate(endD.getDate() + 6);
         const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
         const isCurrent = ws === state.weekStart;
-        const labelEl = modal.querySelector('.copy-picker-weeknav > div');
-        if (labelEl) labelEl.innerHTML = `<span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}`;
+        const labelEl = modal.querySelector('.cp-weeknav-mid');
+        if (labelEl) labelEl.innerHTML = `<div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>`
+          + (isCurrent ? '' : '<button class="copy-picker-weeknav-back" onclick="copyPickerGoCurrentWeek()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</button>');
         // Update copy/move button
         const copyBtn = modal.querySelector('.copy-picker-actions .btn-copy');
         if (copyBtn) {
@@ -30620,7 +30664,10 @@
           <div class="copy-picker-sub" id="cp-sub">${moveMode ? 'Task will be moved — removed from this day and added to selected day(s).' : 'Select one or more days. All fields including note will be copied.'}</div>
           <div class="copy-picker-weeknav">
             <button onclick="copyPickerNavWeek(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-            <div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>
+            <div class="cp-weeknav-mid">
+              <div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>
+              ${isCurrent ? '' : '<button class="copy-picker-weeknav-back" onclick="copyPickerGoCurrentWeek()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</button>'}
+            </div>
             <button onclick="copyPickerNavWeek(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
           </div>
           <div class="copy-picker-days">${buildCopyPickerDaysHtml(ws, sourceDate)}</div>
@@ -30907,6 +30954,12 @@
       renderTaskPicker();
     }
 
+    function taskPickerGoCurrentWeek() {
+      if (taskPickerState.viewingWeekStart === state.weekStart) return;
+      taskPickerState.viewingWeekStart = state.weekStart;
+      renderTaskPicker();
+    }
+
     function selectTaskDay(dateStr) {
       taskPickerState.selectedDate = taskPickerState.selectedDate === dateStr ? null : dateStr;
       renderTaskPicker();
@@ -30965,8 +31018,9 @@
         endD.setDate(endD.getDate() + 6);
         const weekLabel = `${formatDate(ws)} – ${formatDate(dateToStr(endD))}`;
         const isCurrent = ws === state.weekStart;
-        const labelEl = modal.querySelector('.copy-picker-weeknav > div');
-        if (labelEl) labelEl.innerHTML = `<span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}`;
+        const labelEl = modal.querySelector('.cp-weeknav-mid');
+        if (labelEl) labelEl.innerHTML = `<div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>`
+          + (isCurrent ? '' : '<button class="copy-picker-weeknav-back" onclick="taskPickerGoCurrentWeek()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</button>');
         const addBtn = modal.querySelector('.task-picker-actions .btn-add-task');
         if (addBtn) {
           addBtn.disabled = !hasSelection;
@@ -31004,7 +31058,10 @@
           <div style="padding:0 12px 4px;"><span style="font-size:11px;font-weight:800;color:var(--text-dim);text-transform:uppercase;">Select Day</span></div>
           <div class="copy-picker-weeknav" style="margin:0 12px 6px;">
             <button onclick="taskPickerNavWeek(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
-            <div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>
+            <div class="cp-weeknav-mid">
+              <div><span class="copy-picker-weeknav-label">${weekLabel}</span>${isCurrent ? '<span class="copy-picker-weeknav-badge">current</span>' : ''}</div>
+              ${isCurrent ? '' : '<button class="copy-picker-weeknav-back" onclick="taskPickerGoCurrentWeek()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back to current week</button>'}
+            </div>
             <button onclick="taskPickerNavWeek(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
           </div>
           <div class="task-picker-days">${buildTaskPickerDaysHtml(ws)}</div>
