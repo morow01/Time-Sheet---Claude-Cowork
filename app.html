@@ -7817,25 +7817,6 @@
       white-space: nowrap;
     }
 
-    .sum-hdr-export-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      border: none;
-      background: var(--accent-light);
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      padding: 0;
-    }
-
-    .sum-hdr-export-btn:active {
-      opacity: 0.8;
-    }
-
     /* ── Summary rows (new) ── */
     .sum-new-col-head {
       display: grid;
@@ -22025,7 +22006,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.71';
+    const VERSION = '6.7.72';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -28393,7 +28374,7 @@
       // Weekly Summary keeps its own look, but obeys ☰ → Display → Show stats
       const summaryHtml = !_statsVisible() ? '' : `
   <div class="sum-section">
-    <div onclick="toggleSummary()" class="sum-new-head" role="button" tabindex="0">
+    <button onclick="toggleSummary()" class="sum-new-head">
       <div class="sum-head-left">
         <div class="sum-sum-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
         <div>
@@ -28404,10 +28385,9 @@
       <div class="sum-head-right">
         <div class="sum-new-badge" data-sum-ord>${Math.round(totalOrd)}h</div>
         <div class="sum-new-badge-ot" data-sum-ot style="display:${totalOT > 0 ? '' : 'none'}">${totalOT > 0 ? `+${Math.round(totalOT)} OT` : ''}</div>
-        <button class="sum-hdr-export-btn" onclick="event.stopPropagation();setView('email-week-v3')" title="Email / Export This Week"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>
         ${chevronSvg}
       </div>
-    </div>
+    </button>
     <div class="sum-table-wrap${state.showSummary ? ' open' : ''}" data-sum-table-content>
       ${_buildSummaryTableContentHtml(summary, totalOrd, totalOT)}
     </div>
@@ -28523,10 +28503,8 @@
       var deskSumOpen = state.showSummary;
       var deskChevron = '<svg class="sum-chevron-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.22s;transform:' + (deskSumOpen ? 'rotate(90deg)' : 'rotate(0deg)') + '"><polyline points="9 6 15 12 9 18"/></svg>';
 
-      var deskExportBtn = '<button class="sum-hdr-export-btn" onclick="event.stopPropagation();setView(\'email-week-v3\')" title="Email / Export This Week"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>';
-
       var deskSummaryHtml = !_statsVisible() ? '' : '<div class="sum-section" style="margin:0">' +
-        '<div onclick="toggleSummary()" class="sum-new-head" role="button" tabindex="0">' +
+        '<button onclick="toggleSummary()" class="sum-new-head">' +
         '<div class="sum-head-left">' +
         '<div class="sum-sum-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>' +
         '<div>' +
@@ -28537,10 +28515,9 @@
         '<div class="sum-head-right">' +
         '<div class="sum-new-badge" data-sum-ord>' + Math.round(totalOrd) + 'h</div>' +
         '<div class="sum-new-badge-ot" data-sum-ot style="display:' + (totalOT > 0 ? '' : 'none') + '">' + (totalOT > 0 ? '+' + Math.round(totalOT) + ' OT' : '') + '</div>' +
-        deskExportBtn +
         deskChevron +
         '</div>' +
-        '</div>' +
+        '</button>' +
         '<div class="sum-table-wrap' + (deskSumOpen ? ' open' : '') + '" data-sum-table-content>' +
         _buildSummaryTableContentHtml(summary, totalOrd, totalOT) +
         '</div>' +
@@ -32082,7 +32059,10 @@
           </div>
         </div>
       </div>
-      ${calloutsHtml}`;
+      ${calloutsHtml}
+      <div class="pws-action-banner" onclick="setView('email-week-v3')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Email / Export This Week
+      </div>`;
     }
 
     function updateSummaryDisplay() {
