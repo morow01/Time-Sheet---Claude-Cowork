@@ -940,6 +940,7 @@
       cursor: pointer;
       border: 1px solid transparent;
       font-family: inherit;
+      transition: background .12s, border-color .12s, color .12s;
     }
 
     .act-action-copy {
@@ -948,16 +949,34 @@
       border-color: rgba(30, 58, 138, 0.15);
     }
 
+    .act-action-copy:hover {
+      background: var(--bg-input);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
     .act-action-note {
       background: #f0fdf4;
       color: #15803d;
       border-color: #bbf7d0;
     }
 
+    .act-action-note:hover {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #86efac;
+    }
+
     .act-action-delete {
       background: var(--btn-danger-bg);
       color: var(--btn-danger-color);
       border-color: var(--btn-danger-border);
+    }
+
+    .act-action-delete:hover {
+      background: rgba(var(--priority-high-rgb), .16);
+      color: var(--priority-high-dark);
+      border-color: var(--priority-high);
     }
 
     /* ── ⋯ More button ── */
@@ -1187,6 +1206,7 @@
       align-items: center;
       justify-content: center;
       gap: 5px;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
     }
 
     .note-confirm-actions .btn-add {
@@ -2036,9 +2056,14 @@
         padding-right: 24px !important;
       }
 
-      :root[data-task-layout="grouped"] .day-activities .add-task-btn {
+      /* The buttons now sit in .add-task-row, so spacing moved to the row and
+         only the button's own look is overridden here. */
+      :root[data-task-layout="grouped"] .day-activities .add-task-row {
         margin: 10px 8px 0 18px !important;
         width: calc(100% - 26px) !important;
+      }
+
+      :root[data-task-layout="grouped"] .day-activities .add-task-btn {
         border-radius: 12px !important;
         border: 1px solid var(--border) !important;
         background: var(--bg-card) !important;
@@ -2254,7 +2279,7 @@
       align-items: center;
       justify-content: center;
       gap: 5px;
-      transition: border-color 0.12s, color 0.12s;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
       white-space: nowrap;
     }
 
@@ -2265,6 +2290,7 @@
     }
 
     .task-modal-text-btn:hover {
+      background: var(--bg-input);
       border-color: var(--accent);
       color: var(--accent);
     }
@@ -6141,7 +6167,10 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      transition: background .12s, border-color .12s, color .12s;
     }
+
+    .confirm-cancel:hover { background: var(--bg-card-alt); }
 
     .confirm-delete {
       flex: 1;
@@ -6153,7 +6182,24 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      transition: background .12s;
     }
+
+    .confirm-delete:hover { background: var(--priority-high-dark); }
+
+    /* Legacy confirmation modal — several app flows still use this shared dialog. */
+    #confirm-modal .confirm-modal-cancel,
+    #confirm-modal .confirm-modal-confirm {
+      transition: background .12s, border-color .12s, filter .12s;
+    }
+
+    #confirm-modal .confirm-modal-cancel:hover {
+      background: var(--bg-input) !important;
+      border-color: var(--text-muted) !important;
+    }
+
+    /* The confirm colour is set dynamically, so darken the rendered colour. */
+    #confirm-modal .confirm-modal-confirm:hover { filter: brightness(.9); }
 
     /* ===== BASE STYLES ===== */
     * {
@@ -7452,6 +7498,123 @@
       text-transform: uppercase;
       color: var(--text-muted);
     }
+
+    /* ══════════════ TASK TEMPLATES ══════════════
+       Reusable task presets: ☰ → Task Templates, and the "From Template"
+       button beside Add Task on each day. */
+    .add-task-row { display: flex; gap: 8px; margin: 4px 14px 14px 0; width: calc(100% - 14px); }
+    .add-task-btn {
+      flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 12px; border-radius: 10px; border: 1px dashed var(--border); background: var(--bg-card);
+      font-family: inherit; font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;
+      transition: background .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .add-task-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+
+    /* Templates view */
+    .tpl-page { background: var(--bg-page); min-height: 100vh; padding: 0 0 100px; }
+    /* Mirrors .day-activities so a template card is exactly as wide as a task:
+       27px on the left, and the card keeps its own 14px right margin. */
+    /* No max-width — the timesheet card spans the full container, so a cap
+       here made templates narrower than tasks on anything above ~520px. */
+    .tpl-wrap { padding: 14px 0 0 27px; }
+    .tpl-top { padding-right: 14px; }
+    /* No timeline here, so drop the connector stub and node the task card draws */
+    .tpl-wrap .activity-card::before,
+    .tpl-wrap .activity-card::after { display: none; }
+    .tpl-loc-pick { cursor: pointer; }
+    .pill-unsaved {
+      font-size: 10px; font-weight: 800; letter-spacing: .03em;
+      padding: 2px 7px; border-radius: 8px; white-space: nowrap;
+      background: var(--bg-ot); color: var(--ot-color); border: 1px solid var(--ot-stepper-border);
+    }
+    .tpl-add-btn { width: calc(100% - 14px); margin: 0 14px 10px 0; }
+    .tpl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .tpl-top-t { font-size: 14px; font-weight: 800; }
+    .tpl-top-s { font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 1px; }
+    .tpl-icon {
+      width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+      background: rgba(var(--purple-rgb), 0.1); color: var(--purple); display: grid; place-items: center;
+    }
+    .tpl-body { flex: 1; min-width: 0; }
+    .tpl-name { font-size: 13.5px; font-weight: 800; }
+    .tpl-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+    .tpl-code { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); }
+    .tpl-chip {
+      font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 7px;
+      background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
+    }
+    .tpl-chip-dim { color: var(--text-muted); font-style: italic; }
+    .tpl-warn { font-size: 10.5px; font-weight: 800; color: var(--priority-high); }
+    .tpl-hrs {
+      font-size: 11.5px; font-weight: 800; color: var(--accent); background: var(--accent-light);
+      border-radius: 8px; padding: 3px 9px; flex-shrink: 0;
+    }
+    .tpl-hrs-ot { color: var(--ot-color); background: var(--bg-ot); }
+    .tpl-blank { text-align: center; padding: 34px 20px; color: var(--text-muted); }
+    .tpl-blank-icon { color: var(--purple); opacity: .5; display: flex; justify-content: center; margin-bottom: 8px; }
+    .tpl-blank-t { font-size: 14px; font-weight: 800; color: var(--text-secondary); }
+    .tpl-blank-s { font-size: 12.5px; margin-top: 4px; line-height: 1.45; max-width: 300px; margin: 4px auto 0; }
+
+    /* Template form */
+    .tpl-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .tpl-form-hd { font-size: 13.5px; font-weight: 800; margin-bottom: 12px; }
+    .tpl-field { margin-bottom: 11px; }
+    .tpl-field label {
+      display: block; font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px;
+    }
+    .tpl-opt { font-weight: 700; letter-spacing: 0; text-transform: none; opacity: .75; }
+    .tpl-field input {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-input);
+      padding: 10px 12px; font-family: inherit; font-size: 14px; color: var(--text-primary);
+    }
+    .tpl-field input:focus { outline: none; border-color: var(--accent); }
+    .tpl-field input.is-ot { background: var(--bg-ot); border-color: var(--ot-stepper-border); color: var(--ot-color); font-weight: 700; }
+    .tpl-two { display: flex; gap: 9px; }
+    .tpl-two .tpl-field { flex: 1; }
+    .tpl-hint { font-size: 11.5px; color: var(--text-muted); line-height: 1.45; margin-top: 6px; }
+    .tpl-codes {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--bg-input); padding: 9px 11px; min-height: 42px; cursor: pointer;
+    }
+    .tpl-code-chip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 700; }
+    .tpl-codes-add { font-size: 12px; font-weight: 800; color: var(--accent); display: inline-flex; align-items: center; gap: 4px; }
+    .tpl-empty-hint { font-size: 12.5px; color: var(--text-muted); }
+    .tpl-actions-row { gap: 8px; border-top: 1px solid var(--border); padding-top: 14px; margin: 8px -16px 0; padding-left: 16px; padding-right: 16px; }
+    /* Keep the template-only name first, then mirror Timesheet task field order. */
+    .tpl-editor-form { display: flex; flex-direction: column; }
+    .tpl-name-field { order: 1; }
+    .tpl-description-field { order: 2; }
+    .tpl-notes-field { order: 3; }
+    .tpl-location-field { order: 4; }
+    .tpl-codes-field { order: 5; }
+    .tpl-hours-field { order: 6; }
+    .tpl-editor-form .tpl-actions-row { order: 7; }
+    /* .act-action-btn is border: 1px solid transparent by default, so a plain
+       one reads as unbordered — give Cancel the neutral outline. */
+    .act-action-btn.tpl-btn-cancel { border-color: var(--border); color: var(--text-secondary); background: var(--bg-card); }
+    .act-action-btn.tpl-btn-cancel:hover { background: var(--bg-input); }
+
+    /* Template picker sheet */
+    .tplp-overlay { position: fixed; inset: 0; z-index: 9400; display: flex; align-items: flex-end; justify-content: center; background: rgba(var(--shadow-rgb), 0.4); }
+    .tplp-sheet {
+      width: 100%; max-width: 520px; background: var(--bg-card); border-radius: 18px 18px 0 0;
+      max-height: 82vh; max-height: 82dvh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .tplp-hd { padding: 14px 16px 10px; border-bottom: 1px solid var(--border-subtle); }
+    .tplp-t { font-size: 15px; font-weight: 800; }
+    .tplp-s { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+    .tplp-list { overflow-y: auto; flex: 1; min-height: 0; }
+    .tplp-row { display: flex; align-items: center; gap: 11px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); cursor: pointer; }
+    .tplp-row:hover { background: var(--accent-light); }
+    .tplp-row:last-child { border-bottom: none; }
+    .tplp-foot { padding: 8px 12px 14px; display: flex; gap: 8px; }
+    .tplp-foot .btn-cancel { font-size: 13px; }
+    .tplp-foot .tplp-manage { color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .tplp-foot .tplp-manage svg { width: 15px; height: 15px; flex: none; }
+    .tplp-foot .tplp-manage:hover { background: var(--bg-input); border-color: var(--accent); }
+    .tplp-foot .tplp-cancel:hover { background: var(--bg-input); }
 
     /* ── Stats blocks (Show stats switch + per-block collapse) ── */
     .stats-block-hdr {
@@ -9361,7 +9524,7 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 600;
-      transition: opacity .1s;
+      transition: background .12s, color .12s, opacity .1s;
     }
 
     .rdn-btn:active {
@@ -9373,15 +9536,21 @@
       color: var(--text);
     }
 
+    .rdn-btn-cancel:hover { background: var(--bg-input); }
+
     .rdn-btn-confirm {
       background: #818cf8;
       color: #fff;
     }
 
+    .rdn-btn-confirm:hover { background: #7c3aed; }
+
     .rdn-btn-danger {
       background: var(--priority-high);
       color: #fff;
     }
+
+    .rdn-btn-danger:hover { background: var(--priority-high-dark); }
 
     .rdn-btn-ghost {
       background: transparent;
@@ -18635,6 +18804,7 @@
       }
 
       .desk-detail-btn:hover {
+        background: var(--bg-input);
         border-color: var(--accent);
         color: var(--accent);
       }
@@ -21357,9 +21527,9 @@
       <div style="font-size:18px;font-weight:700;margin-bottom:8px;color:var(--text)" id="confirm-title">Confirm</div>
       <div style="font-size:14px;color:var(--text-muted);margin-bottom:20px" id="confirm-message">Are you sure?</div>
       <div style="display:flex;gap:12px;justify-content:flex-end">
-        <button onclick="closeConfirmModal()"
+        <button class="confirm-modal-cancel" onclick="closeConfirmModal()"
           style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-weight:600;cursor:pointer;font-size:13px">Cancel</button>
-        <button id="confirm-btn" onclick="executeConfirmAction()"
+        <button id="confirm-btn" class="confirm-modal-confirm" onclick="executeConfirmAction()"
           style="padding:10px 20px;border-radius:8px;border:none;background:var(--priority-high);color:#fff;font-weight:600;cursor:pointer;font-size:13px">Confirm</button>
       </div>
     </div>
@@ -22006,7 +22176,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.74';
+    const VERSION = '6.8.0-templates.37';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22030,7 +22200,8 @@
       { id: 'email-week-v3', label: 'Export', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>' },
       { id: 'availability', label: 'Planner', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 15h3M13 15h3M8 19h3"/></svg>' },
       { id: 'tags-full', label: 'Tags', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>' },
-      { id: 'ai', label: 'AI', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>' }
+      { id: 'ai', label: 'AI', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>' },
+      { id: 'templates', label: 'Templates', pinned: false, icon: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>' }
     ];
 
     function getVisibleTabs() {
@@ -22497,7 +22668,19 @@
     }
 
     function _applyLocationValue(val) {
-      const { dayIndex: di, actId, noteId } = locationModalCtx;
+      const { dayIndex: di, actId, noteId, templateMode } = locationModalCtx;
+      if (templateMode) {
+        const t = _tplById(locationModalCtx.templateId);
+        if (t) {
+          t.location = val;
+          t.updatedAt = Date.now();
+          _tplSaveEditedTemplate(locationModalCtx.templateId);
+          if (state.tplDraftId !== locationModalCtx.templateId) window._tplPatchCardId = locationModalCtx.templateId;
+          render();
+        }
+        closeLocationModal();
+        return;
+      }
       if (noteId) {
         // Note location — surgical DOM update (no render to avoid card collapse / transition)
         const note = state.notes.find(n => n.id === noteId);
@@ -22919,6 +23102,10 @@
       notes: [],            // all field notes
       customCategories: [],  // user-defined note categories
       disabledCats: [],      // keys of tags hidden from dropdown (default or custom)
+      taskTemplates: [],     // reusable task presets (work codes + hours), ☰ → Task Templates
+      tplOpen: [],           // ids of templates expanded in the Templates view
+      tplDraftId: null,      // id of the unsaved new template, null = none
+      tplPickerDay: null,    // day index the template picker is adding to, null = closed
       notesFilter: 'all',           // 'all' | 'high' | 'medium' | 'low' | 'done'
       notesBinOpen: false,          // true = showing bin (deleted notes)
       notesArchiveOpen: false,      // true = showing archive section
@@ -25840,7 +26027,7 @@
       }
       const html = nc.startsWith('<') ? sanitizeHtml(nc) : esc(nc).replace(/\n/g, '<br>');
       // Derive stable ID for persisting resize height across refreshes
-      const _rszM = dataAttr.match(/data-(?:notes-inline|fn-inline|co-notes-inline)(?:="([^"]*)")?/);
+      const _rszM = dataAttr.match(/data-(?:notes-inline|fn-inline|co-notes-inline|tpl-notes-inline)(?:="([^"]*)")?/);
       const _rszId = _rszM ? (_rszM[1] || '_co') : null;
       const _storedH = _rszId ? (localStorage.getItem('rian_note_h_' + _rszId) || '') : '';
       const _outerStyle = _storedH ? ` style="max-height:${_storedH}px"` : '';
@@ -26816,6 +27003,8 @@
         viewBody = renderCalloutsView();
       } else if (state.view === 'tags-full') {
         viewBody = renderTagsFullView();
+      } else if (state.view === 'templates') {
+        viewBody = renderTaskTemplatesView();
       } else if (state.view === 'history') {
         viewBody = renderHistoryView();
       } else if (state.view === 'email-week-v3') {
@@ -26828,6 +27017,38 @@
         viewBody = renderWeekView();
       }
 
+      // Expanding a template only changes that card. Replacing the whole app
+      // tears down every sibling card for a frame, which makes them flash.
+      // Build the fresh view off-DOM and swap the requested card in place so
+      // its neighbours, scroll position, and any in-progress animations stay
+      // untouched. Other Templates renders (save, picker results, navigation)
+      // still follow the normal full-render path.
+      const _tplPatchId = state.view === 'templates' ? window._tplPatchCardId : null;
+      if (_tplPatchId) {
+        window._tplPatchCardId = null;
+        const _oldTplCard = app.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + _tplPatchId + '"]');
+        const _tplStaging = document.createElement('div');
+        _tplStaging.innerHTML = viewBody;
+        const _newTplCard = _tplStaging.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + _tplPatchId + '"]');
+        if (_oldTplCard && _newTplCard) {
+          // A draft becoming saved also changes the count and restores the
+          // New Template button. Keep those small chrome changes surgical so
+          // the rest of the page never has to be rebuilt.
+          const _oldTplCount = app.querySelector('.tpl-top-s');
+          const _newTplCount = _tplStaging.querySelector('.tpl-top-s');
+          if (_oldTplCount && _newTplCount) _oldTplCount.textContent = _newTplCount.textContent;
+          const _oldTplAdd = app.querySelector('.tpl-add-btn');
+          const _newTplAdd = _tplStaging.querySelector('.tpl-add-btn');
+          if (!_oldTplAdd && _newTplAdd) _oldTplCard.before(_newTplAdd);
+          else if (_oldTplAdd && !_newTplAdd) _oldTplAdd.remove();
+          _oldTplCard.replaceWith(_newTplCard);
+          const _draftBanner = document.getElementById('draft-warning-banner-container');
+          if (_draftBanner) _draftBanner.innerHTML = _renderDraftWarningBanner();
+          _tplAnimateOpen();
+          return;
+        }
+      }
+
       // Detach desktop journal TipTap wrapper before innerHTML wipes the DOM
       if (_djTiptapWrap && _djTiptapWrap.parentNode) _djTiptapWrap.remove();
       // Same-view re-renders leave scroll alone (see savedScroll above), but the
@@ -26837,7 +27058,7 @@
       // the page ends up higher than it was. Captured here, corrected after the
       // content reaches its final height.
       const _preScroll = window.scrollY || window.pageYOffset || 0;
-      app.innerHTML = renderHeader() + _renderConflictBanner() + '<div id="draft-warning-banner-container">' + _renderDraftWarningBanner() + '</div>' + _renderSaveErrorBanner() + viewBody;
+      app.innerHTML = renderHeader() + _renderConflictBanner() + '<div id="draft-warning-banner-container">' + _renderDraftWarningBanner() + '</div>' + _renderSaveErrorBanner() + viewBody + _renderTemplatePicker();
       // Restore menu scroll position after DOM rebuild
       if (_menuWasOpen && _menuScroll > 0) {
         const _newMenuEl = document.getElementById('theme-dropdown');
@@ -26893,6 +27114,9 @@
         _restoreScroll();
         requestAnimationFrame(_restoreScroll);
       }
+      // Templates: the open panel is rendered closed so it can animate — any
+      // render while editing (code picker, location picker) must re-open it.
+      if (state.view === 'templates' && (state.tplOpen || []).length) _tplAnimateOpen();
       // Fix timeline lines so they end exactly at the last task node.
       // Run synchronously first: render() rebuilds the DOM, so --tl-height resets
       // to 0 each time, and several renders fire while data loads (IDB → snapshot
@@ -26980,6 +27204,7 @@
         history: 'Week History',
         conflicts: 'Sync Conflicts',
         'tags-full': 'Tags',
+        templates: 'Task Templates',
         'email-week-v3': 'Email / Export Week',
         availability: 'Availability Planner',
         ai: 'AI Assistant'
@@ -27178,6 +27403,12 @@
                     ${_makePinBtn('tags-full')}
                     ${chev}
                   </div>`}
+                  <div class="menu-row" role="button" onclick="setView('templates');closeThemeMenu()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Task Templates</span><span class="menu-row-sub">${(state.taskTemplates || []).length} saved &middot; reusable work codes &amp; hours</span></span>
+                    ${_makePinBtn('templates')}
+                    ${chev}
+                  </div>
                 </div>
               </div>
 
@@ -29424,10 +29655,16 @@
   </div>
   <div class="day-activities ${isExpanded ? 'active' : 'hidden'}" id="day-${di}-activities" style="${isExpanded ? '' : 'display:none'}">
       ${activitiesHtml}
-      <button onclick="addActivity(${di})" class="add-task-btn" style="margin: 4px 14px 14px 0; width: calc(100% - 14px); display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 10px; border: 1px dashed var(--border); background: var(--bg-card); font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Task
-      </button>
+      <div class="add-task-row">
+        <button onclick="addActivity(${di})" class="add-task-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Task
+        </button>
+        <button onclick="tplOpenPicker(${di})" class="add-task-btn is-tpl" title="Add a task from a saved template">
+          ${_TPL_ICON}
+          From Template
+        </button>
+      </div>
   </div>
 </div>`;
     }
@@ -29724,7 +29961,7 @@
         ? `<button onclick="saveTaskDraft('${escId}',${di});closeTaskModal()" class="act-action-btn act-action-note" style="flex:1">
              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save
            </button>
-           <button onclick="discardTaskDraft('${escId}',${di});closeTaskModal()" class="act-action-btn act-action-delete">
+           <button onclick="discardTaskDraft('${escId}',${di},true)" class="act-action-btn act-action-delete">
              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
            </button>`
         : `<button onclick="openCopyPicker('${escId}',${di},false)" class="task-modal-text-btn" title="Copy / Move">
@@ -30520,11 +30757,22 @@
       render();
     }
 
-    function discardTaskDraft(actId, di) {
+    async function discardTaskDraft(actId, di, closeModalAfter) {
       const day = state.weekData?.days[di];
       if (!day) return;
+      const act = day.activities.find(a => a.id === actId);
+      if (!act || !act._draft) return;
+      const name = (act.description || '').trim() || 'this task';
+      const ok = await showRianDialog({
+        title: 'Discard task draft?',
+        message: '"' + name + '" has not been saved and will be lost.',
+        confirmText: 'Discard',
+        danger: true
+      });
+      if (!ok) return;
       day.activities = day.activities.filter(a => a.id !== actId);
       state.activitiesExpanded.delete(actId);
+      if (closeModalAfter) closeTaskModal();
       render();
       showToast('Draft discarded');
     }
@@ -37273,6 +37521,378 @@
       render();
     }
 
+    // ── Task Templates: persist (same shape as custom categories) ──
+    async function saveTaskTemplates() {
+      const uid = state.currentUser?.uid;
+      if (!uid) return;
+      const now = Date.now();
+      const payload = { templates: state.taskTemplates || [], _updatedAt: now };
+      await dbPut('notes', { id: 'task_templates', userId: uid, data: payload, updatedAt: now }).catch(() => { });
+      const ref = userDoc('data/taskTemplates');
+      if (ref) await ref.set(payload).catch(e => console.warn('[Rian]', e));
+    }
+
+    let taskTemplatesSaveTimer = null;
+    function scheduleTaskTemplatesSave() {
+      clearTimeout(taskTemplatesSaveTimer);
+      taskTemplatesSaveTimer = setTimeout(() => saveTaskTemplates(), 700);
+    }
+
+    async function loadTaskTemplates() {
+      const uid = state.currentUser?.uid;
+      if (!uid) return;
+      try {
+        const stored = await dbGet('notes', 'task_templates').catch(() => null);
+        if (stored?.data?.templates) state.taskTemplates = stored.data.templates;
+        const ref = userDoc('data/taskTemplates');
+        if (!ref) return;
+        const snap = await ref.get().catch(() => null);
+        if (snap?.exists) {
+          const remote = snap.data();
+          if (Array.isArray(remote.templates)) {
+            state.taskTemplates = remote.templates;
+            const payload = { templates: state.taskTemplates, _updatedAt: remote._updatedAt || Date.now() };
+            await dbPut('notes', { id: 'task_templates', userId: uid, data: payload, updatedAt: payload._updatedAt }).catch(() => { });
+          }
+        }
+      } catch (e) { console.warn('[Rian] loadTaskTemplates:', e); }
+      render();
+    }
+
+    const _TPL_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
+    const _TPL_PLUS = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+
+    // ── Task Templates: editing ──
+    // The view renders the panel CLOSED (max-height 0) and this adds .open on
+    // the next frame, so the max-height transition actually runs. Applying
+    // .open in the rendered markup gives the browser no starting state to
+    // animate from — the panel simply appears, which is what happened before.
+    function _tplAnimateOpen() {
+      // render() is itself rAF-deferred, so one rAF lands in the SAME frame as
+      // the rebuild — the browser never commits max-height:0 and there is
+      // nothing to transition from. Wait a frame for the render, force a
+      // reflow to commit the closed state, then open on the following frame.
+      requestAnimationFrame(() => {
+        window._tplAnimated = window._tplAnimated || {};
+        const fresh = [];
+        document.querySelectorAll('.tpl-wrap .activity-card.expanded').forEach(card => {
+          const id = card.getAttribute('data-tpl-id');
+          const d = card.querySelector('.activity-detail');
+          if (!d) return;
+          if (window._tplAnimated[id]) {
+            // Already open before this render. The panel is a NEW node with
+            // max-height 0, so simply adding .open would transition it open all
+            // over again — kill the transition for one frame so it just is open.
+            d.style.transition = 'none';
+            d.classList.add('open');
+            d.offsetHeight;
+            d.style.transition = '';
+          } else {
+            fresh.push(d);
+            window._tplAnimated[id] = true;
+          }
+        });
+        if (!fresh.length) return;
+        fresh.forEach(d => d.offsetHeight);
+        requestAnimationFrame(() => fresh.forEach(d => d.classList.add('open')));
+      });
+    }
+
+    function tplNew() {
+      const d = createTaskTemplate();
+      window._tplDraft = d;
+      state.tplDraftId = d.id;
+      state.tplOpen = [d.id, ...(state.tplOpen || [])];
+      render();
+    }
+
+    function tplEdit(id) {
+      // A card header is a simple expand/collapse control. In particular, a
+      // draft must remain available after collapsing, just like a Timesheet
+      // task; explicit Cancel is the only discard action.
+      if (_tplIsOpen(id)) { tplCollapse(id); return; }
+      // Snapshot the template as opened, so "unsaved" is a real comparison and
+      // Cancel can put the original values back rather than silently keeping
+      // the edits in memory while storage still holds the old ones.
+      window._tplSnap = window._tplSnap || {};
+      const t = _tplById(id);
+      if (t) window._tplSnap[id] = deepCopy(t);
+      state.tplOpen = [...(state.tplOpen || []), id];
+      // Opening one template used to rebuild #app, which briefly flashed every
+      // other card. Mark this render as a single-card patch instead.
+      window._tplPatchCardId = id;
+      render();
+    }
+
+    // Compares only the fields the form edits — updatedAt changes on every
+    // keystroke and would make everything look dirty.
+    const _TPL_FIELDS = ['name', 'description', 'location', 'ordinary', 'overtime', 'notes', 'codes'];
+    function _tplFingerprint(t) {
+      if (!t) return '';
+      return JSON.stringify(_TPL_FIELDS.map(f => f === 'codes' ? (t.codes || []).map(c => c.c).join(',') : (t[f] || '')));
+    }
+    function _tplIsDirty(id) {
+      const snap = (window._tplSnap || {})[id];
+      if (!snap) return state.tplDraftId === id;      // a new template is always unsaved
+      return _tplFingerprint(_tplById(id)) !== _tplFingerprint(snap);
+    }
+
+    // Surgical pill update — called from every edit path so typing does not
+    // trigger a re-render just to show the badge.
+    function _tplSyncDirtyPill(id) {
+      const card = document.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + id + '"]');
+      if (!card) return;
+      const row = card.querySelector('.act-pill-row');
+      if (!row) return;
+      const existing = row.querySelector('.pill-unsaved');
+      const dirty = _tplIsDirty(id) && state.tplDraftId !== id;
+      if (dirty && !existing) {
+        const span = document.createElement('span');
+        span.className = 'pill-unsaved';
+        span.textContent = 'Unsaved';
+        row.appendChild(span);
+      } else if (!dirty && existing) {
+        existing.remove();
+      }
+    }
+
+    // Saved templates follow the same edit-then-autosave model as Timesheet
+    // tasks. Drafts remain local until their explicit Save button is used.
+    function _tplSaveEditedTemplate(id) {
+      if (state.tplDraftId === id) return;
+      const t = _tplById(id);
+      if (!t) return;
+      window._tplSnap = window._tplSnap || {};
+      window._tplSnap[id] = deepCopy(t);
+      _tplSyncDirtyPill(id);
+      scheduleTaskTemplatesSave();
+    }
+
+    // Collapse the open panel first, then re-render once it has finished, so
+    // closing animates instead of the card snapping shut.
+    // Collapses one card, animating it shut before the state drops it.
+    function tplCollapse(id) {
+      const card = document.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + id + '"]');
+      const d = card && card.querySelector('.activity-detail');
+      const finish = () => {
+        state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
+        if (window._tplSnap) delete window._tplSnap[id];
+        if (window._tplAnimated) delete window._tplAnimated[id];
+        // Collapsing is not discarding. Keep a new template in its local-only
+        // draft state so the global warning can point back to it later.
+        window._tplPatchCardId = id;
+        render();
+      };
+      if (!d) { finish(); return; }
+      d.style.maxHeight = d.scrollHeight + 'px';
+      d.offsetHeight;                       // force reflow so the next line transitions
+      d.classList.remove('open');
+      d.style.maxHeight = '0px';
+      card.classList.remove('expanded');
+      const chev = card.querySelector('svg[stroke-linejoin]');
+      if (chev) chev.style.transform = 'rotate(0deg)';
+      setTimeout(finish, ANIM_EXPAND_MS + 20);
+    }
+    async function tplCancel(id) {
+      const isNew = state.tplDraftId === id;
+      // A draft can be collapsed and reopened without another edit. It still
+      // needs an explicit discard confirmation even if that reopen snapshot
+      // happens to match its current values.
+      if (isNew || _tplIsDirty(id)) {
+        const draft = _tplById(id);
+        const draftName = ((draft?.name || draft?.description || '').trim() || 'This template');
+        const ok = await showRianDialog({
+          title: isNew ? 'Discard new template?' : 'Discard changes?',
+          message: isNew
+            ? '"' + draftName + '" has not been saved and will be lost.'
+            : 'The edits you made will be undone and the saved version kept.',
+          confirmText: 'Discard', danger: true
+        });
+        if (!ok) return;
+        const snap = (window._tplSnap || {})[id];
+        const t = _tplById(id);
+        if (snap && t) _TPL_FIELDS.forEach(f => { t[f] = snap[f]; });
+        if (isNew) {
+          state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
+          state.tplDraftId = null;
+          window._tplDraft = null;
+          if (window._tplSnap) delete window._tplSnap[id];
+          if (window._tplAnimated) delete window._tplAnimated[id];
+          render();
+          return;
+        }
+      }
+      tplCollapse(id);
+    }
+
+    // A template is identified by id everywhere now that several can be open at
+    // once — there is no single "current" one.
+    function _tplById(id) {
+      if (window._tplDraft && window._tplDraft.id === id) return window._tplDraft;
+      return (state.taskTemplates || []).find(t => t.id === id) || null;
+    }
+    function _tplIsOpen(id) { return (state.tplOpen || []).indexOf(id) !== -1; }
+
+    // Writes straight onto the object being edited — for a saved template that is
+    // the live entry, so Save just persists. Cancel on an existing template is
+    // therefore "stop editing", not "undo"; the draft object covers the new case.
+    function tplField(id, field, value) {
+      const t = _tplById(id);
+      if (!t) return;
+      t[field] = value;
+      t.updatedAt = Date.now();
+      _tplSyncDirtyPill(id);
+      _tplSaveEditedTemplate(id);
+    }
+
+    // Surgical update, mirroring stepHrs/_applyHrsInPlace on tasks. Re-rendering
+    // here rebuilt the card and replayed the expand animation on every tap.
+    function tplStepHrs(id, field, delta) {
+      const t = _tplById(id);
+      if (!t) return;
+      const next = Math.max(0, (parseFloat(t[field]) || 0) + delta);
+      t[field] = String(next);
+      t.updatedAt = Date.now();
+      const card = document.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + id + '"]');
+      if (!card) { render(); return; }
+      const input = card.querySelector('[data-tpl-hrs="' + field + '"]');
+      if (input) input.value = next;
+      // Keep the collapsed header pills in step with the form
+      const pill = card.querySelector(field === 'ordinary' ? '.pill-hrs' : '.pill-ot');
+      const row = card.querySelector('.act-pill-row');
+      if (pill) {
+        if (next > 0) { pill.textContent = field === 'ordinary' ? next + 'h' : '+' + next + ' OT'; pill.style.display = ''; }
+        else pill.style.display = 'none';
+      } else if (next > 0 && row) {
+        const span = document.createElement('span');
+        span.className = field === 'ordinary' ? 'pill-hrs' : 'pill-ot';
+        span.textContent = field === 'ordinary' ? next + 'h' : '+' + next + ' OT';
+        row.appendChild(span);
+      }
+      _tplSyncDirtyPill(id);
+      _tplSaveEditedTemplate(id);
+    }
+
+    // Reuse the task pickers. Both dispatch on their context object, so a
+    // templateMode flag routes the result to the template being edited
+    // instead of an activity — the same trick voiceMode already uses.
+    function tplPickCodes(id) {
+      const t = _tplById(id);
+      if (!t) return;
+      codeModalCtx = { dayIndex: null, activityId: null, selected: [...(t.codes || [])], templateMode: true, templateId: id };
+      filteredCodes = [...WORK_CODES];
+      document.getElementById('code-modal').classList.remove('hidden');
+      document.getElementById('code-search').value = '';
+      renderCodeList();
+      setTimeout(() => { const el = document.getElementById('code-search'); if (el) el.focus(); }, 100);
+    }
+
+    function tplPickLocation(id) {
+      const t = _tplById(id);
+      if (!t) return;
+      locationModalCtx = { dayIndex: null, actId: null, noteId: null, templateMode: true, templateId: id, _results: [] };
+      document.getElementById('location-modal').classList.remove('hidden');
+      const searchEl = document.getElementById('location-search');
+      if (searchEl) {
+        searchEl.value = t.location || '';
+        setTimeout(() => searchEl.focus(), 100);
+      }
+      if (typeof searchLocations === 'function') searchLocations(t.location || '');
+    }
+
+    async function tplSave(id) {
+      const t = _tplById(id);
+      if (!t) return;
+      if (!(t.name || '').trim() && !(t.description || '').trim()) {
+        showToast('Give the template a name first');
+        return;
+      }
+      if (!t.name) t.name = t.description;
+      if (state.tplDraftId === id) {
+        state.taskTemplates = [...(state.taskTemplates || []), t];
+        state.tplDraftId = null;
+        window._tplDraft = null;
+      }
+      // Saving commits the draft but should not close its editor. Timesheet
+      // task drafts stay open after Save, and templates should behave the same.
+      if (!(state.tplOpen || []).includes(id)) state.tplOpen = [...(state.tplOpen || []), id];
+      if (window._tplSnap) delete window._tplSnap[id];
+      window._tplAnimated = window._tplAnimated || {};
+      // The replacement card should be open immediately, not replay its open
+      // animation, after an otherwise in-place save.
+      window._tplAnimated[id] = true;
+      window._tplPatchCardId = id;
+      // Match Timesheet saves: update the UI immediately and let the local /
+      // cloud write complete in the background instead of holding the draft
+      // card in place until Firestore responds.
+      saveTaskTemplates();
+      showToast('Template saved');
+      render();
+    }
+
+    // The global draft warning uses this rather than reaching into the
+    // Templates form directly, just as it uses saveAllDrafts for tasks/notes.
+    function saveTemplateDraft() {
+      if (state.tplDraftId) tplSave(state.tplDraftId);
+    }
+
+    async function tplDelete(id) {
+      const t = (state.taskTemplates || []).find(x => x.id === id);
+      const ok = await showRianDialog({
+        title: 'Delete template',
+        message: '"' + ((t && (t.name || t.description)) || 'This template') + '" will be removed. Tasks already created from it are not affected.',
+        confirmText: 'Delete', danger: true
+      });
+      if (!ok) return;
+      state.taskTemplates = (state.taskTemplates || []).filter(x => x.id !== id);
+      state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
+      await saveTaskTemplates();
+      showToast('Template deleted');
+      render();
+    }
+
+    // ── Task Templates: using one in the timesheet ──
+    function tplOpenPicker(di) {
+      if (!(state.taskTemplates || []).length) {
+        showToast('No templates yet — add one in ☰ → Task Templates');
+        return;
+      }
+      state.tplPickerDay = di;
+      render();
+    }
+
+    function tplClosePicker() { state.tplPickerDay = null; render(); }
+
+    function tplUse(tplId) {
+      const di = state.tplPickerDay;
+      const t = (state.taskTemplates || []).find(x => x.id === tplId);
+      if (t == null || di == null) { tplClosePicker(); return; }
+      const act = createActivity();
+      delete act._draft;                       // chosen deliberately — save it like a copy/move
+      act.description = t.description || t.name || '';
+      act.location = t.location || '';
+      act.codes = deepCopy(t.codes || []);
+      act.ordinary = t.ordinary || '';
+      act.overtime = t.overtime || '';
+      if (t.notes) act.notes = t.notes;
+      state.weekData.days[di].activities.push(act);
+      state.tplPickerDay = null;
+      // No location on the template means the task is deliberately incomplete —
+      // open it so the missing field is in front of you rather than buried.
+      if (!act.location) state.activitiesExpanded.add(act.id);
+      scheduleAutoSave();
+      render();
+      showToast('Added "' + (t.name || t.description || 'task') + '"');
+    }
+
+    function createTaskTemplate() {
+      return {
+        id: uid(), name: '', description: '', location: '',
+        codes: [], ordinary: '', overtime: '', notes: '',
+        createdAt: Date.now(), updatedAt: Date.now()
+      };
+    }
+
     // ── Tag Editor Modal ──
     let _teColor = CAT_COLORS[0];
     let _teIconKey = '';
@@ -38718,6 +39338,12 @@
           return;
         }
       }
+      // Template picker sheet — rendered inline, so no id-based hidden class
+      if (state && state.tplPickerDay != null) {
+        e.preventDefault();
+        tplClosePicker();
+        return;
+      }
       // Overlays not using id-based hidden class
       const ocOv = document.getElementById('oc-schedule-overlay');
       if (ocOv && ocOv.classList.contains('open')) {
@@ -38749,7 +39375,19 @@
     });
 
     function confirmCodeSelection() {
-      const { dayIndex: di, activityId: actId, selected, voiceMode } = codeModalCtx;
+      const { dayIndex: di, activityId: actId, selected, voiceMode, templateMode } = codeModalCtx;
+      if (templateMode) {
+        const t = _tplById(codeModalCtx.templateId);
+        if (t) {
+          t.codes = selected;
+          t.updatedAt = Date.now();
+          _tplSaveEditedTemplate(codeModalCtx.templateId);
+          if (state.tplDraftId !== codeModalCtx.templateId) window._tplPatchCardId = codeModalCtx.templateId;
+          render();
+        }
+        closeCodeModal();
+        return;
+      }
       if (voiceMode) {
         voiceConfirmCodes = [...selected];
         renderVoiceCodeChips();
@@ -40418,8 +41056,24 @@
     function _renderDraftWarningBanner() {
       const anyDraftTask = !!(state.weekData?.days?.some(d => d.activities?.some(a => a._draft)));
       const anyDraftNote = !!(state.notes?.some(n => n._draft));
+      // Template drafts live outside state.taskTemplates until explicitly
+      // saved, so their draft state is tracked by tplDraftId/_tplDraft.
+      const anyDraftTemplate = !!(state.tplDraftId && window._tplDraft?.id === state.tplDraftId);
+      const hasDormantDraftTemplate = anyDraftTemplate && !_tplIsOpen(state.tplDraftId);
       
-      if (!anyDraftTask && !anyDraftNote) return '';
+      if (!anyDraftTask && !anyDraftNote && !anyDraftTemplate) return '';
+
+      // Match Timesheet drafts: the warning appears once the draft is
+      // collapsed/dormant, not while the user is actively editing it.
+      if (state.view === 'templates' && hasDormantDraftTemplate) {
+        return `<div class="draft-warning-banner">
+          <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </span>
+          <span class="draft-warning-banner-text">You have an unsaved template (draft)</span>
+          <button class="draft-warning-banner-btn" onclick="saveTemplateDraft()">Save Template</button>
+        </div>`;
+      }
 
       // Check if there are inactive/dormant drafts on the current view
       const hasDormantDraftTask = !!(state.weekData?.days?.some(d => d.activities?.some(a => {
@@ -40465,12 +41119,18 @@
       // 3. Otherwise (on other views), show original behavior for leaving active views
       const hasDraftTask = anyDraftTask && state.view !== 'week';
       const hasDraftNote = anyDraftNote && state.view !== 'notes';
-      if (!hasDraftTask && !hasDraftNote) return '';
+      const hasDraftTemplate = anyDraftTemplate && state.view !== 'templates';
+      if (!hasDraftTask && !hasDraftNote && !hasDraftTemplate) return '';
 
-      const msg = (hasDraftTask && hasDraftNote) ? 'You have unsaved task and note'
-                : hasDraftTask ? 'You have an unsaved task'
-                : 'You have an unsaved note';
-      const returnView = hasDraftTask ? 'week' : 'notes';
+      const draftNames = [
+        hasDraftTask ? 'task' : '',
+        hasDraftNote ? 'note' : '',
+        hasDraftTemplate ? 'template' : ''
+      ].filter(Boolean);
+      const msg = draftNames.length === 1
+        ? 'You have an unsaved ' + draftNames[0]
+        : 'You have unsaved ' + draftNames.slice(0, -1).join(', ') + ' and ' + draftNames[draftNames.length - 1];
+      const returnView = hasDraftTemplate ? 'templates' : hasDraftTask ? 'week' : 'notes';
       return `<div class="draft-warning-banner">
         <span style="display:flex;align-items:center;flex-shrink:0;color:#fff">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -40540,6 +41200,164 @@
         ${renderSecondaryPageHeader('Notes Tag Manager', 'Create, edit and toggle note tags', '', tagBack)}
         <div style="background:var(--bg-page);min-height:100vh;padding:20px 16px 100px">
           <div id="tag-editor-body" style="max-width:480px;margin:0 auto;background:var(--bg-card);border-radius:16px;padding:16px 18px;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.07)"></div>
+        </div>`;
+    }
+
+    // Bottom sheet listing templates to add to a day. Rendered as part of the
+    // page rather than a standalone modal so it survives re-renders.
+    function _renderTemplatePicker() {
+      const di = state.tplPickerDay;
+      if (di == null) return '';
+      const day = state.weekData?.days?.[di];
+      const tpls = state.taskTemplates || [];
+      const rows = tpls.map((t, i) => `
+        <div class="tplp-row" onclick="tplUse('${t.id}')">
+          <div class="task-num">${i + 1}</div>
+          <div class="tpl-body">
+            <div class="tpl-name">${esc(t.name || t.description || 'Untitled')}</div>
+            <div class="tpl-meta">
+              ${t.location ? `<span class="act-loc-txt"><svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>${esc(t.location)}</span>` : '<span class="act-loc-txt" style="opacity:0.4">No location</span>'}
+            </div>
+          </div>
+          ${parseFloat(t.ordinary) > 0 ? `<span class="tpl-hrs">${esc(String(t.ordinary))}h</span>` : ''}
+          ${parseFloat(t.overtime) > 0 ? `<span class="tpl-hrs tpl-hrs-ot">+${esc(String(t.overtime))}</span>` : ''}
+        </div>`).join('');
+      return `
+        <div class="tplp-overlay" onclick="if(event.target===this)tplClosePicker()">
+          <div class="tplp-sheet">
+            <div class="tplp-hd">
+              <div class="tplp-t">Choose a template</div>
+              <div class="tplp-s">Adds a task to ${esc(day?.dayName || 'this day')}${day?.date ? ' ' + esc(formatDate(day.date)) : ''}</div>
+            </div>
+            <div class="tplp-list">${rows}</div>
+            <div class="tplp-foot">
+              <button class="btn-cancel tplp-manage" onclick="tplClosePicker();setView('templates')">${_TPL_ICON}Manage templates</button>
+              <button class="btn-cancel tplp-cancel" onclick="tplClosePicker()">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ── Task Templates view (☰ → Task Templates) ──
+    // Each template renders as a timesheet activity-card and expands IN PLACE:
+    // the form is that card's .activity-detail panel, so it animates open, the
+    // other templates stay on screen, and the chevron rotates like a task's.
+    function renderTaskTemplatesView() {
+      const tpls = state.taskTemplates || [];
+      const draftOpen = !!state.tplDraftId;
+
+      const formFields = (t, isNew) => `
+        <form class="tpl-editor-form" autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
+          <div class="tpl-field tpl-name-field">
+            <label>Template name</label>
+            <input value="${escAttr(t.name || '')}" placeholder="e.g. Routine – Power RSU" oninput="tplField('${t.id}','name',this.value)">
+          </div>
+          <div class="tpl-field tpl-description-field">
+            <label>Description</label>
+            <textarea class="act-textarea" rows="1" placeholder="Description of work" oninput="tplField('${t.id}','description',this.value);autoGrow(this)">${esc(t.description || '')}</textarea>
+          </div>
+          <div class="tpl-field tpl-codes-field">
+            <label>Work Codes</label>
+            <div class="act-codes-wrap tpl-codes" onclick="tplPickCodes('${t.id}')" style="cursor:pointer;min-height:42px">${(t.codes || []).length
+              ? t.codes.map(c => `<div class="act-code-chip" style="pointer-events:none">${esc(c.d || c.c)}<span class="act-code-mono">${esc(c.c)}</span></div>`).join('')
+              : `<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px">${_TPL_PLUS} Choose work codes</span>`}</div>
+          </div>
+          <div class="flex gap-3 tpl-hours-field">
+            <div class="hrs-box flex-1">
+              <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>
+              <div class="hrs-stepper flex items-center justify-between">
+                <button onclick="tplStepHrs('${t.id}','ordinary',-1)">−</button>
+                <input type="tel" class="val" data-tpl-hrs="ordinary" value="${escAttr(String(parseFloat(t.ordinary) || 0))}" inputmode="decimal" oninput="tplField('${t.id}','ordinary',this.value)">
+                <button onclick="tplStepHrs('${t.id}','ordinary',1)">+</button>
+              </div>
+            </div>
+            <div class="hrs-box flex-1 ot-box">
+              <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>
+              <div class="hrs-stepper flex items-center justify-between">
+                <button onclick="tplStepHrs('${t.id}','overtime',-1)">−</button>
+                <input type="tel" class="val" data-tpl-hrs="overtime" value="${escAttr(String(parseFloat(t.overtime) || 0))}" inputmode="decimal" oninput="tplField('${t.id}','overtime',this.value)">
+                <button onclick="tplStepHrs('${t.id}','overtime',1)">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="tpl-field tpl-location-field" style="margin-top:12px">
+            <label>Location <span class="tpl-opt">optional</span></label>
+            <div class="act-input tpl-loc-pick" onclick="tplPickLocation('${t.id}')">${t.location ? esc(t.location) : '<span style="color:var(--text-muted)">Leave blank — set it per task</span>'}</div>
+            <div class="tpl-hint">Left blank, every task from this template arrives asking for a location, so a routine can't be filed against the wrong exchange.</div>
+          </div>
+          <div class="tpl-field tpl-notes-field">
+            <label>Notes <span class="tpl-opt">optional</span></label>
+            ${renderNoteInline(t.notes, "openTemplateNoteFullscreen('" + t.id + "')", 'data-tpl-notes-inline="' + t.id + '"')}
+          </div>
+          <div class="act-actions-row tpl-actions-row">
+            ${isNew ? `
+              <button onclick="tplSave('${t.id}')" class="act-action-btn act-action-note" style="flex:1 0 auto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Save
+              </button>
+              <button onclick="tplCancel('${t.id}')" class="act-action-btn act-action-delete" style="flex:1 0 auto">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Discard
+              </button>` : `
+            <button onclick="tplDelete('${t.id}')" class="act-action-btn act-action-delete" style="flex:1 0 auto" title="Delete template">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete Template
+            </button>`}
+          </div>
+        </form>`;
+
+      const cardHtml = (t, i, isOpen, isNew) => {
+        const ord = parseFloat(t.ordinary) || 0;
+        const ot = parseFloat(t.overtime) || 0;
+        const headAction = `tplEdit('${t.id}')`;   // tplEdit toggles open/closed
+        return `
+        <div class="activity-card${isOpen ? ' expanded' : ''}${isNew ? ' is-draft' : ''}" data-tpl-id="${t.id}">
+          <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="${headAction}">
+            <div class="task-num">${isNew ? '+' : i + 1}</div>
+            <div class="flex-1 min-w-0 act-meta">
+              <div class="act-desc-txt">${esc(t.name || t.description) || `<span style="opacity:0.4;font-weight:400;font-style:italic">${isNew ? 'New template' : 'Untitled template'}</span>`}</div>
+              <div class="act-row2">
+                <div class="act-loc-txt">${t.location
+                  ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>${esc(t.location)}`
+                  : '<span style="opacity:0.55;font-style:italic">Location set per task</span>'}</div>
+                <div class="act-pill-row">
+                  ${ord > 0 ? `<span class="pill-hrs">${ord}h</span>` : ''}
+                  ${ot > 0 ? `<span class="pill-ot">+${ot} OT</span>` : ''}
+                  ${isNew ? '<span class="pill-draft">Draft</span>' : (_tplIsDirty(t.id) ? '<span class="pill-unsaved">Unsaved</span>' : '')}
+                </div>
+              </div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--chevron-color);transition:transform 0.22s;${isOpen ? 'transform:rotate(90deg)' : ''}"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="activity-detail" style="${isOpen ? '' : 'display:none'}">
+            <div class="act-detail-inner">${isOpen ? formFields(t, isNew) : ''}</div>
+          </div>
+        </div>`;
+      };
+
+      const draftTpl = draftOpen ? window._tplDraft : null;
+      const listHtml = tpls.length
+        ? tpls.map((t, i) => cardHtml(t, i, _tplIsOpen(t.id), false)).join('')
+        : (draftOpen ? '' : `<div class="tpl-blank">
+             <div class="tpl-blank-icon">${_TPL_ICON}</div>
+             <div class="tpl-blank-t">No templates yet</div>
+             <div class="tpl-blank-s">Save the work code and hours you use often, then add a task from it in one tap.</div>
+           </div>`);
+
+      return `
+        ${renderSecondaryPageHeader('Task Templates', 'Reusable work codes and hours', '', "setView('week')")}
+        <div class="tpl-page">
+          <div class="tpl-wrap">
+            <div class="tpl-top">
+              <div>
+                <div class="tpl-top-t">Your templates</div>
+                <div class="tpl-top-s">${tpls.length} saved</div>
+              </div>
+            </div>
+            ${draftOpen ? '' : `<button class="btn--add tpl-add-btn" onclick="tplNew()">${_TPL_PLUS} New Template</button>`}
+            ${draftOpen ? cardHtml(draftTpl, 0, _tplIsOpen(draftTpl.id), true) : ''}
+            ${listHtml}
+          </div>
         </div>`;
     }
 
@@ -45510,10 +46328,10 @@
             '</div>';
         } else {
           calloutsHtml += '<div style="position:sticky;top:0;z-index:10;display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">' +
-            '<button onclick="dcoAddCallout()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
+            '<button class="add-task-btn" onclick="dcoAddCallout()">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
             'Add Callout</button>' +
-            '<button onclick="openPasteTicket()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:var(--font-body)">' +
+            '<button class="add-task-btn" onclick="openPasteTicket()">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>' +
             'Paste Fault</button>' +
             '</div>';
@@ -45649,7 +46467,7 @@
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard</button>' +
           '</div>'
           : '<div class="desk-detail-actions">' +
-          '<button class="desk-detail-btn" style="margin-left:auto;color:var(--accent);border-color:var(--accent)" onclick="dcoMoveCallout()">' +
+          '<button class="desk-detail-btn" style="margin-left:auto" onclick="dcoMoveCallout()">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>' +
           ' Move</button>' +
           '<button class="desk-detail-btn danger" onclick="dcoDeleteCallout()">' +
@@ -46197,11 +47015,11 @@
 
       if (state.calloutsExpandedId !== '__new__') {
         html += `<div style="position:sticky;top:0;z-index:10;display:flex;gap:10px;padding:10px 14px;background:var(--bg-card);border-bottom:1px solid var(--border);margin-bottom:4px;">
-          <button onclick="coOpenAdd()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:inherit;">
+          <button class="add-task-btn" onclick="coOpenAdd()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Callout
           </button>
-          <button onclick="openPasteTicket()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:10px;border:1px dashed var(--border);background:var(--bg-card);font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;font-family:inherit;">
+          <button class="add-task-btn" onclick="openPasteTicket()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="4" width="16" height="18" rx="2"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
             Paste Fault
           </button>
@@ -46375,7 +47193,7 @@
             <button class="act-action-btn act-action-delete" onclick="event.stopPropagation(); coDelete()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard
             </button>` : `
-            <button class="act-action-btn" style="flex:1;color:var(--accent);border:1px solid var(--accent);background:var(--accent-light)" onclick="event.stopPropagation(); coMoveSingle('${esc(id)}')">
+            <button class="task-modal-text-btn" style="flex:1;padding:10px" onclick="event.stopPropagation(); coMoveSingle('${esc(id)}')">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg> Move
             </button>
             <button class="act-action-btn act-action-delete" style="flex:1" onclick="event.stopPropagation(); coDelete()">
@@ -48842,7 +49660,7 @@ Rules:
 
       try {
         const lastView = localStorage.getItem('lastView');
-        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal' || lastView === 'email-week-v3' || lastView === 'availability') state.view = lastView;
+        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal' || lastView === 'email-week-v3' || lastView === 'availability' || lastView === 'templates') state.view = lastView;
         if (lastView === 'journal') {
           const ljScreen = localStorage.getItem('jScreen'); if (ljScreen) state.jScreen = ljScreen;
           const ljNbId = localStorage.getItem('jNotebookId'); if (ljNbId) state.jNotebookId = ljNbId;
@@ -48922,13 +49740,28 @@ Rules:
         try {
           const friday = getCurrentFriday();
           const ws = dateToStr(friday);
-          const local = await dbGet('weeks', ws);
+          // Preload the two pieces of data that can be rendered without
+          // waiting for Firebase. Templates used to wait behind the full
+          // signed-in startup sequence, so opening their page briefly showed
+          // an empty list even when they were already cached locally.
+          const [local, cachedTemplates] = await Promise.all([
+            dbGet('weeks', ws),
+            dbGet('notes', 'task_templates').catch(() => null)
+          ]);
+          if (cachedTemplates?.data?.templates &&
+              (!cachedTemplates.userId || cachedTemplates.userId === cachedUid)) {
+            state.taskTemplates = cachedTemplates.data.templates;
+          }
           if (local && local.userId === cachedUid && local.data) {
             state.currentUser = { uid: cachedUid }; // temp stub so loadWeek proceeds
             state.weekData = deepCopy(local.data);
             enforceCorrectDates(ws, state.weekData);
             state.weekStart = ws;
             autoExpandToday();
+            render();
+          } else if (state.view === 'templates' && state.taskTemplates.length) {
+            // The saved view can be Templates even if the current week has no
+            // cache yet. Still show the locally cached templates immediately.
             render();
           }
         } catch (e) { /* ignore — auth will re-render correctly */ }
@@ -49146,6 +49979,8 @@ Rules:
 
         // Load user-defined note categories
         loadCustomCategories();
+        // Load reusable task templates
+        loadTaskTemplates();
 
         // Init local reminders
         initReminders();
@@ -50025,6 +50860,7 @@ QUESTION: ${query}`;
 
     // ── Note fullscreen editor (TipTap) ──────────────────────────
     let _noteFsActId = null, _noteFsDi = null;
+    let _tplNoteFsId = null;      // Task Template currently using the shared TipTap editor
     let _tiptapEditor = null;      // singleton TipTap Editor instance
     let _tiptapOnUpdate = null;    // swappable update callback
     let _tiptapModules = null;     // cached ES module imports
@@ -53546,6 +54382,42 @@ function _ttStripDefaultTableWidths() {
         }
       }, 80);
     }
+    // Task Templates use the same TipTap note editor as Timesheet tasks. This
+    // preserves rich content such as intentionally empty tables in the preset.
+    function openTemplateNoteFullscreen(tplId) {
+      const t = _tplById(tplId);
+      if (!t) return;
+      _coNoteFsActive = false;
+      _fnFsNoteId = null;
+      _fnFsSource = null;
+      _noteFsActId = null;
+      _noteFsDi = null;
+      _tplNoteFsId = tplId;
+      window._actNoteDirty = false;
+      window._actNoteOpenContent = t.notes || '';
+      const titleEl = document.getElementById('note-fs-title');
+      const subEl = document.getElementById('note-fs-subtitle');
+      if (titleEl) titleEl.textContent = t.name || t.description || 'Template note';
+      if (subEl) { subEl.textContent = 'Task Template'; subEl.style.display = 'block'; }
+      document.getElementById('note-fs-modal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      _ttResetDraftState();
+      setTimeout(async () => {
+        try {
+          await _ensureTipTap();
+          _tiptapOnUpdate = null;
+          _ttSetContent(t.notes || '');
+          _ttResetHistory(_ttGetHTML());
+          if (_tiptapEditor) _tiptapEditor.commands.focus('end');
+          _tiptapOnUpdate = () => { _ttMarkDraftDirty(); };
+          _ttUpdateToolbar(_tiptapEditor);
+        } catch (err) {
+          console.error('TipTap load error:', err);
+          showToast('⚠️ TipTap error: ' + err.message);
+        }
+      }, 80);
+    }
+
     async function closeNoteFullscreen(action) {
       // Persist scroll + cursor so the next open restores position
       if (_tiptapEditor) {
@@ -53611,6 +54483,26 @@ function _ttStripDefaultTableWidths() {
         if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
         window._ttFsDirty = false;
         _ttResetDraftState();
+        return;
+      }
+      // Task Template note — write only when the fullscreen editor is saved.
+      if (_tplNoteFsId) {
+        const tplId = _tplNoteFsId;
+        const t = _tplById(tplId);
+        if (shouldSave && _tiptapEditor && t) {
+          const html = _ttGetHTML();
+          if (html !== (window._actNoteOpenContent || '')) {
+            t.notes = html;
+            t.updatedAt = Date.now();
+            _tplSaveEditedTemplate(tplId);
+            window._tplPatchCardId = tplId;
+          }
+        }
+        _tplNoteFsId = null;
+        if (_tiptapEditor) { _tiptapEditor.destroy(); _tiptapEditor = null; }
+        window._ttFsDirty = false;
+        _ttResetDraftState();
+        render();
         return;
       }
       // If we were editing a field note's noteContent, flush final content + re-render
