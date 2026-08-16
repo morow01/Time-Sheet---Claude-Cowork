@@ -2036,9 +2036,14 @@
         padding-right: 24px !important;
       }
 
-      :root[data-task-layout="grouped"] .day-activities .add-task-btn {
+      /* The buttons now sit in .add-task-row, so spacing moved to the row and
+         only the button's own look is overridden here. */
+      :root[data-task-layout="grouped"] .day-activities .add-task-row {
         margin: 10px 8px 0 18px !important;
         width: calc(100% - 26px) !important;
+      }
+
+      :root[data-task-layout="grouped"] .day-activities .add-task-btn {
         border-radius: 12px !important;
         border: 1px solid var(--border) !important;
         background: var(--bg-card) !important;
@@ -7451,6 +7456,114 @@
       letter-spacing: 0.13em;
       text-transform: uppercase;
       color: var(--text-muted);
+    }
+
+    /* ══════════════ TASK TEMPLATES ══════════════
+       Reusable task presets: ☰ → Task Templates, and the "From Template"
+       button beside Add Task on each day. */
+    .add-task-row { display: flex; gap: 8px; margin: 4px 14px 14px 0; width: calc(100% - 14px); }
+    .add-task-btn {
+      flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 12px; border-radius: 10px; border: 1px dashed var(--border); background: var(--bg-card);
+      font-family: inherit; font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;
+    }
+    .add-task-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+    .add-task-btn.is-tpl { color: var(--purple); border-color: rgba(var(--purple-rgb), 0.4); }
+    .add-task-btn.is-tpl:hover { background: rgba(var(--purple-rgb), 0.09); border-color: var(--purple); }
+
+    /* Templates view */
+    .tpl-page { background: var(--bg-page); min-height: 100vh; padding: 16px 14px 100px; }
+    .tpl-wrap { max-width: 520px; margin: 0 auto; }
+    .tpl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .tpl-top-t { font-size: 14px; font-weight: 800; }
+    .tpl-top-s { font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 1px; }
+    .tpl-new {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px;
+      border: 1px solid rgba(var(--purple-rgb), 0.4); border-radius: 10px;
+      background: rgba(var(--purple-rgb), 0.06); color: var(--purple);
+      font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer;
+    }
+    .tpl-new:hover { background: rgba(var(--purple-rgb), 0.13); }
+    .tpl-card {
+      display: flex; align-items: center; gap: 11px; background: var(--bg-card);
+      border: 1px solid var(--border); border-radius: 12px; padding: 11px 12px;
+      margin-bottom: 8px; cursor: pointer;
+    }
+    .tpl-card:hover { border-color: rgba(var(--purple-rgb), 0.45); }
+    .tpl-icon {
+      width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+      background: rgba(var(--purple-rgb), 0.1); color: var(--purple); display: grid; place-items: center;
+    }
+    .tpl-body { flex: 1; min-width: 0; }
+    .tpl-name { font-size: 13.5px; font-weight: 800; }
+    .tpl-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+    .tpl-code { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); }
+    .tpl-chip {
+      font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 7px;
+      background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
+    }
+    .tpl-chip-dim { color: var(--text-muted); font-style: italic; }
+    .tpl-warn { font-size: 10.5px; font-weight: 800; color: var(--priority-high); }
+    .tpl-hrs {
+      font-size: 11.5px; font-weight: 800; color: var(--accent); background: var(--accent-light);
+      border-radius: 8px; padding: 3px 9px; flex-shrink: 0;
+    }
+    .tpl-hrs-ot { color: var(--ot-color); background: var(--bg-ot); }
+    .tpl-blank { text-align: center; padding: 34px 20px; color: var(--text-muted); }
+    .tpl-blank-icon { color: var(--purple); opacity: .5; display: flex; justify-content: center; margin-bottom: 8px; }
+    .tpl-blank-t { font-size: 14px; font-weight: 800; color: var(--text-secondary); }
+    .tpl-blank-s { font-size: 12.5px; margin-top: 4px; line-height: 1.45; max-width: 300px; margin: 4px auto 0; }
+
+    /* Template form */
+    .tpl-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .tpl-form-hd { font-size: 13.5px; font-weight: 800; margin-bottom: 12px; }
+    .tpl-field { margin-bottom: 11px; }
+    .tpl-field label {
+      display: block; font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px;
+    }
+    .tpl-opt { font-weight: 700; letter-spacing: 0; text-transform: none; opacity: .75; }
+    .tpl-field input {
+      width: 100%; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-input);
+      padding: 10px 12px; font-family: inherit; font-size: 14px; color: var(--text-primary);
+    }
+    .tpl-field input:focus { outline: none; border-color: var(--accent); }
+    .tpl-field input.is-ot { background: var(--bg-ot); border-color: var(--ot-stepper-border); color: var(--ot-color); font-weight: 700; }
+    .tpl-two { display: flex; gap: 9px; }
+    .tpl-two .tpl-field { flex: 1; }
+    .tpl-hint { font-size: 11.5px; color: var(--text-muted); line-height: 1.45; margin-top: 6px; }
+    .tpl-codes {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--bg-input); padding: 9px 11px; min-height: 42px; cursor: pointer;
+    }
+    .tpl-code-chip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 700; }
+    .tpl-codes-add { font-size: 12px; font-weight: 800; color: var(--accent); display: inline-flex; align-items: center; gap: 4px; }
+    .tpl-empty-hint { font-size: 12.5px; color: var(--text-muted); }
+    .tpl-form-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .tpl-btn-cancel, .tpl-btn-del, .tpl-btn-save {
+      border-radius: 11px; padding: 11px 14px; font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+    }
+    .tpl-btn-cancel { flex: 1; border: 1px solid var(--border); background: none; color: var(--text-secondary); }
+    .tpl-btn-del { border: 1px solid #fecaca; background: #fef2f2; color: #dc2626; }
+    .tpl-btn-save { flex: 1.4; border: none; background: var(--accent); color: #fff; }
+
+    /* Template picker sheet */
+    .tplp-overlay { position: fixed; inset: 0; z-index: 9400; display: flex; align-items: flex-end; justify-content: center; background: rgba(var(--shadow-rgb), 0.4); }
+    .tplp-sheet {
+      width: 100%; max-width: 520px; background: var(--bg-card); border-radius: 18px 18px 0 0;
+      max-height: 82vh; max-height: 82dvh; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .tplp-hd { padding: 14px 16px 10px; border-bottom: 1px solid var(--border-subtle); }
+    .tplp-t { font-size: 15px; font-weight: 800; }
+    .tplp-s { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+    .tplp-list { overflow-y: auto; flex: 1; min-height: 0; }
+    .tplp-row { display: flex; align-items: center; gap: 11px; padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); cursor: pointer; }
+    .tplp-row:hover { background: var(--accent-light); }
+    .tplp-row:last-child { border-bottom: none; }
+    .tplp-foot { padding: 10px 16px 14px; display: flex; gap: 8px; }
+    .tplp-manage, .tplp-cancel {
+      flex: 1; border: 1px solid var(--border); background: none; border-radius: 11px; padding: 11px;
+      font-family: inherit; font-size: 12.5px; font-weight: 800; color: var(--text-secondary); cursor: pointer;
     }
 
     /* ── Stats blocks (Show stats switch + per-block collapse) ── */
@@ -22006,7 +22119,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.74';
+    const VERSION = '6.8.0-templates.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22919,6 +23032,9 @@
       notes: [],            // all field notes
       customCategories: [],  // user-defined note categories
       disabledCats: [],      // keys of tags hidden from dropdown (default or custom)
+      taskTemplates: [],     // reusable task presets (work codes + hours), ☰ → Task Templates
+      tplEditId: null,       // template being edited in the Templates view, '' = new
+      tplPickerDay: null,    // day index the template picker is adding to, null = closed
       notesFilter: 'all',           // 'all' | 'high' | 'medium' | 'low' | 'done'
       notesBinOpen: false,          // true = showing bin (deleted notes)
       notesArchiveOpen: false,      // true = showing archive section
@@ -26816,6 +26932,8 @@
         viewBody = renderCalloutsView();
       } else if (state.view === 'tags-full') {
         viewBody = renderTagsFullView();
+      } else if (state.view === 'templates') {
+        viewBody = renderTaskTemplatesView();
       } else if (state.view === 'history') {
         viewBody = renderHistoryView();
       } else if (state.view === 'email-week-v3') {
@@ -26837,7 +26955,7 @@
       // the page ends up higher than it was. Captured here, corrected after the
       // content reaches its final height.
       const _preScroll = window.scrollY || window.pageYOffset || 0;
-      app.innerHTML = renderHeader() + _renderConflictBanner() + '<div id="draft-warning-banner-container">' + _renderDraftWarningBanner() + '</div>' + _renderSaveErrorBanner() + viewBody;
+      app.innerHTML = renderHeader() + _renderConflictBanner() + '<div id="draft-warning-banner-container">' + _renderDraftWarningBanner() + '</div>' + _renderSaveErrorBanner() + viewBody + _renderTemplatePicker();
       // Restore menu scroll position after DOM rebuild
       if (_menuWasOpen && _menuScroll > 0) {
         const _newMenuEl = document.getElementById('theme-dropdown');
@@ -26980,6 +27098,7 @@
         history: 'Week History',
         conflicts: 'Sync Conflicts',
         'tags-full': 'Tags',
+        templates: 'Task Templates',
         'email-week-v3': 'Email / Export Week',
         availability: 'Availability Planner',
         ai: 'AI Assistant'
@@ -27178,6 +27297,11 @@
                     ${_makePinBtn('tags-full')}
                     ${chev}
                   </div>`}
+                  <div class="menu-row" role="button" onclick="setView('templates');closeThemeMenu()">
+                    <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+                    <span class="menu-row-body"><span class="menu-row-label">Task Templates</span><span class="menu-row-sub">${(state.taskTemplates || []).length} saved &middot; reusable work codes &amp; hours</span></span>
+                    ${chev}
+                  </div>
                 </div>
               </div>
 
@@ -29424,10 +29548,16 @@
   </div>
   <div class="day-activities ${isExpanded ? 'active' : 'hidden'}" id="day-${di}-activities" style="${isExpanded ? '' : 'display:none'}">
       ${activitiesHtml}
-      <button onclick="addActivity(${di})" class="add-task-btn" style="margin: 4px 14px 14px 0; width: calc(100% - 14px); display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 10px; border: 1px dashed var(--border); background: var(--bg-card); font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add Task
-      </button>
+      <div class="add-task-row">
+        <button onclick="addActivity(${di})" class="add-task-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Task
+        </button>
+        <button onclick="tplOpenPicker(${di})" class="add-task-btn is-tpl" title="Add a task from a saved template">
+          ${_TPL_ICON}
+          From Template
+        </button>
+      </div>
   </div>
 </div>`;
     }
@@ -37273,6 +37403,140 @@
       render();
     }
 
+    // ── Task Templates: persist (same shape as custom categories) ──
+    async function saveTaskTemplates() {
+      const uid = state.currentUser?.uid;
+      if (!uid) return;
+      const now = Date.now();
+      const payload = { templates: state.taskTemplates || [], _updatedAt: now };
+      await dbPut('notes', { id: 'task_templates', userId: uid, data: payload, updatedAt: now }).catch(() => { });
+      const ref = userDoc('data/taskTemplates');
+      if (ref) await ref.set(payload).catch(e => console.warn('[Rian]', e));
+    }
+
+    async function loadTaskTemplates() {
+      const uid = state.currentUser?.uid;
+      if (!uid) return;
+      try {
+        const stored = await dbGet('notes', 'task_templates').catch(() => null);
+        if (stored?.data?.templates) state.taskTemplates = stored.data.templates;
+        const ref = userDoc('data/taskTemplates');
+        if (!ref) return;
+        const snap = await ref.get().catch(() => null);
+        if (snap?.exists) {
+          const remote = snap.data();
+          if (Array.isArray(remote.templates)) {
+            state.taskTemplates = remote.templates;
+            const payload = { templates: state.taskTemplates, _updatedAt: remote._updatedAt || Date.now() };
+            await dbPut('notes', { id: 'task_templates', userId: uid, data: payload, updatedAt: payload._updatedAt }).catch(() => { });
+          }
+        }
+      } catch (e) { console.warn('[Rian] loadTaskTemplates:', e); }
+      render();
+    }
+
+    const _TPL_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>';
+    const _TPL_PLUS = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+
+    // ── Task Templates: editing ──
+    function tplNew() { window._tplDraft = createTaskTemplate(); state.tplEditId = ''; render(); }
+    function tplEdit(id) { state.tplEditId = id; render(); }
+    function tplCancel() { state.tplEditId = null; window._tplDraft = null; render(); }
+
+    function _tplCurrent() {
+      if (state.tplEditId === '') return window._tplDraft || (window._tplDraft = createTaskTemplate());
+      return (state.taskTemplates || []).find(t => t.id === state.tplEditId) || null;
+    }
+
+    // Writes straight onto the object being edited — for a saved template that is
+    // the live entry, so Save just persists. Cancel on an existing template is
+    // therefore "stop editing", not "undo"; the draft object covers the new case.
+    function tplField(field, value) {
+      const t = _tplCurrent();
+      if (!t) return;
+      t[field] = value;
+      t.updatedAt = Date.now();
+    }
+
+    function tplPickCodes() {
+      showToast('Choose work codes from the task itself for now — code picker wiring comes next');
+    }
+
+    async function tplSave() {
+      const t = _tplCurrent();
+      if (!t) return;
+      if (!(t.name || '').trim() && !(t.description || '').trim()) {
+        showToast('Give the template a name first');
+        return;
+      }
+      if (!t.name) t.name = t.description;
+      if (state.tplEditId === '') {
+        state.taskTemplates = [...(state.taskTemplates || []), t];
+        window._tplDraft = null;
+      }
+      state.tplEditId = null;
+      await saveTaskTemplates();
+      showToast('Template saved');
+      render();
+    }
+
+    async function tplDelete(id) {
+      const t = (state.taskTemplates || []).find(x => x.id === id);
+      const ok = await showRianDialog({
+        title: 'Delete template',
+        message: '"' + ((t && (t.name || t.description)) || 'This template') + '" will be removed. Tasks already created from it are not affected.',
+        confirmText: 'Delete', danger: true
+      });
+      if (!ok) return;
+      state.taskTemplates = (state.taskTemplates || []).filter(x => x.id !== id);
+      state.tplEditId = null;
+      await saveTaskTemplates();
+      showToast('Template deleted');
+      render();
+    }
+
+    // ── Task Templates: using one in the timesheet ──
+    function tplOpenPicker(di) {
+      if (!(state.taskTemplates || []).length) {
+        showToast('No templates yet — add one in ☰ → Task Templates');
+        return;
+      }
+      state.tplPickerDay = di;
+      render();
+    }
+
+    function tplClosePicker() { state.tplPickerDay = null; render(); }
+
+    function tplUse(tplId) {
+      const di = state.tplPickerDay;
+      const t = (state.taskTemplates || []).find(x => x.id === tplId);
+      if (t == null || di == null) { tplClosePicker(); return; }
+      const act = createActivity();
+      delete act._draft;                       // chosen deliberately — save it like a copy/move
+      act.description = t.description || t.name || '';
+      act.location = t.location || '';
+      act.codes = deepCopy(t.codes || []);
+      act.ordinary = t.ordinary || '';
+      act.overtime = t.overtime || '';
+      if (t.notes) act.notes = t.notes;
+      state.weekData.days[di].activities.push(act);
+      state.tplPickerDay = null;
+      // No location on the template means the task is deliberately incomplete —
+      // open it so the missing field is in front of you rather than buried.
+      if (!act.location) state.activitiesExpanded.add(act.id);
+      scheduleAutoSave();
+      render();
+      showToast('Added "' + (t.name || t.description || 'task') + '"');
+    }
+
+    function createTaskTemplate() {
+      return {
+        id: uid(), name: '', description: '', location: '',
+        codes: [], ordinary: '', overtime: '', notes: '',
+        createdAt: Date.now(), updatedAt: Date.now()
+      };
+    }
+
     // ── Tag Editor Modal ──
     let _teColor = CAT_COLORS[0];
     let _teIconKey = '';
@@ -38717,6 +38981,12 @@
           try { stack[i][1](); } catch (err) { console.warn('[Rian] ESC close failed for', stack[i][0], err); }
           return;
         }
+      }
+      // Template picker sheet — rendered inline, so no id-based hidden class
+      if (state && state.tplPickerDay != null) {
+        e.preventDefault();
+        tplClosePicker();
+        return;
       }
       // Overlays not using id-based hidden class
       const ocOv = document.getElementById('oc-schedule-overlay');
@@ -40540,6 +40810,132 @@
         ${renderSecondaryPageHeader('Notes Tag Manager', 'Create, edit and toggle note tags', '', tagBack)}
         <div style="background:var(--bg-page);min-height:100vh;padding:20px 16px 100px">
           <div id="tag-editor-body" style="max-width:480px;margin:0 auto;background:var(--bg-card);border-radius:16px;padding:16px 18px;box-shadow:0 1px 4px rgba(var(--shadow-rgb),0.07)"></div>
+        </div>`;
+    }
+
+    // Bottom sheet listing templates to add to a day. Rendered as part of the
+    // page rather than a standalone modal so it survives re-renders.
+    function _renderTemplatePicker() {
+      const di = state.tplPickerDay;
+      if (di == null) return '';
+      const day = state.weekData?.days?.[di];
+      const tpls = state.taskTemplates || [];
+      const rows = tpls.map(t => `
+        <div class="tplp-row" onclick="tplUse('${t.id}')">
+          <div class="tpl-icon">${_TPL_ICON}</div>
+          <div class="tpl-body">
+            <div class="tpl-name">${esc(t.name || t.description || 'Untitled')}</div>
+            <div class="tpl-meta">
+              ${(t.codes || []).length ? `<span class="tpl-code">${esc(t.codes[0].c)}</span>` : '<span class="tpl-warn">no code</span>'}
+              ${t.location ? `<span class="tpl-chip">${esc(t.location)}</span>` : '<span class="tpl-chip tpl-chip-dim">no location</span>'}
+            </div>
+          </div>
+          ${parseFloat(t.ordinary) > 0 ? `<span class="tpl-hrs">${esc(String(t.ordinary))}h</span>` : ''}
+          ${parseFloat(t.overtime) > 0 ? `<span class="tpl-hrs tpl-hrs-ot">+${esc(String(t.overtime))}</span>` : ''}
+        </div>`).join('');
+      return `
+        <div class="tplp-overlay" onclick="if(event.target===this)tplClosePicker()">
+          <div class="tplp-sheet">
+            <div class="tplp-hd">
+              <div class="tplp-t">Choose a template</div>
+              <div class="tplp-s">Adds a task to ${esc(day?.dayName || 'this day')}${day?.date ? ' ' + esc(formatDate(day.date)) : ''}</div>
+            </div>
+            <div class="tplp-list">${rows}</div>
+            <div class="tplp-foot">
+              <button class="tplp-manage" onclick="tplClosePicker();setView('templates')">Manage</button>
+              <button class="tplp-cancel" onclick="tplClosePicker()">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ── Task Templates view (☰ → Task Templates) ──
+    function renderTaskTemplatesView() {
+      const tpls = state.taskTemplates || [];
+      const editing = state.tplEditId !== null;
+      const tpl = editing
+        ? (state.tplEditId === '' ? (window._tplDraft || (window._tplDraft = createTaskTemplate()))
+          : tpls.find(t => t.id === state.tplEditId))
+        : null;
+
+      const codeChips = (t) => (t.codes || []).length
+        ? t.codes.map(c => `<span class="tpl-code-chip">${esc(c.d || c.c)} <span class="tpl-code">${esc(c.c)}</span></span>`).join('')
+        : '<span class="tpl-empty-hint">No work code yet</span>';
+
+      const listHtml = tpls.length ? tpls.map(t => `
+        <div class="tpl-card" onclick="tplEdit('${t.id}')">
+          <div class="tpl-icon">${_TPL_ICON}</div>
+          <div class="tpl-body">
+            <div class="tpl-name">${esc(t.name || t.description || 'Untitled template')}</div>
+            <div class="tpl-meta">
+              ${(t.codes || []).length ? `<span class="tpl-code">${esc(t.codes[0].c)}</span>` : '<span class="tpl-warn">no code</span>'}
+              ${t.location ? `<span class="tpl-chip">${esc(t.location)}</span>` : '<span class="tpl-chip tpl-chip-dim">no location</span>'}
+            </div>
+          </div>
+          ${parseFloat(t.ordinary) > 0 ? `<span class="tpl-hrs">${esc(String(t.ordinary))}h</span>` : ''}
+          ${parseFloat(t.overtime) > 0 ? `<span class="tpl-hrs tpl-hrs-ot">+${esc(String(t.overtime))}</span>` : ''}
+        </div>`).join('')
+        : `<div class="tpl-blank">
+             <div class="tpl-blank-icon">${_TPL_ICON}</div>
+             <div class="tpl-blank-t">No templates yet</div>
+             <div class="tpl-blank-s">Save the work code and hours you use often, then add a task from it in one tap.</div>
+           </div>`;
+
+      const formHtml = editing ? `
+        <div class="tpl-form">
+          <div class="tpl-form-hd">${state.tplEditId === '' ? 'New template' : 'Edit template'}</div>
+          <div class="tpl-field">
+            <label>Template name</label>
+            <input id="tpl-name" value="${escAttr(tpl.name || '')}" placeholder="e.g. Routine – Power RSU" oninput="tplField('name',this.value)">
+          </div>
+          <div class="tpl-field">
+            <label>Description</label>
+            <input id="tpl-desc" value="${escAttr(tpl.description || '')}" placeholder="Goes into the task description" oninput="tplField('description',this.value)">
+          </div>
+          <div class="tpl-field">
+            <label>Work codes</label>
+            <div class="tpl-codes" onclick="tplPickCodes()">${codeChips(tpl)}<span class="tpl-codes-add">${_TPL_PLUS} Choose</span></div>
+          </div>
+          <div class="tpl-two">
+            <div class="tpl-field">
+              <label>Ordinary hrs</label>
+              <input id="tpl-ord" type="number" inputmode="decimal" step="0.5" min="0" value="${escAttr(String(tpl.ordinary || ''))}" placeholder="0" oninput="tplField('ordinary',this.value)">
+            </div>
+            <div class="tpl-field">
+              <label>Overtime hrs</label>
+              <input id="tpl-ot" class="is-ot" type="number" inputmode="decimal" step="0.5" min="0" value="${escAttr(String(tpl.overtime || ''))}" placeholder="0" oninput="tplField('overtime',this.value)">
+            </div>
+          </div>
+          <div class="tpl-field">
+            <label>Location <span class="tpl-opt">optional</span></label>
+            <input id="tpl-loc" value="${escAttr(tpl.location || '')}" placeholder="Leave blank — set it per task" oninput="tplField('location',this.value)">
+            <div class="tpl-hint">Left blank, every task from this template arrives asking for a location, so a routine can't be filed against the wrong exchange.</div>
+          </div>
+          <div class="tpl-field">
+            <label>Notes <span class="tpl-opt">optional</span></label>
+            <input id="tpl-notes" value="${escAttr(tpl.notes || '')}" placeholder="Boilerplate note for every task" oninput="tplField('notes',this.value)">
+          </div>
+          <div class="tpl-form-actions">
+            <button class="tpl-btn-cancel" onclick="tplCancel()">Cancel</button>
+            ${state.tplEditId !== '' ? `<button class="tpl-btn-del" onclick="tplDelete('${state.tplEditId}')">Delete</button>` : ''}
+            <button class="tpl-btn-save" onclick="tplSave()">Save template</button>
+          </div>
+        </div>` : '';
+
+      return `
+        ${renderSecondaryPageHeader('Task Templates', 'Reusable work codes and hours', '', "setView('week')")}
+        <div class="tpl-page">
+          <div class="tpl-wrap">
+            <div class="tpl-top">
+              <div>
+                <div class="tpl-top-t">Your templates</div>
+                <div class="tpl-top-s">${tpls.length} saved</div>
+              </div>
+              ${editing ? '' : `<button class="tpl-new" onclick="tplNew()">${_TPL_PLUS} New</button>`}
+            </div>
+            ${formHtml}
+            ${editing ? '' : listHtml}
+          </div>
         </div>`;
     }
 
@@ -49146,6 +49542,8 @@ Rules:
 
         // Load user-defined note categories
         loadCustomCategories();
+        // Load reusable task templates
+        loadTaskTemplates();
 
         // Init local reminders
         initReminders();
