@@ -22006,7 +22006,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.73';
+    const VERSION = '6.7.74';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27917,8 +27917,8 @@
       const calloutsHtml = calloutEntries.length ? (
         '<div class="ew3-label ew3-label-row">'
         + '<span>Callouts <span class="ew3-section-count">' + calloutEntries.length + '</span></span>'
-        + '<button class="ew3-copy-all" onclick="ew3CopyCallouts(this)" title="Copy the whole table">'
-        + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy all</button>'
+        + '<button class="ew3-copy-all" onclick="ew3CopyCallouts(this)" title="Copy the whole table" aria-label="Copy the whole callouts table">'
+        + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>'
         + '</div>' +
         '<div class="ew3-card"><table class="ew3-table ew3-callout-table"><colgroup><col style="width:10%"><col style="width:24%"><col style="width:30%"><col style="width:36%"></colgroup><thead><tr><th class="ew3-c">#</th><th>Date</th><th>Ticket Number</th><th>Location</th></tr></thead><tbody>' + calloutRows + '</tbody><tfoot><tr><td colspan="4" style="text-align:left;"><span class="ew3-callout-total-inline">Total Callouts: <strong>' + calloutEntries.length + '</strong></span></td></tr></tfoot></table></div>'
       ) : '';
@@ -27987,8 +27987,8 @@
           .ew3-callouts-section{margin-top:12px;border-top:1px solid var(--border);box-shadow:0 -1px 0 var(--bg-card)}
           .ew3-section-count{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid var(--border);border-radius:999px;background:var(--bg-card);color:var(--text-secondary);font-size:10px;font-weight:850;letter-spacing:0;text-transform:none;vertical-align:1px}
           .ew3-label-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-          .ew3-copy-all{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid rgba(var(--accent-rgb),.35);border-radius:999px;background:var(--accent-light);color:var(--accent);font-family:inherit;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:none;cursor:pointer;flex-shrink:0;transition:background .15s,color .15s}
-          .ew3-copy-all:hover{background:var(--accent);color:#fff}
+          .ew3-copy-all{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);font-family:inherit;cursor:pointer;flex-shrink:0;transition:background .15s,color .15s,border-color .15s}
+          .ew3-copy-all:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
           .ew3-copy-all.is-done{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
           .ew3-copy{cursor:pointer;color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong);text-decoration-thickness:1px;text-underline-offset:3px;transition:color .12s,text-decoration-color .12s,opacity .12s;display:inline}
           .ew3-copy:hover{color:var(--accent);text-decoration-color:var(--accent)}
@@ -28061,7 +28061,7 @@
           <div class="dj-resize-handle dj-rh-invis ew3-rh" onmousedown="ew3ResizeStart(event,2)"></div>
           <aside class="ew3-desk-codes">
             <div class="ew3-desk-hdr"><span>Callouts</span>${calloutEntries.length
-              ? `<button class="ew3-copy-all" onclick="ew3CopyCallouts(this)" title="Copy the whole table"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy all</button>`
+              ? `<span style="display:inline-flex;align-items:center;gap:8px"><span>${calloutEntries.length}${calloutEntries.length === 1 ? ' incident' : ' incidents'}</span><button class="ew3-copy-all" onclick="ew3CopyCallouts(this)" title="Copy the whole table" aria-label="Copy the whole callouts table"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>`
               : '<span>None</span>'}</div>
             <div class="ew3-desk-scroll">
               ${calloutEntries.length ? `
@@ -28100,8 +28100,8 @@
           .ew3-label{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--text-muted);margin:16px 4px 8px}
           .ew3-section-count{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid var(--border);border-radius:999px;background:var(--bg-card);color:var(--text-secondary);font-size:10px;font-weight:850;letter-spacing:0;text-transform:none;vertical-align:1px}
           .ew3-label-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-          .ew3-copy-all{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid rgba(var(--accent-rgb),.35);border-radius:999px;background:var(--accent-light);color:var(--accent);font-family:inherit;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:none;cursor:pointer;flex-shrink:0;transition:background .15s,color .15s}
-          .ew3-copy-all:hover{background:var(--accent);color:#fff}
+          .ew3-copy-all{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);font-family:inherit;cursor:pointer;flex-shrink:0;transition:background .15s,color .15s,border-color .15s}
+          .ew3-copy-all:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
           .ew3-copy-all.is-done{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
           .ew3-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-card);overflow:hidden}
           .ew3-mobile-table{display:block}
