@@ -7483,16 +7483,10 @@
     .tpl-wrap .activity-card::before,
     .tpl-wrap .activity-card::after { display: none; }
     .tpl-loc-pick { cursor: pointer; }
+    .tpl-add-btn { width: calc(100% - 14px); margin: 4px 14px 14px 0; }
     .tpl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .tpl-top-t { font-size: 14px; font-weight: 800; }
     .tpl-top-s { font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 1px; }
-    .tpl-new {
-      display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px;
-      border: 1px solid rgba(var(--purple-rgb), 0.4); border-radius: 10px;
-      background: rgba(var(--purple-rgb), 0.06); color: var(--purple);
-      font-family: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer;
-    }
-    .tpl-new:hover { background: rgba(var(--purple-rgb), 0.13); }
     .tpl-icon {
       width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
       background: rgba(var(--purple-rgb), 0.1); color: var(--purple); display: grid; place-items: center;
@@ -7542,13 +7536,6 @@
     .tpl-code-chip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 700; }
     .tpl-codes-add { font-size: 12px; font-weight: 800; color: var(--accent); display: inline-flex; align-items: center; gap: 4px; }
     .tpl-empty-hint { font-size: 12.5px; color: var(--text-muted); }
-    /* Small mono chip — .pill-slate only sets colours, so used alone it fell
-       back to 16px body text next to the neat 11px hours pill. */
-    .tpl-code-pill {
-      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-      background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
-      border-radius: 8px; padding: 2px 7px; white-space: nowrap;
-    }
     .tpl-actions-row { gap: 8px; border-top: 1px solid var(--border); padding-top: 14px; margin: 8px -16px 0; padding-left: 16px; padding-right: 16px; }
     /* .act-action-btn is border: 1px solid transparent by default, so a plain
        one reads as unbordered — give Cancel the neutral outline. */
@@ -22127,7 +22114,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.0-templates.5';
+    const VERSION = '6.8.0-templates.6';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22621,7 +22608,7 @@
     function _applyLocationValue(val) {
       const { dayIndex: di, actId, noteId, templateMode } = locationModalCtx;
       if (templateMode) {
-        const t = _tplCurrent();
+        const t = _tplById(locationModalCtx.templateId);
         if (t) { t.location = val; t.updatedAt = Date.now(); render(); }
         closeLocationModal();
         return;
@@ -23048,7 +23035,8 @@
       customCategories: [],  // user-defined note categories
       disabledCats: [],      // keys of tags hidden from dropdown (default or custom)
       taskTemplates: [],     // reusable task presets (work codes + hours), ☰ → Task Templates
-      tplEditId: null,       // template being edited in the Templates view, '' = new
+      tplOpen: [],           // ids of templates expanded in the Templates view
+      tplDraftId: null,      // id of the unsaved new template, null = none
       tplPickerDay: null,    // day index the template picker is adding to, null = closed
       notesFilter: 'all',           // 'all' | 'high' | 'medium' | 'low' | 'done'
       notesBinOpen: false,          // true = showing bin (deleted notes)
@@ -27028,7 +27016,7 @@
       }
       // Templates: the open panel is rendered closed so it can animate — any
       // render while editing (code picker, location picker) must re-open it.
-      if (state.view === 'templates' && state.tplEditId !== null) _tplAnimateOpen();
+      if (state.view === 'templates' && (state.tplOpen || []).length) _tplAnimateOpen();
       // Fix timeline lines so they end exactly at the last task node.
       // Run synchronously first: render() rebuilds the DOM, so --tl-height resets
       // to 0 each time, and several renders fire while data loads (IDB → snapshot
@@ -37468,22 +37456,38 @@
       // nothing to transition from. Wait a frame for the render, force a
       // reflow to commit the closed state, then open on the following frame.
       requestAnimationFrame(() => {
-        const d = document.querySelector('.tpl-wrap .activity-card.expanded .activity-detail');
-        if (!d) return;
-        d.offsetHeight;
-        requestAnimationFrame(() => d.classList.add('open'));
+        const panels = document.querySelectorAll('.tpl-wrap .activity-card.expanded .activity-detail');
+        if (!panels.length) return;
+        panels.forEach(d => d.offsetHeight);
+        requestAnimationFrame(() => panels.forEach(d => d.classList.add('open')));
       });
     }
 
-    function tplNew() { window._tplDraft = createTaskTemplate(); state.tplEditId = ''; render(); }
-    function tplEdit(id) { state.tplEditId = id; render(); }
+    function tplNew() {
+      const d = createTaskTemplate();
+      window._tplDraft = d;
+      state.tplDraftId = d.id;
+      state.tplOpen = [d.id, ...(state.tplOpen || [])];
+      render();
+    }
+
+    function tplEdit(id) {
+      if (_tplIsOpen(id)) { tplCollapse(id); return; }
+      state.tplOpen = [...(state.tplOpen || []), id];
+      render();
+    }
 
     // Collapse the open panel first, then re-render once it has finished, so
     // closing animates instead of the card snapping shut.
-    function tplCancel() {
-      const card = document.querySelector('.tpl-wrap .activity-card.expanded');
+    // Collapses one card, animating it shut before the state drops it.
+    function tplCollapse(id) {
+      const card = document.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + id + '"]');
       const d = card && card.querySelector('.activity-detail');
-      const finish = () => { state.tplEditId = null; window._tplDraft = null; render(); };
+      const finish = () => {
+        state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
+        if (state.tplDraftId === id) { state.tplDraftId = null; window._tplDraft = null; }
+        render();
+      };
       if (!d) { finish(); return; }
       d.style.maxHeight = d.scrollHeight + 'px';
       d.offsetHeight;                       // force reflow so the next line transitions
@@ -37494,17 +37498,21 @@
       if (chev) chev.style.transform = 'rotate(0deg)';
       setTimeout(finish, ANIM_EXPAND_MS + 20);
     }
+    function tplCancel(id) { tplCollapse(id); }
 
-    function _tplCurrent() {
-      if (state.tplEditId === '') return window._tplDraft || (window._tplDraft = createTaskTemplate());
-      return (state.taskTemplates || []).find(t => t.id === state.tplEditId) || null;
+    // A template is identified by id everywhere now that several can be open at
+    // once — there is no single "current" one.
+    function _tplById(id) {
+      if (window._tplDraft && window._tplDraft.id === id) return window._tplDraft;
+      return (state.taskTemplates || []).find(t => t.id === id) || null;
     }
+    function _tplIsOpen(id) { return (state.tplOpen || []).indexOf(id) !== -1; }
 
     // Writes straight onto the object being edited — for a saved template that is
     // the live entry, so Save just persists. Cancel on an existing template is
     // therefore "stop editing", not "undo"; the draft object covers the new case.
-    function tplField(field, value) {
-      const t = _tplCurrent();
+    function tplField(id, field, value) {
+      const t = _tplById(id);
       if (!t) return;
       t[field] = value;
       t.updatedAt = Date.now();
@@ -37512,13 +37520,13 @@
 
     // Surgical update, mirroring stepHrs/_applyHrsInPlace on tasks. Re-rendering
     // here rebuilt the card and replayed the expand animation on every tap.
-    function tplStepHrs(field, delta) {
-      const t = _tplCurrent();
+    function tplStepHrs(id, field, delta) {
+      const t = _tplById(id);
       if (!t) return;
       const next = Math.max(0, (parseFloat(t[field]) || 0) + delta);
       t[field] = String(next);
       t.updatedAt = Date.now();
-      const card = document.querySelector('.tpl-wrap .activity-card.expanded');
+      const card = document.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + id + '"]');
       if (!card) { render(); return; }
       const input = card.querySelector('[data-tpl-hrs="' + field + '"]');
       if (input) input.value = next;
@@ -37539,10 +37547,10 @@
     // Reuse the task pickers. Both dispatch on their context object, so a
     // templateMode flag routes the result to the template being edited
     // instead of an activity — the same trick voiceMode already uses.
-    function tplPickCodes() {
-      const t = _tplCurrent();
+    function tplPickCodes(id) {
+      const t = _tplById(id);
       if (!t) return;
-      codeModalCtx = { dayIndex: null, activityId: null, selected: [...(t.codes || [])], templateMode: true };
+      codeModalCtx = { dayIndex: null, activityId: null, selected: [...(t.codes || [])], templateMode: true, templateId: id };
       filteredCodes = [...WORK_CODES];
       document.getElementById('code-modal').classList.remove('hidden');
       document.getElementById('code-search').value = '';
@@ -37550,10 +37558,10 @@
       setTimeout(() => { const el = document.getElementById('code-search'); if (el) el.focus(); }, 100);
     }
 
-    function tplPickLocation() {
-      const t = _tplCurrent();
+    function tplPickLocation(id) {
+      const t = _tplById(id);
       if (!t) return;
-      locationModalCtx = { dayIndex: null, actId: null, noteId: null, templateMode: true, _results: [] };
+      locationModalCtx = { dayIndex: null, actId: null, noteId: null, templateMode: true, templateId: id, _results: [] };
       document.getElementById('location-modal').classList.remove('hidden');
       const searchEl = document.getElementById('location-search');
       if (searchEl) {
@@ -37563,19 +37571,20 @@
       if (typeof searchLocations === 'function') searchLocations(t.location || '');
     }
 
-    async function tplSave() {
-      const t = _tplCurrent();
+    async function tplSave(id) {
+      const t = _tplById(id);
       if (!t) return;
       if (!(t.name || '').trim() && !(t.description || '').trim()) {
         showToast('Give the template a name first');
         return;
       }
       if (!t.name) t.name = t.description;
-      if (state.tplEditId === '') {
+      if (state.tplDraftId === id) {
         state.taskTemplates = [...(state.taskTemplates || []), t];
+        state.tplDraftId = null;
         window._tplDraft = null;
       }
-      state.tplEditId = null;
+      state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
       await saveTaskTemplates();
       showToast('Template saved');
       render();
@@ -37590,7 +37599,7 @@
       });
       if (!ok) return;
       state.taskTemplates = (state.taskTemplates || []).filter(x => x.id !== id);
-      state.tplEditId = null;
+      state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
       await saveTaskTemplates();
       showToast('Template deleted');
       render();
@@ -39122,7 +39131,7 @@
     function confirmCodeSelection() {
       const { dayIndex: di, activityId: actId, selected, voiceMode, templateMode } = codeModalCtx;
       if (templateMode) {
-        const t = _tplCurrent();
+        const t = _tplById(codeModalCtx.templateId);
         if (t) { t.codes = selected; t.updatedAt = Date.now(); render(); }
         closeCodeModal();
         return;
@@ -40962,21 +40971,21 @@
     // other templates stay on screen, and the chevron rotates like a task's.
     function renderTaskTemplatesView() {
       const tpls = state.taskTemplates || [];
-      const draftOpen = state.tplEditId === '';
+      const draftOpen = !!state.tplDraftId;
 
       const formFields = (t, isNew) => `
         <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
           <div class="tpl-field">
             <label>Template name</label>
-            <input value="${escAttr(t.name || '')}" placeholder="e.g. Routine – Power RSU" oninput="tplField('name',this.value)">
+            <input value="${escAttr(t.name || '')}" placeholder="e.g. Routine – Power RSU" oninput="tplField('${t.id}','name',this.value)">
           </div>
           <div class="tpl-field">
             <label>Description</label>
-            <input value="${escAttr(t.description || '')}" placeholder="Goes into the task description" oninput="tplField('description',this.value)">
+            <input value="${escAttr(t.description || '')}" placeholder="Goes into the task description" oninput="tplField('${t.id}','description',this.value)">
           </div>
           <div class="tpl-field">
             <label>Work Codes</label>
-            <div class="act-codes-wrap tpl-codes" onclick="tplPickCodes()" style="cursor:pointer;min-height:42px">${(t.codes || []).length
+            <div class="act-codes-wrap tpl-codes" onclick="tplPickCodes('${t.id}')" style="cursor:pointer;min-height:42px">${(t.codes || []).length
               ? t.codes.map(c => `<div class="act-code-chip" style="pointer-events:none">${esc(c.d || c.c)}<span class="act-code-mono">${esc(c.c)}</span></div>`).join('')
               : `<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px">${_TPL_PLUS} Choose work codes</span>`}</div>
           </div>
@@ -40984,35 +40993,35 @@
             <div class="hrs-box flex-1">
               <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>
               <div class="hrs-stepper flex items-center justify-between">
-                <button onclick="tplStepHrs('ordinary',-1)">−</button>
-                <input type="tel" class="val" data-tpl-hrs="ordinary" value="${escAttr(String(parseFloat(t.ordinary) || 0))}" inputmode="decimal" oninput="tplField('ordinary',this.value)">
-                <button onclick="tplStepHrs('ordinary',1)">+</button>
+                <button onclick="tplStepHrs('${t.id}','ordinary',-1)">−</button>
+                <input type="tel" class="val" data-tpl-hrs="ordinary" value="${escAttr(String(parseFloat(t.ordinary) || 0))}" inputmode="decimal" oninput="tplField('${t.id}','ordinary',this.value)">
+                <button onclick="tplStepHrs('${t.id}','ordinary',1)">+</button>
               </div>
             </div>
             <div class="hrs-box flex-1 ot-box">
               <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>
               <div class="hrs-stepper flex items-center justify-between">
-                <button onclick="tplStepHrs('overtime',-1)">−</button>
-                <input type="tel" class="val" data-tpl-hrs="overtime" value="${escAttr(String(parseFloat(t.overtime) || 0))}" inputmode="decimal" oninput="tplField('overtime',this.value)">
-                <button onclick="tplStepHrs('overtime',1)">+</button>
+                <button onclick="tplStepHrs('${t.id}','overtime',-1)">−</button>
+                <input type="tel" class="val" data-tpl-hrs="overtime" value="${escAttr(String(parseFloat(t.overtime) || 0))}" inputmode="decimal" oninput="tplField('${t.id}','overtime',this.value)">
+                <button onclick="tplStepHrs('${t.id}','overtime',1)">+</button>
               </div>
             </div>
           </div>
           <div class="tpl-field" style="margin-top:12px">
             <label>Location <span class="tpl-opt">optional</span></label>
-            <div class="act-input tpl-loc-pick" onclick="tplPickLocation()">${t.location ? esc(t.location) : '<span style="color:var(--text-muted)">Leave blank — set it per task</span>'}</div>
+            <div class="act-input tpl-loc-pick" onclick="tplPickLocation('${t.id}')">${t.location ? esc(t.location) : '<span style="color:var(--text-muted)">Leave blank — set it per task</span>'}</div>
             <div class="tpl-hint">Left blank, every task from this template arrives asking for a location, so a routine can't be filed against the wrong exchange.</div>
           </div>
           <div class="tpl-field">
             <label>Notes <span class="tpl-opt">optional</span></label>
-            <input value="${escAttr(t.notes || '')}" placeholder="Boilerplate note for every task" oninput="tplField('notes',this.value)">
+            <input value="${escAttr(t.notes || '')}" placeholder="Boilerplate note for every task" oninput="tplField('${t.id}','notes',this.value)">
           </div>
           <div class="act-actions-row tpl-actions-row">
-            <button onclick="tplSave()" class="act-action-btn act-action-note" style="flex:1 0 auto">
+            <button onclick="tplSave('${t.id}')" class="act-action-btn act-action-note" style="flex:1 0 auto">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Save
             </button>
-            <button onclick="tplCancel()" class="act-action-btn tpl-btn-cancel" style="flex:1 0 auto">
+            <button onclick="tplCancel('${t.id}')" class="act-action-btn tpl-btn-cancel" style="flex:1 0 auto">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               Cancel
             </button>
@@ -41039,7 +41048,6 @@
                   ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>${esc(t.location)}`
                   : '<span style="opacity:0.55;font-style:italic">Location set per task</span>'}</div>
                 <div class="act-pill-row">
-                  ${(t.codes || []).length ? `<span class="tpl-code-pill">${esc(t.codes[0].c)}</span>` : ''}
                   ${ord > 0 ? `<span class="pill-hrs">${ord}h</span>` : ''}
                   ${ot > 0 ? `<span class="pill-ot">+${ot} OT</span>` : ''}
                   ${isNew ? '<span class="pill-draft">Draft</span>' : ''}
@@ -41054,9 +41062,9 @@
         </div>`;
       };
 
-      const draftTpl = draftOpen ? (window._tplDraft || (window._tplDraft = createTaskTemplate())) : null;
+      const draftTpl = draftOpen ? window._tplDraft : null;
       const listHtml = tpls.length
-        ? tpls.map((t, i) => cardHtml(t, i, state.tplEditId === t.id, false)).join('')
+        ? tpls.map((t, i) => cardHtml(t, i, _tplIsOpen(t.id), false)).join('')
         : (draftOpen ? '' : `<div class="tpl-blank">
              <div class="tpl-blank-icon">${_TPL_ICON}</div>
              <div class="tpl-blank-t">No templates yet</div>
@@ -41072,10 +41080,10 @@
                 <div class="tpl-top-t">Your templates</div>
                 <div class="tpl-top-s">${tpls.length} saved</div>
               </div>
-              ${draftOpen ? '' : `<button class="tpl-new" onclick="tplNew()">${_TPL_PLUS} New</button>`}
             </div>
             ${draftOpen ? cardHtml(draftTpl, 0, true, true) : ''}
             ${listHtml}
+            ${draftOpen ? '' : `<button class="btn--add tpl-add-btn" onclick="tplNew()">${_TPL_PLUS} New Template</button>`}
           </div>
         </div>`;
     }
