@@ -7533,7 +7533,18 @@
     .tpl-code-chip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 700; }
     .tpl-codes-add { font-size: 12px; font-weight: 800; color: var(--accent); display: inline-flex; align-items: center; gap: 4px; }
     .tpl-empty-hint { font-size: 12.5px; color: var(--text-muted); }
-    .tpl-actions-row { gap: 8px; border-top: 1px solid var(--border); padding-top: 14px; margin: 8px -14px 0; padding-left: 14px; padding-right: 14px; }
+    /* Small mono chip — .pill-slate only sets colours, so used alone it fell
+       back to 16px body text next to the neat 11px hours pill. */
+    .tpl-code-pill {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary);
+      border-radius: 8px; padding: 2px 7px; white-space: nowrap;
+    }
+    .tpl-actions-row { gap: 8px; border-top: 1px solid var(--border); padding-top: 14px; margin: 8px -16px 0; padding-left: 16px; padding-right: 16px; }
+    /* .act-action-btn is border: 1px solid transparent by default, so a plain
+       one reads as unbordered — give Cancel the neutral outline. */
+    .act-action-btn.tpl-btn-cancel { border-color: var(--border); color: var(--text-secondary); background: var(--bg-card); }
+    .act-action-btn.tpl-btn-cancel:hover { background: var(--bg-input); }
 
     /* Template picker sheet */
     .tplp-overlay { position: fixed; inset: 0; z-index: 9400; display: flex; align-items: flex-end; justify-content: center; background: rgba(var(--shadow-rgb), 0.4); }
@@ -22107,7 +22118,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.0-templates.1';
+    const VERSION = '6.8.0-templates.3';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37448,6 +37459,15 @@
       t.updatedAt = Date.now();
     }
 
+    function tplStepHrs(field, delta) {
+      const t = _tplCurrent();
+      if (!t) return;
+      const next = Math.max(0, (parseFloat(t[field]) || 0) + delta);
+      t[field] = String(next);
+      t.updatedAt = Date.now();
+      render();
+    }
+
     function tplPickCodes() {
       showToast('Choose work codes from the task itself for now — code picker wiring comes next');
     }
@@ -40840,102 +40860,111 @@
     }
 
     // ── Task Templates view (☰ → Task Templates) ──
+    // Each template renders as a timesheet activity-card and expands IN PLACE:
+    // the form is that card's .activity-detail panel, so it animates open, the
+    // other templates stay on screen, and the chevron rotates like a task's.
     function renderTaskTemplatesView() {
       const tpls = state.taskTemplates || [];
-      const editing = state.tplEditId !== null;
-      const tpl = editing
-        ? (state.tplEditId === '' ? (window._tplDraft || (window._tplDraft = createTaskTemplate()))
-          : tpls.find(t => t.id === state.tplEditId))
-        : null;
+      const draftOpen = state.tplEditId === '';
 
-      const codeChips = (t) => (t.codes || []).length
-        ? t.codes.map(c => `<span class="tpl-code-chip">${esc(c.d || c.c)} <span class="tpl-code">${esc(c.c)}</span></span>`).join('')
-        : '<span class="tpl-empty-hint">No work code yet</span>';
-
-      // Deliberately the timesheet task card markup — same classes, same sizes,
-      // same chevron — so a template reads as the task it will become.
-      const listHtml = tpls.length ? tpls.map((t, i) => {
-        const ord = parseFloat(t.ordinary) || 0;
-        const ot = parseFloat(t.overtime) || 0;
-        return `
-        <div class="activity-card" data-tpl-id="${t.id}">
-          <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="tplEdit('${t.id}')">
-            <div class="task-num">${i + 1}</div>
-            <div class="flex-1 min-w-0 act-meta">
-              <div class="act-desc-txt">${esc(t.name || t.description) || '<span style="opacity:0.4;font-weight:400;font-style:italic">Untitled template</span>'}</div>
-              <div class="act-row2">
-                <div class="act-loc-txt">
-                  ${t.location
-                    ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>${esc(t.location)}`
-                    : `<span style="opacity:0.55;font-style:italic">Location set per task</span>`}
-                </div>
-                <div class="act-pill-row">
-                  ${(t.codes || []).length ? `<span class="pill-slate">${esc(t.codes[0].c)}</span>` : ''}
-                  ${ord > 0 ? `<span class="pill-hrs">${ord}h</span>` : ''}
-                  ${ot > 0 ? `<span class="pill-ot">+${ot} OT</span>` : ''}
-                </div>
-              </div>
-            </div>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--chevron-color)"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-        </div>`;
-      }).join('')
-        : `<div class="tpl-blank">
-             <div class="tpl-blank-icon">${_TPL_ICON}</div>
-             <div class="tpl-blank-t">No templates yet</div>
-             <div class="tpl-blank-s">Save the work code and hours you use often, then add a task from it in one tap.</div>
-           </div>`;
-
-      const formHtml = editing ? `
-        <div class="tpl-form">
-          <div class="tpl-form-hd">${state.tplEditId === '' ? 'New template' : 'Edit template'}</div>
+      const formFields = (t, isNew) => `
+        <form autocomplete="off" onsubmit="return false" style="margin:0;padding:0;border:0">
           <div class="tpl-field">
             <label>Template name</label>
-            <input id="tpl-name" value="${escAttr(tpl.name || '')}" placeholder="e.g. Routine – Power RSU" oninput="tplField('name',this.value)">
+            <input value="${escAttr(t.name || '')}" placeholder="e.g. Routine – Power RSU" oninput="tplField('name',this.value)">
           </div>
           <div class="tpl-field">
             <label>Description</label>
-            <input id="tpl-desc" value="${escAttr(tpl.description || '')}" placeholder="Goes into the task description" oninput="tplField('description',this.value)">
+            <input value="${escAttr(t.description || '')}" placeholder="Goes into the task description" oninput="tplField('description',this.value)">
           </div>
           <div class="tpl-field">
-            <label>Work codes</label>
-            <div class="tpl-codes" onclick="tplPickCodes()">${codeChips(tpl)}<span class="tpl-codes-add">${_TPL_PLUS} Choose</span></div>
+            <label>Work Codes</label>
+            <div class="act-codes-wrap tpl-codes" onclick="tplPickCodes()" style="cursor:pointer;min-height:42px">${(t.codes || []).length
+              ? t.codes.map(c => `<div class="act-code-chip" style="pointer-events:none">${esc(c.d || c.c)}<span class="act-code-mono">${esc(c.c)}</span></div>`).join('')
+              : `<span style="color:var(--text-muted);font-size:13px;display:flex;align-items:center;gap:6px">${_TPL_PLUS} Choose work codes</span>`}</div>
           </div>
-          <div class="tpl-two">
-            <div class="tpl-field">
-              <label>Ordinary hrs</label>
-              <input id="tpl-ord" type="number" inputmode="decimal" step="0.5" min="0" value="${escAttr(String(tpl.ordinary || ''))}" placeholder="0" oninput="tplField('ordinary',this.value)">
+          <div class="flex gap-3">
+            <div class="hrs-box flex-1">
+              <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>
+              <div class="hrs-stepper flex items-center justify-between">
+                <button onclick="tplStepHrs('ordinary',-1)">−</button>
+                <input type="tel" class="val" value="${escAttr(String(parseFloat(t.ordinary) || 0))}" inputmode="decimal" oninput="tplField('ordinary',this.value)">
+                <button onclick="tplStepHrs('ordinary',1)">+</button>
+              </div>
             </div>
-            <div class="tpl-field">
-              <label>Overtime hrs</label>
-              <input id="tpl-ot" class="is-ot" type="number" inputmode="decimal" step="0.5" min="0" value="${escAttr(String(tpl.overtime || ''))}" placeholder="0" oninput="tplField('overtime',this.value)">
+            <div class="hrs-box flex-1 ot-box">
+              <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>
+              <div class="hrs-stepper flex items-center justify-between">
+                <button onclick="tplStepHrs('overtime',-1)">−</button>
+                <input type="tel" class="val" value="${escAttr(String(parseFloat(t.overtime) || 0))}" inputmode="decimal" oninput="tplField('overtime',this.value)">
+                <button onclick="tplStepHrs('overtime',1)">+</button>
+              </div>
             </div>
           </div>
-          <div class="tpl-field">
+          <div class="tpl-field" style="margin-top:12px">
             <label>Location <span class="tpl-opt">optional</span></label>
-            <input id="tpl-loc" value="${escAttr(tpl.location || '')}" placeholder="Leave blank — set it per task" oninput="tplField('location',this.value)">
+            <input value="${escAttr(t.location || '')}" placeholder="Leave blank — set it per task" oninput="tplField('location',this.value)">
             <div class="tpl-hint">Left blank, every task from this template arrives asking for a location, so a routine can't be filed against the wrong exchange.</div>
           </div>
           <div class="tpl-field">
             <label>Notes <span class="tpl-opt">optional</span></label>
-            <input id="tpl-notes" value="${escAttr(tpl.notes || '')}" placeholder="Boilerplate note for every task" oninput="tplField('notes',this.value)">
+            <input value="${escAttr(t.notes || '')}" placeholder="Boilerplate note for every task" oninput="tplField('notes',this.value)">
           </div>
           <div class="act-actions-row tpl-actions-row">
             <button onclick="tplSave()" class="act-action-btn act-action-note" style="flex:1 0 auto">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               Save
             </button>
-            <button onclick="tplCancel()" class="act-action-btn" style="flex:1 0 auto">
+            <button onclick="tplCancel()" class="act-action-btn tpl-btn-cancel" style="flex:1 0 auto">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               Cancel
             </button>
-            ${state.tplEditId !== '' ? `
+            ${isNew ? '' : `
             <div style="width:1px;background:var(--border);align-self:stretch;margin:0 2px;flex-shrink:0"></div>
-            <button onclick="tplDelete('${state.tplEditId}')" class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" title="Delete template">
+            <button onclick="tplDelete('${t.id}')" class="act-action-btn act-action-delete" style="flex:none;padding:0 14px" title="Delete template">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-            </button>` : ''}
+            </button>`}
           </div>
-        </div>` : '';
+        </form>`;
+
+      const cardHtml = (t, i, isOpen, isNew) => {
+        const ord = parseFloat(t.ordinary) || 0;
+        const ot = parseFloat(t.overtime) || 0;
+        const headAction = isOpen ? 'tplCancel()' : `tplEdit('${t.id}')`;
+        return `
+        <div class="activity-card${isOpen ? ' expanded' : ''}${isNew ? ' is-draft' : ''}" data-tpl-id="${t.id}">
+          <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="${headAction}">
+            <div class="task-num">${isNew ? '+' : i + 1}</div>
+            <div class="flex-1 min-w-0 act-meta">
+              <div class="act-desc-txt">${esc(t.name || t.description) || `<span style="opacity:0.4;font-weight:400;font-style:italic">${isNew ? 'New template' : 'Untitled template'}</span>`}</div>
+              <div class="act-row2">
+                <div class="act-loc-txt">${t.location
+                  ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="#e8453c" style="display:inline-block;vertical-align:-2px;margin-right:2px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>${esc(t.location)}`
+                  : '<span style="opacity:0.55;font-style:italic">Location set per task</span>'}</div>
+                <div class="act-pill-row">
+                  ${(t.codes || []).length ? `<span class="tpl-code-pill">${esc(t.codes[0].c)}</span>` : ''}
+                  ${ord > 0 ? `<span class="pill-hrs">${ord}h</span>` : ''}
+                  ${ot > 0 ? `<span class="pill-ot">+${ot} OT</span>` : ''}
+                  ${isNew ? '<span class="pill-draft">Draft</span>' : ''}
+                </div>
+              </div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--chevron-color);transition:transform 0.22s;${isOpen ? 'transform:rotate(90deg)' : ''}"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="activity-detail${isOpen ? ' open' : ''}" style="${isOpen ? '' : 'display:none'}">
+            <div class="act-detail-inner">${isOpen ? formFields(t, isNew) : ''}</div>
+          </div>
+        </div>`;
+      };
+
+      const draftTpl = draftOpen ? (window._tplDraft || (window._tplDraft = createTaskTemplate())) : null;
+      const listHtml = tpls.length
+        ? tpls.map((t, i) => cardHtml(t, i, state.tplEditId === t.id, false)).join('')
+        : (draftOpen ? '' : `<div class="tpl-blank">
+             <div class="tpl-blank-icon">${_TPL_ICON}</div>
+             <div class="tpl-blank-t">No templates yet</div>
+             <div class="tpl-blank-s">Save the work code and hours you use often, then add a task from it in one tap.</div>
+           </div>`);
 
       return `
         ${renderSecondaryPageHeader('Task Templates', 'Reusable work codes and hours', '', "setView('week')")}
@@ -40946,10 +40975,10 @@
                 <div class="tpl-top-t">Your templates</div>
                 <div class="tpl-top-s">${tpls.length} saved</div>
               </div>
-              ${editing ? '' : `<button class="tpl-new" onclick="tplNew()">${_TPL_PLUS} New</button>`}
+              ${draftOpen ? '' : `<button class="tpl-new" onclick="tplNew()">${_TPL_PLUS} New</button>`}
             </div>
-            ${formHtml}
-            ${editing ? '' : listHtml}
+            ${draftOpen ? cardHtml(draftTpl, 0, true, true) : ''}
+            ${listHtml}
           </div>
         </div>`;
     }
@@ -49253,7 +49282,7 @@ Rules:
 
       try {
         const lastView = localStorage.getItem('lastView');
-        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal' || lastView === 'email-week-v3' || lastView === 'availability') state.view = lastView;
+        if (lastView === 'notes' || lastView === 'history' || lastView === 'exchanges' || lastView === 'routines' || lastView === 'callouts' || lastView === 'ai' || lastView === 'journal' || lastView === 'email-week-v3' || lastView === 'availability' || lastView === 'templates') state.view = lastView;
         if (lastView === 'journal') {
           const ljScreen = localStorage.getItem('jScreen'); if (ljScreen) state.jScreen = ljScreen;
           const ljNbId = localStorage.getItem('jNotebookId'); if (ljNbId) state.jNotebookId = ljNbId;
