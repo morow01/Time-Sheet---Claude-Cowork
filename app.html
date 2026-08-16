@@ -7475,7 +7475,9 @@
     .tpl-page { background: var(--bg-page); min-height: 100vh; padding: 0 0 100px; }
     /* Mirrors .day-activities so a template card is exactly as wide as a task:
        27px on the left, and the card keeps its own 14px right margin. */
-    .tpl-wrap { max-width: 520px; margin: 0 auto; padding: 14px 0 0 27px; }
+    /* No max-width — the timesheet card spans the full container, so a cap
+       here made templates narrower than tasks on anything above ~520px. */
+    .tpl-wrap { padding: 14px 0 0 27px; }
     .tpl-top { padding-right: 14px; }
     /* No timeline here, so drop the connector stub and node the task card draws */
     .tpl-wrap .activity-card::before,
@@ -22125,7 +22127,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.0-templates.4';
+    const VERSION = '6.8.0-templates.5';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37508,13 +37510,30 @@
       t.updatedAt = Date.now();
     }
 
+    // Surgical update, mirroring stepHrs/_applyHrsInPlace on tasks. Re-rendering
+    // here rebuilt the card and replayed the expand animation on every tap.
     function tplStepHrs(field, delta) {
       const t = _tplCurrent();
       if (!t) return;
       const next = Math.max(0, (parseFloat(t[field]) || 0) + delta);
       t[field] = String(next);
       t.updatedAt = Date.now();
-      render();
+      const card = document.querySelector('.tpl-wrap .activity-card.expanded');
+      if (!card) { render(); return; }
+      const input = card.querySelector('[data-tpl-hrs="' + field + '"]');
+      if (input) input.value = next;
+      // Keep the collapsed header pills in step with the form
+      const pill = card.querySelector(field === 'ordinary' ? '.pill-hrs' : '.pill-ot');
+      const row = card.querySelector('.act-pill-row');
+      if (pill) {
+        if (next > 0) { pill.textContent = field === 'ordinary' ? next + 'h' : '+' + next + ' OT'; pill.style.display = ''; }
+        else pill.style.display = 'none';
+      } else if (next > 0 && row) {
+        const span = document.createElement('span');
+        span.className = field === 'ordinary' ? 'pill-hrs' : 'pill-ot';
+        span.textContent = field === 'ordinary' ? next + 'h' : '+' + next + ' OT';
+        row.appendChild(span);
+      }
     }
 
     // Reuse the task pickers. Both dispatch on their context object, so a
@@ -40966,7 +40985,7 @@
               <div class="act-field-label" style="margin-bottom:8px">Ordinary HRS</div>
               <div class="hrs-stepper flex items-center justify-between">
                 <button onclick="tplStepHrs('ordinary',-1)">−</button>
-                <input type="tel" class="val" value="${escAttr(String(parseFloat(t.ordinary) || 0))}" inputmode="decimal" oninput="tplField('ordinary',this.value)">
+                <input type="tel" class="val" data-tpl-hrs="ordinary" value="${escAttr(String(parseFloat(t.ordinary) || 0))}" inputmode="decimal" oninput="tplField('ordinary',this.value)">
                 <button onclick="tplStepHrs('ordinary',1)">+</button>
               </div>
             </div>
@@ -40974,7 +40993,7 @@
               <div class="act-field-label act-field-label-ot" style="margin-bottom:8px">Overtime HRS</div>
               <div class="hrs-stepper flex items-center justify-between">
                 <button onclick="tplStepHrs('overtime',-1)">−</button>
-                <input type="tel" class="val" value="${escAttr(String(parseFloat(t.overtime) || 0))}" inputmode="decimal" oninput="tplField('overtime',this.value)">
+                <input type="tel" class="val" data-tpl-hrs="overtime" value="${escAttr(String(parseFloat(t.overtime) || 0))}" inputmode="decimal" oninput="tplField('overtime',this.value)">
                 <button onclick="tplStepHrs('overtime',1)">+</button>
               </div>
             </div>
