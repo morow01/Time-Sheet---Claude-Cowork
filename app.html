@@ -7488,7 +7488,7 @@
       padding: 2px 7px; border-radius: 8px; white-space: nowrap;
       background: var(--bg-ot); color: var(--ot-color); border: 1px solid var(--ot-stepper-border);
     }
-    .tpl-add-btn { width: calc(100% - 14px); margin: 4px 14px 14px 0; }
+    .tpl-add-btn { width: calc(100% - 14px); margin: 0 14px 10px 0; }
     .tpl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .tpl-top-t { font-size: 14px; font-weight: 800; }
     .tpl-top-s { font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 1px; }
@@ -22119,7 +22119,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.0-templates.7';
+    const VERSION = '6.8.0-templates.8';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37461,10 +37461,28 @@
       // nothing to transition from. Wait a frame for the render, force a
       // reflow to commit the closed state, then open on the following frame.
       requestAnimationFrame(() => {
-        const panels = document.querySelectorAll('.tpl-wrap .activity-card.expanded .activity-detail');
-        if (!panels.length) return;
-        panels.forEach(d => d.offsetHeight);
-        requestAnimationFrame(() => panels.forEach(d => d.classList.add('open')));
+        window._tplAnimated = window._tplAnimated || {};
+        const fresh = [];
+        document.querySelectorAll('.tpl-wrap .activity-card.expanded').forEach(card => {
+          const id = card.getAttribute('data-tpl-id');
+          const d = card.querySelector('.activity-detail');
+          if (!d) return;
+          if (window._tplAnimated[id]) {
+            // Already open before this render. The panel is a NEW node with
+            // max-height 0, so simply adding .open would transition it open all
+            // over again — kill the transition for one frame so it just is open.
+            d.style.transition = 'none';
+            d.classList.add('open');
+            d.offsetHeight;
+            d.style.transition = '';
+          } else {
+            fresh.push(d);
+            window._tplAnimated[id] = true;
+          }
+        });
+        if (!fresh.length) return;
+        fresh.forEach(d => d.offsetHeight);
+        requestAnimationFrame(() => fresh.forEach(d => d.classList.add('open')));
       });
     }
 
@@ -37477,7 +37495,7 @@
     }
 
     function tplEdit(id) {
-      if (_tplIsOpen(id)) { tplCollapse(id); return; }
+      if (_tplIsOpen(id)) { tplCancel(id); return; }   // tplCancel confirms if unsaved
       // Snapshot the template as opened, so "unsaved" is a real comparison and
       // Cancel can put the original values back rather than silently keeping
       // the edits in memory while storage still holds the old ones.
@@ -37529,6 +37547,7 @@
       const finish = () => {
         state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
         if (window._tplSnap) delete window._tplSnap[id];
+        if (window._tplAnimated) delete window._tplAnimated[id];
         if (state.tplDraftId === id) { state.tplDraftId = null; window._tplDraft = null; }
         render();
       };
@@ -37648,6 +37667,7 @@
       }
       state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
       if (window._tplSnap) delete window._tplSnap[id];
+      if (window._tplAnimated) delete window._tplAnimated[id];
       await saveTaskTemplates();
       showToast('Template saved');
       render();
@@ -41144,9 +41164,9 @@
                 <div class="tpl-top-s">${tpls.length} saved</div>
               </div>
             </div>
+            ${draftOpen ? '' : `<button class="btn--add tpl-add-btn" onclick="tplNew()">${_TPL_PLUS} New Template</button>`}
             ${draftOpen ? cardHtml(draftTpl, 0, true, true) : ''}
             ${listHtml}
-            ${draftOpen ? '' : `<button class="btn--add tpl-add-btn" onclick="tplNew()">${_TPL_PLUS} New Template</button>`}
           </div>
         </div>`;
     }
