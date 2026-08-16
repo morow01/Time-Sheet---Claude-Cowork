@@ -7597,10 +7597,10 @@
     .act-action-btn.tpl-btn-cancel:hover { background: var(--bg-input); }
 
     /* Template picker sheet */
-    .tplp-overlay { position: fixed; inset: 0; z-index: 9400; display: flex; align-items: flex-end; justify-content: center; background: rgba(var(--shadow-rgb), 0.4); }
+    .tplp-overlay { position: fixed; inset: 0; z-index: 9400; display: flex; align-items: flex-end; justify-content: center; background: rgba(var(--shadow-rgb), 0.4); touch-action: none; overscroll-behavior: contain; }
     .tplp-sheet {
       width: 100%; max-width: 520px; background: var(--bg-card); border-radius: 18px 18px 0 0;
-      max-height: 82vh; max-height: 82dvh; display: flex; flex-direction: column; overflow: hidden;
+      max-height: 82vh; max-height: 82dvh; display: flex; flex-direction: column; overflow: hidden; touch-action: pan-y; overscroll-behavior: contain;
     }
     .tplp-hd { padding: 14px 16px 10px; border-bottom: 1px solid var(--border-subtle); }
     .tplp-t { font-size: 15px; font-weight: 800; }
@@ -22176,7 +22176,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.75';
+    const VERSION = '6.7.77';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37852,16 +37852,42 @@
     }
 
     // ── Task Templates: using one in the timesheet ──
+    // iOS can still scroll the document behind a fixed sheet when only overflow
+    // is hidden. Pin the body at its current offset until the picker closes.
+    let _tplPickerScrollLock = null;
+    function _lockTemplatePickerScroll() {
+      if (_tplPickerScrollLock) return;
+      const body = document.body;
+      const y = window.scrollY || window.pageYOffset || 0;
+      _tplPickerScrollLock = { y, position: body.style.position, top: body.style.top, width: body.style.width, overflow: body.style.overflow };
+      body.style.position = 'fixed';
+      body.style.top = '-' + y + 'px';
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+    }
+    function _unlockTemplatePickerScroll() {
+      if (!_tplPickerScrollLock) return;
+      const lock = _tplPickerScrollLock;
+      const body = document.body;
+      body.style.position = lock.position;
+      body.style.top = lock.top;
+      body.style.width = lock.width;
+      body.style.overflow = lock.overflow;
+      _tplPickerScrollLock = null;
+      window.scrollTo(0, lock.y);
+    }
+
     function tplOpenPicker(di) {
       if (!(state.taskTemplates || []).length) {
         showToast('No templates yet — add one in ☰ → Task Templates');
         return;
       }
       state.tplPickerDay = di;
+      _lockTemplatePickerScroll();
       render();
     }
 
-    function tplClosePicker() { state.tplPickerDay = null; render(); }
+    function tplClosePicker() { state.tplPickerDay = null; _unlockTemplatePickerScroll(); render(); }
 
     function tplUse(tplId) {
       const di = state.tplPickerDay;
@@ -37877,6 +37903,7 @@
       if (t.notes) act.notes = t.notes;
       state.weekData.days[di].activities.push(act);
       state.tplPickerDay = null;
+      _unlockTemplatePickerScroll();
       // No location on the template means the task is deliberately incomplete —
       // open it so the missing field is in front of you rather than buried.
       if (!act.location) state.activitiesExpanded.add(act.id);
