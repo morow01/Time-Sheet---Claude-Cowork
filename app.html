@@ -7472,8 +7472,15 @@
     .add-task-btn.is-tpl:hover { background: rgba(var(--purple-rgb), 0.09); border-color: var(--purple); }
 
     /* Templates view */
-    .tpl-page { background: var(--bg-page); min-height: 100vh; padding: 16px 14px 100px; }
-    .tpl-wrap { max-width: 520px; margin: 0 auto; }
+    .tpl-page { background: var(--bg-page); min-height: 100vh; padding: 0 0 100px; }
+    /* Mirrors .day-activities so a template card is exactly as wide as a task:
+       27px on the left, and the card keeps its own 14px right margin. */
+    .tpl-wrap { max-width: 520px; margin: 0 auto; padding: 14px 0 0 27px; }
+    .tpl-top { padding-right: 14px; }
+    /* No timeline here, so drop the connector stub and node the task card draws */
+    .tpl-wrap .activity-card::before,
+    .tpl-wrap .activity-card::after { display: none; }
+    .tpl-loc-pick { cursor: pointer; }
     .tpl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .tpl-top-t { font-size: 14px; font-weight: 800; }
     .tpl-top-s { font-size: 11.5px; color: var(--text-muted); font-weight: 700; margin-top: 1px; }
@@ -22118,7 +22125,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.0-templates.3';
+    const VERSION = '6.8.0-templates.4';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -22610,7 +22617,13 @@
     }
 
     function _applyLocationValue(val) {
-      const { dayIndex: di, actId, noteId } = locationModalCtx;
+      const { dayIndex: di, actId, noteId, templateMode } = locationModalCtx;
+      if (templateMode) {
+        const t = _tplCurrent();
+        if (t) { t.location = val; t.updatedAt = Date.now(); render(); }
+        closeLocationModal();
+        return;
+      }
       if (noteId) {
         // Note location — surgical DOM update (no render to avoid card collapse / transition)
         const note = state.notes.find(n => n.id === noteId);
@@ -27011,6 +27024,9 @@
         _restoreScroll();
         requestAnimationFrame(_restoreScroll);
       }
+      // Templates: the open panel is rendered closed so it can animate — any
+      // render while editing (code picker, location picker) must re-open it.
+      if (state.view === 'templates' && state.tplEditId !== null) _tplAnimateOpen();
       // Fix timeline lines so they end exactly at the last task node.
       // Run synchronously first: render() rebuilds the DOM, so --tl-height resets
       // to 0 each time, and several renders fire while data loads (IDB → snapshot
@@ -37440,9 +37456,42 @@
     const _TPL_PLUS = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
 
     // ── Task Templates: editing ──
+    // The view renders the panel CLOSED (max-height 0) and this adds .open on
+    // the next frame, so the max-height transition actually runs. Applying
+    // .open in the rendered markup gives the browser no starting state to
+    // animate from — the panel simply appears, which is what happened before.
+    function _tplAnimateOpen() {
+      // render() is itself rAF-deferred, so one rAF lands in the SAME frame as
+      // the rebuild — the browser never commits max-height:0 and there is
+      // nothing to transition from. Wait a frame for the render, force a
+      // reflow to commit the closed state, then open on the following frame.
+      requestAnimationFrame(() => {
+        const d = document.querySelector('.tpl-wrap .activity-card.expanded .activity-detail');
+        if (!d) return;
+        d.offsetHeight;
+        requestAnimationFrame(() => d.classList.add('open'));
+      });
+    }
+
     function tplNew() { window._tplDraft = createTaskTemplate(); state.tplEditId = ''; render(); }
     function tplEdit(id) { state.tplEditId = id; render(); }
-    function tplCancel() { state.tplEditId = null; window._tplDraft = null; render(); }
+
+    // Collapse the open panel first, then re-render once it has finished, so
+    // closing animates instead of the card snapping shut.
+    function tplCancel() {
+      const card = document.querySelector('.tpl-wrap .activity-card.expanded');
+      const d = card && card.querySelector('.activity-detail');
+      const finish = () => { state.tplEditId = null; window._tplDraft = null; render(); };
+      if (!d) { finish(); return; }
+      d.style.maxHeight = d.scrollHeight + 'px';
+      d.offsetHeight;                       // force reflow so the next line transitions
+      d.classList.remove('open');
+      d.style.maxHeight = '0px';
+      card.classList.remove('expanded');
+      const chev = card.querySelector('svg[stroke-linejoin]');
+      if (chev) chev.style.transform = 'rotate(0deg)';
+      setTimeout(finish, ANIM_EXPAND_MS + 20);
+    }
 
     function _tplCurrent() {
       if (state.tplEditId === '') return window._tplDraft || (window._tplDraft = createTaskTemplate());
@@ -37468,8 +37517,31 @@
       render();
     }
 
+    // Reuse the task pickers. Both dispatch on their context object, so a
+    // templateMode flag routes the result to the template being edited
+    // instead of an activity — the same trick voiceMode already uses.
     function tplPickCodes() {
-      showToast('Choose work codes from the task itself for now — code picker wiring comes next');
+      const t = _tplCurrent();
+      if (!t) return;
+      codeModalCtx = { dayIndex: null, activityId: null, selected: [...(t.codes || [])], templateMode: true };
+      filteredCodes = [...WORK_CODES];
+      document.getElementById('code-modal').classList.remove('hidden');
+      document.getElementById('code-search').value = '';
+      renderCodeList();
+      setTimeout(() => { const el = document.getElementById('code-search'); if (el) el.focus(); }, 100);
+    }
+
+    function tplPickLocation() {
+      const t = _tplCurrent();
+      if (!t) return;
+      locationModalCtx = { dayIndex: null, actId: null, noteId: null, templateMode: true, _results: [] };
+      document.getElementById('location-modal').classList.remove('hidden');
+      const searchEl = document.getElementById('location-search');
+      if (searchEl) {
+        searchEl.value = t.location || '';
+        setTimeout(() => searchEl.focus(), 100);
+      }
+      if (typeof searchLocations === 'function') searchLocations(t.location || '');
     }
 
     async function tplSave() {
@@ -39029,7 +39101,13 @@
     });
 
     function confirmCodeSelection() {
-      const { dayIndex: di, activityId: actId, selected, voiceMode } = codeModalCtx;
+      const { dayIndex: di, activityId: actId, selected, voiceMode, templateMode } = codeModalCtx;
+      if (templateMode) {
+        const t = _tplCurrent();
+        if (t) { t.codes = selected; t.updatedAt = Date.now(); render(); }
+        closeCodeModal();
+        return;
+      }
       if (voiceMode) {
         voiceConfirmCodes = [...selected];
         renderVoiceCodeChips();
@@ -40903,7 +40981,7 @@
           </div>
           <div class="tpl-field" style="margin-top:12px">
             <label>Location <span class="tpl-opt">optional</span></label>
-            <input value="${escAttr(t.location || '')}" placeholder="Leave blank — set it per task" oninput="tplField('location',this.value)">
+            <div class="act-input tpl-loc-pick" onclick="tplPickLocation()">${t.location ? esc(t.location) : '<span style="color:var(--text-muted)">Leave blank — set it per task</span>'}</div>
             <div class="tpl-hint">Left blank, every task from this template arrives asking for a location, so a routine can't be filed against the wrong exchange.</div>
           </div>
           <div class="tpl-field">
@@ -40951,7 +41029,7 @@
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--chevron-color);transition:transform 0.22s;${isOpen ? 'transform:rotate(90deg)' : ''}"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
-          <div class="activity-detail${isOpen ? ' open' : ''}" style="${isOpen ? '' : 'display:none'}">
+          <div class="activity-detail" style="${isOpen ? '' : 'display:none'}">
             <div class="act-detail-inner">${isOpen ? formFields(t, isNew) : ''}</div>
           </div>
         </div>`;
