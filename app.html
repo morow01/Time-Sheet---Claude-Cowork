@@ -7483,6 +7483,11 @@
     .tpl-wrap .activity-card::before,
     .tpl-wrap .activity-card::after { display: none; }
     .tpl-loc-pick { cursor: pointer; }
+    .pill-unsaved {
+      font-size: 10px; font-weight: 800; letter-spacing: .03em;
+      padding: 2px 7px; border-radius: 8px; white-space: nowrap;
+      background: var(--bg-ot); color: var(--ot-color); border: 1px solid var(--ot-stepper-border);
+    }
     .tpl-add-btn { width: calc(100% - 14px); margin: 4px 14px 14px 0; }
     .tpl-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
     .tpl-top-t { font-size: 14px; font-weight: 800; }
@@ -22114,7 +22119,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.0-templates.6';
+    const VERSION = '6.8.0-templates.7';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -37473,8 +37478,46 @@
 
     function tplEdit(id) {
       if (_tplIsOpen(id)) { tplCollapse(id); return; }
+      // Snapshot the template as opened, so "unsaved" is a real comparison and
+      // Cancel can put the original values back rather than silently keeping
+      // the edits in memory while storage still holds the old ones.
+      window._tplSnap = window._tplSnap || {};
+      const t = _tplById(id);
+      if (t) window._tplSnap[id] = deepCopy(t);
       state.tplOpen = [...(state.tplOpen || []), id];
       render();
+    }
+
+    // Compares only the fields the form edits — updatedAt changes on every
+    // keystroke and would make everything look dirty.
+    const _TPL_FIELDS = ['name', 'description', 'location', 'ordinary', 'overtime', 'notes', 'codes'];
+    function _tplFingerprint(t) {
+      if (!t) return '';
+      return JSON.stringify(_TPL_FIELDS.map(f => f === 'codes' ? (t.codes || []).map(c => c.c).join(',') : (t[f] || '')));
+    }
+    function _tplIsDirty(id) {
+      const snap = (window._tplSnap || {})[id];
+      if (!snap) return state.tplDraftId === id;      // a new template is always unsaved
+      return _tplFingerprint(_tplById(id)) !== _tplFingerprint(snap);
+    }
+
+    // Surgical pill update — called from every edit path so typing does not
+    // trigger a re-render just to show the badge.
+    function _tplSyncDirtyPill(id) {
+      const card = document.querySelector('.tpl-wrap .activity-card[data-tpl-id="' + id + '"]');
+      if (!card) return;
+      const row = card.querySelector('.act-pill-row');
+      if (!row) return;
+      const existing = row.querySelector('.pill-unsaved');
+      const dirty = _tplIsDirty(id) && state.tplDraftId !== id;
+      if (dirty && !existing) {
+        const span = document.createElement('span');
+        span.className = 'pill-unsaved';
+        span.textContent = 'Unsaved';
+        row.appendChild(span);
+      } else if (!dirty && existing) {
+        existing.remove();
+      }
     }
 
     // Collapse the open panel first, then re-render once it has finished, so
@@ -37485,6 +37528,7 @@
       const d = card && card.querySelector('.activity-detail');
       const finish = () => {
         state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
+        if (window._tplSnap) delete window._tplSnap[id];
         if (state.tplDraftId === id) { state.tplDraftId = null; window._tplDraft = null; }
         render();
       };
@@ -37498,7 +37542,23 @@
       if (chev) chev.style.transform = 'rotate(0deg)';
       setTimeout(finish, ANIM_EXPAND_MS + 20);
     }
-    function tplCancel(id) { tplCollapse(id); }
+    async function tplCancel(id) {
+      if (_tplIsDirty(id)) {
+        const isNew = state.tplDraftId === id;
+        const ok = await showRianDialog({
+          title: isNew ? 'Discard new template?' : 'Discard changes?',
+          message: isNew
+            ? 'This template has not been saved and will be lost.'
+            : 'The edits you made will be undone and the saved version kept.',
+          confirmText: 'Discard', danger: true
+        });
+        if (!ok) return;
+        const snap = (window._tplSnap || {})[id];
+        const t = _tplById(id);
+        if (snap && t) _TPL_FIELDS.forEach(f => { t[f] = snap[f]; });
+      }
+      tplCollapse(id);
+    }
 
     // A template is identified by id everywhere now that several can be open at
     // once — there is no single "current" one.
@@ -37516,6 +37576,7 @@
       if (!t) return;
       t[field] = value;
       t.updatedAt = Date.now();
+      _tplSyncDirtyPill(id);
     }
 
     // Surgical update, mirroring stepHrs/_applyHrsInPlace on tasks. Re-rendering
@@ -37542,6 +37603,7 @@
         span.textContent = field === 'ordinary' ? next + 'h' : '+' + next + ' OT';
         row.appendChild(span);
       }
+      _tplSyncDirtyPill(id);
     }
 
     // Reuse the task pickers. Both dispatch on their context object, so a
@@ -37585,6 +37647,7 @@
         window._tplDraft = null;
       }
       state.tplOpen = (state.tplOpen || []).filter(x => x !== id);
+      if (window._tplSnap) delete window._tplSnap[id];
       await saveTaskTemplates();
       showToast('Template saved');
       render();
@@ -41036,7 +41099,7 @@
       const cardHtml = (t, i, isOpen, isNew) => {
         const ord = parseFloat(t.ordinary) || 0;
         const ot = parseFloat(t.overtime) || 0;
-        const headAction = isOpen ? 'tplCancel()' : `tplEdit('${t.id}')`;
+        const headAction = `tplEdit('${t.id}')`;   // tplEdit toggles open/closed
         return `
         <div class="activity-card${isOpen ? ' expanded' : ''}${isNew ? ' is-draft' : ''}" data-tpl-id="${t.id}">
           <div class="flex items-center gap-3 px-3.5 py-3 cursor-pointer" onclick="${headAction}">
@@ -41050,7 +41113,7 @@
                 <div class="act-pill-row">
                   ${ord > 0 ? `<span class="pill-hrs">${ord}h</span>` : ''}
                   ${ot > 0 ? `<span class="pill-ot">+${ot} OT</span>` : ''}
-                  ${isNew ? '<span class="pill-draft">Draft</span>' : ''}
+                  ${isNew ? '<span class="pill-draft">Draft</span>' : (_tplIsDirty(t.id) ? '<span class="pill-unsaved">Unsaved</span>' : '')}
                 </div>
               </div>
             </div>
