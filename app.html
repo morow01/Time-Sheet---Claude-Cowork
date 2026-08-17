@@ -56,6 +56,16 @@
       --btn-danger-color: #E8453C;
       --btn-danger-bg: #FDECEA;
       --btn-danger-border: rgba(232, 69, 60, 0.22);
+      /* Shared button language — components keep their own layout, but use
+         these tokens for one visual system across the app. */
+      --button-radius: 10px;
+      --button-transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, filter .15s ease, opacity .15s ease;
+      --button-neutral-bg: var(--bg-card);
+      --button-neutral-text: var(--text-secondary);
+      --button-neutral-border: var(--border);
+      --button-success-bg: var(--priority-low-bg);
+      --button-success-text: var(--priority-low-dark);
+      --button-success-border: var(--priority-low-border);
       --bg-input: #f8fafc;
       --bg-code-btn: #EBF1FD;
       --bg-modal: #FFFFFF;
@@ -934,19 +944,19 @@
       justify-content: center;
       gap: 5px;
       padding: 10px;
-      border-radius: 10px;
+      border-radius: var(--button-radius);
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       border: 1px solid transparent;
       font-family: inherit;
-      transition: background .12s, border-color .12s, color .12s;
+      transition: var(--button-transition);
     }
 
     .act-action-copy {
-      background: var(--btn-primary-bg, #eff6ff);
-      color: var(--btn-primary-text, #1e3a8a);
-      border-color: rgba(30, 58, 138, 0.15);
+      background: var(--button-neutral-bg);
+      color: var(--button-neutral-text);
+      border-color: var(--button-neutral-border);
     }
 
     .act-action-copy:hover {
@@ -956,15 +966,15 @@
     }
 
     .act-action-note {
-      background: #f0fdf4;
-      color: #15803d;
-      border-color: #bbf7d0;
+      background: var(--button-success-bg);
+      color: var(--button-success-text);
+      border-color: var(--button-success-border);
     }
 
     .act-action-note:hover {
-      background: #dcfce7;
-      color: #166534;
-      border-color: #86efac;
+      background: rgba(var(--priority-low-rgb), .16);
+      color: var(--priority-low-dark);
+      border-color: var(--priority-low);
     }
 
     .act-action-delete {
@@ -977,6 +987,11 @@
       background: rgba(var(--priority-high-rgb), .16);
       color: var(--priority-high-dark);
       border-color: var(--priority-high);
+    }
+
+    :is(.add-task-btn, .btn-cancel, .task-modal-text-btn, .act-action-btn, .btn-primary, .note-action-btn, .desk-detail-btn, .rdn-btn):focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     /* ── ⋯ More button ── */
@@ -1194,20 +1209,23 @@
     .btn-cancel {
       flex: 1;
       padding: 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
+      border-radius: var(--button-radius);
+      border: 1px solid var(--button-neutral-border);
+      background: var(--button-neutral-bg);
       font-size: 13px;
       font-weight: 700;
-      color: var(--text-slate);
+      color: var(--button-neutral-text);
       cursor: pointer;
       font-family: inherit;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 5px;
-      transition: background .15s ease, border-color .15s ease, color .15s ease;
+      transition: var(--button-transition);
     }
+
+    .btn-cancel:hover:not(:disabled) { background: var(--bg-input); border-color: var(--border); }
+    .btn-cancel:disabled { opacity: .45; cursor: not-allowed; }
 
     .note-confirm-actions .btn-add {
       flex: 1;
@@ -2267,10 +2285,10 @@
     .task-modal-text-btn {
       flex: 1 0 auto;
       padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text-secondary);
+      border-radius: var(--button-radius);
+      border: 1px solid var(--button-neutral-border);
+      background: var(--button-neutral-bg);
+      color: var(--button-neutral-text);
       font-size: 12px;
       font-weight: 600;
       font-family: inherit;
@@ -2279,7 +2297,7 @@
       align-items: center;
       justify-content: center;
       gap: 5px;
-      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      transition: var(--button-transition);
       white-space: nowrap;
     }
 
@@ -7505,9 +7523,9 @@
     .add-task-row { display: flex; gap: 8px; margin: 4px 14px 14px 0; width: calc(100% - 14px); }
     .add-task-btn {
       flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 12px; border-radius: 10px; border: 1px dashed var(--border); background: var(--bg-card);
+      padding: 12px; border-radius: var(--button-radius); border: 1px dashed var(--border); background: var(--bg-card);
       font-family: inherit; font-size: 13px; font-weight: 700; color: var(--accent); cursor: pointer;
-      transition: background .15s ease, border-color .15s ease, color .15s ease;
+      transition: var(--button-transition);
     }
     .add-task-btn:hover { border-color: var(--accent); background: var(--accent-light); }
 
@@ -9524,7 +9542,7 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 600;
-      transition: background .12s, color .12s, opacity .1s;
+      transition: var(--button-transition);
     }
 
     .rdn-btn:active {
@@ -9539,11 +9557,11 @@
     .rdn-btn-cancel:hover { background: var(--bg-input); }
 
     .rdn-btn-confirm {
-      background: #818cf8;
+      background: var(--accent);
       color: #fff;
     }
 
-    .rdn-btn-confirm:hover { background: #7c3aed; }
+    .rdn-btn-confirm:hover { filter: brightness(.9); }
 
     .rdn-btn-danger {
       background: var(--priority-high);
@@ -14496,8 +14514,8 @@
     .btn-primary {
       flex: 1;
       padding: 11px;
-      border-radius: 12px;
-      background: var(--accent);
+      border-radius: var(--button-radius);
+      background: var(--priority-low-dark);
       color: #fff;
       border: none;
       font-size: 13px;
@@ -14508,11 +14526,11 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: opacity 0.15s;
+      transition: var(--button-transition);
     }
 
     .btn-primary:hover {
-      opacity: 0.88;
+      filter: brightness(.92);
     }
 
     .btn-primary:active {
@@ -14560,18 +14578,19 @@
     .note-action-btn {
       flex: 1;
       padding: 9px 6px;
-      border-radius: 10px;
+      border-radius: var(--button-radius);
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
-      border: 1px solid var(--border);
-      background: var(--bg-card);
-      color: var(--text-secondary);
+      border: 1px solid var(--button-neutral-border);
+      background: var(--button-neutral-bg);
+      color: var(--button-neutral-text);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 5px;
+      transition: var(--button-transition);
     }
 
     .note-action-btn.danger {
@@ -14593,11 +14612,16 @@
     }
 
     .note-action-btn.save {
-      background: var(--accent);
-      color: #fff;
-      border: none;
+      background: var(--button-success-bg);
+      color: var(--button-success-text);
+      border-color: var(--button-success-border);
       flex: 2;
     }
+
+    .note-action-btn:hover { background: var(--bg-input); border-color: var(--accent); color: var(--accent); }
+    .note-action-btn.success:hover,
+    .note-action-btn.save:hover { background: rgba(var(--priority-low-rgb), .16); color: var(--priority-low-dark); border-color: var(--priority-low); }
+    .note-action-btn.danger:hover { background: rgba(var(--priority-high-rgb), .16); color: var(--priority-high-dark); border-color: var(--priority-high); }
 
     .note-action-btn.cancel {
       background: var(--bg-card);
@@ -18789,15 +18813,15 @@
 
       .desk-detail-btn {
         padding: 8px 16px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        background: var(--bg-card);
-        color: var(--text-secondary);
+        border-radius: var(--button-radius);
+        border: 1px solid var(--button-neutral-border);
+        background: var(--button-neutral-bg);
+        color: var(--button-neutral-text);
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
         font-family: var(--font-body);
-        transition: all 0.12s;
+        transition: var(--button-transition);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -18816,7 +18840,21 @@
       }
 
       .desk-detail-btn.danger:hover {
-        opacity: 0.85;
+        background: rgba(var(--priority-high-rgb), .16);
+        color: var(--priority-high-dark);
+        border-color: var(--priority-high);
+      }
+
+      .desk-detail-btn.success {
+        background: var(--button-success-bg);
+        color: var(--button-success-text);
+        border-color: var(--button-success-border);
+      }
+
+      .desk-detail-btn.success:hover {
+        background: rgba(var(--priority-low-rgb), .16);
+        color: var(--priority-low-dark);
+        border-color: var(--priority-low);
       }
 
       /* ── Empty state ── */
@@ -22176,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.77';
+    const VERSION = '6.7.78';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -29034,7 +29072,7 @@
 
         (act._draft
           ? '<div class="desk-detail-actions">' +
-          '<button class="desk-detail-btn" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="saveTaskDraft(\'' + escId + '\',' + di + ')">' +
+          '<button class="desk-detail-btn success" onclick="saveTaskDraft(\'' + escId + '\',' + di + ')">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save</button>' +
           '<button class="desk-detail-btn danger" onclick="discardTaskDraft(\'' + escId + '\',' + di + ')">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard</button>' +
@@ -46488,7 +46526,7 @@
 
         detailHtml += selCo._draft
           ? '<div class="desk-detail-actions">' +
-          '<button class="desk-detail-btn" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="dcoSaveDraft()">' +
+          '<button class="desk-detail-btn success" onclick="dcoSaveDraft()">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Save</button>' +
           '<button class="desk-detail-btn danger" onclick="dcoDiscardDraft()">' +
           '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Discard</button>' +
