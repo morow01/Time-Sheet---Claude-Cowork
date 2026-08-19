@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.6.29**
+Current version: **6.7.81**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -378,6 +378,29 @@ Firestore `onSnapshot` WebSocket can silently go stale across browsers. Added 10
 
 ### Deleted Activity Tracking (v5.8.10+)
 `_deletedActIds` object tracks deleted activity IDs with timestamps. 5-minute TTL prevents resurrection by sync mechanisms (poll, merge-on-save, snapshot). `removeActivity()` calls `_trackDeletedAct(actId)` before filtering. All three sync paths check `_isRecentlyDeleted(id)`.
+
+### Inbound Snapshot/Poll Wipe of Unsynced Local Activities (v6.7.79)
+Diagnosed via a deliberate two-device test (task created offline on S23 phone, task created on laptop, both brought back online — phone's task vanished, and was gone from the phone's own IndexedDB too, not just the cloud).
+
+**Root cause:** `fsSetWeek()`'s post-write verification (`ref.get({source:'server'})`) throws when offline, so `state.syncStatus` ends up `'error'` instead of staying `'pending'`. Both the `onSnapshot` handler (~line 26210) and `_fsPollSync()` (~line 40515) only defer/guard their wholesale `state.weekData = deepCopy(remote)` overwrite while `state.syncStatus === 'pending'` — once it's `'error'`, an incoming snapshot/poll from another device freely replaces local state. The only local-only activities protected across that overwrite were ones flagged `_draft: true` (still being typed); a *committed* activity that simply hadn't confirmed sync yet (e.g. created while offline) had no protection at all and was silently discarded, then persisted (missing) back to IndexedDB on the next save.
+
+**Fix:** In both the `onSnapshot` handler and `_fsPollSync()`, the "activities to preserve across the overwrite" collection was broadened from `a._draft` only to also include any local activity with real content whose `id` is absent from the incoming remote data and isn't in `_deletedActIds` (mirrors the remote-only-activity recovery `fsSetWeek()`'s merge-on-save already does in the outbound direction — this closes the equivalent gap inbound). If anything non-draft gets recovered this way, `scheduleAutoSave()` is triggered immediately afterward (we know we're online since a snapshot/poll just arrived) instead of leaving it to sit local-only again until some unrelated future edit happened to trigger a save.
+
+### TipTap CDN Load Resilience (v6.7.80)
+TipTap and its extensions (~20 packages) are loaded at runtime via dynamic `import()` from `esm.sh`, not bundled — see `_loadTipTapModules()` (~line 51020). The service worker caches these (`esm.sh` is in `ALLOWED_CDN_HOSTS`, [sw.js](sw.js)), but only *after* a first successful load on that device/browser. A connectivity drop during that first-ever fetch previously threw an uncaught "Failed to fetch dynamically imported module" error with a raw stack-trace dump and no way to recover short of closing/reopening the editor.
+
+Fixes:
+- `_ttFetchModulesWithRetry()` wraps the module `Promise.all()` with up to 4 attempts, backing off 1.5s × attempt; if `navigator.onLine` is false it waits for the `online` event (capped by the same timer) instead of burning retries against a dead connection.
+- `_ttErrorHtml(retryCallJs)` / `_ttEscJs()` build a friendly "No internet connection" / "Editor failed to load" panel with a Retry button, replacing the raw stack trace, at all 5 `_ensureTipTap()`/`_loadTipTapModules()` call sites (`openFieldNoteFullscreen`, `openCoNoteFullscreen`, `openNoteFullscreen`, `openTemplateNoteFullscreen`, `_djMountTiptap`). Retry re-invokes the original open function with its original arguments.
+- `init()` prewarms `_loadTipTapModules()` 4s after startup (fire-and-forget, only if `navigator.onLine`) so the service worker has a chance to cache the modules before the user's first real editor open.
+
+### Intermittent "Task Notes Editor Loads Empty" (v6.7.81)
+Reported: opening a task's TipTap notes editor sometimes shows a blank editor even though the note has content; closing and reopening usually fixes it. Not a data-loss bug (content stays intact in `state`/IndexedDB throughout) — two independent gaps in how the editor gets populated, both fixed defensively since neither could be confirmed as *the* sole cause without live reproduction:
+
+1. **Stale captured value.** `openNoteFullscreen()` read the note's content once synchronously at modal-open time, then applied it via `_ttSetContent()` after `await _ensureTipTap()` + an 80ms delay. Anything that updated `state.weekData` for that activity during that gap (incoming snapshot, poll-sync, in-flight save) meant the editor got the pre-gap value. Fixed by re-reading the activity's notes (DOM textarea on mobile, `state.weekData` on desktop) immediately before `_ttSetContent()` runs, and refreshing `window._actNoteOpenContent`/`_actNoteBaseUpdatedAt`/`_actNoteBaseHash` to match (those baselines drive the stale-editor guard in the `onSnapshot` handler, so they must stay in sync with whatever was actually applied).
+2. **Silent-empty fast-path parse.** `_ttSetContent()`'s fast path parses HTML via `PmDOMParser.fromSchema(...).parse()` and dispatches it directly. ProseMirror can drop content it can't map to the schema without throwing, so a non-empty source could dispatch as an empty doc with no error and no fallback triggered. Now checks whether the source HTML actually had content (`_sourceHasContent`) and whether the parsed result looks meaningfully empty (`parsedDoc.content.size <= 2`); if source-had-content-but-parsed-empty, it falls through to the `commands.setContent()` fallback path instead of trusting the fast-path result.
+
+Only `openNoteFullscreen` (task notes) got the re-read fix, since that's the reported path; `_ttSetContent`'s fast-path guard is shared by all 5 editor-open sites.
 
 ### Firestore IndexedDB Cache Corruption
 `?cleanup=1` URL parameter nukes Firestore's local IndexedDB caches (built into app since v5.1.79). Use when sync behaves inconsistently — `get({source:'server'})` can return cached data from corrupted IndexedDB even when claiming server source. Ad blockers (uBlock Origin Lite) can also interfere with Firestore network requests.
