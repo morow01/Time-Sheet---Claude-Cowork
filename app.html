@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.83';
+    const VERSION = '6.7.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -40642,15 +40642,29 @@
               if (unsynced.length) _draftsPerDay[i] = unsynced;
             });
           }
+          // Capture edit focus BEFORE overwriting state, so a background poll
+          // never yanks the caret out of a field the user is typing in. The
+          // onSnapshot handler has always done this; the poll did not, which
+          // made every accepted poll re-render mid-keystroke (v6.7.84).
+          var _pollActive = document.activeElement;
+          var _pollUserEditing = _pollActive &&
+            (_pollActive.tagName === 'TEXTAREA' || _pollActive.tagName === 'INPUT');
+          var _pollNoteModal = document.getElementById('note-fs-modal');
+          var _pollNoteEditing = _noteFsActId != null && _pollNoteModal &&
+            !_pollNoteModal.classList.contains('hidden') && _tiptapEditor;
+
           state.weekData = deepCopy(remote);
           state.weekData._updatedAt = remoteTs;
           // Strip recently-deleted activities
           _pruneDeletedIds();
+          var _strippedTombstoned = false;
           if (Object.keys(_deletedActIds).length > 0) {
             state.weekData.days.forEach(function (d) {
+              var before = (d.activities || []).length;
               d.activities = (d.activities || []).filter(function (a) {
                 return !a.id || !_isRecentlyDeleted(a.id);
               });
+              if (d.activities.length < before) _strippedTombstoned = true;
             });
           }
           // Re-attach local-only activities
@@ -40669,9 +40683,23 @@
           });
           _dedupeWeekActivities(state.weekData);
           _fsPollFingerprint = _weekFingerprint(state.weekData);
-          render();
+          if (!_pollUserEditing && !_pollNoteEditing) {
+            render();
+          } else if (_isDesktop()) {
+            // Mid-edit: refresh the task list panel only, so other devices'
+            // changes still appear without destroying the caret/selection.
+            var _pollDtp = document.getElementById('desk-tasks-panel');
+            if (_pollDtp) _pollDtp.innerHTML = _renderDeskTasks(state.deskSelectedDay);
+          }
           if (_recoveredUnsyncedCount > 0) {
             console.warn('[Rian] Poll sync recovered ' + _recoveredUnsyncedCount + ' locally-created activity/activities missing from server — re-queuing for cloud save');
+            scheduleAutoSave();
+          } else if (_strippedTombstoned) {
+            // The server still holds tasks this device deleted, so our local
+            // (stripped) fingerprint can never match remote — without pushing
+            // the deletion, the poll would re-detect the same difference every
+            // 10s and re-render forever. Push it so the two actually converge.
+            console.warn('[Rian] Poll sync: server still had deleted task(s) — pushing deletion to converge');
             scheduleAutoSave();
           } else {
             state.syncStatus = 'synced';
@@ -40703,7 +40731,21 @@
             });
           });
           if (_dedupeWeekActivities(state.weekData)) merged = true;
-          if (merged) render();
+          if (merged) {
+            // Same focus rule as the accept-branch above: never re-render out
+            // from under someone who is mid-keystroke.
+            var _mActive = document.activeElement;
+            var _mEditing = _mActive && (_mActive.tagName === 'TEXTAREA' || _mActive.tagName === 'INPUT');
+            var _mNoteModal = document.getElementById('note-fs-modal');
+            var _mNoteEditing = _noteFsActId != null && _mNoteModal &&
+              !_mNoteModal.classList.contains('hidden') && _tiptapEditor;
+            if (!_mEditing && !_mNoteEditing) {
+              render();
+            } else if (_isDesktop()) {
+              var _mDtp = document.getElementById('desk-tasks-panel');
+              if (_mDtp) _mDtp.innerHTML = _renderDeskTasks(state.deskSelectedDay);
+            }
+          }
         }
         _lastFirestoreSnapAt = Date.now();
       }).catch(function (e) {
