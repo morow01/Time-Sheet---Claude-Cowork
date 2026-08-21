@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.84';
+    const VERSION = '6.7.85';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24143,33 +24143,58 @@
       });
     }
 
+    // The local IndexedDB cache is an optimisation, not a requirement — the
+    // real data lives in Firestore. Reads therefore degrade to "no cached
+    // copy" instead of rejecting: db.transaction() throws synchronously when
+    // the connection is closing or when the browser blocks storage (Edge
+    // Tracking Prevention, Safari ITP, private modes). That rejection used to
+    // propagate out of loadWeek's `await dbGet(...)` and abort startup, so the
+    // app hung on LOADING forever with an uncaught InvalidStateError.
     function dbGet(store, key) {
       if (!db) return Promise.resolve(null);
-      return new Promise((res, rej) => {
-        const tx = db.transaction(store, 'readonly');
-        const req = tx.objectStore(store).get(key);
-        req.onsuccess = () => res(req.result);
-        req.onerror = rej;
+      return new Promise((res) => {
+        try {
+          const tx = db.transaction(store, 'readonly');
+          const req = tx.objectStore(store).get(key);
+          req.onsuccess = () => res(req.result);
+          req.onerror = () => { console.warn('[Rian] Local cache read failed for', store, '— using cloud data'); res(null); };
+        } catch (e) {
+          console.warn('[Rian] Local cache unavailable (' + e.name + ') — using cloud data');
+          res(null);
+        }
       });
     }
 
+    // Writes stay non-fatal for the same reason: losing the local copy is
+    // recoverable, but a rejection here would break the save chain that goes
+    // on to push to Firestore.
     function dbPut(store, val) {
       if (!db) return Promise.resolve();
-      return new Promise((res, rej) => {
-        const tx = db.transaction(store, 'readwrite');
-        const req = tx.objectStore(store).put(val);
-        req.onsuccess = res;
-        req.onerror = rej;
+      return new Promise((res) => {
+        try {
+          const tx = db.transaction(store, 'readwrite');
+          const req = tx.objectStore(store).put(val);
+          req.onsuccess = res;
+          req.onerror = () => { console.warn('[Rian] Local cache write failed for', store, '— cloud save unaffected'); res(); };
+        } catch (e) {
+          console.warn('[Rian] Local cache unavailable for write (' + e.name + ') — cloud save unaffected');
+          res();
+        }
       });
     }
 
     function dbGetAll(store) {
       if (!db) return Promise.resolve([]);
-      return new Promise((res, rej) => {
-        const tx = db.transaction(store, 'readonly');
-        const req = tx.objectStore(store).getAll();
-        req.onsuccess = () => res(req.result);
-        req.onerror = rej;
+      return new Promise((res) => {
+        try {
+          const tx = db.transaction(store, 'readonly');
+          const req = tx.objectStore(store).getAll();
+          req.onsuccess = () => res(req.result);
+          req.onerror = () => { console.warn('[Rian] Local cache read failed for', store, '— using cloud data'); res([]); };
+        } catch (e) {
+          console.warn('[Rian] Local cache unavailable (' + e.name + ') — using cloud data');
+          res([]);
+        }
       });
     }
 
