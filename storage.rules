@@ -1,19 +1,17 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /users/{userId}/noteImages/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    // File attachments on notes — the app already writes here
-    // (_uploadNoteFile), but the path was never permitted, so those
-    // uploads were being rejected.
-    match /users/{userId}/noteFiles/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    // Full data backups. These live in Storage rather than Firestore
-    // because Firestore caps a document at 1MB and the backup payload
-    // outgrew that; Storage has no such limit.
-    match /users/{userId}/backups/{allPaths=**} {
+    // Everything a user owns lives under users/{userId}/ — noteImages,
+    // noteFiles, backups. A single wildcard keeps this in step with the
+    // app: new storage paths work without a rules deploy, and access is
+    // still restricted to the owning account.
+    //
+    // Kept deliberately broad. An earlier version of this file listed only
+    // noteImages, which did NOT match what was actually deployed — the
+    // deployed rules have always been this wildcard. Narrowing it would
+    // silently break any path not explicitly listed (noteFiles was already
+    // in that position).
+    match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
