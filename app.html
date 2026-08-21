@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.82';
+    const VERSION = '6.7.83';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23277,7 +23277,11 @@
     function _persistDeletedIds() {
       try { localStorage.setItem(_DELETED_ACT_KEY, JSON.stringify(_deletedActIds)); } catch (e) { }
     }
-    function _trackDeletedAct(id) { _deletedActIds[id] = Date.now(); _persistDeletedIds(); }
+    function _trackDeletedAct(id) {
+      _deletedActIds[id] = Date.now();
+      _persistDeletedIds();
+      _tombAdd(state.weekData, id); // also record in the cloud copy — see below
+    }
     function _isRecentlyDeleted(id) { return _deletedActIds[id] && (Date.now() - _deletedActIds[id] < _DELETED_ACT_TTL); }
     function _pruneDeletedIds() {
       var cutoff = Date.now() - _DELETED_ACT_TTL;
@@ -23286,6 +23290,56 @@
         if (_deletedActIds[k] < cutoff) { delete _deletedActIds[k]; changed = true; }
       });
       if (changed) _persistDeletedIds();
+    }
+
+    // ── Cloud deletion markers (_deletedIds on the week doc) ───────────
+    // The localStorage tombstones above only exist on the device that did
+    // the deleting, so the OTHER device had no idea a task was deleted — it
+    // still held the task, its save overwrote the whole week document, and
+    // the task came back. Deleting is the only edit that cannot survive
+    // last-writer-wins, because it is an absence rather than a value.
+    //
+    // These markers ride along inside the week document itself, so they are
+    // written atomically with the save and every device sees them. A device
+    // must never re-add an activity whose id is marked here, no matter which
+    // copy looks newer or whose clock is ahead.
+    var _TOMB_TTL = 90 * 24 * 60 * 60 * 1000; // 90 days — long enough that no
+    // stale device can outlive it, short enough to keep the doc tiny.
+    function _tombAdd(weekData, id) {
+      if (!weekData || !id) return;
+      if (!weekData._deletedIds) weekData._deletedIds = {};
+      weekData._deletedIds[id] = Date.now();
+    }
+    // Union of two marker maps, keeping the newest timestamp for each id.
+    // Union (never intersection) so a marker can only be added by a sync,
+    // never silently dropped by a device that had not heard about it yet.
+    function _tombMerge(a, b) {
+      var out = {};
+      [a || {}, b || {}].forEach(function (m) {
+        Object.keys(m).forEach(function (k) {
+          var ts = typeof m[k] === 'number' ? m[k] : 0;
+          if (!out[k] || ts > out[k]) out[k] = ts;
+        });
+      });
+      return out;
+    }
+    function _tombPrune(map) {
+      var cutoff = Date.now() - _TOMB_TTL;
+      var out = {};
+      Object.keys(map || {}).forEach(function (k) { if (map[k] >= cutoff) out[k] = map[k]; });
+      return out;
+    }
+    function _tombHas(map, id) { return !!(map && id && map[id]); }
+    // Drop any activity marked deleted. Returns true if anything was removed.
+    function _tombApply(weekData, map) {
+      if (!weekData || !weekData.days || !map || !Object.keys(map).length) return false;
+      var removed = false;
+      weekData.days.forEach(function (d) {
+        var before = (d.activities || []).length;
+        d.activities = (d.activities || []).filter(function (a) { return !_tombHas(map, a.id); });
+        if (d.activities.length < before) removed = true;
+      });
+      return removed;
     }
 
     // ── Hours high-water-mark (HWM) guard ──────────────────────────
@@ -24499,6 +24553,18 @@
           const remoteWeekUpdatedAt = (remote._updatedAt && remote._updatedAt.toMillis)
             ? remote._updatedAt.toMillis()
             : (remote._updatedAt || 0);
+
+          // Combine this device's deletion markers with the server's, so a
+          // delete made on ANY device is carried forward by every save rather
+          // than being forgotten by whichever device happens to write last.
+          merged._deletedIds = _tombPrune(_tombMerge(remote._deletedIds, merged._deletedIds));
+          // Honour the combined markers locally too, so a task another device
+          // deleted disappears from this screen instead of lingering until a
+          // refresh (this is the "deleted on the phone, still on desktop" case).
+          if (_tombApply(state.weekStart === weekStart ? state.weekData : null, merged._deletedIds)) {
+            console.info('[Rian] Removed task(s) deleted on another device');
+          }
+
           if (remote.days && merged.days && remote.days.length === merged.days.length) {
             merged.days = merged.days.map(function (localDay, di) {
               var remoteDay = remote.days[di];
@@ -24518,10 +24584,12 @@
                   : _stripActivityNoteMergeMeta(la);
               });
 
-              // Add remote-only activities (created on another browser, missed by snapshot)
+              // Add remote-only activities (created on another browser, missed by snapshot).
+              // _tombHas is the durable, cross-device check; _isRecentlyDeleted
+              // is the older local-only one, kept as a belt-and-braces guard.
               _pruneDeletedIds();
               Object.keys(remoteMap).forEach(function (rid) {
-                if (!localMap[rid] && !_isRecentlyDeleted(rid)) {
+                if (!localMap[rid] && !_isRecentlyDeleted(rid) && !_tombHas(merged._deletedIds, rid)) {
                   // Activity exists only in remote — another browser added it
                   // Only include if it has actual content (not a ghost)
                   var ra = remoteMap[rid];
@@ -24545,6 +24613,13 @@
         // If server fetch fails (offline, etc.), save local data as-is
         console.warn('[Rian] Merge-on-save: server fetch failed, saving local only —', e.message);
       }
+
+      // Final enforcement: nothing marked deleted may be written back, no
+      // matter which path put it into `merged`. This also covers the offline
+      // case above, where the server fetch failed and merged._deletedIds is
+      // just this device's own markers.
+      merged._deletedIds = _tombPrune(merged._deletedIds || {});
+      _tombApply(merged, merged._deletedIds);
 
       if (merged.days) {
         merged.days.forEach(function (d) {
@@ -26193,6 +26268,10 @@
             (a.codes && a.codes.length > 0) || (a.notes || '').trim()
           );
         });
+        // Honour deletion markers stored with the cached copy, so tasks deleted
+        // before the last close do not flash back on screen at startup.
+        state.weekData._deletedIds = _tombPrune(state.weekData._deletedIds || {});
+        _tombApply(state.weekData, state.weekData._deletedIds);
         // Auto-dedup local cache (fixes local draft/copy multiplication)
         _dedupeWeekActivities(state.weekData);
         // Seed the HWM from local cache so we have a reference before Firestore arrives
@@ -26386,6 +26465,14 @@
           _dedupeWeekActivities(state.weekData);
           if (_recoveredUnsyncedCount > 0) {
             console.warn('[Rian] Recovered ' + _recoveredUnsyncedCount + ' locally-created activity/activities that were missing from an incoming snapshot — re-queuing for cloud save');
+          }
+
+          // Apply cross-device deletion markers. Runs AFTER the draft/unsynced
+          // re-injection above so a task deleted on another device cannot be
+          // put back by that recovery step.
+          state.weekData._deletedIds = _tombPrune(_tombMerge(remote._deletedIds, state.weekData._deletedIds));
+          if (_tombApply(state.weekData, state.weekData._deletedIds)) {
+            console.info('[Rian] Removed task(s) deleted on another device');
           }
 
           // Restore the value the user is currently typing (prevent echo truncation)
@@ -40625,6 +40712,12 @@
             }
           });
           _dedupeWeekActivities(state.weekData);
+          // Apply cross-device deletion markers before fingerprinting, so the
+          // fingerprint reflects what we actually keep.
+          state.weekData._deletedIds = _tombPrune(_tombMerge(remote._deletedIds, state.weekData._deletedIds));
+          if (_tombApply(state.weekData, state.weekData._deletedIds)) {
+            console.info('[Rian] Poll sync: removed task(s) deleted on another device');
+          }
           _fsPollFingerprint = _weekFingerprint(state.weekData);
           render();
           if (_recoveredUnsyncedCount > 0) {
@@ -40640,6 +40733,17 @@
           // whose save had an older timestamp), merge them in.
           var merged = false;
           _pruneDeletedIds();
+          // This is the "deleted on the phone, still showing on desktop" path:
+          // local looks newer, so the remote copy is not adopted wholesale and
+          // the other device's deletion would never be seen. Deletion markers
+          // are honoured regardless of which side looks newer.
+          var _pollTombs = _tombPrune(_tombMerge(remote._deletedIds, state.weekData._deletedIds));
+          state.weekData._deletedIds = _pollTombs;
+          if (_tombApply(state.weekData, _pollTombs)) {
+            console.info('[Rian] Poll sync: removed task(s) deleted on another device');
+            merged = true;
+            scheduleAutoSave(); // persist the removal so it is not re-pushed
+          }
           state.weekData.days.forEach(function (localDay, di) {
             var remoteDay = remote.days[di];
             if (!remoteDay || !remoteDay.activities) return;
@@ -40647,7 +40751,8 @@
             (localDay.activities || []).forEach(function (a) { if (a.id) localIds[a.id] = true; });
             var localKeys = new Set((localDay.activities || []).map(_activityDedupeKey).filter(Boolean));
             remoteDay.activities.forEach(function (ra) {
-              if (ra.id && !localIds[ra.id] && !localKeys.has(_activityDedupeKey(ra)) && !_isRecentlyDeleted(ra.id)) {
+              if (ra.id && !localIds[ra.id] && !localKeys.has(_activityDedupeKey(ra)) &&
+                  !_isRecentlyDeleted(ra.id) && !_tombHas(_pollTombs, ra.id)) {
                 if ((ra.description || '').trim() || (ra.location || '').trim() ||
                   (parseFloat(ra.ordinary) || 0) > 0 || (parseFloat(ra.overtime) || 0) > 0 ||
                   (ra.codes && ra.codes.length > 0)) {
