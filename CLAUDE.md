@@ -51,6 +51,7 @@ Current version: **6.7.85**
 ## Git
 - Remote: `https://github.com/morow01/rian.git`, branch: `main`
 - Commit style: `vX.Y.Z — Short description of what changed`
+- **Every commit carries the version prefix — including docs-only, rules-only and revert commits.** GitHub's Deployments page labels each deployment with the commit subject, so a commit without a version leaves the *live* deployment showing no version at all. For a commit that doesn't change `VERSION`, prefix it with whatever `VERSION` currently is in `app.html`.
 - Pre-commit hook checks 31 critical HTML element IDs exist. If commit is blocked, an element was accidentally deleted — fix before committing.
 - GitHub Pages URL: `https://morow01.github.io/rian/app.html`
 
