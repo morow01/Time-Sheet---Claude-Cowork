@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.85';
+    const VERSION = '6.7.86';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -44108,10 +44108,36 @@
 
     // ══════════════════════════════════════════════════════════
     // CLOUD BACKUP SYSTEM
-    // Stores a full daily snapshot in Firestore at:
+    //
+    // The backup PAYLOAD lives in Firebase Storage:
+    //   users/{uid}/backups/{YYYY-MM-DD}.json
+    // A small INDEX doc (counts + pointer, no data) lives in Firestore:
     //   users/{uid}/backups/{YYYY-MM-DD}
-    // Runs automatically once per day on app open. Keeps 30 days.
+    //
+    // Why (v6.7.86): the payload used to be the Firestore doc itself, but
+    // Firestore caps a document at 1,048,576 bytes. The payload reached
+    // 1113kb — 896kb of it plain timesheet note text across 32 weeks,
+    // growing ~28kb/week — so daily backups had been silently failing for
+    // days. Storage has no such limit, so backups can no longer outgrow it.
+    //
+    // Two consequences worth keeping:
+    //  - Payloads are NO LONGER stripped of embedded images. Stripping was
+    //    a size workaround that made backups lossy; a backup should be
+    //    complete.
+    //  - The index doc keeps the backups list fast (no payload downloads
+    //    just to render the list) and restores work unchanged.
+    //
+    // Backups written before v6.7.86 have their data inline in the Firestore
+    // doc and no _storagePath. Restore handles both — do not remove that
+    // fallback while any legacy backup could still exist.
+    //
+    // Runs automatically once per day on app open. Keeps 30.
     // ══════════════════════════════════════════════════════════
+
+    // Where a backup payload lives in Storage.
+    function _backupStoragePath(uid, dateKey) {
+      return 'users/' + uid + '/backups/' + dateKey + '.json';
+    }
 
     function _backupThrottleKey(uid) { return 'lastDailyBackup_v1_' + uid; }
 
@@ -44174,22 +44200,6 @@
       const settings = {};
       lsKeys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) settings[k] = v; });
       const now = Date.now();
-      // Strip embedded base64 data-URIs from rich content before backup —
-      // images are already in Firebase Storage with URLs; base64 in content
-      // would double storage and blow Firestore's 1MB doc limit.
-      const _stripB64 = v => {
-        if (typeof v === 'string') {
-          return v.replace(/<img[^>]*src=["']data:[^"']+["'][^>]*>/gi, '<img src="[image removed from backup]">')
-            .replace(/"data:[^"]{200,}"/g, '"[data:url stripped]"');
-        }
-        if (Array.isArray(v)) return v.map(_stripB64);
-        if (v && typeof v === 'object') {
-          const out = {};
-          for (const k in v) out[k] = _stripB64(v[k]);
-          return out;
-        }
-        return v;
-      };
       const payload = {
         _format: 'rian-export-v1',
         _date: dateKey,
@@ -44207,38 +44217,73 @@
         _tagCount: tagCount,
         _notebookCount: notebookCount,
         _pageCount: pageCount,
-        weeks: _stripB64(weeks),
-        notes: _stripB64(notes),
+        weeks,
+        notes,
         reminders,
-        callouts: _stripB64(callouts),
+        callouts,
         routines,
         categories,
         jNotebooks,
         jSections,
-        jPages: _stripB64(jPages),
+        jPages,
         settings
       };
-      // Size guard — Firestore caps docs at 1,048,576 bytes. If still too
-      // large, bail out with a clear console message so the user knows to
-      // use Export All Data instead.
-      try {
-        const sz = new Blob([JSON.stringify(payload)]).size;
-        if (sz > 900000) {
-          console.warn('[Rian Backup] Payload ' + Math.round(sz / 1024) + 'kb exceeds safe limit — skipping daily backup. Use ☰ → Export All Data for local file.');
-          throw new Error('Backup too large (' + Math.round(sz / 1024) + 'kb)');
-        }
-      } catch (e) {
-        if (/too large/.test(e.message)) throw e;
-        // Blob size calc failed — still attempt the write
-      }
-      await backupRef.set(payload);
+
+      if (!storage_fb) throw new Error('Storage unavailable — cannot write backup');
+
+      // 1. Upload the payload to Storage. Do this BEFORE writing the index
+      //    doc, so a failed upload never leaves an index entry pointing at
+      //    a file that does not exist (which would look like a usable
+      //    backup and fail only at restore time — the worst outcome).
+      const json = JSON.stringify(payload);
+      const sizeBytes = new Blob([json]).size;
+      const storagePath = _backupStoragePath(uid, dateKey);
+      await storage_fb.ref(storagePath).put(
+        new Blob([json], { type: 'application/json' }),
+        { contentType: 'application/json' }
+      );
+
+      // 2. Verify the upload is actually readable before recording it.
+      //    A backup that cannot be read back is not a backup.
+      const downloadUrl = await storage_fb.ref(storagePath).getDownloadURL();
+      if (!downloadUrl) throw new Error('backup upload not confirmed');
+
+      // 3. Index doc — metadata only, so the list renders without pulling
+      //    payloads, and this doc can never approach Firestore's 1MB cap.
+      await backupRef.set({
+        _format: 'rian-backup-index-v1',
+        _date: dateKey,
+        _exportedAt: payload._exportedAt,
+        _sourceUid: uid,
+        _sourceEmail: payload._sourceEmail,
+        _deviceName: payload._deviceName,
+        _version: VERSION,
+        _backedUpAt: now,
+        _noteCount: noteCount,
+        _weekCount: weekCount,
+        _calloutCount: calloutCount,
+        _reminderCount: reminderCount,
+        _routineCount: routineCount,
+        _tagCount: tagCount,
+        _notebookCount: notebookCount,
+        _pageCount: pageCount,
+        _storagePath: storagePath,
+        _sizeBytes: sizeBytes
+      });
       const verify = await backupRef.get({ source: 'server' }).catch(() => null);
-      if (!verify?.exists) throw new Error('backup write not confirmed');
-      // Prune: keep only the 30 most recent backups
+      if (!verify?.exists) throw new Error('backup index write not confirmed');
+      console.log('[Rian Backup] Wrote ' + Math.round(sizeBytes / 1024) + 'kb to Storage for ' + dateKey);
+      // Prune: keep only the 30 most recent backups (index doc + payload)
       try {
         const allSnap = await db_fs.collection(`users/${uid}/backups`).orderBy('_backedUpAt', 'asc').get();
         if (allSnap.size > 30) {
           const toDelete = allSnap.docs.slice(0, allSnap.size - 30);
+          // Delete the Storage payloads too, or they would accumulate
+          // forever now that they no longer live in the doc being deleted.
+          await Promise.all(toDelete.map(async d => {
+            const p = d.data()?._storagePath;
+            if (p) await storage_fb.ref(p).delete().catch(() => { });
+          }));
           const batch = db_fs.batch();
           toDelete.forEach(d => batch.delete(d.ref));
           await batch.commit();
@@ -44286,7 +44331,8 @@
             b._reminderCount != null && b._reminderCount > 0 ? `${b._reminderCount} reminders` : '',
             b._routineCount != null && b._routineCount > 0 ? `${b._routineCount} routines` : '',
             b._tagCount != null && b._tagCount > 0 ? `${b._tagCount} tags` : '',
-            b._notebookCount != null && b._notebookCount > 0 ? `${b._notebookCount} notebooks` : ''
+            b._notebookCount != null && b._notebookCount > 0 ? `${b._notebookCount} notebooks` : '',
+            b._sizeBytes ? `${Math.round(b._sizeBytes / 1024)}kb` : ''
           ].filter(Boolean).join(' · ');
           const isLast = i === snap.docs.length - 1;
           return `<div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;${isLast ? '' : 'border-bottom:1px solid var(--border)'}">
@@ -44363,10 +44409,22 @@
         const safetyKey = dateToStr(new Date()) + '-pre-restore';
         await _runBackupWrite(uid, safetyKey, true).catch(() => { });
 
-        // Fetch the chosen backup
+        // Fetch the chosen backup. Since v6.7.86 the payload lives in
+        // Storage and the Firestore doc is only an index; backups written
+        // before that have the data inline and no _storagePath.
         const backupSnap = await db_fs.doc(`users/${uid}/backups/${dateKey}`).get();
         if (!backupSnap.exists) { showToast('Backup not found'); return; }
-        const b = backupSnap.data();
+        let b = backupSnap.data();
+        if (b._storagePath) {
+          showToast('Downloading backup…');
+          const url = await storage_fb.ref(b._storagePath).getDownloadURL();
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error('Could not download backup (' + resp.status + ')');
+          const loaded = await resp.json();
+          // Keep the index metadata, but the payload is the source of truth.
+          b = Object.assign({}, b, loaded);
+        }
+        if (!b.weeks && !b.notes) throw new Error('Backup appears to be empty — not restoring');
         const now = Date.now();
 
         // ── Use the EXACT same pattern as the weekly snapshot restore ──
