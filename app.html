@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.81';
+    const VERSION = '6.7.82';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -24493,9 +24493,25 @@
               var remoteMap = {};
               (remoteDay.activities || []).forEach(function (a) { if (a.id) remoteMap[a.id] = a; });
 
-              // Start with local activities, but protect richer remote note
-              // content so stale tabs cannot silently remove screenshots.
-              var mergedActs = (localDay.activities || []).map(function (la) {
+              // Drop local activities that are missing from the server and
+              // are NOT still _pendingSync — those were confirmed-synced at
+              // some point and are now absent because another session
+              // deleted them, not because this session hasn't pushed them
+              // yet. Without this check, a stale tab/device holding an old
+              // in-memory copy would silently write the "deleted" task
+              // straight back on its next autosave. Genuinely new,
+              // never-yet-confirmed tasks (_pendingSync) are still protected.
+              var survivingLocal = (localDay.activities || []).filter(function (la) {
+                if (!la.id || remoteMap[la.id] || la._pendingSync) return true;
+                console.info('[Rian] Merge-on-save: dropping "' + (la.description || '').substring(0, 30) +
+                  '" — confirmed-synced task missing from server (deleted elsewhere)');
+                return false;
+              });
+
+              // Start with surviving local activities, but protect richer
+              // remote note content so stale tabs cannot silently remove
+              // screenshots.
+              var mergedActs = survivingLocal.map(function (la) {
                 return la && la.id && remoteMap[la.id]
                   ? _protectRicherRemoteActivityNotes(la, remoteMap[la.id], remoteWeekUpdatedAt, options.forceActivityNoteId)
                   : _stripActivityNoteMergeMeta(la);
@@ -24519,6 +24535,17 @@
                 }
               });
 
+              // Now that we know which activities the server has confirmed,
+              // clear _pendingSync on this device's live state too — not just
+              // on the `merged` copy being written — so a later save (e.g.
+              // from an idle background tab) doesn't keep treating a
+              // long-since-confirmed task as "still unsynced" forever.
+              if (state.weekStart === weekStart && state.weekData?.days?.[di]) {
+                (state.weekData.days[di].activities || []).forEach(function (a) {
+                  if (a._pendingSync && a.id && remoteMap[a.id]) delete a._pendingSync;
+                });
+              }
+
               return { ...localDay, activities: mergedActs };
             });
             console.info('[Rian] Merge-on-save: merged with remote (local acts preserved, remote-only recovered)');
@@ -24532,7 +24559,9 @@
       if (merged.days) {
         merged.days.forEach(function (d) {
           d.activities = (d.activities || []).filter(function (a) { return !a._draft; }).map(function (a) {
-            return _stripActivityNoteMergeMeta(a);
+            const clean = _stripActivityNoteMergeMeta(a);
+            delete clean._pendingSync; // local IndexedDB marker, never a cloud field
+            return clean;
           });
         });
         _dedupeWeekActivities(merged);
@@ -25430,7 +25459,13 @@
     }
 
     function createActivity() {
-      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false, _draft: true };
+      // _pendingSync marks this task as not yet confirmed by a server
+      // round-trip. fsSetWeek's merge-on-save clears it once the task is
+      // seen in a fetched remote snapshot. It's what lets merge-on-save
+      // tell "brand new, hasn't synced yet" apart from "existed before,
+      // now missing because it was deleted on another device" — local-only
+      // IndexedDB marker, never written to Firestore.
+      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false, _draft: true, _pendingSync: true };
     }
 
     function _activityHasContent(a) {
