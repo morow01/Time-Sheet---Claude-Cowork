@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.7.81**
+Current version: **6.7.85**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -377,7 +377,35 @@ Firestore `onSnapshot` WebSocket can silently go stale across browsers. Added 10
 `fsSetWeek()` fetches remote data via `ref.get({source:'server'})` before writing. Merges activities per-day by ID. Remote-only activities recovered unless in `_deletedActIds`. After `ref.set()`, verifies write landed by reading back.
 
 ### Deleted Activity Tracking (v5.8.10+)
-`_deletedActIds` object tracks deleted activity IDs with timestamps. 5-minute TTL prevents resurrection by sync mechanisms (poll, merge-on-save, snapshot). `removeActivity()` calls `_trackDeletedAct(actId)` before filtering. All three sync paths check `_isRecentlyDeleted(id)`.
+`_deletedActIds` object tracks deleted activity IDs with timestamps. 5-minute TTL prevents resurrection by sync mechanisms (poll, merge-on-save, snapshot). `removeActivity()` calls `_trackDeletedAct(actId)` before filtering. All three sync paths check `_isRecentlyDeleted(id)`. Persisted to `localStorage` (`rian_deleted_act_ids`) since v6.7.82 — it was memory-only, so a refresh wiped every tombstone.
+
+### Cloud Deletion Markers — `_deletedIds` (v6.7.83+)
+**The durable fix for "deleted tasks come back".** `_deletedActIds` above is per-device, so the OTHER device never learned a task was deleted: it still held the task, its save overwrote the whole week doc, and the task returned. Deleting is the only edit that cannot survive last-writer-wins, because it is an *absence* rather than a value.
+
+`_deletedIds { id: timestamp }` lives **inside the week document**, so it is written atomically with the save and every device sees it. 90-day TTL (week docs are ~3kb).
+
+Helpers: `_tombAdd`, `_tombMerge`, `_tombPrune`, `_tombHas`, `_tombApply`.
+
+**Rules — do not weaken these:**
+- Markers are **unioned, never intersected**, on every sync. A marker may only be added by a sync, never dropped by a device that hadn't heard about it.
+- An id in `_deletedIds` must not be re-added by *any* path: `fsSetWeek`'s remote-only recovery, the `onSnapshot` unsynced re-injection, or `_fsPollSync`'s local-newer merge branch.
+- Markers are honoured **regardless of which copy looks newer or whose clock is ahead** — clock skew was a live suspect during diagnosis.
+- `fsSetWeek` enforces them on the final payload, which also covers the offline path where the server fetch failed.
+
+### Poll Sync Timestamp Comparison (v6.7.82)
+`_fsPollSync` used `remoteTs >= localTs` ("same age = another browser saved at ~same time, trust server"). Equal timestamps in practice mean the server read is a **stale echo of our own just-completed write**, so accepting it discarded that write. Observed live: `Write verified on server (9 activities)` immediately followed by `server data differs (remote: T local: T) — accepting server version`, after which the deleted task was back. Now `>` — accept only genuinely newer data. **Do not revert to `>=`.**
+
+### Diagnosing sync bugs — read this first
+Three speculative fixes were shipped and reverted on 2026-08-21 before anyone looked at the actual data. The many interacting guards (HWM, tombstones, first-snapshot gate, merge-on-save, poll, onSnapshot) make code reading produce confident but unfalsifiable theories. **Get ground truth first:**
+```js
+// Compare cloud vs screen — run in the console
+Promise.resolve(userDoc('weeks/'+state.weekStart).get({source:'server'})).then(s=>{
+  console.log('SERVER: ' + (s.data().days[0].activities||[]).map(a=>a.description).join(' | '));
+  console.log('LOCAL:  ' + (state.weekData.days[0].activities||[]).map(a=>a.description).join(' | '));
+  console.log('markers:', Object.keys(s.data()._deletedIds||{}).length);
+});
+```
+`[Rian] Write verified on server (N activities)` is the single most useful log line — it says what actually reached the cloud.
 
 ### Inbound Snapshot/Poll Wipe of Unsynced Local Activities (v6.7.79)
 Diagnosed via a deliberate two-device test (task created offline on S23 phone, task created on laptop, both brought back online — phone's task vanished, and was gone from the phone's own IndexedDB too, not just the cloud).
