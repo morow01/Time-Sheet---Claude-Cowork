@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.84';
+    const VERSION = '6.7.81';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23263,28 +23263,12 @@
     // Track deliberately deleted activity IDs so merge-on-save / poll sync
     // won't resurrect them. Map of id → deletion timestamp. Entries older
     // than 5 minutes are pruned to prevent unbounded growth.
-    // v6.7.82: persisted to localStorage. This used to be memory-only, so a
-    // refresh wiped every tombstone — which is exactly the "delete a task,
-    // refresh, it's back" case: if the delete-save hadn't durably landed yet,
-    // nothing was left to stop the server's stale copy repopulating on load.
-    var _DELETED_ACT_KEY = 'rian_deleted_act_ids';
-    var _DELETED_ACT_TTL = 300000; // 5 minutes
-    var _deletedActIds = (function () {
-      try { return JSON.parse(localStorage.getItem(_DELETED_ACT_KEY)) || {}; }
-      catch (e) { return {}; }
-    })();
-    function _persistDeletedIds() {
-      try { localStorage.setItem(_DELETED_ACT_KEY, JSON.stringify(_deletedActIds)); } catch (e) { }
-    }
-    function _trackDeletedAct(id) { _deletedActIds[id] = Date.now(); _persistDeletedIds(); }
-    function _isRecentlyDeleted(id) { return _deletedActIds[id] && (Date.now() - _deletedActIds[id] < _DELETED_ACT_TTL); }
+    var _deletedActIds = {};
+    function _trackDeletedAct(id) { _deletedActIds[id] = Date.now(); }
+    function _isRecentlyDeleted(id) { return _deletedActIds[id] && (Date.now() - _deletedActIds[id] < 300000); }
     function _pruneDeletedIds() {
-      var cutoff = Date.now() - _DELETED_ACT_TTL;
-      var changed = false;
-      Object.keys(_deletedActIds).forEach(function (k) {
-        if (_deletedActIds[k] < cutoff) { delete _deletedActIds[k]; changed = true; }
-      });
-      if (changed) _persistDeletedIds();
+      var cutoff = Date.now() - 300000;
+      Object.keys(_deletedActIds).forEach(function (k) { if (_deletedActIds[k] < cutoff) delete _deletedActIds[k]; });
     }
 
     // ── Hours high-water-mark (HWM) guard ──────────────────────────
@@ -24509,25 +24493,9 @@
               var remoteMap = {};
               (remoteDay.activities || []).forEach(function (a) { if (a.id) remoteMap[a.id] = a; });
 
-              // Drop local activities that are missing from the server and
-              // are NOT still _pendingSync — those were confirmed-synced at
-              // some point and are now absent because another session
-              // deleted them, not because this session hasn't pushed them
-              // yet. Without this check, a stale tab/device holding an old
-              // in-memory copy would silently write the "deleted" task
-              // straight back on its next autosave. Genuinely new,
-              // never-yet-confirmed tasks (_pendingSync) are still protected.
-              var survivingLocal = (localDay.activities || []).filter(function (la) {
-                if (!la.id || remoteMap[la.id] || la._pendingSync) return true;
-                console.info('[Rian] Merge-on-save: dropping "' + (la.description || '').substring(0, 30) +
-                  '" — confirmed-synced task missing from server (deleted elsewhere)');
-                return false;
-              });
-
-              // Start with surviving local activities, but protect richer
-              // remote note content so stale tabs cannot silently remove
-              // screenshots.
-              var mergedActs = survivingLocal.map(function (la) {
+              // Start with local activities, but protect richer remote note
+              // content so stale tabs cannot silently remove screenshots.
+              var mergedActs = (localDay.activities || []).map(function (la) {
                 return la && la.id && remoteMap[la.id]
                   ? _protectRicherRemoteActivityNotes(la, remoteMap[la.id], remoteWeekUpdatedAt, options.forceActivityNoteId)
                   : _stripActivityNoteMergeMeta(la);
@@ -24551,17 +24519,6 @@
                 }
               });
 
-              // Now that we know which activities the server has confirmed,
-              // clear _pendingSync on this device's live state too — not just
-              // on the `merged` copy being written — so a later save (e.g.
-              // from an idle background tab) doesn't keep treating a
-              // long-since-confirmed task as "still unsynced" forever.
-              if (state.weekStart === weekStart && state.weekData?.days?.[di]) {
-                (state.weekData.days[di].activities || []).forEach(function (a) {
-                  if (a._pendingSync && a.id && remoteMap[a.id]) delete a._pendingSync;
-                });
-              }
-
               return { ...localDay, activities: mergedActs };
             });
             console.info('[Rian] Merge-on-save: merged with remote (local acts preserved, remote-only recovered)');
@@ -24575,9 +24532,7 @@
       if (merged.days) {
         merged.days.forEach(function (d) {
           d.activities = (d.activities || []).filter(function (a) { return !a._draft; }).map(function (a) {
-            const clean = _stripActivityNoteMergeMeta(a);
-            delete clean._pendingSync; // local IndexedDB marker, never a cloud field
-            return clean;
+            return _stripActivityNoteMergeMeta(a);
           });
         });
         _dedupeWeekActivities(merged);
@@ -25475,13 +25430,7 @@
     }
 
     function createActivity() {
-      // _pendingSync marks this task as not yet confirmed by a server
-      // round-trip. fsSetWeek's merge-on-save clears it once the task is
-      // seen in a fetched remote snapshot. It's what lets merge-on-save
-      // tell "brand new, hasn't synced yet" apart from "existed before,
-      // now missing because it was deleted on another device" — local-only
-      // IndexedDB marker, never written to Firestore.
-      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false, _draft: true, _pendingSync: true };
+      return { id: uid(), description: '', location: '', codes: [], ordinary: '', overtime: '', tasks: '', timePerTask: '', otPerTask: '', notes: '', remedyPending: false, _draft: true };
     }
 
     function _activityHasContent(a) {
@@ -26227,16 +26176,6 @@
             (a.codes && a.codes.length > 0) || (a.notes || '').trim()
           );
         });
-        // Honour deletion tombstones that survived a reload (v6.7.82). If the
-        // user deleted a task and refreshed before the debounced save landed,
-        // the cached copy is still here — drop it rather than showing a task
-        // the user already deleted.
-        _pruneDeletedIds();
-        if (Object.keys(_deletedActIds).length > 0) {
-          state.weekData.days.forEach(d => {
-            d.activities = (d.activities || []).filter(a => !a.id || !_isRecentlyDeleted(a.id));
-          });
-        }
         // Auto-dedup local cache (fixes local draft/copy multiplication)
         _dedupeWeekActivities(state.weekData);
         // Seed the HWM from local cache so we have a reference before Firestore arrives
@@ -26342,20 +26281,14 @@
             noteModal && !noteModal.classList.contains('hidden') && _tiptapEditor;
           let activityNoteHtml = activityNoteEditing ? _ttGetHTML() : null;
 
-          // Collect local-only activities before overwriting: in-progress
-          // drafts (_draft:true, never persisted) and activities explicitly
-          // marked _pendingSync (created here, never yet confirmed by a
-          // server round-trip — e.g. created offline).
-          //
-          // v6.7.82: do NOT infer "unsynced" merely from "absent remotely".
-          // The v6.7.79 version of this guard preserved ANY local activity
-          // with content that was missing from the incoming remote, which
-          // made this the main task-resurrection vector: when another device
-          // deleted a task, this session saw it missing, wrongly concluded
-          // "unsynced, must protect", restored it into local state, and then
-          // pushed it straight back to the cloud. A confirmed-synced task
-          // that has since gone missing remotely was deleted elsewhere and
-          // must be allowed to disappear.
+          // Collect local-only activities before overwriting. This covers two
+          // cases: in-progress drafts (_draft:true, never persisted), AND
+          // committed activities that were saved to this device's IndexedDB
+          // but haven't been confirmed on the server yet — e.g. created while
+          // offline, where fsSetWeek's own write raced an incoming snapshot
+          // from another device and lost (v6.7.79 fix — an offline-created
+          // task was silently wiped here because only _draft items were
+          // protected against the wholesale state.weekData overwrite below).
           _pruneDeletedIds();
           const _draftsPerDay = {};
           if (state.weekData?.days) {
@@ -26364,7 +26297,6 @@
               const remoteIds = new Set((remoteDay?.activities || []).map(a => a.id).filter(Boolean));
               const unsynced = (d.activities || []).filter(a => {
                 if (a._draft) return true; // always protect in-progress drafts
-                if (!a._pendingSync) return false; // confirmed-synced — respect remote deletion
                 if (!a.id || remoteIds.has(a.id)) return false; // already on server
                 if (_isRecentlyDeleted(a.id)) return false; // user deliberately deleted it
                 return (a.description || '').trim() || (a.location || '').trim() ||
@@ -40618,12 +40550,11 @@
         if (remoteTs >= localTs) {
           console.info('[Rian] Poll sync: server data differs (remote:', remoteTs, 'local:', localTs, ') — accepting server version');
           remote = _mergeWeekActivityNotesNoLoss(remote, state.weekData, localTs, 'poll-remote-newer');
-          // Preserve in-progress drafts and explicitly marked _pendingSync
-          // activities before overwriting. As in the onSnapshot handler, an
-          // existing local task that is merely missing remotely may have been
-          // deliberately deleted on another device, so it must NOT be treated
-          // as automatically recoverable (v6.7.82 — this inference was the
-          // main task-resurrection vector introduced in v6.7.79).
+          // Preserve local-only activities before overwriting: in-progress
+          // drafts (_draft:true) AND committed-but-not-yet-confirmed-synced
+          // activities (same wipe risk as the onSnapshot handler — see v6.7.79
+          // fix note there). Anything with real content that isn't in the
+          // incoming remote and wasn't deliberately deleted survives.
           _pruneDeletedIds();
           var _draftsPerDay = {};
           if (state.weekData.days) {
@@ -40632,7 +40563,6 @@
               var remoteIds = new Set((remoteDay && remoteDay.activities || []).map(function (a) { return a.id; }).filter(Boolean));
               var unsynced = (d.activities || []).filter(function (a) {
                 if (a._draft) return true;
-                if (!a._pendingSync) return false; // confirmed-synced — respect remote deletion
                 if (!a.id || remoteIds.has(a.id)) return false;
                 if (_isRecentlyDeleted(a.id)) return false;
                 return (a.description || '').trim() || (a.location || '').trim() ||
@@ -40642,29 +40572,15 @@
               if (unsynced.length) _draftsPerDay[i] = unsynced;
             });
           }
-          // Capture edit focus BEFORE overwriting state, so a background poll
-          // never yanks the caret out of a field the user is typing in. The
-          // onSnapshot handler has always done this; the poll did not, which
-          // made every accepted poll re-render mid-keystroke (v6.7.84).
-          var _pollActive = document.activeElement;
-          var _pollUserEditing = _pollActive &&
-            (_pollActive.tagName === 'TEXTAREA' || _pollActive.tagName === 'INPUT');
-          var _pollNoteModal = document.getElementById('note-fs-modal');
-          var _pollNoteEditing = _noteFsActId != null && _pollNoteModal &&
-            !_pollNoteModal.classList.contains('hidden') && _tiptapEditor;
-
           state.weekData = deepCopy(remote);
           state.weekData._updatedAt = remoteTs;
           // Strip recently-deleted activities
           _pruneDeletedIds();
-          var _strippedTombstoned = false;
           if (Object.keys(_deletedActIds).length > 0) {
             state.weekData.days.forEach(function (d) {
-              var before = (d.activities || []).length;
               d.activities = (d.activities || []).filter(function (a) {
                 return !a.id || !_isRecentlyDeleted(a.id);
               });
-              if (d.activities.length < before) _strippedTombstoned = true;
             });
           }
           // Re-attach local-only activities
@@ -40683,23 +40599,9 @@
           });
           _dedupeWeekActivities(state.weekData);
           _fsPollFingerprint = _weekFingerprint(state.weekData);
-          if (!_pollUserEditing && !_pollNoteEditing) {
-            render();
-          } else if (_isDesktop()) {
-            // Mid-edit: refresh the task list panel only, so other devices'
-            // changes still appear without destroying the caret/selection.
-            var _pollDtp = document.getElementById('desk-tasks-panel');
-            if (_pollDtp) _pollDtp.innerHTML = _renderDeskTasks(state.deskSelectedDay);
-          }
+          render();
           if (_recoveredUnsyncedCount > 0) {
             console.warn('[Rian] Poll sync recovered ' + _recoveredUnsyncedCount + ' locally-created activity/activities missing from server — re-queuing for cloud save');
-            scheduleAutoSave();
-          } else if (_strippedTombstoned) {
-            // The server still holds tasks this device deleted, so our local
-            // (stripped) fingerprint can never match remote — without pushing
-            // the deletion, the poll would re-detect the same difference every
-            // 10s and re-render forever. Push it so the two actually converge.
-            console.warn('[Rian] Poll sync: server still had deleted task(s) — pushing deletion to converge');
             scheduleAutoSave();
           } else {
             state.syncStatus = 'synced';
@@ -40731,21 +40633,7 @@
             });
           });
           if (_dedupeWeekActivities(state.weekData)) merged = true;
-          if (merged) {
-            // Same focus rule as the accept-branch above: never re-render out
-            // from under someone who is mid-keystroke.
-            var _mActive = document.activeElement;
-            var _mEditing = _mActive && (_mActive.tagName === 'TEXTAREA' || _mActive.tagName === 'INPUT');
-            var _mNoteModal = document.getElementById('note-fs-modal');
-            var _mNoteEditing = _noteFsActId != null && _mNoteModal &&
-              !_mNoteModal.classList.contains('hidden') && _tiptapEditor;
-            if (!_mEditing && !_mNoteEditing) {
-              render();
-            } else if (_isDesktop()) {
-              var _mDtp = document.getElementById('desk-tasks-panel');
-              if (_mDtp) _mDtp.innerHTML = _renderDeskTasks(state.deskSelectedDay);
-            }
-          }
+          if (merged) render();
         }
         _lastFirestoreSnapAt = Date.now();
       }).catch(function (e) {
