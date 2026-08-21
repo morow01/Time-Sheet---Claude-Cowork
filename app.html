@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.81';
+    const VERSION = '6.7.82';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23263,12 +23263,29 @@
     // Track deliberately deleted activity IDs so merge-on-save / poll sync
     // won't resurrect them. Map of id → deletion timestamp. Entries older
     // than 5 minutes are pruned to prevent unbounded growth.
-    var _deletedActIds = {};
-    function _trackDeletedAct(id) { _deletedActIds[id] = Date.now(); }
-    function _isRecentlyDeleted(id) { return _deletedActIds[id] && (Date.now() - _deletedActIds[id] < 300000); }
+    // Persisted to localStorage: this was memory-only, so a refresh wiped
+    // every tombstone. Confirmed empty ({}) right after a delete-and-refresh
+    // while the deleted task was back on the server — leaving nothing to stop
+    // merge-on-save "recovering" it as a remote-only activity. The 5-minute
+    // TTL is unchanged; only the lifetime across a reload is fixed.
+    var _DELETED_ACT_KEY = 'rian_deleted_act_ids';
+    var _DELETED_ACT_TTL = 300000; // 5 minutes
+    var _deletedActIds = (function () {
+      try { return JSON.parse(localStorage.getItem(_DELETED_ACT_KEY)) || {}; }
+      catch (e) { return {}; }
+    })();
+    function _persistDeletedIds() {
+      try { localStorage.setItem(_DELETED_ACT_KEY, JSON.stringify(_deletedActIds)); } catch (e) { }
+    }
+    function _trackDeletedAct(id) { _deletedActIds[id] = Date.now(); _persistDeletedIds(); }
+    function _isRecentlyDeleted(id) { return _deletedActIds[id] && (Date.now() - _deletedActIds[id] < _DELETED_ACT_TTL); }
     function _pruneDeletedIds() {
-      var cutoff = Date.now() - 300000;
-      Object.keys(_deletedActIds).forEach(function (k) { if (_deletedActIds[k] < cutoff) delete _deletedActIds[k]; });
+      var cutoff = Date.now() - _DELETED_ACT_TTL;
+      var changed = false;
+      Object.keys(_deletedActIds).forEach(function (k) {
+        if (_deletedActIds[k] < cutoff) { delete _deletedActIds[k]; changed = true; }
+      });
+      if (changed) _persistDeletedIds();
     }
 
     // ── Hours high-water-mark (HWM) guard ──────────────────────────
@@ -40545,9 +40562,19 @@
           : (remote._updatedAt || 0);
         var localTs = state.weekData._updatedAt || 0;
 
-        // Remote is different. If remote is newer OR same age, accept it
-        // (same age = another browser saved at ~same time, trust server as source of truth)
-        if (remoteTs >= localTs) {
+        // Remote is different. Accept it only if it is genuinely NEWER.
+        //
+        // This used to be `>=`, treating "same timestamp" as "another browser
+        // saved at the same moment, trust the server". In practice equal
+        // timestamps almost always mean the server read is a stale echo of
+        // OUR OWN just-completed write — so accepting it threw that write
+        // away. Deletions were the visible casualty: a deletion is an absence,
+        // so once the stale copy (which still contains the task) overwrote
+        // local state, the task returned and was then saved back to the cloud.
+        // Observed directly: "Write verified on server (9 activities)"
+        // immediately followed by "server data differs (remote: T local: T)
+        // — accepting server version", after which the task was back.
+        if (remoteTs > localTs) {
           console.info('[Rian] Poll sync: server data differs (remote:', remoteTs, 'local:', localTs, ') — accepting server version');
           remote = _mergeWeekActivityNotesNoLoss(remote, state.weekData, localTs, 'poll-remote-newer');
           // Preserve local-only activities before overwriting: in-progress
