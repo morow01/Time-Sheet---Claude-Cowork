@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.82';
+    const VERSION = '6.7.83';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23263,12 +23263,28 @@
     // Track deliberately deleted activity IDs so merge-on-save / poll sync
     // won't resurrect them. Map of id → deletion timestamp. Entries older
     // than 5 minutes are pruned to prevent unbounded growth.
-    var _deletedActIds = {};
-    function _trackDeletedAct(id) { _deletedActIds[id] = Date.now(); }
-    function _isRecentlyDeleted(id) { return _deletedActIds[id] && (Date.now() - _deletedActIds[id] < 300000); }
+    // v6.7.82: persisted to localStorage. This used to be memory-only, so a
+    // refresh wiped every tombstone — which is exactly the "delete a task,
+    // refresh, it's back" case: if the delete-save hadn't durably landed yet,
+    // nothing was left to stop the server's stale copy repopulating on load.
+    var _DELETED_ACT_KEY = 'rian_deleted_act_ids';
+    var _DELETED_ACT_TTL = 300000; // 5 minutes
+    var _deletedActIds = (function () {
+      try { return JSON.parse(localStorage.getItem(_DELETED_ACT_KEY)) || {}; }
+      catch (e) { return {}; }
+    })();
+    function _persistDeletedIds() {
+      try { localStorage.setItem(_DELETED_ACT_KEY, JSON.stringify(_deletedActIds)); } catch (e) { }
+    }
+    function _trackDeletedAct(id) { _deletedActIds[id] = Date.now(); _persistDeletedIds(); }
+    function _isRecentlyDeleted(id) { return _deletedActIds[id] && (Date.now() - _deletedActIds[id] < _DELETED_ACT_TTL); }
     function _pruneDeletedIds() {
-      var cutoff = Date.now() - 300000;
-      Object.keys(_deletedActIds).forEach(function (k) { if (_deletedActIds[k] < cutoff) delete _deletedActIds[k]; });
+      var cutoff = Date.now() - _DELETED_ACT_TTL;
+      var changed = false;
+      Object.keys(_deletedActIds).forEach(function (k) {
+        if (_deletedActIds[k] < cutoff) { delete _deletedActIds[k]; changed = true; }
+      });
+      if (changed) _persistDeletedIds();
     }
 
     // ── Hours high-water-mark (HWM) guard ──────────────────────────
@@ -26211,6 +26227,16 @@
             (a.codes && a.codes.length > 0) || (a.notes || '').trim()
           );
         });
+        // Honour deletion tombstones that survived a reload (v6.7.82). If the
+        // user deleted a task and refreshed before the debounced save landed,
+        // the cached copy is still here — drop it rather than showing a task
+        // the user already deleted.
+        _pruneDeletedIds();
+        if (Object.keys(_deletedActIds).length > 0) {
+          state.weekData.days.forEach(d => {
+            d.activities = (d.activities || []).filter(a => !a.id || !_isRecentlyDeleted(a.id));
+          });
+        }
         // Auto-dedup local cache (fixes local draft/copy multiplication)
         _dedupeWeekActivities(state.weekData);
         // Seed the HWM from local cache so we have a reference before Firestore arrives
@@ -26316,14 +26342,20 @@
             noteModal && !noteModal.classList.contains('hidden') && _tiptapEditor;
           let activityNoteHtml = activityNoteEditing ? _ttGetHTML() : null;
 
-          // Collect local-only activities before overwriting. This covers two
-          // cases: in-progress drafts (_draft:true, never persisted), AND
-          // committed activities that were saved to this device's IndexedDB
-          // but haven't been confirmed on the server yet — e.g. created while
-          // offline, where fsSetWeek's own write raced an incoming snapshot
-          // from another device and lost (v6.7.79 fix — an offline-created
-          // task was silently wiped here because only _draft items were
-          // protected against the wholesale state.weekData overwrite below).
+          // Collect local-only activities before overwriting: in-progress
+          // drafts (_draft:true, never persisted) and activities explicitly
+          // marked _pendingSync (created here, never yet confirmed by a
+          // server round-trip — e.g. created offline).
+          //
+          // v6.7.82: do NOT infer "unsynced" merely from "absent remotely".
+          // The v6.7.79 version of this guard preserved ANY local activity
+          // with content that was missing from the incoming remote, which
+          // made this the main task-resurrection vector: when another device
+          // deleted a task, this session saw it missing, wrongly concluded
+          // "unsynced, must protect", restored it into local state, and then
+          // pushed it straight back to the cloud. A confirmed-synced task
+          // that has since gone missing remotely was deleted elsewhere and
+          // must be allowed to disappear.
           _pruneDeletedIds();
           const _draftsPerDay = {};
           if (state.weekData?.days) {
@@ -26332,6 +26364,7 @@
               const remoteIds = new Set((remoteDay?.activities || []).map(a => a.id).filter(Boolean));
               const unsynced = (d.activities || []).filter(a => {
                 if (a._draft) return true; // always protect in-progress drafts
+                if (!a._pendingSync) return false; // confirmed-synced — respect remote deletion
                 if (!a.id || remoteIds.has(a.id)) return false; // already on server
                 if (_isRecentlyDeleted(a.id)) return false; // user deliberately deleted it
                 return (a.description || '').trim() || (a.location || '').trim() ||
@@ -40585,11 +40618,12 @@
         if (remoteTs >= localTs) {
           console.info('[Rian] Poll sync: server data differs (remote:', remoteTs, 'local:', localTs, ') — accepting server version');
           remote = _mergeWeekActivityNotesNoLoss(remote, state.weekData, localTs, 'poll-remote-newer');
-          // Preserve local-only activities before overwriting: in-progress
-          // drafts (_draft:true) AND committed-but-not-yet-confirmed-synced
-          // activities (same wipe risk as the onSnapshot handler — see v6.7.79
-          // fix note there). Anything with real content that isn't in the
-          // incoming remote and wasn't deliberately deleted survives.
+          // Preserve in-progress drafts and explicitly marked _pendingSync
+          // activities before overwriting. As in the onSnapshot handler, an
+          // existing local task that is merely missing remotely may have been
+          // deliberately deleted on another device, so it must NOT be treated
+          // as automatically recoverable (v6.7.82 — this inference was the
+          // main task-resurrection vector introduced in v6.7.79).
           _pruneDeletedIds();
           var _draftsPerDay = {};
           if (state.weekData.days) {
@@ -40598,6 +40632,7 @@
               var remoteIds = new Set((remoteDay && remoteDay.activities || []).map(function (a) { return a.id; }).filter(Boolean));
               var unsynced = (d.activities || []).filter(function (a) {
                 if (a._draft) return true;
+                if (!a._pendingSync) return false; // confirmed-synced — respect remote deletion
                 if (!a.id || remoteIds.has(a.id)) return false;
                 if (_isRecentlyDeleted(a.id)) return false;
                 return (a.description || '').trim() || (a.location || '').trim() ||
