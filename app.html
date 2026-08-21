@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.83';
+    const VERSION = '6.7.84';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27686,7 +27686,7 @@
               <div class="menu-section-wrap">
                 <div class="menu-section-label">Data Management</div>
                 <div class="menu-card">
-                  ${!state.currentUser.isLocalOnly ? `
+                  ${!state.currentUser?.isLocalOnly ? `
                   <button class="menu-row" onclick="openSnapshotModal()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Snapshots / Recover</span><span class="menu-row-sub">Browse and restore saved versions</span></span>
@@ -27723,7 +27723,7 @@
                     <span class="menu-row-body"><span class="menu-row-label">Clear All My Data</span></span>
                     ${chev}
                   </button>
-                  ${!state.currentUser.isLocalOnly ? `
+                  ${!state.currentUser?.isLocalOnly ? `
                   <button class="menu-row danger" onclick="deleteAccount();closeThemeMenu()">
                     <span class="menu-row-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="17" y1="11" x2="23" y2="17"/><line x1="23" y1="11" x2="17" y2="17"/></svg></span>
                     <span class="menu-row-body"><span class="menu-row-label">Delete Account</span><span class="menu-row-sub">Permanently removes all data</span></span>
