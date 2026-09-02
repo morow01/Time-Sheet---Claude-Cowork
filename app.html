@@ -2588,6 +2588,12 @@
       margin-bottom: 4px !important;
     }
 
+    /* Table header text would otherwise inherit the 12px rule above, same as
+       body cells, losing the smaller/distinct look it has in the editor. */
+    .note-inline-scroll th p {
+      font-size: 11px;
+    }
+
     .note-inline-scroll ul,
     .note-inline-scroll ol {
       font-size: 12px;
@@ -22214,7 +22220,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.90';
+    const VERSION = '6.7.91';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
