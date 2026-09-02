@@ -22214,7 +22214,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.86';
+    const VERSION = '6.7.90';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -26299,6 +26299,11 @@
         _tombApply(state.weekData, state.weekData._deletedIds);
         // Auto-dedup local cache (fixes local draft/copy multiplication)
         _dedupeWeekActivities(state.weekData);
+        // v6.7.87/88: one-time-ever cleanup of leftover table colwidths (see
+        // _ttMigrateOnce) — local-only, not saved here; next edit persists it.
+        _ttMigrateOnce('rian_colw_mig_week_v1',
+          () => Array.isArray(state.weekData?.days) && state.weekData.days.length > 0,
+          () => _ttMigrateWeekColwidths(state.weekData));
         // Seed the HWM from local cache so we have a reference before Firestore arrives
         if (localIsOwn) _raiseHWM(weekStart, _weekTotalHours(state.weekData));
         autoExpandToday();
@@ -26471,6 +26476,11 @@
           if (_dupsRemoved) {
             console.log('[Rian] Auto-deduped activities locally (will save on next edit)');
           }
+          // v6.7.87/88: one-time-ever cleanup of leftover table colwidths — local
+          // only, not saved here; next edit persists it (see _ttMigrateOnce).
+          _ttMigrateOnce('rian_colw_mig_week_v1',
+            () => Array.isArray(state.weekData?.days) && state.weekData.days.length > 0,
+            () => _ttMigrateWeekColwidths(state.weekData));
 
           // Re-inject local-only activities (drafts + not-yet-synced) collected
           // before the snapshot overwrite. Only push ones whose ID is NOT
@@ -32865,6 +32875,9 @@
       }
       // Migrate notes: strip HTML from descriptions, split long ones into desc + noteContent
       migrateNotesHTML(state.notes);
+      _ttMigrateOnce('rian_colw_mig_notes_v1',
+        () => Array.isArray(state.notes) && state.notes.length > 0,
+        () => _ttMigrateColwidths(state.notes, 'noteContent'));
       _autoArchiveDoneNotes();
       render();
 
@@ -33042,8 +33055,11 @@
 
         // Strip any HTML still in descriptions from remote data.
         const _migrated = migrateNotesHTML(state.notes);
+        const _colwMigrated = _ttMigrateOnce('rian_colw_mig_notes_v1',
+          () => Array.isArray(state.notes) && state.notes.length > 0,
+          () => _ttMigrateColwidths(state.notes, 'noteContent'));
         // If we kept local-newer notes OR migration ran, push the reconciled state back to Firestore
-        if (_migrated || hadNewerLocal) scheduleNotesSave();
+        if (_migrated || _colwMigrated || hadNewerLocal) scheduleNotesSave();
 
         // Conflict detection: if TipTap is open and another device saved this note more recently
         if (tiptapEditingId && !tiptapRecentlySaved) {
@@ -33159,6 +33175,9 @@
       if (nbStored?.data) state.jNotebooks = nbStored.data;
       if (secStored?.data) state.jSections = secStored.data;
       if (pgStored?.data) state.jPages = pgStored.data;
+      _ttMigrateOnce('rian_colw_mig_jpages_v1',
+        () => Array.isArray(state.jPages) && state.jPages.length > 0,
+        () => _ttMigrateColwidths(state.jPages, 'noteContent'));
       render();
 
       const userId = state.currentUser?.uid;
@@ -33211,6 +33230,10 @@
         const r = snap.data();
         if (r.pages?.length) {
           state.jPages = _mergeArr(r.pages, state.jPages);
+          const _jColwMigrated = _ttMigrateOnce('rian_colw_mig_jpages_v1',
+            () => Array.isArray(state.jPages) && state.jPages.length > 0,
+            () => _ttMigrateColwidths(state.jPages, 'noteContent'));
+          if (_jColwMigrated) scheduleJSave();
           dbPut('notes', { id: 'j_pages', userId, data: state.jPages, updatedAt: r._updatedAt || Date.now() });
         }
         if (state.view === 'journal' && !state.jEditId) render();
@@ -33415,7 +33438,7 @@
           const pg = {
             id: uid(), sectionId: secId,
             title: _jDocxFiles[i].title || _jDocxFiles[i].file.name.replace(/\.docx$/i, ''),
-            noteContent: result.value || '',
+            noteContent: _ttCleanTableHtml(result.value || ''),
             date: _jDocxFiles[i].date || dateToStr(new Date()),
             displayOrder: i, createdAt: now + i, updatedAt: now + i
           };
@@ -36223,6 +36246,14 @@
         + '<button class="tt-btn" id="dj-tt-italic" title="Italic"><i>I</i></button>'
         + '<button class="tt-btn" id="dj-tt-strike" title="Strikethrough"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><path d="M16 6c0-1.66-1.79-3-4-3s-4 1.34-4 3 1.79 3 4 3"/><path d="M8 18c0 1.66 1.79 3 4 3s4-1.34 4-3-1.79-3-4-3"/></svg></button>'
         + '<button class="tt-btn" id="dj-tt-code" title="Inline code" style="font-family:monospace;font-size:12px">&lt;/&gt;</button>'
+        // Font size dropdown
+        + '<div class="tt-list-drop" id="dj-tt-fontsize-drop">'
+        + '<button class="tt-btn tt-list-btn" id="dj-tt-fontsize-btn" title="Text size" style="font-weight:800"><span style="font-size:15px">A</span><span style="font-size:10px">a</span><svg class="tt-list-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></button>'
+        + '<div class="tt-list-menu" id="dj-tt-fontsize-menu">'
+        + '<button class="tt-list-item" id="dj-tt-fs-small" style="font-size:12px">Small</button>'
+        + '<button class="tt-list-item" id="dj-tt-fs-normal" style="font-size:14px">Normal</button>'
+        + '<button class="tt-list-item" id="dj-tt-fs-large" style="font-size:17px">Large</button>'
+        + '</div></div>'
         + '<div class="tt-sep"></div>'
         // Lists dropdown
         + '<div class="tt-list-drop" id="dj-tt-list-drop">'
@@ -36298,6 +36329,16 @@
         else if (editor.isActive('bulletList')) listLabel.textContent = '•';
         else listLabel.textContent = 'List';
       }
+      var fsSmall = editor.isActive('textStyle', { fontSize: _TT_FONT_SIZES.small });
+      var fsLarge = editor.isActive('textStyle', { fontSize: _TT_FONT_SIZES.large });
+      var fsBtn = document.getElementById('dj-tt-fontsize-btn');
+      if (fsBtn) fsBtn.classList.toggle('tt-active', fsSmall || fsLarge);
+      var fsSmallItem = document.getElementById('dj-tt-fs-small');
+      var fsNormalItem = document.getElementById('dj-tt-fs-normal');
+      var fsLargeItem = document.getElementById('dj-tt-fs-large');
+      if (fsSmallItem) fsSmallItem.classList.toggle('tt-active', fsSmall);
+      if (fsNormalItem) fsNormalItem.classList.toggle('tt-active', !fsSmall && !fsLarge);
+      if (fsLargeItem) fsLargeItem.classList.toggle('tt-active', fsLarge);
     }
 
     function _djWireToolbar() {
@@ -36306,8 +36347,10 @@
       function closeMenus() {
         var sm = document.getElementById('dj-tt-style-menu');
         var lm = document.getElementById('dj-tt-list-menu');
+        var fsm = document.getElementById('dj-tt-fontsize-menu');
         if (sm) { sm.classList.remove('tt-open'); sm.style.position = ''; sm.style.top = ''; sm.style.left = ''; }
         if (lm) { lm.classList.remove('tt-open'); lm.style.position = ''; lm.style.top = ''; lm.style.left = ''; }
+        if (fsm) { fsm.classList.remove('tt-open'); fsm.style.position = ''; fsm.style.top = ''; fsm.style.left = ''; }
       }
       function toggleMenu(btnId, menuId) {
         var btn = document.getElementById(btnId);
@@ -36329,6 +36372,7 @@
       }
       toggleMenu('dj-tt-style-btn', 'dj-tt-style-menu');
       toggleMenu('dj-tt-list-btn', 'dj-tt-list-menu');
+      toggleMenu('dj-tt-fontsize-btn', 'dj-tt-fontsize-menu');
       if (!_djTtToolbarWired) {
         document.addEventListener('click', function (ev) {
           var tb = ev.target && ev.target.closest ? ev.target.closest('.dj-tt-toolbar') : null;
@@ -36355,6 +36399,9 @@
       on('dj-tt-bold', function () { ed.chain().focus().toggleBold().run(); _djUpdateToolbar(ed); });
       on('dj-tt-italic', function () { ed.chain().focus().toggleItalic().run(); _djUpdateToolbar(ed); });
       on('dj-tt-strike', function () { ed.chain().focus().toggleStrike().run(); _djUpdateToolbar(ed); });
+      on('dj-tt-fs-small', function () { ed.chain().focus().setFontSize(_TT_FONT_SIZES.small).run(); closeMenus(); _djUpdateToolbar(ed); });
+      on('dj-tt-fs-normal', function () { ed.chain().focus().unsetFontSize().run(); closeMenus(); _djUpdateToolbar(ed); });
+      on('dj-tt-fs-large', function () { ed.chain().focus().setFontSize(_TT_FONT_SIZES.large).run(); closeMenus(); _djUpdateToolbar(ed); });
       on('dj-tt-h1', function () { ed.chain().focus().toggleHeading({ level: 1 }).run(); _djUpdateToolbar(ed); });
       on('dj-tt-h2', function () { ed.chain().focus().toggleHeading({ level: 2 }).run(); _djUpdateToolbar(ed); });
       on('dj-tt-h3', function () { ed.chain().focus().toggleHeading({ level: 3 }).run(); _djUpdateToolbar(ed); });
@@ -36428,6 +36475,7 @@
             mods.Underline,
             mods.TextStyle,
             mods.Color,
+            mods.FontSize,
             mods.Highlight.configure({ multicolor: true }),
             mods.Placeholder.configure({ placeholder: 'Start typing your note\u2026' }),
             mods.TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -37758,6 +37806,10 @@
             await dbPut('notes', { id: 'task_templates', userId: uid, data: payload, updatedAt: payload._updatedAt }).catch(() => { });
           }
         }
+        const _tplColwMigrated = _ttMigrateOnce('rian_colw_mig_tpl_v1',
+          () => Array.isArray(state.taskTemplates) && state.taskTemplates.length > 0,
+          () => _ttMigrateColwidths(state.taskTemplates, 'notes'));
+        if (_tplColwMigrated) scheduleTaskTemplatesSave();
       } catch (e) { console.warn('[Rian] loadTaskTemplates:', e); }
       render();
     }
@@ -51205,6 +51257,7 @@ QUESTION: ${query}`;
     }
 
     // ── Note fullscreen editor (TipTap) ──────────────────────────
+    const _TT_FONT_SIZES = { small: '12px', large: '17px' }; // v6.7.90 — Aa dropdown: Small / Normal (unset) / Large
     let _noteFsActId = null, _noteFsDi = null;
     let _tplNoteFsId = null;      // Task Template currently using the shared TipTap editor
     let _tiptapEditor = null;      // singleton TipTap Editor instance
@@ -51337,6 +51390,32 @@ QUESTION: ${query}`;
               parseHTML: el => el.style.backgroundColor || null,
               renderHTML: attrs => attrs.background ? { style: `background-color:${attrs.background}` } : {},
             },
+          };
+        },
+      });
+      // Small-text toggle (v6.7.89): adds a `fontSize` attribute to the existing
+      // textStyle mark (same pattern @tiptap/extension-color uses for `color`),
+      // plus setFontSize/unsetFontSize commands. One fixed size for now — a
+      // simple toggle, not a size picker.
+      const FontSize = TipTapExtension.create({
+        name: 'fontSize',
+        addOptions() { return { types: ['textStyle'] }; },
+        addGlobalAttributes() {
+          return [{
+            types: this.options.types,
+            attributes: {
+              fontSize: {
+                default: null,
+                parseHTML: el => el.style.fontSize || null,
+                renderHTML: attrs => attrs.fontSize ? { style: `font-size: ${attrs.fontSize}` } : {},
+              },
+            },
+          }];
+        },
+        addCommands() {
+          return {
+            setFontSize: (size) => ({ chain }) => chain().setMark('textStyle', { fontSize: size }).run(),
+            unsetFontSize: () => ({ chain }) => chain().setMark('textStyle', { fontSize: null }).run(),
           };
         },
       });
@@ -51613,7 +51692,7 @@ QUESTION: ${query}`;
       _tiptapModules = {
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItem, TaskItemWithHandle, Table, TableRow, TableHeader, TableCell,
-        TableCellWithBg, TableHeaderWithBg,
+        TableCellWithBg, TableHeaderWithBg, FontSize,
         Link, Subscript, Superscript, Image, Collapsible, TableDeleteHandler, FileChip,
         PmDOMParser, PmUndo, PmRedo, PmUndoDepth, PmRedoDepth,
       };
@@ -51625,7 +51704,7 @@ QUESTION: ${query}`;
       const {
         Editor, StarterKit, Underline, TextStyle, Color, Highlight, Placeholder,
         TextAlign, TaskList, TaskItemWithHandle, Table, TableRow,
-        TableCellWithBg, TableHeaderWithBg,
+        TableCellWithBg, TableHeaderWithBg, FontSize,
         Link, Subscript, Superscript, Image, Collapsible, TableDeleteHandler, FileChip,
       } = await _loadTipTapModules();
 
@@ -52225,6 +52304,7 @@ QUESTION: ${query}`;
           Underline,
           TextStyle,
           Color,
+          FontSize,
           Highlight.configure({ multicolor: true }),
           Placeholder.configure({ placeholder: 'Start typing your note…' }),
           TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -52684,7 +52764,7 @@ QUESTION: ${query}`;
       };
       // Dropdown toggle — positions menu as position:fixed so it escapes overflow-x:auto toolbar clipping on mobile
       const _closeToolbarDrops = () => {
-        ['tt-hdg-menu', 'tt-list-menu', 'tt-table-menu'].forEach(id => {
+        ['tt-hdg-menu', 'tt-list-menu', 'tt-table-menu', 'tt-fontsize-menu'].forEach(id => {
           const menu = document.getElementById(id);
           if (menu) menu.classList.remove('tt-open');
         });
@@ -52710,6 +52790,7 @@ QUESTION: ${query}`;
       _openToolbarDrop('tt-hdg-btn', 'tt-hdg-menu');
       _openToolbarDrop('tt-list-btn', 'tt-list-menu');
       _openToolbarDrop('tt-table', 'tt-table-menu');
+      _openToolbarDrop('tt-fontsize-btn', 'tt-fontsize-menu');
       const toolbar = document.getElementById('note-fs-tt-toolbar');
       if (toolbar && !toolbar._ttDesktopScrollBound) {
         toolbar._ttDesktopScrollBound = true;
@@ -52782,6 +52863,11 @@ QUESTION: ${query}`;
       on('tt-bold', () => { e.chain().focus().toggleBold().run(); _ttUpdateToolbar(e); });
       on('tt-italic', () => { e.chain().focus().toggleItalic().run(); _ttUpdateToolbar(e); });
       on('tt-strike', () => { e.chain().focus().toggleStrike().run(); _ttUpdateToolbar(e); });
+      // Font size dropdown
+      const _closeFontSizeMenu = () => document.getElementById('tt-fontsize-menu')?.classList.remove('tt-open');
+      on('tt-fs-small', () => { e.chain().focus().setFontSize(_TT_FONT_SIZES.small).run(); _closeFontSizeMenu(); _ttUpdateToolbar(e); });
+      on('tt-fs-normal', () => { e.chain().focus().unsetFontSize().run(); _closeFontSizeMenu(); _ttUpdateToolbar(e); });
+      on('tt-fs-large', () => { e.chain().focus().setFontSize(_TT_FONT_SIZES.large).run(); _closeFontSizeMenu(); _ttUpdateToolbar(e); });
       // Headings
       const _closeHdgMenu = () => document.getElementById('tt-hdg-menu')?.classList.remove('tt-open');
       on('tt-para', () => {
@@ -53239,6 +53325,17 @@ QUESTION: ${query}`;
         else if (editor.isActive('heading', { level: 3 })) _hdgLabel.textContent = 'H3';
         else _hdgLabel.textContent = 'H';
       }
+      // Update font-size dropdown button + menu item active state
+      const _fsSmall = editor.isActive('textStyle', { fontSize: _TT_FONT_SIZES.small });
+      const _fsLarge = editor.isActive('textStyle', { fontSize: _TT_FONT_SIZES.large });
+      const _fsBtn = document.getElementById('tt-fontsize-btn');
+      if (_fsBtn) _fsBtn.classList.toggle('tt-active', _fsSmall || _fsLarge);
+      const _fsSmallItem = document.getElementById('tt-fs-small');
+      const _fsNormalItem = document.getElementById('tt-fs-normal');
+      const _fsLargeItem = document.getElementById('tt-fs-large');
+      if (_fsSmallItem) _fsSmallItem.classList.toggle('tt-active', _fsSmall);
+      if (_fsNormalItem) _fsNormalItem.classList.toggle('tt-active', !_fsSmall && !_fsLarge);
+      if (_fsLargeItem) _fsLargeItem.classList.toggle('tt-active', _fsLarge);
       // Update list dropdown button active state + icon
       const _listIsActive = editor.isActive('bulletList') || editor.isActive('orderedList') || editor.isActive('taskList');
       const _listBtn = document.getElementById('tt-list-btn');
@@ -53570,6 +53667,12 @@ QUESTION: ${query}`;
       const hdgDrop = document.getElementById('tt-hdg-drop');
       const hdgMenu = document.getElementById('tt-hdg-menu');
       if (hdgMenu && hdgDrop && !hdgDrop.contains(ev.target)) hdgMenu.classList.remove('tt-open');
+    });
+    // Close font-size dropdown when clicking outside it
+    document.addEventListener('click', (ev) => {
+      const fsDrop = document.getElementById('tt-fontsize-drop');
+      const fsMenu = document.getElementById('tt-fontsize-menu');
+      if (fsMenu && fsDrop && !fsDrop.contains(ev.target)) fsMenu.classList.remove('tt-open');
     });
 
     function _ttHideLinkBubble() {
@@ -53997,6 +54100,59 @@ QUESTION: ${query}`;
         return tmp.innerHTML;
       } catch (e) {
         return html;
+      }
+    }
+
+    // v6.7.87 cleanup: strips leftover table colwidth/colgroup widths that
+    // accumulated while _ttSetContent used to silently wipe them on every
+    // note-open. That masking bug meant no persisted width was ever visible or
+    // reliable, so anything found here is leftover noise, not an intentional
+    // resize — safe to clear. These two are unconditional workers — always
+    // call them through _ttMigrateOnce below, NEVER directly from a load path.
+    // (v6.7.88 fix: an earlier version called these raw on every loadNotes()/
+    // loadJournal() run — which fires again every time you navigate back to
+    // that tab — so it stripped a resize you'd just made and saved the moment
+    // you returned to the list. Gating by a permanent flag, set only once real
+    // data has actually been seen, is what makes this safe to call repeatedly.)
+    function _ttMigrateColwidths(list, field) {
+      let migrated = false;
+      (list || []).forEach(item => {
+        const html = item && item[field];
+        if (html && html.indexOf('<table') !== -1) {
+          const cleaned = _ttCleanTableHtml(html);
+          if (cleaned !== html) { item[field] = cleaned; migrated = true; }
+        }
+      });
+      return migrated;
+    }
+    function _ttMigrateWeekColwidths(weekData) {
+      let migrated = false;
+      (weekData?.days || []).forEach(d => {
+        (d.activities || []).forEach(a => {
+          if (a.notes && a.notes.indexOf('<table') !== -1) {
+            const cleaned = _ttCleanTableHtml(a.notes);
+            if (cleaned !== a.notes) { a.notes = cleaned; migrated = true; }
+          }
+        });
+      });
+      return migrated;
+    }
+    // Runs `fn` (one of the two workers above, or an equivalent check) exactly
+    // once ever per `flagKey` — but only counts an attempt as "done" once
+    // `isReady()` confirms real data was actually present to examine. Until
+    // then it's a cheap no-op retried on the next load, so a collection that
+    // happens to be empty on the first call still gets migrated once it
+    // actually has content.
+    function _ttMigrateOnce(flagKey, isReady, fn) {
+      try {
+        if (localStorage.getItem(flagKey)) return false;
+        if (!isReady()) return false;
+        const result = fn();
+        localStorage.setItem(flagKey, '1');
+        return result;
+      } catch (e) {
+        console.warn('[Rian] one-time table-width migration (' + flagKey + '):', e);
+        return false;
       }
     }
 
@@ -54575,8 +54731,11 @@ function _ttStripDefaultTableWidths() {
         // Convert plain text to HTML paragraph tags for TipTap so formatting is preserved
         val = val.split('\n').map(line => `<p>${esc(line)}</p>`).join('');
       }
-      // Strip target="_blank" from stored links, then clean table sizing
-      const cleaned = _ttCleanTableHtml(_stripVisibleActivityNoteRecovery(val).replace(/\s+target="_blank"/g, ''));
+      // Strip target="_blank" from stored links. Table width cleanup (baked-in
+      // DOCX pixel widths) now happens once at import time (see _jDocxRun), not
+      // here — this used to strip colwidth on every open, wiping out manually
+      // resized table columns as soon as a note was reopened.
+      const cleaned = _stripVisibleActivityNoteRecovery(val).replace(/\s+target="_blank"/g, '');
       // Does the source actually have content? Used below to detect the
       // fast-path parser silently dropping it (v6.7.81 — suspected cause of
       // intermittent "editor loads empty" reports: ProseMirror's DOMParser
@@ -56448,6 +56607,21 @@ The state block is invisible to the user.`;
               <path d="M8 18c0 1.66 1.79 3 4 3s4-1.34 4-3-1.79-3-4-3" />
             </svg>
           </button>
+          <!-- Font size dropdown -->
+          <div class="tt-list-drop" id="tt-fontsize-drop">
+            <button class="tt-btn tt-list-btn" id="tt-fontsize-btn" title="Text size" style="font-weight:800">
+              <span style="font-size:15px">A</span><span style="font-size:10px">a</span>
+              <svg class="tt-list-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+            <div class="tt-list-menu" id="tt-fontsize-menu">
+              <button class="tt-list-item" id="tt-fs-small" style="font-size:12px">Small</button>
+              <button class="tt-list-item" id="tt-fs-normal" style="font-size:14px">Normal</button>
+              <button class="tt-list-item" id="tt-fs-large" style="font-size:17px">Large</button>
+            </div>
+          </div>
           <div class="tt-sep"></div>
           <!-- Headings dropdown -->
           <div class="tt-list-drop" id="tt-hdg-drop">
