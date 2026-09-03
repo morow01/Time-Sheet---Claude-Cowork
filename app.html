@@ -22231,7 +22231,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.96';
+    const VERSION = '6.7.98';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50182,6 +50182,30 @@ Rules:
         } catch (e) { /* ignore — auth will re-render correctly */ }
       })();
 
+      // v6.7.98: on a slow/flaky connection, Firebase Auth's initial resolution
+      // can hang well past the 1-3s the comment above assumes, leaving the user
+      // stuck on the raw sign-in screen even though this device was already
+      // signed in (reported: "spotty connection — app won't load, just shows
+      // login screen"). Full offline resolves the cached session instantly
+      // (no network attempted at all); a *slow* connection is worse — it blocks
+      // on a real request that just sits there. If auth still hasn't resolved
+      // after a few seconds and we know this device was previously signed in,
+      // fall back to the cached-uid stub — same shape _preload() above already
+      // uses — so the app renders. Every view has its own "Loading…" placeholder
+      // for data that isn't cached yet (e.g. renderWeekView()'s `!state.weekData`
+      // guard), so this is safe even with nothing else preloaded. The real
+      // onAuthStateChanged callback still unconditionally overwrites
+      // state.currentUser whenever it does fire, so this never fights the real
+      // session — it only fills the gap while waiting for it.
+      setTimeout(() => {
+        if (state.currentUser) return; // real auth (or _preload above) already resolved
+        const cachedUid = localStorage.getItem('rian_last_uid');
+        if (!cachedUid) return;
+        console.warn('[Rian] Auth slow to resolve — using cached session (v6.7.98 fallback)');
+        state.currentUser = { uid: cachedUid };
+        render();
+      }, 3000);
+
       // Firebase auth state observer — drives the whole app lifecycle
       auth_fb.onAuthStateChanged(async user => {
         if (localStorage.getItem('rian_local_only') === '1' && !user) {
@@ -55006,6 +55030,29 @@ function _ttStripDefaultTableWidths() {
             }
           };
           _ttUpdateToolbar(_tiptapEditor);
+          // v6.7.97: extra safety net for the intermittent "editor loads empty"
+          // report (v6.7.81 fixed two independent causes — stale captured value,
+          // and the fast-path parser silently dropping unmappable content — but
+          // it's still happening occasionally, so there's a third, unconfirmed
+          // gap). Rather than block on root-causing it, verify a moment after
+          // open that non-empty source actually produced non-empty editor
+          // content, and silently redo the load via the non-fast-path
+          // commands.setContent if not. Same recovery as closing and reopening
+          // the note, just automatic — no data is at risk since the source of
+          // truth (state/IndexedDB) was never touched.
+          setTimeout(() => {
+            if (_noteFsActId !== actId || !_tiptapEditor) return; // note closed/changed since
+            const _latestAct = _findActivityById(actId)?.act || state.weekData?.days[di]?.activities?.find(a => a.id === actId);
+            const _latestTa = document.querySelector(`.act-notes-area[data-act="${actId}"]`);
+            const _latestValue = _latestTa ? _latestTa.value : (_latestAct?.notes || '');
+            const _sourceHasContent = /\S/.test((_latestValue || '').replace(/<[^>]*>/g, '')) || /<(img|table|hr)\b/i.test(_latestValue || '');
+            if (_sourceHasContent && _tiptapEditor.isEmpty) {
+              console.warn('[Rian] Note editor loaded empty despite non-empty content — auto-retrying (v6.7.97 safety net)');
+              _tiptapEditor.commands.setContent(_latestValue, false);
+              _tiptapEditor.commands.clearHistory?.();
+              _ttResetHistory(_ttGetHTML());
+            }
+          }, 300);
         } catch (err) {
           console.error("TipTap load error:", err);
           const edEl = document.getElementById('note-fs-editor');

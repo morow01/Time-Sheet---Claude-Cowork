@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.7.96**
+Current version: **6.7.98**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -430,6 +430,17 @@ Reported: opening a task's TipTap notes editor sometimes shows a blank editor ev
 2. **Silent-empty fast-path parse.** `_ttSetContent()`'s fast path parses HTML via `PmDOMParser.fromSchema(...).parse()` and dispatches it directly. ProseMirror can drop content it can't map to the schema without throwing, so a non-empty source could dispatch as an empty doc with no error and no fallback triggered. Now checks whether the source HTML actually had content (`_sourceHasContent`) and whether the parsed result looks meaningfully empty (`parsedDoc.content.size <= 2`); if source-had-content-but-parsed-empty, it falls through to the `commands.setContent()` fallback path instead of trusting the fast-path result.
 
 Only `openNoteFullscreen` (task notes) got the re-read fix, since that's the reported path; `_ttSetContent`'s fast-path guard is shared by all 5 editor-open sites.
+
+**Still recurring after both fixes (v6.7.97).** User reported the same symptom again on a later version, so there's a third, unidentified gap — not reproduced live this time (unlike the two fixes above, which were). Rather than leave it unfixed pending reproduction, added an automatic self-healing check in `openNoteFullscreen`: 300ms after the initial `_ttSetContent()` call, re-reads the activity's current notes and checks `_sourceHasContent && _tiptapEditor.isEmpty`. If content should be showing but isn't, silently re-applies it via `commands.setContent()` (bypassing the fast path) — the same recovery closing and reopening gives the user, just automatic and without them noticing. No data risk: it only ever reads from `state`/the DOM textarea, never writes. If this stops the reports, the 300ms delay and specific trigger condition are a live clue toward the actual root cause; if it doesn't, extend the same check to the other 4 editor-open sites (`openCoNoteFullscreen`, `openTemplateNoteFullscreen`, `openFieldNoteFullscreen`, `_djMountTiptap`) — this fix only covers task notes, matching the reported path.
+
+### Spotty-Connection Login Screen (v6.7.98)
+Reported: on a flaky/slow connection (not fully offline), the app sometimes just shows the sign-in screen and won't load, even on a device that was already signed in. Full offline actually works better — Firebase Auth resolves the persisted session instantly with no network attempted; a *slow* connection is worse because it blocks on a real request that just hangs.
+
+`init()` already had `_preload()`, an optimistic-render IIFE that shows cached data before Firebase Auth resolves — but only when **this specific week** (`getCurrentFriday()`) is already cached locally. If Auth is slow and this week hasn't been opened on that device before, there was no fallback: the user just sat on the raw sign-in button until Auth eventually resolved or gave up.
+
+Fix: a `setTimeout(..., 3000)` alongside `_preload()` — if `state.currentUser` is still unset after 3s and `localStorage.rian_last_uid` proves this device was previously signed in, sets the same cached-uid stub `_preload()` uses and calls `render()`. Safe because every view already has its own "Loading…" placeholder for missing data (e.g. `renderWeekView()`'s `!state.weekData` guard) — confirmed by reading, not assumed. The real `onAuthStateChanged` callback unconditionally overwrites `state.currentUser` whenever it does fire, so the stub never fights the real session, it only fills the gap.
+
+Not reproduced live (couldn't simulate a genuinely flaky connection) — implemented from code-reading the gap, not live DOM inspection like the fixes above. If reports continue, that's the next thing to verify.
 
 ### Firestore IndexedDB Cache Corruption
 `?cleanup=1` URL parameter nukes Firestore's local IndexedDB caches (built into app since v5.1.79). Use when sync behaves inconsistently — `get({source:'server'})` can return cached data from corrupted IndexedDB even when claiming server source. Ad blockers (uBlock Origin Lite) can also interfere with Firestore network requests.
