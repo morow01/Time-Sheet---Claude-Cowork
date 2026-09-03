@@ -22312,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.9';
+    const VERSION = '6.8.10';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50212,13 +50212,9 @@ Rules:
       });
 
       if ('serviceWorker' in navigator) {
-        // v6.8.8: Active update detection. Previously the app relied entirely on
-        // sw.js's passive stale-while-revalidate (serve cached, refresh cache in the
-        // background) — a new version only appeared after closing and reopening the
-        // app roughly twice, silently, with no indication anything was stale. This
-        // was unreliable on the Android APK's WebView specifically (reported: still
-        // stale after 2+ reopens, sometimes needing a full data clear) even though
-        // the same mechanism updated the PWA in Chrome promptly.
+        // v6.8.8: Active update detection via controllerchange + reg.update(). Previously
+        // the app relied entirely on sw.js's passive stale-while-revalidate — a new
+        // version only appeared after closing/reopening roughly twice, silently.
         //
         // 'controllerchange' fires whenever the SW controlling this page changes —
         // including the very first-ever activation (controller goes null -> set),
@@ -50228,12 +50224,8 @@ Rules:
         navigator.serviceWorker.register(`sw.js?v=${VERSION}`).catch(e => console.warn('[Rian]', e));
         navigator.serviceWorker.addEventListener('controllerchange', function () {
           if (!_hadControllerAtLoad) return;
-          showActionToast('Update ready', 'Refresh', function () { location.reload(); }, 20000);
+          _rianShowUpdateToast();
         });
-        // Actively check for a new sw.js whenever the app is foregrounded, instead of
-        // only on cold-start registration. reg.update() bypasses the browser's normal
-        // SW-script cache throttling, so this catches an update within one foreground
-        // rather than requiring multiple full closes/reopens to eventually notice.
         document.addEventListener('visibilitychange', function () {
           if (document.visibilityState !== 'visible') return;
           navigator.serviceWorker.getRegistration().then(function (reg) {
@@ -50243,6 +50235,44 @@ Rules:
         // Network-first strategy: always serves latest when online,
         // falls back to cache when offline. Works in both PWA and APK.
       }
+
+      // v6.8.10: The v6.8.8 mechanism above depends on the service worker's own
+      // background cache refresh actually completing — confirmed via live CDP
+      // inspection of the Android APK's WebView (adb + webview_devtools_remote socket)
+      // that on that WebView specifically, the SW's cached copy of app.html can sit
+      // stale indefinitely: reg.update() runs fine and reports success, but the
+      // fetch handler's own background revalidation of the app.html *document* never
+      // lands in cache even after 20+ seconds untouched, while a direct cache-busted
+      // fetch from that same page context reaches the network instantly and gets the
+      // current version. Root cause not fully pinned down (Android WebView's top-level
+      // navigation request may not go through the SW fetch handler the same way a
+      // real Chrome tab's does), but rather than keep chasing it, added a check that
+      // doesn't depend on the SW at all: fetch app.html directly with cache disabled,
+      // read its VERSION constant by regex, and compare. If it differs, prompt refresh
+      // — navigating to a freshly cache-busted URL (not a plain reload, since a plain
+      // reload can still hit whatever cache layer was the problem in the first place).
+      var _rianUpdateToastShown = false;
+      function _rianShowUpdateToast(newVersion) {
+        if (_rianUpdateToastShown) return;
+        _rianUpdateToastShown = true;
+        showActionToast(newVersion ? `Update ready (v${newVersion})` : 'Update ready', 'Refresh', function () {
+          location.href = location.pathname + '?_r=' + Date.now();
+        }, 30000);
+      }
+      function _rianCheckForUpdate() {
+        if (_rianUpdateToastShown) return;
+        fetch('app.html?_v=' + Date.now(), { cache: 'no-store' })
+          .then(function (r) { return r.text(); })
+          .then(function (t) {
+            var m = t.match(/const VERSION = '([^']*)'/);
+            if (m && m[1] && m[1] !== VERSION) _rianShowUpdateToast(m[1]);
+          })
+          .catch(function () { /* offline, or blocked — silently retry on next foreground */ });
+      }
+      setTimeout(_rianCheckForUpdate, 4000);
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') _rianCheckForUpdate();
+      });
 
       // v6.7.79: Prewarm the TipTap editor's CDN modules in the background
       // shortly after startup (while online) so the service worker has a
