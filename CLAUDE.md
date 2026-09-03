@@ -527,7 +527,7 @@ plugins: {
 ```
 
 ### Native Google Sign-In
-Uses `@capacitor-firebase/authentication` v8.2.0 to bypass the WebView OAuth block (disallowed_useragent error). Code in `signInWithGoogle()`:
+Uses `@capacitor-firebase/authentication` (v8.5.1 as of 2026-09; bumped from 8.2.0 while chasing the sign-in failure below — Google has been deprecating the legacy GoogleSignIn API in favor of Credential Manager) to bypass the WebView OAuth block (disallowed_useragent error). Code in `signInWithGoogle()`:
 ```js
 if (IS_NATIVE && window.Capacitor?.Plugins?.FirebaseAuthentication) {
   const { FirebaseAuthentication } = window.Capacitor.Plugins;
@@ -540,6 +540,12 @@ if (IS_NATIVE && window.Capacitor?.Plugins?.FirebaseAuthentication) {
 }
 ```
 `IS_NATIVE` flag: `typeof window.Capacitor !== 'undefined'`
+
+#### Fresh-machine sign-in failures (2026-09 PC rebuild) — two separate causes, both required
+Setting up the APK build on a brand-new PC broke Google Sign-In with a webpage-rendered "400: malformed request" error, and after fixing that, a native "Account reauth failed (err 16)" error. Both had to be fixed before sign-in worked again — **a fresh machine needs both of these, not just one:**
+
+1. **`android/app/google-services.json` is git-ignored and was never committed** — only a project-root copy is tracked. `android/app/build.gradle` only applies the `com.google.gms.google-services` plugin `if (file('google-services.json').text)` exists inside `android/app/`; without it, the plugin silently skips, the native `FirebaseAuthentication` plugin has no OAuth config, and `signInWithGoogle()` falls through to the broken web `signInWithPopup`/`signInWithRedirect` path inside the WebView — which renders as a Google error page, not a native dialog. Fix: copy the root `google-services.json` into `android/app/google-services.json` on every fresh machine (not automated by `scripts/build-www.js` or any Gradle task — has to be done manually once per machine).
+2. **The new machine's auto-generated `debug.keystore` has a SHA-1 fingerprint that isn't registered in Firebase.** Once (1) is fixed, native sign-in actually engages and immediately fails with `Account reauth failed` / error 16 — this is Google's standard error for "this app's signing certificate isn't recognized." Fix: get the new machine's SHA-1 (`keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey -storepass android -keypass android`), add it in Firebase Console → Project settings → Your apps → the Android app → **Add fingerprint**, then **re-download `google-services.json`** (it embeds the registered fingerprints, so the old copy won't have the new one) and replace both the root and `android/app/` copies before rebuilding. Each fresh dev machine adds its own fingerprint — old machines' fingerprints stay registered too, so switching back and forth between machines doesn't break anything.
 
 ### Google Cloud API Keys — CRITICAL
 Two separate restriction systems exist — both must include the app's origin:

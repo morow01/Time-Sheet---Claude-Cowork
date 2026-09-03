@@ -188,6 +188,30 @@ adb install -r app\build\outputs\apk\debug\app-debug.apk
 Open Android Studio → **More Actions → SDK Manager**, make sure an **Android SDK Platform**
 and **Android SDK Build-Tools** are installed, and accept any license prompts. Then rebuild.
 
+### If Google Sign-In fails on a fresh machine (2026-09 PC rebuild — confirmed, both steps required)
+Two separate one-time-per-machine steps, discovered in this order because the first error
+masked the second:
+
+1. **Copy `google-services.json` into `android/app/`.** This file is git-ignored (only a
+   project-root copy is tracked), and nothing in the build copies it automatically. Without
+   it inside `android/app/`, the Firebase native plugin silently has no config and sign-in
+   fails with a webpage "400: malformed request" error instead of a native dialog.
+   ```powershell
+   cp google-services.json android/app/google-services.json
+   ```
+2. **Register this machine's debug-keystore SHA-1 in Firebase**, or sign-in fails with a
+   native "Account reauth failed (err 16)" error instead. Every machine's first-ever build
+   auto-generates its own new `debug.keystore`, whose fingerprint won't be registered yet.
+   ```powershell
+   keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android
+   ```
+   Copy the `SHA1:` value, then in [Firebase Console](https://console.firebase.google.com) →
+   your project → ⚙️ Project settings → **Your apps** → the Android app → **Add fingerprint**
+   → paste it → Save. Then **re-download `google-services.json`** from that same app card
+   (the file embeds registered fingerprints, so the old copy won't include the new one) and
+   replace *both* the project-root copy and `android/app/google-services.json` with it
+   before rebuilding.
+
 ---
 
 ## Part 4 — Install the APK on your phone
