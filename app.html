@@ -1691,6 +1691,11 @@
       animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
+    @keyframes rianUpdatePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+
     @keyframes pulse {
 
       0%,
@@ -22312,7 +22317,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.11';
+    const VERSION = '6.8.12';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27255,6 +27260,32 @@
       el._timer = setTimeout(() => { el.style.opacity = '0'; el.style.pointerEvents = 'none'; el._actionFn = null; }, duration);
     }
 
+    // v6.8.10/12: Update-available indicator. First shipped as an action toast; user
+    // feedback was that a toast popping up mid-task felt intrusive, so it's now a small
+    // pulsing refresh icon next to the version number in the header instead — visible but
+    // passive, no interruption. _rianUpdateAvailable is read directly by the header
+    // template in render(); top-level (not nested in init()) so both render() and the
+    // onclick handler (which executes in global scope) can reach it.
+    var _rianUpdateAvailable = null;
+    function _rianDoRefresh() {
+      location.href = location.pathname + '?_r=' + Date.now();
+    }
+    function _rianShowUpdateToast(newVersion) {
+      if (_rianUpdateAvailable) return; // already showing
+      _rianUpdateAvailable = newVersion || true;
+      render();
+    }
+    function _rianCheckForUpdate() {
+      if (_rianUpdateAvailable) return;
+      fetch('app.html?_v=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.text(); })
+        .then(function (t) {
+          var m = t.match(/const VERSION = '([^']*)'/);
+          if (m && m[1] && m[1] !== VERSION) _rianShowUpdateToast(m[1]);
+        })
+        .catch(function () { /* offline, or blocked — silently retry on next foreground */ });
+    }
+
     // ============================================================
     // RENDER (debounced via rAF to coalesce rapid calls)
     // ============================================================
@@ -27881,6 +27912,9 @@
         <div class="text-xs flex items-center justify-center gap-2" style="color:var(--text-header-sub);min-height:18px">
           <span title="${syncStatusTitle}" style="color:${syncStatusColor}">${syncStatusLabel}</span>
           <span style="color:var(--text-header-sub);opacity:0.85" class="text-xs">v${VERSION} &middot; ${IS_NATIVE ? 'App' : 'PWA'}</span>
+          ${_rianUpdateAvailable ? `<button onclick="_rianDoRefresh()" title="Update ready — tap to refresh" aria-label="Update ready — tap to refresh" style="display:flex;align-items:center;justify-content:center;width:18px;height:18px;padding:0;border:none;border-radius:50%;background:rgba(var(--accent-rgb),0.18);color:var(--accent);cursor:pointer;flex-shrink:0;animation:rianUpdatePulse 1.8s ease-in-out infinite">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+          </button>` : ''}
         </div>
       </div>
       <div class="hdr-top-spacer" aria-hidden="true"></div>
@@ -50248,27 +50282,9 @@ Rules:
       // navigation request may not go through the SW fetch handler the same way a
       // real Chrome tab's does), but rather than keep chasing it, added a check that
       // doesn't depend on the SW at all: fetch app.html directly with cache disabled,
-      // read its VERSION constant by regex, and compare. If it differs, prompt refresh
-      // — navigating to a freshly cache-busted URL (not a plain reload, since a plain
-      // reload can still hit whatever cache layer was the problem in the first place).
-      var _rianUpdateToastShown = false;
-      function _rianShowUpdateToast(newVersion) {
-        if (_rianUpdateToastShown) return;
-        _rianUpdateToastShown = true;
-        showActionToast(newVersion ? `Update ready (v${newVersion})` : 'Update ready', 'Refresh', function () {
-          location.href = location.pathname + '?_r=' + Date.now();
-        }, 30000);
-      }
-      function _rianCheckForUpdate() {
-        if (_rianUpdateToastShown) return;
-        fetch('app.html?_v=' + Date.now(), { cache: 'no-store' })
-          .then(function (r) { return r.text(); })
-          .then(function (t) {
-            var m = t.match(/const VERSION = '([^']*)'/);
-            if (m && m[1] && m[1] !== VERSION) _rianShowUpdateToast(m[1]);
-          })
-          .catch(function () { /* offline, or blocked — silently retry on next foreground */ });
-      }
+      // read its VERSION constant by regex, and compare (_rianCheckForUpdate, defined
+      // top-level above near showActionToast — shows a header icon rather than a toast
+      // as of v6.8.12, see the comment there).
       setTimeout(_rianCheckForUpdate, 4000);
       document.addEventListener('visibilitychange', function () {
         if (document.visibilityState === 'visible') _rianCheckForUpdate();

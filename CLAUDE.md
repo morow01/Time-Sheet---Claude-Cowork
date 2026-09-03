@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.11**
+Current version: **6.8.12**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -660,6 +660,13 @@ Diagnosed live against a real phone (adb + the WebView's `webview_devtools_remot
 Added a completely SW-independent check in `init()`: `_rianCheckForUpdate()` fetches `app.html` directly with `cache:'no-store'`, regexes out `const VERSION = '...'`, and compares against the running `VERSION`. Runs once ~4s after load and again on every `visibilitychange` foreground. On a mismatch, shows the same `showActionToast('Update ready (vX)', 'Refresh', ...)` UI as the v6.8.8 controllerchange path (both funnel through `_rianShowUpdateToast()` now, gated by one shared `_rianUpdateToastShown` flag so they can't double-prompt) — but the refresh action navigates to `location.pathname + '?_r=' + Date.now()` rather than a plain `location.reload()`, since a plain reload could hit whatever cache layer was the actual problem; a genuinely new URL can't be served from any cache keyed by exact URL.
 
 The v6.8.8 controllerchange/reg.update() code is left in place — it's correct and still fires in browsers where the underlying mechanism does work (confirmed on the PWA), so this is a second, independent layer rather than a replacement.
+
+### Update indicator: toast → header icon (v6.8.12)
+The v6.8.8/6.8.10 update checks originally surfaced via `showActionToast('Update ready', 'Refresh', ...)` — user feedback: a toast popping up mid-task felt intrusive. Replaced with a small pulsing refresh-icon button next to the version number in the header top-bar (`v${VERSION} · App/PWA`), visible but passive — no popup, no interruption, click it when convenient.
+
+Implementation: `_rianUpdateAvailable` (top-level `var`, not nested in `init()`) holds the detected new-version string once found; the header template in `render()` reads it directly and conditionally renders the icon (`@keyframes rianUpdatePulse` for the subtle pulse). `_rianShowUpdateToast(newVersion)` (name kept for continuity even though it no longer shows a toast) sets the flag and calls `render()`. `_rianDoRefresh()` — called from the icon's `onclick`, which executes in global scope — navigates to `location.pathname + '?_r=' + Date.now()`, same cache-busting approach as before.
+
+All four functions (`_rianUpdateAvailable`, `_rianDoRefresh`, `_rianShowUpdateToast`, `_rianCheckForUpdate`) moved to top-level scope (near `showActionToast`, well before `render()` and `init()`) — they were previously nested inside `init()`, which worked for the wiring (`setTimeout`, event listeners) but meant `render()`'s header template couldn't read `_rianUpdateAvailable` and the `onclick="_rianDoRefresh()"` attribute couldn't resolve the function, since neither runs inside `init()`'s closure.
 
 ### WebView Media Autoplay (v5.5.17)
 `MainActivity.java` sets `webView.getSettings().setMediaPlaybackRequiresUserGesture(false)` — needed so Gemini TTS audio can play after the async fetch completes (the user-tap gesture context is lost by then). Without this, audio silently fails in APK even though it works in PWA.
