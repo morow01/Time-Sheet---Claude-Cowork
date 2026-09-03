@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.7**
+Current version: **6.8.8**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -638,7 +638,16 @@ Fix: `_exitApp()` now removes the dialog unconditionally up front (so it never l
 Not verified against a real Android device/PWA — `history.back()` triggering an actual WebAPK close is a platform behavior a desktop browser tab can't fully reproduce. If exit still doesn't work after this, next step is checking how many real history entries actually exist at exit time (one `history.back()` may not be enough if something outside this trap ever pushes its own entries).
 
 ### Offline Support via Service Worker (v5.4.11)
-Service worker registration (in app.html init) no longer skips native mode. Same `sw.js` serves both PWA and APK — network-first, cache fallback. First launch online installs the cache; later launches work offline. Data sync (Firestore) still requires internet, but cached IndexedDB data loads.
+Service worker registration (in app.html init) no longer skips native mode. Same `sw.js` serves both PWA and APK — stale-while-revalidate (serves cached instantly, refreshes cache in the background; see [sw.js](sw.js) comment — this replaced an earlier network-first strategy that stalled 20-60s per request on weak signal before falling back to cache). First launch online installs the cache; later launches work offline. Data sync (Firestore) still requires internet, but cached IndexedDB data loads.
+
+#### Update detection was passive — users had no way to know a new version was even available (v6.8.8)
+Stale-while-revalidate means the *page currently open* always runs whatever was cached at the time it loaded — a code push only reaches a given device the next time it's opened after the background revalidation fetch completes, normally the launch-after-next. There was no code to detect or surface this: no update-available prompt, and nothing actively re-checked for a new `sw.js` beyond the browser's own default (infrequent, and — confirmed via user reports of the APK sitting stale through 2+ full closes/reopens where the PWA in Chrome updated promptly on the same push — the Android WebView's own passive check timing is less reliable than Chrome's). The only tool users had was guessing how many times to close/reopen, or as a last resort clearing app storage entirely (which also signs them out — clearly not acceptable as a routine update step).
+
+Fixed by making update-checking active instead of passive, in `init()`:
+- `navigator.serviceWorker.addEventListener('controllerchange', ...)` — fires whenever the SW controlling the page changes. Guarded by `_hadControllerAtLoad` (`!!navigator.serviceWorker.controller` captured before `register()` runs) so the very first-ever activation (`controller` goes `null` → set, not an update) doesn't false-trigger. When a real controller *swap* happens — i.e. an update actually landed — shows a `showActionToast('Update ready', 'Refresh', () => location.reload(), ...)` prompt rather than silently auto-reloading, since a field tech could be mid-edit on a timesheet or note.
+- `document.addEventListener('visibilitychange', ...)` calling `reg.update()` on every foreground — `update()` explicitly bypasses the browser's own SW-script cache throttling (which otherwise only checks occasionally), so this catches an update within one foreground instead of requiring several full closes/reopens.
+
+Not verified against the actual Android WebView update-timing bug that prompted this (couldn't reproduce the "still stale after 2 reopens" behavior in a desktop test) — the fix is built from the two documented gaps in the code (no active check, no update-available signal), which are real regardless of whatever WebView-specific timing quirk was also in play. If this doesn't fully resolve the "how many times do I reopen" uncertainty, that WebView-specific angle is the next thing to chase.
 
 ### WebView Media Autoplay (v5.5.17)
 `MainActivity.java` sets `webView.getSettings().setMediaPlaybackRequiresUserGesture(false)` — needed so Gemini TTS audio can play after the async fetch completes (the user-tap gesture context is lost by then). Without this, audio silently fails in APK even though it works in PWA.

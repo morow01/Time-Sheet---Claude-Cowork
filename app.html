@@ -22312,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.7';
+    const VERSION = '6.8.8';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -50205,7 +50205,34 @@ Rules:
       });
 
       if ('serviceWorker' in navigator) {
+        // v6.8.8: Active update detection. Previously the app relied entirely on
+        // sw.js's passive stale-while-revalidate (serve cached, refresh cache in the
+        // background) — a new version only appeared after closing and reopening the
+        // app roughly twice, silently, with no indication anything was stale. This
+        // was unreliable on the Android APK's WebView specifically (reported: still
+        // stale after 2+ reopens, sometimes needing a full data clear) even though
+        // the same mechanism updated the PWA in Chrome promptly.
+        //
+        // 'controllerchange' fires whenever the SW controlling this page changes —
+        // including the very first-ever activation (controller goes null -> set),
+        // which is NOT an update and shouldn't prompt anything. Only treat it as an
+        // update if this page load already had a controller when it started.
+        var _hadControllerAtLoad = !!navigator.serviceWorker.controller;
         navigator.serviceWorker.register(`sw.js?v=${VERSION}`).catch(e => console.warn('[Rian]', e));
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (!_hadControllerAtLoad) return;
+          showActionToast('Update ready', 'Refresh', function () { location.reload(); }, 20000);
+        });
+        // Actively check for a new sw.js whenever the app is foregrounded, instead of
+        // only on cold-start registration. reg.update() bypasses the browser's normal
+        // SW-script cache throttling, so this catches an update within one foreground
+        // rather than requiring multiple full closes/reopens to eventually notice.
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState !== 'visible') return;
+          navigator.serviceWorker.getRegistration().then(function (reg) {
+            if (reg) reg.update().catch(function () {});
+          });
+        });
         // Network-first strategy: always serves latest when online,
         // falls back to cache when offline. Works in both PWA and APK.
       }
