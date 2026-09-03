@@ -3,18 +3,22 @@
 This guide takes you from a clean Windows install to an installed APK on your phone.
 You only do **Part 1 (install tools)** once. After that, every rebuild is just **Part 3**.
 
+> Project path as of the 2026-09 PC rebuild: `D:\X-Files\Vibe Code\Rian`
+> (earlier versions of this guide used `C:\Users\morow\Documents\VibeCode\Rian\rian` —
+> update the commands below if you've moved the project again. Quote the path in every
+> command below — it contains spaces.)
+
 ---
 
 ## Part 0 — Before you build: push the web app
 
-The APK loads the app live from GitHub Pages, so the new JavaScript (the part that
-tells the phone to open files in Excel/Word) must be pushed first.
+The APK loads the app live from GitHub Pages, so any web changes must be pushed first.
 
-In the project folder (`C:\Users\morow\Documents\VibeCode\Rian\rian`), open **PowerShell** and run:
+In the project folder (`D:\X-Files\Vibe Code\Rian`), open **PowerShell** and run:
 
 ```powershell
-git add app.html android
-git commit -m "v6.6.74 — Native open-file-in-app for attachments"
+git add app.html
+git commit -m "vX.Y.Z — description"
 git push
 ```
 
@@ -25,6 +29,14 @@ git push
 You need three things: **Node.js**, **Java (JDK 17)**, and the **Android SDK**.
 The easiest way to get the Java + Android SDK together is to install **Android Studio**
 (it bundles a Java runtime and can download the SDK for you).
+
+> **2026-09 PC rebuild status:** Node.js was already present (skip 1a). A JDK was also
+> already present, but a newer one (25) than this build chain expects (17) — installed via
+> Eclipse Adoptium, not Android Studio, and `JAVA_HOME` pointed at it. Left as-is for now;
+> if `gradlew` fails with a Java version error, that mismatch is almost certainly why —
+> repoint `JAVA_HOME` (1c) at Android Studio's bundled JDK 17 `jbr` folder instead of the
+> Adoptium one, reopen PowerShell, and retry. The Android SDK itself was **not** present —
+> Android Studio (1b) is still required for that regardless of the Java situation.
 
 ### 1a. Node.js
 1. Go to https://nodejs.org
@@ -87,7 +99,7 @@ After a Windows reinstall your project's `node_modules` folder is probably gone,
 reinstall the project's dependencies. In the project folder:
 
 ```powershell
-cd C:\Users\morow\Documents\VibeCode\Rian\rian
+cd "D:\X-Files\Vibe Code\Rian"
 npm install
 ```
 
@@ -101,7 +113,7 @@ or whenever dependencies change.)
 From the project folder:
 
 ```powershell
-cd C:\Users\morow\Documents\VibeCode\Rian\rian
+cd "D:\X-Files\Vibe Code\Rian"
 node scripts/build-www.js      # copy the web app into the Android project
 npx cap sync android           # sync Capacitor + plugins
 cd android
@@ -111,7 +123,7 @@ cd android
 When it finishes you'll see **BUILD SUCCESSFUL**. The APK is here:
 
 ```
-C:\Users\morow\Documents\VibeCode\Rian\rian\android\app\build\outputs\apk\debug\app-debug.apk
+D:\X-Files\Vibe Code\Rian\android\app\build\outputs\apk\debug\app-debug.apk
 ```
 
 > First-ever build can take several minutes (Gradle downloads dependencies). Later builds are much faster.
@@ -135,7 +147,7 @@ and **Android SDK Build-Tools** are installed, and accept any license prompts. T
 3. Plug the phone into the PC, accept the "Allow USB debugging?" prompt on the phone.
 4. In PowerShell:
    ```powershell
-   adb install -r "C:\Users\morow\Documents\VibeCode\Rian\rian\android\app\build\outputs\apk\debug\app-debug.apk"
+   adb install -r "D:\X-Files\Vibe Code\Rian\android\app\build\outputs\apk\debug\app-debug.apk"
    ```
    `-r` reinstalls over the existing app, keeping your data. You should see **Success**.
 
@@ -148,7 +160,7 @@ and **Android SDK Build-Tools** are installed, and accept any license prompts. T
 
 ## Part 5 — Test it
 
-1. Open Rian on the phone, check the version (☰ menu) reads **6.6.74** or higher.
+1. Open Rian on the phone, check the version (☰ menu) matches the current `VERSION` in `app.html`.
 2. Open a note fullscreen, tap the 📎 (paperclip) button, and attach an `.xlsx`.
 3. Close the editor so you see the note **preview**, then tap the file chip.
 4. It should download briefly and then open directly in your Excel app — no browser.
@@ -161,7 +173,7 @@ in Part 4 succeeded and that you pushed the web app in Part 0.
 ## Quick reference (once everything is installed)
 
 ```powershell
-cd C:\Users\morow\Documents\VibeCode\Rian\rian
+cd "D:\X-Files\Vibe Code\Rian"
 git add . ; git commit -m "…" ; git push        # publish web changes
 node scripts/build-www.js
 npx cap sync android
