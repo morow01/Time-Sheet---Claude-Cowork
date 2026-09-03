@@ -22312,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.8';
+    const VERSION = '6.8.9';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45627,6 +45627,11 @@
         _rtnMapInstance = null;
       }
 
+      // Remember whether this build is restoring a real prior view — fitBounds() below
+      // must not run in that case, or it silently overrides the restored zoom/pan on
+      // every single re-render (this was the actual bug: not the restore itself, which
+      // worked, but fitBounds unconditionally re-fitting to all markers straight after).
+      var _rtnUsedRestoredView = !!_rtnMapLastView;
       var map = _rtnMapLastView
         ? window.L.map('rtn-map', { zoomControl: false }).setView(_rtnMapLastView.center, _rtnMapLastView.zoom)
         : window.L.map('rtn-map', { zoomControl: false }).setView([53.0, -8.0], 7);
@@ -45788,8 +45793,10 @@
         bounds.push([coords.lat, coords.lng]);
       });
 
-      // Fit map to all markers if any exist
-      if (bounds.length > 0) {
+      // Fit map to all markers if any exist — only on a genuinely fresh map (no prior
+      // view to restore). Otherwise this runs on every rebuild (any re-render while the
+      // map tab is active, not just navigation) and stomps the user's zoom/pan every time.
+      if (bounds.length > 0 && !_rtnUsedRestoredView) {
         try { map.fitBounds(bounds, { padding: [40, 40], maxZoom: 11 }); } catch(e) {}
       }
 

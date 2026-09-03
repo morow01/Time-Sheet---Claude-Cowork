@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.8**
+Current version: **6.8.9**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -648,6 +648,11 @@ Fixed by making update-checking active instead of passive, in `init()`:
 - `document.addEventListener('visibilitychange', ...)` calling `reg.update()` on every foreground — `update()` explicitly bypasses the browser's own SW-script cache throttling (which otherwise only checks occasionally), so this catches an update within one foreground instead of requiring several full closes/reopens.
 
 Not verified against the actual Android WebView update-timing bug that prompted this (couldn't reproduce the "still stale after 2 reopens" behavior in a desktop test) — the fix is built from the two documented gaps in the code (no active check, no update-available signal), which are real regardless of whatever WebView-specific timing quirk was also in play. If this doesn't fully resolve the "how many times do I reopen" uncertainty, that WebView-specific angle is the next thing to chase.
+
+#### Follow-up (v6.8.9) — the actual root cause of the zoom reset, found via live reproduction
+The v6.8.7 restore-the-last-view fix (above, in the earlier Routines Map section) turned out to be solving a problem it didn't fully have: `_rtnMapLastView` was being captured and applied correctly the whole time — confirmed by instrumenting a real run in the browser (`javascript_tool` driving `setView`/`rtnMobTab` directly, tagging the `#rtn-map` DOM node to prove it was genuinely torn down and rebuilt, not just skipped). The bug was a few lines further down the *same* function: `if (bounds.length > 0) map.fitBounds(bounds, {padding:[40,40], maxZoom:11});` ran unconditionally on every single call to `_rtnInitMap()` — not just first creation — so it silently overwrote whatever view (restored or otherwise) had just been set, every time the map rebuilt. Since the map rebuilds on *any* re-render while its tab is active (not only on navigating away and back), this reset the zoom far more often than the reported "note editor round trip" scenario suggested, which is presumably why v6.8.7 alone didn't fix it despite being correct as far as it went. Fixed with a `_rtnUsedRestoredView` flag set at map-creation time, gating the `fitBounds()` call to only the case where there was no prior view to restore (i.e. genuinely first-ever open).
+
+This is the one fix in this whole Routines Map saga that was actually reproduced live end-to-end (zoom set → navigate away → navigate back → zoom verified unchanged, with DOM-node identity checked to rule out a false-positive from the old instance never being torn down) rather than reasoned from reading the code, worth noting given the earlier two attempts (v6.8.6, v6.8.7) were each shipped on code-reading confidence alone and each turned out to be an incomplete fix.
 
 ### WebView Media Autoplay (v5.5.17)
 `MainActivity.java` sets `webView.getSettings().setMediaPlaybackRequiresUserGesture(false)` — needed so Gemini TTS audio can play after the async fetch completes (the user-tap gesture context is lost by then). Without this, audio silently fails in APK even though it works in PWA.
