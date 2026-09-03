@@ -8767,7 +8767,8 @@
       top: calc(100% + 2px);
       left: 0;
       right: 0;
-      z-index: 20;
+      z-index: 22; /* above #note-fs-tt-table-bar (21) — an explicit palette
+                      click should win if the cursor happens to be in a table */
       border: 1px solid var(--border);
       border-radius: 0 0 10px 10px;
       background: var(--bg-card);
@@ -9995,17 +9996,27 @@
     .tt-coll-body-inner > *:first-child { margin-top: 0; }
     .tt-coll-body-inner > *:last-child  { margin-bottom: 0; }
 
-    /* Table context bar */
+    /* Table context bar — overlays the editor instead of sitting in normal
+       flow, so it appearing/disappearing as the cursor enters/leaves a table
+       never shifts #note-fs-editor's position (v6.7.9x fix: selecting text
+       inside a table caused a visible "jump" as this bar pushed the editor
+       content down). Same absolute-overlay pattern as #note-fs-tt-colors,
+       anchored to the same .tt-toolbar-wrap ancestor. */
     #note-fs-tt-table-bar {
       border-bottom: 1px solid var(--border);
       background: var(--tt-table-bar-bg);
       padding: 4px 8px;
-      flex-shrink: 0;
       display: none;
       align-items: center;
       gap: 2px;
       overflow-x: auto;
       scrollbar-width: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 21;
+      box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.12);
     }
 
     #note-fs-tt-table-bar::-webkit-scrollbar {
@@ -22220,7 +22231,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.91';
+    const VERSION = '6.7.96';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -53376,10 +53387,17 @@ QUESTION: ${query}`;
       const tableBar = document.getElementById('note-fs-tt-table-bar');
       if (editor.isActive('table')) {
         if (tableBar) tableBar.style.display = 'flex';
+        // Both the table bar and the colour dropdown are absolutely
+        // positioned overlays anchored to the same spot below the main
+        // toolbar — close the colour dropdown so the two can't stack on
+        // top of each other if it was left open when the cursor entered a table.
+        document.getElementById('note-fs-tt-colors')?.classList.remove('tt-colors-open');
+        document.getElementById('tt-palette')?.classList.remove('tt-active');
         // Mark TH button active when cursor is in a header row
         const thrBtn = document.getElementById('tcp-thr-btn');
         if (thrBtn) thrBtn.classList.toggle('tt-active', editor.isActive('tableHeader'));
         _ttUpdateCellTrigger(editor);
+        _ttRevealCaretBelowTableBar(editor, tableBar);
       } else {
         const cellTrigger = document.getElementById('tt-cell-trigger');
         const cellPopup = document.getElementById('tt-cell-popup');
@@ -53389,6 +53407,26 @@ QUESTION: ${query}`;
       }
       // Show/hide link bubble
       _ttUpdateLinkBubble(editor);
+    }
+
+    // The table context bar overlays the editor instead of pushing it down
+    // (v6.7.92 fix for the layout "jump"), which created a follow-up problem:
+    // content pinned at the very top of a note (scrollTop already 0) has
+    // nowhere to scroll TO reveal it — the browser considers it already
+    // "in view", it's only visually hidden under our overlay. Nudge the
+    // editor's scroll position down just enough to clear the bar whenever
+    // the caret is currently underneath it.
+    function _ttRevealCaretBelowTableBar(editor, tableBar) {
+      if (!editor || !tableBar) return;
+      requestAnimationFrame(() => {
+        const editorEl = document.getElementById('note-fs-editor');
+        if (!editorEl || !tableBar || tableBar.style.display === 'none') return;
+        let coords;
+        try { coords = editor.view.coordsAtPos(editor.state.selection.from); }
+        catch (e) { return; }
+        const overlap = tableBar.getBoundingClientRect().bottom - coords.top;
+        if (overlap > 0) editorEl.scrollTop += overlap + 8;
+      });
     }
 
     function _ttUpdateCellTrigger(editor) {
@@ -54509,10 +54547,22 @@ QUESTION: ${query}`;
       const rowStart = $pos.start(rowDepth);
       let isHeader = false;
       rowNode.forEach(c => { if (c.type.name === 'tableHeader') isHeader = true; });
+      const becomingHeader = isHeader === false;
       const toType = editor.state.schema.nodes[isHeader ? 'tableCell' : 'tableHeader'];
       const tr = editor.state.tr;
       rowNode.forEach((cell, offset) => {
-        if (cell.type !== toType) tr.setNodeMarkup(rowStart + offset, toType, cell.attrs);
+        if (cell.type !== toType) {
+          // Promoting a row to header: drop any custom cell background the
+          // row's cells carried over from being body cells. Without this,
+          // a cell background picked earlier (Cell actions → colour swatch)
+          // rendered as an inline style that silently overrode the default
+          // header background — the row became a <th> but kept looking like
+          // a coloured body cell instead of getting the clean header look
+          // (v6.7.9x fix: "toggle header row on a table that already has
+          // content doesn't apply the default header background").
+          const attrs = becomingHeader ? { ...cell.attrs, background: null } : cell.attrs;
+          tr.setNodeMarkup(rowStart + offset, toType, attrs);
+        }
       });
       if (tr.docChanged) { editor.view.dispatch(tr); return true; }
       return false;

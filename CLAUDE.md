@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.7.91**
+Current version: **6.7.96**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -567,6 +567,21 @@ Tables shrink-wrap to content (not 100% width). Column resizing is enabled via `
 :is(#note-fs-editor .ProseMirror, .tt-prose) th { min-width: 60px; }
 ```
 `_ttStripDefaultTableWidths()` runs on both `onUpdate` and `onSelectionUpdate` to catch the plugin re-applying styles.
+
+### Toggle Header Row Lost Default Background + Table Bar Layout Jump (v6.7.92–v6.7.96)
+Two related table-editing bugs, both fixed by inspecting the live DOM in the browser (repro'd, not just theorized):
+
+**Header background not applied after Toggle Header Row.** `_ttToggleRowHeader()` (~line 54516) converts a row's cells between `tableCell`/`tableHeader` via `tr.setNodeMarkup(pos, toType, cell.attrs)`, carrying the cell's existing `attrs` over unchanged. `TableCellWithBg`/`TableHeaderWithBg` both support a per-cell `background` attribute (set via the Cell actions → colour swatch row, `setCellAttribute('background', color)`), rendered as an inline `style="background-color:..."` when non-null. The default header look (`th { background: var(--table-header-bg) }`, no `!important` for the default `claude` theme) is CSS-only and loses to any inline style. So: pick a custom background for a body cell, later promote that row to a header, and the header keeps the old custom colour instead of the clean default — confirmed via a live repro (set a cell to blue, toggled it to header, computed background stayed the custom blue with the inline style still present). Fixed by stripping `background` back to `null` specifically when a cell is being promoted to header (not on the reverse direction — toggling a header back to a body row keeps whatever it had).
+
+**Table context bar caused a layout jump.** `#note-fs-tt-table-bar` (~line 9999) was a normal in-flow flex row inside `.tt-toolbar-wrap`, toggled `display:none`/`flex` by `_ttUpdateToolbar()` whenever `editor.isActive('table')` changes. Appearing/disappearing changed `.tt-toolbar-wrap`'s height, which pushed `#note-fs-editor` (its next sibling) down/up — visible as the table/text "jumping" the moment the cursor entered or left a table. Fixed by converting it to the same absolute-overlay pattern `#note-fs-tt-colors` (the text colour dropdown) already used: `position:absolute; top:100%` anchored to `.tt-toolbar-wrap` (`position:relative`), so it now draws over the top of the editor content instead of reflowing it. Since both bars now anchor to the same spot, `_ttUpdateToolbar()` closes the colour dropdown when the table bar opens, and the colour dropdown was given a higher z-index (22 vs the table bar's 21) so an explicit palette click still wins if the cursor happens to be inside a table.
+
+**Follow-up (v6.7.93) — caret-following nudge wasn't enough.** First attempt: `_ttRevealCaretBelowTableBar(editor, tableBar)` (~line 53419) compares the caret's screen position (`editor.view.coordsAtPos(selection.from)`) against the table bar's `getBoundingClientRect().bottom` every time `_ttUpdateToolbar()` runs with the cursor inside a table, nudging `#note-fs-editor.scrollTop` down when they overlap. This only protects the caret's own line — live-tested with a real note (heading text, then a table a couple rows down) and clicking into a body cell left the *heading* (unrelated to the caret) hidden under the bar, since the caret itself wasn't covered so no nudge fired. Kept as a secondary safety net for tables scrolled into the middle of a long note, but insufficient alone.
+
+**Follow-up (v6.7.94) — permanent reserved gutter looked wrong.** Tried making the `#note-fs-editor .ProseMirror` top padding a blanket `59px` (up from `16px`) on every note, unconditionally, so there'd always be room for the bar. User feedback: looks weird as a permanent empty gap on the (far more common) notes that never contain a table at all.
+
+**Follow-up (v6.7.95) — reserved it only for notes with a table.** `.tt-doc-has-table` class toggled by a `doc.descendants()` scan in `_ttUpdateToolbar()`. Worked, but user decided (v6.7.96) they'd rather the bar just cover top content and click out of the table to see it than have any reserved space at all — reverted. Left as a design note in case this trade-off gets revisited: reserving space *conditionally* (only for notes that actually have a table, computed from content rather than toggled by cursor position) is the pattern to reach for if "the bar hides my content" comes back as a complaint instead of "there's a gap I don't want."
+
+**Settled design (v6.7.96):** table bar is a plain absolute overlay with no reserved space anywhere — it covers whatever's at the top of the note when active; clicking out of the table reveals it again. `_ttRevealCaretBelowTableBar()` (~line 53419) stays as a narrower safety net: it only nudges scroll to keep the *caret's own line* visible (not surrounding content), which doesn't add any visible padding/whitespace.
 
 ### WebView Microphone Permission (v5.4.10, v6.0.78)
 `MainActivity.java` sets a custom `WebChromeClient` that auto-grants `onPermissionRequest` — required for mic access when loading from a remote URL. The Android manifest declares `RECORD_AUDIO`. Without the WebChromeClient override, the WebView silently blocks mic requests.
