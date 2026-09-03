@@ -22231,7 +22231,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.99';
+    const VERSION = '6.7.100';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -23214,6 +23214,7 @@
       cabinetSearch: '',    // NEW
       searchHighlightIndex: -1,
       exchangeTab: localStorage.getItem('exchangeTab') || 'exchanges', // 'exchanges' | 'cabinets'
+      calloutsWeekTab: 'previous', // 'upcoming' | 'previous' (mobile Callouts list)
       selectedExchange: null,   // NEW
       selectedCabinet: null,    // NEW
       exchangeDetailTab: 'location', // 'location'|'details'|'address'|'security'|'power'|'emergency'|'additional'
@@ -47302,6 +47303,11 @@
       </div>`;
     }
 
+    function coSwitchWeekTab(tab) {
+      state.calloutsWeekTab = tab === 'upcoming' ? 'upcoming' : 'previous';
+      render();
+    }
+
     function renderCalloutsList() {
       const onCall = state.callouts.onCall || {};
       const weeks = Object.entries(state.callouts.weeks || {}).sort().reverse();
@@ -47385,13 +47391,25 @@
           <div class="stat-cell"><div class="stat-cell-label">Avg /<br>Week</div><div class="stat-cell-value" style="color:#818cf8">${avgPerWeek}</div></div>
         </div>` + `</div>`);
 
-        if (upcomingWeeks.length > 0) {
-          html += `<div class="act-field-label" style="padding:4px 16px 4px">Upcoming Weeks</div>`;
-          upcomingWeeks.forEach(weekKey => { html += _coWeekCardHtml(weekKey); });
-        }
-        if (previousWeeks.length > 0) {
-          html += `<div class="act-field-label" style="padding:4px 16px 4px">Previous Weeks</div>`;
-          previousWeeks.forEach(weekKey => { html += _coWeekCardHtml(weekKey); });
+        // Upcoming/Previous toggle (v6.7.100) — same seg-bar/seg-btn pattern as the
+        // Notes and Finder tab bars, so switching feels consistent app-wide.
+        const weekTab = state.calloutsWeekTab === 'upcoming' ? 'upcoming' : 'previous';
+        html += `<div style="padding:4px 14px 2px">
+          <div class="seg-bar">
+            <button onclick="coSwitchWeekTab('upcoming')" class="seg-btn${weekTab === 'upcoming' ? ' active' : ''}">
+              Upcoming${upcomingWeeks.length > 0 ? ` <span style="background:var(--accent);color:#fff;border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${upcomingWeeks.length}</span>` : ''}
+            </button>
+            <button onclick="coSwitchWeekTab('previous')" class="seg-btn${weekTab === 'previous' ? ' active' : ''}">
+              Previous${previousWeeks.length > 0 ? ` <span style="background:rgba(var(--shadow-rgb),0.14);color:var(--text-muted);border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${previousWeeks.length}</span>` : ''}
+            </button>
+          </div>
+        </div>`;
+
+        const shownWeeks = weekTab === 'upcoming' ? upcomingWeeks : previousWeeks;
+        if (shownWeeks.length > 0) {
+          html += `<div style="padding-top:6px">` + shownWeeks.map(weekKey => _coWeekCardHtml(weekKey)).join('') + `</div>`;
+        } else {
+          html += `<div style="text-align:center;padding:32px 24px;color:var(--text-muted);font-size:13px">No ${weekTab} weeks.</div>`;
         }
       }
 
