@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.3**
+Current version: **6.8.4**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -611,6 +611,12 @@ Since v6.0.78, `MainActivity.java` also requests Android runtime `RECORD_AUDIO` 
 
 ### PWA Back Button (v5.4.10)
 On Android standalone PWA, the system back gesture exits the app if the history stack empties. The app traps `popstate` and re-pushes a history entry *before* calling `_handleBackButton()`, so the stack never runs dry. Only one seed entry is needed at init since popstate always replenishes.
+
+**Exit confirm button did nothing on a plain PWA (v6.8.4).** Reported: the exit dialog appears (so the trap above was working), but tapping "Exit" sometimes did nothing. `_exitApp()`'s fallback chain — `RianNative.exitApp()` → `Capacitor.Plugins.App.exitApp()` → `navigator.app.exitApp()` → `window.close()` — has its first three gated behind bridges that only exist in the compiled APK (`IS_NATIVE = typeof window.Capacitor !== 'undefined'`); a plain "Add to Home Screen" PWA has none of them, and `window.close()` is a browser no-op on a window it didn't open itself via script, which every home-screen-launched PWA is. So on that path, confirming exit silently did nothing — matching the report exactly, and the dialog itself wasn't even being removed on that click, making it look stuck.
+
+Fix: `_exitApp()` now removes the dialog unconditionally up front (so it never looks stuck regardless of which path runs), and its final fallback — reached only when no native bridge exists — sets `window._rianExitConfirmed = true` then calls `history.back()` instead of `window.close()`. The popstate listener checks that flag and skips its own re-push when set, undoing the anti-exit trap for just this one confirmed exit so history can actually run dry, which is what closes an Android PWA (the exact mechanism the trap exists to prevent during normal back-presses).
+
+Not verified against a real Android device/PWA — `history.back()` triggering an actual WebAPK close is a platform behavior a desktop browser tab can't fully reproduce. If exit still doesn't work after this, next step is checking how many real history entries actually exist at exit time (one `history.back()` may not be enough if something outside this trap ever pushes its own entries).
 
 ### Offline Support via Service Worker (v5.4.11)
 Service worker registration (in app.html init) no longer skips native mode. Same `sw.js` serves both PWA and APK — network-first, cache fallback. First launch online installs the cache; later launches work offline. Data sync (Firestore) still requires internet, but cached IndexedDB data loads.

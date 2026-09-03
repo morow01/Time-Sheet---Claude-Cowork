@@ -22312,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.3';
+    const VERSION = '6.8.4';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -40963,9 +40963,28 @@
 
     // Exit app — try every known method
     function _exitApp() {
+      // Close the confirm dialog immediately regardless of which path below
+      // actually ends up exiting — on the plain-PWA path (see below) nothing
+      // visibly happens for a moment, and a dialog just sitting there after
+      // "Exit" was tapped reads as broken (v6.8.4 — reported: "confirm button
+      // is not working").
+      document.getElementById('exit-dialog')?.remove();
       try { if (window.RianNative?.exitApp) { window.RianNative.exitApp(); return; } } catch (e) { }
       try { if (window.Capacitor?.Plugins?.App?.exitApp) { window.Capacitor.Plugins.App.exitApp(); return; } } catch (e) { }
       try { if (navigator.app?.exitApp) { navigator.app.exitApp(); return; } } catch (e) { }
+      // Plain "Add to Home Screen" PWA (IS_NATIVE false — no Capacitor/RianNative
+      // bridge, so everything above was a no-op): window.close() only works on
+      // windows opened via script, which a home-screen-launched PWA never is —
+      // it silently does nothing, which is exactly the reported bug. The
+      // popstate listener below traps every back-press specifically to stop it
+      // from ever reaching empty history (that's what closes an Android PWA) —
+      // so undo that trap for just this one confirmed exit and let the real
+      // history-exhausted-closes-the-app behavior do the job instead.
+      try {
+        window._rianExitConfirmed = true;
+        history.back();
+        return;
+      } catch (e) { }
       try { window.close(); } catch (e) { }
     }
 
@@ -41104,6 +41123,13 @@
     // On Android standalone PWA, if the history stack empties the app closes.
     // We re-push immediately on every pop so the stack never runs dry.
     window.addEventListener('popstate', (e) => {
+      // v6.8.4: _exitApp()'s plain-PWA fallback sets this right before calling
+      // history.back() specifically so this one pop is NOT re-trapped — let it
+      // (and any further pops while it's still set, in case more than one was
+      // needed) through so history can actually run out, which is what closes
+      // an Android PWA. Confirming exit from the dialog is the only way this
+      // flag gets set.
+      if (window._rianExitConfirmed) return;
       // Re-push FIRST so we can never run out of history
       history.pushState({ rian: true }, '');
       _handleBackButton();
