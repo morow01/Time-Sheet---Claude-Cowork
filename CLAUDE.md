@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.7.100**
+Current version: **6.7.102**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -250,7 +250,9 @@ CSS: `.dco-wrap`, `.dco-panel-weeks`, `.dco-panel-callouts`, `.dco-panel-detail`
 ### Callouts — Mobile "Upcoming Weeks" section (v6.7.99 fix)
 `renderCalloutsList()` (mobile, distinct from the desktop three-panel view above) builds one deduplicated week set (`allPastKeys` — badly named, it's not past-only) and splits it into `upcomingWeeks`/`previousWeeks` by comparing to the current week key. A scheduled-but-not-yet-logged future on-call week has no entry in `state.callouts.weeks`, so it can only reach that set via the `Object.keys(onCall)` loop. That loop had an `&& _ocIsPast(wk)` guard — copied from (or shared reasoning with) the desktop view's deliberate "hide future scheduled weeks" behavior above — which made it impossible for any future week to ever enter the set, so the `upcomingWeeks` variable and its "Upcoming Weeks" rendering section (both still fully implemented) were permanently dead for the normal case. Removed the guard on mobile only; desktop's `_ocIsPast(k)` filtering is untouched and still intentional there.
 
-**Upcoming/Previous toggle (v6.7.100):** now that upcoming weeks actually populate, the two lists are behind a segmented toggle instead of stacked — same `.seg-bar`/`.seg-btn` pattern as the Notes and Finder tab bars, with a count badge on each. `state.calloutsWeekTab` ('upcoming' | 'previous', defaults to 'previous', not persisted — matches `notesTab`'s in-memory-only pattern). Switcher: `coSwitchWeekTab(tab)`.
+**Upcoming/Previous toggle (v6.7.100):** now that upcoming weeks actually populate, the two lists are behind a segmented toggle instead of stacked, with a count badge on each. `state.calloutsWeekTab` ('upcoming' | 'previous', defaults to 'previous', not persisted — matches `notesTab`'s in-memory-only pattern). Switcher: `coSwitchWeekTab(tab)`.
+
+Height iterated twice on user feedback: v6.7.101 first matched Finder's taller Exchanges/Cabinets bar (a separate Tailwind-styled component, `flex p-1 rounded-xl` / `flex-1 py-2 px-4 rounded-lg text-sm font-bold`, ≈39px measured) since that's what the user pointed at initially; a follow-up message asked to match the Notes Active/Archive/Bin bar instead, so v6.7.102 uses the shared `.seg-bar`/`.seg-btn` component directly (≈34px measured) — same component Notes/Routines/History already use, so no new CSS.
 
 `renderCalloutsView()` intercept: `if (_isDesktop()) return _renderDesktopCallouts();`
 

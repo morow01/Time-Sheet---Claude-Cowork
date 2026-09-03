@@ -22231,7 +22231,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.100';
+    const VERSION = '6.7.102';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47391,19 +47391,21 @@
           <div class="stat-cell"><div class="stat-cell-label">Avg /<br>Week</div><div class="stat-cell-value" style="color:#818cf8">${avgPerWeek}</div></div>
         </div>` + `</div>`);
 
-        // Upcoming/Previous toggle (v6.7.100) — same seg-bar/seg-btn pattern as the
-        // Notes and Finder tab bars, so switching feels consistent app-wide.
+        // Upcoming/Previous toggle (v6.7.100). Height iterated twice on user
+        // feedback: v6.7.101 first matched Finder's taller Exchanges/Cabinets
+        // bar (a separate Tailwind-styled component, py-2 px-4 text-sm ≈39px),
+        // then v6.7.102 switched to match the Notes Active/Archive/Bin bar
+        // instead (the shared .seg-bar/.seg-btn component, 7px 4px padding
+        // 12px font ≈34px) — same component Notes/Routines/History already use.
         const weekTab = state.calloutsWeekTab === 'upcoming' ? 'upcoming' : 'previous';
-        html += `<div style="padding:4px 14px 2px">
-          <div class="seg-bar">
+        html += `<div class="seg-bar" style="margin:4px 14px 10px">
             <button onclick="coSwitchWeekTab('upcoming')" class="seg-btn${weekTab === 'upcoming' ? ' active' : ''}">
               Upcoming${upcomingWeeks.length > 0 ? ` <span style="background:var(--accent);color:#fff;border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${upcomingWeeks.length}</span>` : ''}
             </button>
             <button onclick="coSwitchWeekTab('previous')" class="seg-btn${weekTab === 'previous' ? ' active' : ''}">
               Previous${previousWeeks.length > 0 ? ` <span style="background:rgba(var(--shadow-rgb),0.14);color:var(--text-muted);border-radius:99px;font-size:9px;padding:0 5px;min-width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center">${previousWeeks.length}</span>` : ''}
             </button>
-          </div>
-        </div>`;
+          </div>`;
 
         const shownWeeks = weekTab === 'upcoming' ? upcomingWeeks : previousWeeks;
         if (shownWeeks.length > 0) {
