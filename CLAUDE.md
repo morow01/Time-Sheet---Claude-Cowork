@@ -16,7 +16,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.7.98**
+Current version: **6.7.99**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -246,6 +246,9 @@ Key functions: `_renderDesktopCallouts()`, `dcoSelectWeek(wk)`, `dcoSelectCo(coI
 State: `dcoSelectedWeek`, `dcoSelectedCo`
 
 CSS: `.dco-wrap`, `.dco-panel-weeks`, `.dco-panel-callouts`, `.dco-panel-detail`, `.dco-stats`, `.dco-stat`, `.dco-week-row`, `.dco-co-row`, `.dco-detail-hdr`
+
+### Callouts — Mobile "Upcoming Weeks" section (v6.7.99 fix)
+`renderCalloutsList()` (mobile, distinct from the desktop three-panel view above) builds one deduplicated week set (`allPastKeys` — badly named, it's not past-only) and splits it into `upcomingWeeks`/`previousWeeks` by comparing to the current week key. A scheduled-but-not-yet-logged future on-call week has no entry in `state.callouts.weeks`, so it can only reach that set via the `Object.keys(onCall)` loop. That loop had an `&& _ocIsPast(wk)` guard — copied from (or shared reasoning with) the desktop view's deliberate "hide future scheduled weeks" behavior above — which made it impossible for any future week to ever enter the set, so the `upcomingWeeks` variable and its "Upcoming Weeks" rendering section (both still fully implemented) were permanently dead for the normal case. Removed the guard on mobile only; desktop's `_ocIsPast(k)` filtering is untouched and still intentional there.
 
 `renderCalloutsView()` intercept: `if (_isDesktop()) return _renderDesktopCallouts();`
 

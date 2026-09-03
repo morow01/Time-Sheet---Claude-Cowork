@@ -22231,7 +22231,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.98';
+    const VERSION = '6.7.99';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -47360,12 +47360,18 @@
         </div>`;
       }
 
-      // ── Previous Weeks (unified: merge weeks with callouts + on-call marked weeks) ──
-      // Build a single deduplicated list of all past weeks
+      // ── Upcoming + Previous Weeks (unified: merge weeks with callouts + on-call marked weeks) ──
+      // Build a single deduplicated list of all non-current weeks (both directions —
+      // split into upcomingWeeks/previousWeeks below). Despite the name, this is NOT
+      // past-only: a scheduled-but-not-yet-logged future week has no entry in
+      // state.callouts.weeks, so it only ever reaches this set via the onCall loop,
+      // which must NOT be past-restricted or "Upcoming Weeks" can never populate
+      // (v6.7.99 fix — the `&& _ocIsPast(wk)` here made that section permanently
+      // dead for the normal case of "scheduled next week, nothing logged yet").
       const allPastKeys = new Set();
       // Only show weeks that are on-call/extra, or have actual fault entries
       pastWeeks.forEach(([wk]) => { if (onCall[wk] || (state.callouts.weeks?.[wk]?.callouts?.length > 0)) allPastKeys.add(wk); });
-      Object.keys(onCall).forEach(wk => { if (wk !== curWeekStart && _ocIsPast(wk)) allPastKeys.add(wk); });
+      Object.keys(onCall).forEach(wk => { if (wk !== curWeekStart) allPastKeys.add(wk); });
       const sortedAll = Array.from(allPastKeys).sort();
       const upcomingWeeks = sortedAll.filter(k => k > curWeekStart);            // ascending — nearest first
       const previousWeeks = sortedAll.filter(k => k < curWeekStart).reverse();  // descending — most recent first
