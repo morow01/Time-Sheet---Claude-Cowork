@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.5**
+Current version: **6.8.6**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -228,6 +228,8 @@ Key function: `rtnMobTab(id, btn)` — switches active tab content.
 CSS: `.rtn-tab-bar`, `.rtn-tab-btn`, `.rtn-tab-badge`, `.rtn-tab-content`, `.rtn-mob-stats`, `.rtn-mob-stat`, `.rtn-mob-card`, `.rtn-mob-month-bar`, `.rtn-mob-recent-scroll`
 
 Shared list styles (used by both desktop sidebar and mobile tabs): `.rtn-alert-item`, `.rtn-alert-dot`, `.rtn-alert-name`, `.rtn-alert-detail`, `.rtn-recent-item`, `.rtn-recent-badge`, `.rtn-recent-info`, `.rtn-recent-name`, `.rtn-recent-date`, `.rtn-month-bar`, `.rtn-month-col` — defined globally, NOT inside a media query.
+
+**Map tab blank after returning from note editor (v6.8.6 fix):** The Map tab (`state.rtnMobTab === 'map'`) renders a Leaflet instance into `#rtn-map`, built by `_rtnInitMap()`. Any `_renderNow()` call rebuilds the routines view HTML from scratch — including a brand-new empty `#rtn-map` div — so the Leaflet canvas is discarded every render, not just when its own tab button is clicked. Only clicking Grid/Stats/Map explicitly called `_rtnInitMap()` again; nothing did on a *passive* re-render, e.g. closing the TipTap note editor for a site's notes (opened from a map marker popup) and landing back on Routines with the Map tab still marked active from `state.rtnMobTab` — result: white background where the map was, until manually toggling to Grid/Stats and back to Map. The desktop equivalent (`_rtnDeskPanel === 'map'`) already had a re-init hook in the shared post-render block in `_renderNow()`; mobile had no equivalent. Fixed by extending that same hook to also check `state.rtnMobTab === 'map'` on mobile.
 
 ### Callouts — Desktop Three-Panel Layout (v5.8.52+)
 Three-panel layout (Weeks → Callouts → Detail) matching Timesheet pattern. Accessed via ☰ menu → Callouts (not in the top desktop tab nav).

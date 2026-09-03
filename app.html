@@ -22312,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.5';
+    const VERSION = '6.8.6';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27433,8 +27433,12 @@
       requestAnimationFrame(fixTimelineLines);
       // Sync sticky header width/scroll for Routines view
       if (state.view === 'routines') requestAnimationFrame(initRtnStickyHeader);
-      // Re-init map after any render() while desktop map panel is active
-      if (state.view === 'routines' && _isDesktop() && _rtnDeskPanel === 'map') setTimeout(_rtnInitMap, 0);
+      // Re-init map after any render() while the map panel/tab is active — render()
+      // recreates the #rtn-map div from scratch, discarding the Leaflet instance, so
+      // returning to this view (e.g. from the note editor) needs this re-triggered
+      // even though nothing was clicked. Desktop and mobile track the active panel
+      // in separate state (_rtnDeskPanel vs state.rtnMobTab), so both need checking.
+      if (state.view === 'routines' && ((_isDesktop() && _rtnDeskPanel === 'map') || (!_isDesktop() && state.rtnMobTab === 'map'))) setTimeout(_rtnInitMap, 0);
       if (state.view === 'email-week-v3') requestAnimationFrame(ew3UpdateProgress);
       // Show voice FAB on the week view, note voice FAB on the notes view (respects micFabHidden setting)
       _applyMicFabVisibility();
