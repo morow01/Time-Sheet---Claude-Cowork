@@ -10025,10 +10025,17 @@
       position: absolute;
       top: 100%;
       left: 0;
-      right: 0;
+      width: 100%;
+      overflow: hidden;
       z-index: 21;
       box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.12);
-      transition: right 0.18s ease, border-radius 0.18s ease;
+      /* Animate width, not `right` — `right: auto` (the old collapsed value)
+         has no animatable used value, so the old transition silently no-op'd
+         and the bar just snapped instantly (v6.8.3 fix). `content` below
+         isn't display:none'd anymore either, for the same reason: it just
+         gets visually clipped as the bar's own width shrinks, which gives the
+         slide-away motion this transition is meant to show. */
+      transition: width 0.22s ease, border-radius 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
     }
 
     #note-fs-tt-table-bar-content {
@@ -10070,7 +10077,7 @@
     }
 
     #note-fs-tt-table-bar.tt-tbl-collapsed {
-      right: auto;
+      width: 32px;
       padding: 3px;
       border-radius: 0 8px 8px 0;
       /* Match the main toolbar's own bg + a much lighter shadow, so this
@@ -10083,8 +10090,14 @@
       box-shadow: 0 2px 5px rgba(var(--shadow-rgb), 0.08);
     }
 
+    /* Not display:none — the bar's own width+overflow:hidden above already
+       clips it out of view (and out of the hit-testing area) as it shrinks,
+       which is what makes the collapse look like a slide instead of a snap.
+       aria-hidden covers keyboard/screen-reader focus since the buttons are
+       still technically present in the DOM. */
     #note-fs-tt-table-bar.tt-tbl-collapsed #note-fs-tt-table-bar-content {
-      display: none;
+      visibility: hidden;
+      transition: visibility 0s linear 0.22s;
     }
 
     #note-fs-tt-table-bar.tt-tbl-collapsed #tt-tbl-collapse-btn svg {
@@ -22299,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.2';
+    const VERSION = '6.8.3';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
