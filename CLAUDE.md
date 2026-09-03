@@ -16,7 +16,8 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
-Current version: **6.7.102**
+**Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
+Current version: **6.8.0**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -600,6 +601,8 @@ Two related table-editing bugs, both fixed by inspecting the live DOM in the bro
 **Follow-up (v6.7.95) — reserved it only for notes with a table.** `.tt-doc-has-table` class toggled by a `doc.descendants()` scan in `_ttUpdateToolbar()`. Worked, but user decided (v6.7.96) they'd rather the bar just cover top content and click out of the table to see it than have any reserved space at all — reverted. Left as a design note in case this trade-off gets revisited: reserving space *conditionally* (only for notes that actually have a table, computed from content rather than toggled by cursor position) is the pattern to reach for if "the bar hides my content" comes back as a complaint instead of "there's a gap I don't want."
 
 **Settled design (v6.7.96):** table bar is a plain absolute overlay with no reserved space anywhere — it covers whatever's at the top of the note when active; clicking out of the table reveals it again. `_ttRevealCaretBelowTableBar()` (~line 53419) stays as a narrower safety net: it only nudges scroll to keep the *caret's own line* visible (not surrounding content), which doesn't add any visible padding/whitespace.
+
+**Desktop scroll fix (v6.8.0):** `#note-fs-tt-table-bar` has the same `overflow-x:auto` as the main toolbar, so it scrolled fine on mobile (native touch swipe) but not at all on desktop — a mouse has no built-in gesture for horizontal overflow, no visible scrollbar (`scrollbar-width:none`), and it never got the wheel/click-drag enhancement `#note-fs-tt-toolbar` already had for exactly this reason. That enhancement (`~58` lines: wheel handler, pointer-drag, click-suppression-after-drag) was extracted into a reusable `_ttBindDesktopHScroll(el)` (~line 53309, right before `_ttUpdateToolbar`) and is now bound to both toolbars. `.tt-dragging` cursor styling (`@media (min-width:768px)`, ~line 8740) extended to cover the table bar too.
 
 ### WebView Microphone Permission (v5.4.10, v6.0.78)
 `MainActivity.java` sets a custom `WebChromeClient` that auto-grants `onPermissionRequest` — required for mic access when loading from a remote URL. The Android manifest declares `RECORD_AUDIO`. Without the WebChromeClient override, the WebView silently blocks mic requests.

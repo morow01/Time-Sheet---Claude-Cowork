@@ -8749,7 +8749,8 @@
         cursor: grabbing;
       }
 
-      #note-fs-tt-toolbar.tt-dragging {
+      #note-fs-tt-toolbar.tt-dragging,
+      #note-fs-tt-table-bar.tt-dragging {
         cursor: grabbing;
         user-select: none;
         -webkit-user-select: none;
@@ -8757,6 +8758,16 @@
 
       #note-fs-tt-toolbar::-webkit-scrollbar {
         display: none;
+      }
+
+      /* v6.8.0: same click-drag/wheel scroll affordance as the main toolbar
+         above — see _ttBindDesktopHScroll(). */
+      #note-fs-tt-table-bar {
+        cursor: grab;
+      }
+
+      #note-fs-tt-table-bar:active {
+        cursor: grabbing;
       }
     }
 
@@ -22231,7 +22242,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.7.102';
+    const VERSION = '6.8.0';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -52858,66 +52869,12 @@ QUESTION: ${query}`;
       _openToolbarDrop('tt-list-btn', 'tt-list-menu');
       _openToolbarDrop('tt-table', 'tt-table-menu');
       _openToolbarDrop('tt-fontsize-btn', 'tt-fontsize-menu');
-      const toolbar = document.getElementById('note-fs-tt-toolbar');
-      if (toolbar && !toolbar._ttDesktopScrollBound) {
-        toolbar._ttDesktopScrollBound = true;
-        let dragStartX = 0;
-        let dragStartScroll = 0;
-        let dragPointerId = null;
-        let didDrag = false;
-        let suppressToolbarClick = false;
-        toolbar.addEventListener('wheel', (ev) => {
-          if (toolbar.scrollWidth <= toolbar.clientWidth) return;
-          if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
-          ev.preventDefault();
-          toolbar.scrollLeft += ev.deltaY;
-        }, { passive: false });
-        toolbar.addEventListener('pointerdown', (ev) => {
-          if (ev.button !== undefined && ev.button !== 0) return;
-          if (toolbar.scrollWidth <= toolbar.clientWidth) return;
-          dragPointerId = ev.pointerId;
-          dragStartX = ev.clientX;
-          dragStartScroll = toolbar.scrollLeft;
-          didDrag = false;
-          // Do NOT call setPointerCapture here — capturing on pointerdown redirects the
-          // pointerup to the toolbar on mobile Chrome, so click fires on the toolbar
-          // element instead of the button, breaking all button handlers. Capture only
-          // after a drag is confirmed (>4 px), when we know it isn't a tap.
-        });
-        toolbar.addEventListener('pointermove', (ev) => {
-          if (dragPointerId !== ev.pointerId) return;
-          const dx = ev.clientX - dragStartX;
-          if (Math.abs(dx) > 4) {
-            if (!didDrag) toolbar.setPointerCapture?.(ev.pointerId);
-            didDrag = true;
-            suppressToolbarClick = true;
-            toolbar.classList.add('tt-dragging');
-          }
-          if (didDrag) {
-            ev.preventDefault();
-            toolbar.scrollLeft = dragStartScroll - dx;
-          }
-        });
-        const endDrag = (ev) => {
-          if (dragPointerId !== ev.pointerId) return;
-          dragPointerId = null;
-          toolbar.releasePointerCapture?.(ev.pointerId);
-          setTimeout(() => {
-            didDrag = false;
-            toolbar.classList.remove('tt-dragging');
-          }, 0);
-          // Always clear after a short delay so a drag never permanently blocks the next tap
-          setTimeout(() => { suppressToolbarClick = false; }, 100);
-        };
-        toolbar.addEventListener('pointerup', endDrag);
-        toolbar.addEventListener('pointercancel', endDrag);
-        toolbar.addEventListener('click', (ev) => {
-          if (!suppressToolbarClick) return;
-          suppressToolbarClick = false;
-          ev.preventDefault();
-          ev.stopPropagation();
-        }, true);
-      }
+      _ttBindDesktopHScroll(document.getElementById('note-fs-tt-toolbar'));
+      // v6.8.0: the table context bar had the same overflow-x:auto as the main
+      // toolbar but never got this binding, so it scrolled fine on mobile
+      // (native touch swipe) and not at all on desktop (no visible scrollbar,
+      // no wheel/drag handler — a mouse has no equivalent gesture on its own).
+      _ttBindDesktopHScroll(document.getElementById('note-fs-tt-table-bar'));
       // Always read live editor at call time via getter
       const e = {
         get chain() { return _tiptapEditor?.chain.bind(_tiptapEditor); },
@@ -53358,6 +53315,71 @@ QUESTION: ${query}`;
         if (btn) { btn.style.opacity = ''; btn.disabled = false; }
         if (loadingEl) loadingEl.style.display = 'none';
       }
+    }
+
+    // Gives a horizontally-overflowing toolbar mouse-wheel + click-drag scrolling
+    // on desktop, matching the native touch-swipe scroll it already gets on
+    // mobile for free. Idempotent per element (guarded by _ttDesktopScrollBound)
+    // so it's safe to call every time an editor is (re)mounted.
+    function _ttBindDesktopHScroll(el) {
+      if (!el || el._ttDesktopScrollBound) return;
+      el._ttDesktopScrollBound = true;
+      let dragStartX = 0;
+      let dragStartScroll = 0;
+      let dragPointerId = null;
+      let didDrag = false;
+      let suppressClick = false;
+      el.addEventListener('wheel', (ev) => {
+        if (el.scrollWidth <= el.clientWidth) return;
+        if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
+        ev.preventDefault();
+        el.scrollLeft += ev.deltaY;
+      }, { passive: false });
+      el.addEventListener('pointerdown', (ev) => {
+        if (ev.button !== undefined && ev.button !== 0) return;
+        if (el.scrollWidth <= el.clientWidth) return;
+        dragPointerId = ev.pointerId;
+        dragStartX = ev.clientX;
+        dragStartScroll = el.scrollLeft;
+        didDrag = false;
+        // Do NOT call setPointerCapture here — capturing on pointerdown redirects the
+        // pointerup to the element on mobile Chrome, so click fires on the toolbar
+        // element instead of the button, breaking all button handlers. Capture only
+        // after a drag is confirmed (>4 px), when we know it isn't a tap.
+      });
+      el.addEventListener('pointermove', (ev) => {
+        if (dragPointerId !== ev.pointerId) return;
+        const dx = ev.clientX - dragStartX;
+        if (Math.abs(dx) > 4) {
+          if (!didDrag) el.setPointerCapture?.(ev.pointerId);
+          didDrag = true;
+          suppressClick = true;
+          el.classList.add('tt-dragging');
+        }
+        if (didDrag) {
+          ev.preventDefault();
+          el.scrollLeft = dragStartScroll - dx;
+        }
+      });
+      const endDrag = (ev) => {
+        if (dragPointerId !== ev.pointerId) return;
+        dragPointerId = null;
+        el.releasePointerCapture?.(ev.pointerId);
+        setTimeout(() => {
+          didDrag = false;
+          el.classList.remove('tt-dragging');
+        }, 0);
+        // Always clear after a short delay so a drag never permanently blocks the next tap
+        setTimeout(() => { suppressClick = false; }, 100);
+      };
+      el.addEventListener('pointerup', endDrag);
+      el.addEventListener('pointercancel', endDrag);
+      el.addEventListener('click', (ev) => {
+        if (!suppressClick) return;
+        suppressClick = false;
+        ev.preventDefault();
+        ev.stopPropagation();
+      }, true);
     }
 
     function _ttUpdateToolbar(editor) {
