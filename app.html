@@ -8750,7 +8750,7 @@
       }
 
       #note-fs-tt-toolbar.tt-dragging,
-      #note-fs-tt-table-bar.tt-dragging {
+      #note-fs-tt-table-bar-content.tt-dragging {
         cursor: grabbing;
         user-select: none;
         -webkit-user-select: none;
@@ -8761,12 +8761,14 @@
       }
 
       /* v6.8.0: same click-drag/wheel scroll affordance as the main toolbar
-         above — see _ttBindDesktopHScroll(). */
-      #note-fs-tt-table-bar {
+         above — see _ttBindDesktopHScroll(). Targets the inner content div,
+         not the outer bar, since the collapse toggle (v6.8.0) lives outside
+         the scrollable region. */
+      #note-fs-tt-table-bar-content {
         cursor: grab;
       }
 
-      #note-fs-tt-table-bar:active {
+      #note-fs-tt-table-bar-content:active {
         cursor: grabbing;
       }
     }
@@ -10020,18 +10022,64 @@
       display: none;
       align-items: center;
       gap: 2px;
-      overflow-x: auto;
-      scrollbar-width: none;
       position: absolute;
       top: 100%;
       left: 0;
       right: 0;
       z-index: 21;
       box-shadow: 0 4px 16px rgba(var(--shadow-rgb), 0.12);
+      transition: right 0.18s ease, border-radius 0.18s ease;
     }
 
-    #note-fs-tt-table-bar::-webkit-scrollbar {
+    #note-fs-tt-table-bar-content {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      min-width: 0;
+    }
+
+    #note-fs-tt-table-bar-content::-webkit-scrollbar {
       display: none;
+    }
+
+    /* Collapse toggle (v6.8.0) — always visible at the left; collapsing hides
+       #note-fs-tt-table-bar-content and shrinks the bar down to a small tab
+       hugging the left edge instead of spanning full width. */
+    #tt-tbl-collapse-btn {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #818cf8;
+    }
+
+    #tt-tbl-collapse-btn:hover {
+      background: rgba(var(--shadow-rgb), 0.08);
+    }
+
+    #tt-tbl-collapse-btn svg {
+      transition: transform 0.18s ease;
+    }
+
+    #note-fs-tt-table-bar.tt-tbl-collapsed {
+      right: auto;
+      border-radius: 0 10px 10px 0;
+    }
+
+    #note-fs-tt-table-bar.tt-tbl-collapsed #note-fs-tt-table-bar-content {
+      display: none;
+    }
+
+    #note-fs-tt-table-bar.tt-tbl-collapsed #tt-tbl-collapse-btn svg {
+      transform: rotate(180deg);
     }
 
     .tt-tbl-label {
@@ -22242,7 +22290,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.0';
+    const VERSION = '6.8.1';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -52874,7 +52922,9 @@ QUESTION: ${query}`;
       // toolbar but never got this binding, so it scrolled fine on mobile
       // (native touch swipe) and not at all on desktop (no visible scrollbar,
       // no wheel/drag handler — a mouse has no equivalent gesture on its own).
-      _ttBindDesktopHScroll(document.getElementById('note-fs-tt-table-bar'));
+      // Binds the inner content div, not the outer bar — the collapse toggle
+      // added alongside it lives outside the scrollable region.
+      _ttBindDesktopHScroll(document.getElementById('note-fs-tt-table-bar-content'));
       // Always read live editor at call time via getter
       const e = {
         get chain() { return _tiptapEditor?.chain.bind(_tiptapEditor); },
@@ -53380,6 +53430,22 @@ QUESTION: ${query}`;
         ev.preventDefault();
         ev.stopPropagation();
       }, true);
+    }
+
+    // Table toolbar collapse (v6.8.0) — a session-only preference (not saved
+    // to the note, not persisted across app reloads), matching the mockup's
+    // "Edge tab" option: collapsing shrinks the bar to a small chevron tab at
+    // the left edge; the table content underneath is fully visible again.
+    // The .tt-tbl-collapsed class stays on the element across the bar's own
+    // show/hide (entering/leaving a table), so the collapsed state carries
+    // over naturally as you move between tables in the same note.
+    let _ttTableBarCollapsed = false;
+    function _ttToggleTableBarCollapse() {
+      _ttTableBarCollapsed = !_ttTableBarCollapsed;
+      const bar = document.getElementById('note-fs-tt-table-bar');
+      if (bar) bar.classList.toggle('tt-tbl-collapsed', _ttTableBarCollapsed);
+      const btn = document.getElementById('tt-tbl-collapse-btn');
+      if (btn) btn.title = _ttTableBarCollapsed ? 'Expand table toolbar' : 'Collapse table toolbar';
     }
 
     function _ttUpdateToolbar(editor) {
@@ -56962,6 +57028,14 @@ The state block is invisible to the user.`;
         <!-- Colour picker dropdown (hidden by default) -->
         <!-- Table context bar (shown when cursor is inside a table) -->
         <div id="note-fs-tt-table-bar">
+          <button id="tt-tbl-collapse-btn" title="Collapse table toolbar" onmousedown="event.preventDefault()"
+            onclick="_ttToggleTableBarCollapse()">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="12,4 6,10 12,16" />
+            </svg>
+          </button>
+          <div id="note-fs-tt-table-bar-content">
           <span class="tt-tbl-label">Table</span>
           <!-- Row operations -->
           <button class="tt-btn" id="tt-row-before" title="Add row above">
@@ -57091,6 +57165,7 @@ The state block is invisible to the user.`;
               <line x1="15" y1="5" x2="5" y2="15" />
             </svg>
           </button>
+          </div>
         </div>
         <!-- Floating cell action trigger -->
         <button id="tt-cell-trigger" title="Cell actions" onmousedown="event.preventDefault()"
