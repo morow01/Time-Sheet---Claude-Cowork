@@ -10071,7 +10071,16 @@
 
     #note-fs-tt-table-bar.tt-tbl-collapsed {
       right: auto;
-      border-radius: 0 10px 10px 0;
+      padding: 3px;
+      border-radius: 0 8px 8px 0;
+      /* Match the main toolbar's own bg + a much lighter shadow, so this
+         reads as a small tab hanging off the toolbar above it rather than a
+         separate floating chip in its own colour (v6.8.2 — user feedback:
+         the first pass "look[ed] like a random floating button"). */
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: none;
+      box-shadow: 0 2px 5px rgba(var(--shadow-rgb), 0.08);
     }
 
     #note-fs-tt-table-bar.tt-tbl-collapsed #note-fs-tt-table-bar-content {
@@ -22290,7 +22299,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.1';
+    const VERSION = '6.8.2';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
