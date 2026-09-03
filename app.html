@@ -22312,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.6';
+    const VERSION = '6.8.7';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45539,6 +45539,7 @@
 
     var _rtnLeafletLoaded = false;
     var _rtnMapInstance = null;
+    var _rtnMapLastView = null; // { center: L.LatLng, zoom: number } — survives the map being torn down/rebuilt by render()
     var _RTN_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
     function _rtnSiteCoords(name) {
@@ -45612,6 +45613,12 @@
       // Destroy previous instance if the DOM node was re-created by a render()
       if (_rtnMapInstance) {
         try {
+          // Capture the view the user left off on so the rebuilt map can restore it —
+          // without this, every re-render (e.g. returning from the note editor) snaps
+          // back to the default Ireland-wide view, losing whatever zoom/pan the user had.
+          _rtnMapLastView = { center: _rtnMapInstance.getCenter(), zoom: _rtnMapInstance.getZoom() };
+        } catch(e) {}
+        try {
           // Only call remove() if the old container is still in the document;
           // if render() already replaced it, skip remove() to avoid Leaflet errors
           var _oldContainer = _rtnMapInstance.getContainer ? _rtnMapInstance.getContainer() : null;
@@ -45620,8 +45627,11 @@
         _rtnMapInstance = null;
       }
 
-      var map = window.L.map('rtn-map', { zoomControl: false }).setView([53.0, -8.0], 7);
+      var map = _rtnMapLastView
+        ? window.L.map('rtn-map', { zoomControl: false }).setView(_rtnMapLastView.center, _rtnMapLastView.zoom)
+        : window.L.map('rtn-map', { zoomControl: false }).setView([53.0, -8.0], 7);
       _rtnMapInstance = map;
+      map.on('moveend', function() { _rtnMapLastView = { center: map.getCenter(), zoom: map.getZoom() }; });
 
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
