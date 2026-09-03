@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.4**
+Current version: **6.8.5**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -540,6 +540,15 @@ if (IS_NATIVE && window.Capacitor?.Plugins?.FirebaseAuthentication) {
 }
 ```
 `IS_NATIVE` flag: `typeof window.Capacitor !== 'undefined'`
+
+**"App" / "PWA" label (v6.8.5+):** Both installs use the same name/icon and are visually
+indistinguishable on a phone (Android auto-converts a "Add to Home Screen" PWA into a
+WebAPK that looks just as native as the real APK). User asked how to tell which one they
+were in while already signed into both. Since both load the exact same live `app.html` from
+GitHub Pages, the version number is identical on both and can't be used to tell them apart
+either. Added `${IS_NATIVE ? 'App' : 'PWA'}` next to both existing version displays — the
+header top-bar version (next to sync status) and the ☰ menu footer (`Rian v6.8.5 · App`) —
+so the distinction is visible without digging into Android Settings → App info.
 
 #### Fresh-machine sign-in failures (2026-09 PC rebuild) — two separate causes, both required
 Setting up the APK build on a brand-new PC broke Google Sign-In with a webpage-rendered "400: malformed request" error, and after fixing that, a native "Account reauth failed (err 16)" error. Both had to be fixed before sign-in worked again — **a fresh machine needs both of these, not just one:**

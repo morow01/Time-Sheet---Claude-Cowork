@@ -22312,7 +22312,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.4';
+    const VERSION = '6.8.5';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -27868,7 +27868,7 @@
               </div>
 
               <div class="menu-spacer"></div>
-              <div class="menu-version">Rian v${VERSION}</div>
+              <div class="menu-version">Rian v${VERSION} &middot; ${IS_NATIVE ? 'App' : 'PWA'}</div>
             `;
         })()}
         </div>
@@ -27876,7 +27876,7 @@
       <div class="flex-1 text-center" style="min-width:0">
         <div class="text-xs flex items-center justify-center gap-2" style="color:var(--text-header-sub);min-height:18px">
           <span title="${syncStatusTitle}" style="color:${syncStatusColor}">${syncStatusLabel}</span>
-          <span style="color:var(--text-header-sub);opacity:0.85" class="text-xs">v${VERSION}</span>
+          <span style="color:var(--text-header-sub);opacity:0.85" class="text-xs">v${VERSION} &middot; ${IS_NATIVE ? 'App' : 'PWA'}</span>
         </div>
       </div>
       <div class="hdr-top-spacer" aria-hidden="true"></div>
