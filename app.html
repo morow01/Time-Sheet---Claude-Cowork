@@ -16469,6 +16469,14 @@
       flex: 1;
     }
 
+    .rtn-alert-name.rtn-alert-link {
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 2px;
+    }
+
     .rtn-alert-detail {
       font-size: 11px;
       color: var(--text-muted);
@@ -22317,7 +22325,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.13';
+    const VERSION = '6.8.14';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -45404,7 +45412,11 @@
       } else {
         dueVisits.forEach(function (d) {
           var detail = d.lastMonth === 0 ? 'Never visited' : (d.monthsSince + ' months ago');
-          dueHtml += '<div class="rtn-alert-item"><span class="rtn-alert-dot amber"></span><span class="rtn-alert-name">' + esc(d.site) + '</span><span class="rtn-alert-detail">' + detail + '</span></div>';
+          var coords = _rtnSiteCoords(d.site);
+          var nameHtml = coords
+            ? '<span class="rtn-alert-name rtn-alert-link" title="Open in Google Maps" onclick="_openUrl(\'https://www.google.com/maps/search/?api=1&query=' + coords.lat + ',' + coords.lng + '\')">' + esc(d.site) + '</span>'
+            : '<span class="rtn-alert-name">' + esc(d.site) + '</span>';
+          dueHtml += '<div class="rtn-alert-item"><span class="rtn-alert-dot amber"></span>' + nameHtml + '<span class="rtn-alert-detail">' + detail + '</span></div>';
         });
       }
 
@@ -45499,7 +45511,7 @@
           + '<div class="stat-cell"><div class="stat-cell-label">Up to date</div><div class="stat-cell-value" style="color:#16a34a">' + cntUpToDate + '</div></div>'
           + '<div class="stat-cell"><div class="stat-cell-label">Overdue</div><div class="stat-cell-value" style="color:#ef4444">' + cntOverdue + '</div></div>'
           + '</div>')
-        + '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px"><div style="flex:1;height:1px;background:var(--border)"></div><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Action Items</div><div style="flex:1;height:1px;background:var(--border)"></div></div>'
+        + '<div style="display:flex;align-items:center;gap:8px;margin:4px 0 8px"><div style="flex:1;height:1px;background:var(--border)"></div><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)">Needs Attention</div><div style="flex:1;height:1px;background:var(--border)"></div></div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Due Visits <span class="rtn-mob-badge" style="background:rgba(245,158,11,0.1);color:#f59e0b">' + dueVisits.length + '</span></div>' + dueHtml + '</div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Never Visited <span class="rtn-mob-badge" style="background:rgba(239,68,68,0.1);color:#ef4444">' + neverVisited.length + '</span></div>' + neverHtml + '</div>'
         + '<div class="rtn-mob-card"><div class="rtn-mob-card-hdr">Visits per Month</div><div class="rtn-mob-month-bar">' + mobMonthBarHtml + '</div></div>'

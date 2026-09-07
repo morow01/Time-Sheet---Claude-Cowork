@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.13**
+Current version: **6.8.14**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -232,6 +232,8 @@ Shared list styles (used by both desktop sidebar and mobile tabs): `.rtn-alert-i
 **Map tab blank after returning from note editor (v6.8.6 fix):** The Map tab (`state.rtnMobTab === 'map'`) renders a Leaflet instance into `#rtn-map`, built by `_rtnInitMap()`. Any `_renderNow()` call rebuilds the routines view HTML from scratch — including a brand-new empty `#rtn-map` div — so the Leaflet canvas is discarded every render, not just when its own tab button is clicked. Only clicking Grid/Stats/Map explicitly called `_rtnInitMap()` again; nothing did on a *passive* re-render, e.g. closing the TipTap note editor for a site's notes (opened from a map marker popup) and landing back on Routines with the Map tab still marked active from `state.rtnMobTab` — result: white background where the map was, until manually toggling to Grid/Stats and back to Map. The desktop equivalent (`_rtnDeskPanel === 'map'`) already had a re-init hook in the shared post-render block in `_renderNow()`; mobile had no equivalent. Fixed by extending that same hook to also check `state.rtnMobTab === 'map'` on mobile.
 
 **Follow-up (v6.8.7) — fixed re-init lost zoom/pan.** The v6.8.6 fix above made the map reappear, but `_rtnInitMap()` always called `setView([53.0, -8.0], 7)` (the default Ireland-wide view) on every rebuild, so each re-render — not just the note-editor round trip — reset whatever zoom/pan the user had. Fixed with a module-level `_rtnMapLastView` (`{center, zoom}`), captured right before the old Leaflet instance is torn down and also kept live via a `moveend` listener (covers ordinary panning/zooming, not just the teardown moment), and used as the new map's initial view when present.
+
+**Due Visits site names are Google Maps links (v6.8.14):** Each site name in the `dueHtml` list (`.rtn-alert-name`, shared by desktop sidebar + mobile Stats tab) is wrapped with `onclick="_openUrl(...)"` when `_rtnSiteCoords(d.site)` resolves coordinates, styled via the new `.rtn-alert-link` modifier (accent colour, dotted underline, pointer cursor). Sites with no resolvable coordinates render as plain text, same as before. The "Never Visited" list (`neverHtml`) was left untouched — same pattern would apply there if wanted later. Mobile's "Action Items" section divider (above Due Visits / Never Visited) renamed to "Needs Attention" for a clearer, non-generic label.
 
 ### Callouts — Desktop Three-Panel Layout (v5.8.52+)
 Three-panel layout (Weeks → Callouts → Detail) matching Timesheet pattern. Accessed via ☰ menu → Callouts (not in the top desktop tab nav).
