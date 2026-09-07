@@ -22317,7 +22317,7 @@
   <script>
     // ============================================================
     // CONFIG
-    const VERSION = '6.8.12';
+    const VERSION = '6.8.13';
 
     // Detect Capacitor native shell — true when running as Android app, false in browser/PWA
     const IS_NATIVE = typeof window.Capacitor !== 'undefined' ||
@@ -54197,8 +54197,20 @@ QUESTION: ${query}`;
     function _openUrl(url) {
       if (!url) return;
       const rawUrl = String(url).trim();
-      if (IS_NATIVE && /^(geo:|google\.navigation:|intent:)/i.test(rawUrl)) {
-        window.location.href = rawUrl;
+      // Inside the Capacitor APK, hand off directly instead of hand-building
+      // an intent:// URI. capacitor.config.ts's server.allowNavigation only
+      // allows Google/Firebase auth domains — any other navigation (like a
+      // plain https://maps... URL) is caught by Capacitor's own
+      // BridgeWebViewClient, which launches the matching Android Intent
+      // itself. The previous code instead constructed a custom intent://
+      // URI for ANY Android user-agent (this WebView's UA always contains
+      // "Android", same as real Chrome), but the bare WebView doesn't know
+      // how to load the intent:// scheme on its own — "Open Map" (Routines)
+      // and any other https:// link silently did nothing in the APK.
+      if (IS_NATIVE) {
+        window.location.href = /^(geo:|google\.navigation:|intent:)/i.test(rawUrl)
+          ? rawUrl
+          : (rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl);
         return;
       }
       if (/android/i.test(navigator.userAgent)) {
@@ -54206,7 +54218,7 @@ QUESTION: ${query}`;
           const u = new URL(rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl);
           const scheme = u.protocol.replace(':', '');
           const intentUrl = `intent://${u.host}${u.pathname}${u.search}${u.hash}`
-            + `#Intent;scheme=${scheme};action=android.intent.action.VIEW;end`;
+            + `#Intent;scheme=${scheme};action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end`;
           window.location.href = intentUrl;
           return;
         } catch (_) { /* malformed URL — fall through */ }

@@ -17,7 +17,7 @@ A Progressive Web App for field technicians — timesheets, notes (TipTap rich t
 ## Version
 `const VERSION = 'x.y.z'` in `app.html` (~line 18699). Bump on every change. Only location that needs updating (index.html version references are static).
 **Patch (z) must not exceed 99.** When a bump would take it to 100, bump the minor version instead and reset patch to 0 (e.g. `6.7.99` → `6.8.0`, never `6.7.100`). 6.7.100–6.7.102 already broke this rule and were left as-is rather than rewriting pushed history — the rule applies from 6.8.0 onward.
-Current version: **6.8.12**
+Current version: **6.8.13**
 
 **12 themes active**: `claude` (default light), `dark` (slate-based), `champagne`, `champagne-dark`, `ios`, `apple` (macOS), `gray` (Grayscale), `gameboy` (Game Boy), `win31` (Win 3.1), `lcd` (LCD), `spectrum` (ZX Spectrum), `retro` (Retro). Theme picker lives in ☰ menu → Display. Switcher at `setTheme(key)`, registry at `THEME_META`.
 
@@ -591,6 +591,13 @@ wv.addJavascriptInterface(new Object() {
 }, "RianNative");
 ```
 In `app.html`, `_exitApp()` tries `window.RianNative.exitApp()` first, then falls back to Capacitor and `window.close()`. Any change to exit behavior requires an APK rebuild.
+
+### External Links (Open Map, ↗ Open) Silently Failing in the APK (v6.8.13)
+Reported: "Open Map" on a Routines site popup did nothing when tapped in the installed APK (worked fine as a PWA). Root cause in `_openUrl()` (~line 54197): the Android WebView's user-agent always contains "Android" (same as real Chrome), so a plain `https://` URL was falling into the branch that hand-builds a custom `intent://` URI and navigates the WebView to it directly (`window.location.href = intentUrl`) — a trick that works in a real Chrome browser (which understands the `intent://` scheme specially) but not in the bare `android.webkit.WebView` Capacitor uses, since `MainActivity.java` has no `shouldOverrideUrlLoading` override to interpret it. The navigation just silently went nowhere.
+
+**Fix:** for `IS_NATIVE` (inside the APK), skip the custom intent:// construction entirely and navigate directly to the URL as-is. `capacitor.config.ts`'s `server.allowNavigation` only allow-lists Google/Firebase auth domains — that restriction only makes sense because Capacitor's own `BridgeWebViewClient` is already intercepting any other navigation attempt and launching the matching Android Intent itself (opens the Maps app or system browser, whichever handles it). The old code was bypassing that built-in mechanism with a hand-rolled one the WebView can't interpret on its own. The non-native "Android Chrome" intent:// path (for the PWA, not the APK) is unchanged, aside from adding the standard `category=android.intent.category.BROWSABLE;` field for correctness.
+
+This is a pure `app.html` fix — no APK rebuild needed, takes effect on the already-installed app the next time it loads the live GitHub Pages content.
 
 ### TipTap Table CSS (v5.4.7–5.4.9)
 Tables shrink-wrap to content (not 100% width). Column resizing is enabled via `Table.configure({ resizable: true })`. The `_ttStripDefaultTableWidths()` function strips the columnResizing plugin's bloated default `min-width` from tables without user-set column widths. CSS uses `!important` to override the columnResizing plugin's inline styles that re-expand tables on click/blur.
